@@ -1,7 +1,7 @@
 // filepath: c:\Users\sigur\Projects\Homina\lib\scripts\deploy-commands.ts
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord.js";
-import { loadCommands } from "../utils";
+import { getCommands } from "../utils";
 import * as path from "path";
 
 const commandsPath = path.join(__dirname, "../../commands/utility");
@@ -18,7 +18,7 @@ if (!token || !clientId || !guildId) {
 
 const deployCommands = async () => {
   try {
-    const commandsCollection = await loadCommands(commandsPath);
+    const commandsCollection = await getCommands(commandsPath);
 
     console.log(
       `Loaded ${commandsCollection.size} commands from ${commandsPath}`

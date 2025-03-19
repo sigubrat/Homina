@@ -1,14 +1,9 @@
-import {
-  Client,
-  Events,
-  GatewayIntentBits,
-  Collection,
-  MessageFlags,
-} from "discord.js";
+import { Client, GatewayIntentBits, Collection } from "discord.js";
 import * as path from "path";
-import { loadCommands } from "./lib";
+import * as fs from "fs";
+import { getCommands } from "./lib";
 
-class IClient extends Client {
+export class IClient extends Client {
   commands = new Collection<string, any>();
 }
 
@@ -33,7 +28,7 @@ const commandsPath = path.join(__dirname, "commands/utility");
 
 const startBot = async () => {
   try {
-    const commands = await loadCommands(commandsPath);
+    const commands = await getCommands(commandsPath);
     commands.forEach((command) => {
       client.commands.set(command.data.name, command);
     });
@@ -41,43 +36,24 @@ const startBot = async () => {
     console.log("Commands loaded successfully.");
 
     // Set up event listeners
-    client.once(Events.ClientReady, (readyClient) => {
-      console.log(`Logged in as ${readyClient.user.tag}`);
-    });
+    const eventsPath = path.join(__dirname, "events");
+    const eventFiles = fs
+      .readdirSync(eventsPath)
+      .filter((file) => file.endsWith(".ts"));
+
+    for (const file of eventFiles) {
+      const filePath = path.join(eventsPath, file);
+      const event = await import(filePath);
+      if (event.once) {
+        client.once(event.name, (...args) => event.execute(...args));
+      } else {
+        client.on(event.name, (...args) => event.execute(...args));
+      }
+    }
 
     // Log in to Discord
     await client.login(token);
     console.log("Bot logged in successfully.");
-
-    client.on(Events.InteractionCreate, async (interaction) => {
-      if (!interaction.isChatInputCommand()) return; // Ignore non-chat input commands
-
-      const command = client.commands.get(interaction.commandName);
-
-      if (!command) {
-        console.error(
-          `No command matching ${interaction.commandName} was found.`
-        );
-        return;
-      }
-
-      try {
-        await command.execute(interaction);
-      } catch (error) {
-        console.error(error);
-        if (interaction.replied || interaction.deferred) {
-          await interaction.followUp({
-            content: "There was an error while executing this command!",
-            flags: MessageFlags.Ephemeral,
-          });
-        } else {
-          await interaction.reply({
-            content: "There was an error while executing this command!",
-            flags: MessageFlags.Ephemeral,
-          });
-        }
-      }
-    });
   } catch (error) {
     console.error("Error starting the bot:", error);
     process.exit(1); // Exit the process if there's a critical error

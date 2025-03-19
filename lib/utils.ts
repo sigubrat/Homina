@@ -2,7 +2,7 @@ import * as fs from "fs/promises";
 import * as path from "path";
 import { Collection } from "discord.js";
 
-export async function loadCommands(
+export async function getCommands(
   commandsPath: string
 ): Promise<Collection<string, any>> {
   const commandsCollection = new Collection<string, any>();
