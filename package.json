@@ -15,5 +15,10 @@
   },
   "dependencies": {
     "discord.js": "^14.18.0"
+  },
+  "scripts": {
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "deployCommands": "bun run lib/scripts/deploy-commands.ts"
   }
 }
