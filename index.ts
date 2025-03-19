@@ -2,7 +2,6 @@ import { Client, GatewayIntentBits, Collection } from "discord.js";
 import * as path from "path";
 import * as fs from "fs";
 import { getCommands } from "./lib";
-import { Sequelize } from "sequelize";
 
 export class IClient extends Client {
     commands = new Collection<string, any>();
@@ -37,12 +36,6 @@ console.log("Starting Discord bot...");
 
 const client = new IClient({
     intents: [GatewayIntentBits.Guilds],
-});
-
-const sequelize = new Sequelize(dbName!, dbUser!, dbPwd, {
-    host: "localhost",
-    dialect: "postgres",
-    logging: true,
 });
 
 // Load commands and start the bot

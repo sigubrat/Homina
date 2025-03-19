@@ -22,7 +22,9 @@ if (missingVars.length > 0) {
 const sequelize = new Sequelize(dbName!, dbUser!, dbPwd, {
     host: "localhost",
     dialect: "postgres",
-    logging: true,
+    logging: () => {
+        return true;
+    },
 });
 
 try {
@@ -35,15 +37,25 @@ try {
     process.exit(1);
 }
 
-const test = sequelize.define("test", {
-    name: {
+// GuildMember table
+sequelize.define("GuildMember", {
+    userId: {
         type: DataTypes.STRING,
         allowNull: false,
+        primaryKey: true,
     },
-    value: {
+    role: {
+        type: DataTypes.ENUM("MEMBER", "OFFICER", "CO_LEADER", "LEADER"),
+        allowNull: false,
+    },
+    level: {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
+    lastActivityOn: {
+        type: DataTypes.DATE,
+        allowNull: true,
+    },
 });
 
-test.sync({ force: true });
+sequelize.sync({ force: true });
