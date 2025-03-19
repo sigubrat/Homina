@@ -2,6 +2,7 @@ import { Client, GatewayIntentBits, Collection } from "discord.js";
 import * as path from "path";
 import * as fs from "fs";
 import { getCommands } from "./lib";
+import { Sequelize } from "sequelize";
 
 export class IClient extends Client {
     commands = new Collection<string, any>();
@@ -9,10 +10,25 @@ export class IClient extends Client {
 }
 
 const token = process.env.BOT_TOKEN;
+const clientId = process.env.CLIENT_ID;
+const guildId = process.env.GUILD_ID;
+const dbName = process.env.DB_NAME;
+const dbUser = process.env.DB_USER;
+const dbPwd = process.env.DB_PWD;
 
-if (!token) {
+const missingVars = [];
+if (!token) missingVars.push("BOT_TOKEN");
+if (!clientId) missingVars.push("CLIENT_ID");
+if (!guildId) missingVars.push("GUILD_ID");
+if (!dbName) missingVars.push("DB_NAME");
+if (!dbUser) missingVars.push("DB_USER");
+if (!dbPwd) missingVars.push("DB_PWD");
+
+if (missingVars.length > 0) {
     console.error(
-        "No token provided. Please set the BOT_TOKEN environment variable in your .env file."
+        `Missing environment variables: ${missingVars.join(
+            ", "
+        )}. Please ensure all required variables are set.`
     );
     process.exit(1);
 }
@@ -21,6 +37,12 @@ console.log("Starting Discord bot...");
 
 const client = new IClient({
     intents: [GatewayIntentBits.Guilds],
+});
+
+const sequelize = new Sequelize(dbName!, dbUser!, dbPwd, {
+    host: "localhost",
+    dialect: "postgres",
+    logging: true,
 });
 
 // Load commands and start the bot
