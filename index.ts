@@ -40,7 +40,7 @@ const client = new IClient({
 
 // Load commands and start the bot
 
-const commandsPath = path.join(__dirname, "commands/utility");
+const commandsPath = path.join(__dirname, "src/commands/utility");
 
 const startBot = async () => {
     try {
@@ -62,7 +62,7 @@ const startBot = async () => {
         console.log("Commands loaded successfully.");
 
         // Set up event listeners
-        const eventsPath = path.join(__dirname, "events");
+        const eventsPath = path.join(__dirname, "src/events");
         const eventFiles = fs
             .readdirSync(eventsPath)
             .filter((file) => file.endsWith(".ts"));
