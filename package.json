@@ -15,6 +15,8 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@types/d3": "^7.4.3",
+    "d3": "^7.9.0",
     "discord.js": "^14.18.0",
     "pg": "^8.14.1",
     "pg-hstore": "^2.3.4",
@@ -23,7 +25,9 @@
   "scripts": {
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
+    "bot": "bun run index.ts",
     "deployCommands": "bun run lib/scripts/deploy_commands.ts",
-    "createTables": "bun run lib/scripts/create_tables.ts"
+    "createTables": "bun run lib/scripts/create_tables.ts",
+    "testDb": "bun run lib/scripts/test_db.ts"
   }
 }
