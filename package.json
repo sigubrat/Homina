@@ -26,8 +26,8 @@
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "bot": "bun run index.ts",
-    "deployCommands": "bun run lib/scripts/deploy_commands.ts",
-    "createTables": "bun run lib/scripts/create_tables.ts",
-    "testDb": "bun run lib/scripts/test_db.ts"
+    "deployCommands": "bun run src/lib/scripts/deploy_commands.ts",
+    "createTables": "bun run src/lib/scripts/create_tables.ts",
+    "testDb": "bun run src/lib/scripts/test_db.ts"
   }
 }

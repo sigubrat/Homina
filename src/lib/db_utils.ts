@@ -5,30 +5,24 @@ export interface DbTestResult {
     message?: string;
 }
 
-export async function isDbReady(): Promise<DbTestResult> {
-    const dbName = process.env.DB_NAME;
-    const dbUser = process.env.DB_USER;
-    const dbPwd = process.env.DB_PWD;
-
-    const missingVars = [];
-
-    if (!dbName) missingVars.push("DB_NAME");
-    if (!dbUser) missingVars.push("DB_USER");
-    if (!dbPwd) missingVars.push("DB_PWD");
-
+export function validateEnvVars(requiredVars: string[]): void {
+    const missingVars = requiredVars.filter((varName) => !process.env[varName]);
     if (missingVars.length > 0) {
         console.error(
             `Missing environment variables: ${missingVars.join(
                 ", "
             )}. Please ensure all required variables are set.`
         );
-        return {
-            isSuccess: false,
-            message: `Missing environment variables: ${missingVars.join(
-                ", "
-            )}. Please ensure all required variables are set.`,
-        } as DbTestResult;
+        process.exit(1);
     }
+}
+
+export async function isDbReady(): Promise<DbTestResult> {
+    validateEnvVars(["DB_NAME", "DB_USER", "DB_PWD"]);
+
+    const dbName = process.env.DB_NAME;
+    const dbUser = process.env.DB_USER;
+    const dbPwd = process.env.DB_PWD;
 
     const sequelize = new Sequelize(dbName!, dbUser!, dbPwd, {
         host: "localhost",

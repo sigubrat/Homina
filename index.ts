@@ -1,7 +1,7 @@
 import { Client, GatewayIntentBits, Collection } from "discord.js";
 import * as path from "path";
 import * as fs from "fs";
-import { getCommands, isDbReady } from "./lib";
+import { getCommands, isDbReady } from "./src/lib";
 
 export class IClient extends Client {
     commands = new Collection<string, any>();
