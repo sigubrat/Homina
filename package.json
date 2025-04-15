@@ -4,6 +4,11 @@
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "workspaces": [
+    "common",
+    "homina-bot",
+    "adeptus-datum"
+  ],
   "devDependencies": {
     "@eslint/js": "^9.22.0",
     "@types/bun": "latest",
@@ -14,20 +19,12 @@
   "peerDependencies": {
     "typescript": "^5"
   },
-  "dependencies": {
-    "@types/d3": "^7.4.3",
-    "d3": "^7.9.0",
-    "discord.js": "^14.18.0",
-    "pg": "^8.14.1",
-    "pg-hstore": "^2.3.4",
-    "sequelize": "^6.37.6"
-  },
   "scripts": {
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "bot": "bun run index.ts",
-    "deployCommands": "bun run src/lib/scripts/deploy_commands.ts",
-    "createTables": "bun run src/lib/scripts/create_tables.ts",
-    "testDb": "bun run src/lib/scripts/test_db.ts"
+    "deployCommands": "bun run common/src/lib/scripts/deploy_commands.ts",
+    "createTables": "bun run common/src/lib/scripts/create_tables.ts",
+    "testDb": "bun run common/src/lib/scripts/test_db.ts"
   }
 }

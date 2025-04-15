@@ -9,3 +9,5 @@ if (test.isSuccess) {
 } else {
     console.error("Test of database failed with error: ", test.message);
 }
+
+process.exit(0);
