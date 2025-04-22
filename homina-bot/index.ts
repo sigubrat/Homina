@@ -1,7 +1,8 @@
 import { Client, GatewayIntentBits, Collection } from "discord.js";
 import * as path from "path";
 import * as fs from "fs";
-import { getCommands, isDbReady } from "../common/src/lib";
+import { getAllCommands } from "../common/src/lib";
+import { dbHandler } from "../common/src/lib/db_handler";
 
 export class IClient extends Client {
     commands = new Collection<string, any>();
@@ -39,13 +40,10 @@ const client = new IClient({
 });
 
 // Load commands and start the bot
-
-const commandsPath = path.join(__dirname, "src/commands/utility");
-
 const startBot = async () => {
     try {
         // Check database connection
-        const res = await isDbReady();
+        const res = await dbHandler.isReady();
         if (!res.isSuccess) {
             console.error(
                 "Database test failed with error message: ",
@@ -54,7 +52,7 @@ const startBot = async () => {
             process.exit(1);
         }
 
-        const commands = await getCommands(commandsPath);
+        const commands = await getAllCommands();
         commands.forEach((command) => {
             client.commands.set(command.data.name, command);
         });

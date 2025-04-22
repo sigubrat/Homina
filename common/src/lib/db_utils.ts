@@ -16,34 +16,3 @@ export function validateEnvVars(requiredVars: string[]): void {
         process.exit(1);
     }
 }
-
-export async function isDbReady(): Promise<DbTestResult> {
-    validateEnvVars(["DB_NAME", "DB_USER", "DB_PWD"]);
-
-    const dbName = process.env.DB_NAME;
-    const dbUser = process.env.DB_USER;
-    const dbPwd = process.env.DB_PWD;
-
-    const sequelize = new Sequelize(dbName!, dbUser!, dbPwd, {
-        host: "localhost",
-        dialect: "postgres",
-        logging: () => {
-            return true;
-        },
-    });
-
-    try {
-        await sequelize.authenticate();
-        console.log(
-            "Connection to the database has been established successfully."
-        );
-    } catch (error) {
-        console.error("Unable to connect to the database:", error);
-        return {
-            isSuccess: false,
-            message: "Unable to connect to the database.",
-        } as DbTestResult;
-    }
-
-    return { isSuccess: true } as DbTestResult;
-}

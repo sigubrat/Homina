@@ -1,6 +1,6 @@
 import type { GuildMember } from "./GuildMember";
 
-export interface GuildRaidResponse {
+export interface Guild {
     guildId: string;
     guildTag: string;
     name: string;

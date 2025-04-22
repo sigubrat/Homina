@@ -70,13 +70,20 @@ nix flake update
 
 Create a `.env` file in the root of the project and add the following variables:
 
+-   BOT_TOKEN - Your discord's bot token
+-   CLIENT_ID - (Your application's client id ([Discord Developer Portal](https://discord.com/developers/applications) -> General Information -> application id))
+-   GUILD_ID - Your development server's id
+-   DB_NAME - Name of your postgres database
+-   DB_USER - Your postgres database username
+-   DB_PWD - The password to your postgres database
+
 ```plaintext
 BOT_TOKEN=your-bot-token
 CLIENT_ID=your-client-id
 GUILD_ID=your-guild-id
 DB_NAME=your-database-name
 DB_USER=your-database-user
-DB_PWD=your-database-password
+DB_PWD=your-database-password (use " " if no password)
 ```
 
 ## Before running the bot

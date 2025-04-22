@@ -1,9 +1,8 @@
 import { REST } from "@discordjs/rest";
-import { Routes } from "discord.js";
-import { getCommands } from "../../../common/src/lib/utils";
-import * as path from "path";
+import { Collection, Routes } from "discord.js";
+import { getAllCommands } from "../utils";
+import readline from "readline";
 
-const commandsPath = path.join(__dirname, "../../commands/utility");
 const token = process.env.BOT_TOKEN;
 const clientId = process.env.CLIENT_ID;
 const guildId = process.env.GUILD_ID;
@@ -17,11 +16,23 @@ if (!token || !clientId || !guildId) {
 
 const deployCommands = async () => {
     try {
-        const commandsCollection = await getCommands(commandsPath);
-
-        console.log(
-            `Loaded ${commandsCollection.size} commands from ${commandsPath}`
+        /**  Prompt the user for scope (guild/global)
+         *   Guild-based deployment is faster, but the commands will only be available in the specified guild
+         *   Global deployment can take up to an hour, but the commands will be available in all servers
+         */
+        let scope: string;
+        const rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout,
+        });
+        const answer = await new Promise<string>((res) =>
+            rl.question("Deploy to (guild/global) [guild]: ", res)
         );
+        rl.close();
+        scope = answer.trim().toLowerCase() === "global" ? "global" : "guild";
+        console.log(`Chosen scope: ${scope}`);
+
+        let commandsCollection = await getAllCommands();
 
         const commands = Array.from(commandsCollection.values()).map(
             (command) => command.data
@@ -36,12 +47,14 @@ const deployCommands = async () => {
             commands.map((cmd) => cmd.name)
         );
 
-        const resp = (await rest.put(
-            Routes.applicationGuildCommands(clientId, guildId),
-            {
-                body: commands,
-            }
-        )) as any[];
+        const routes =
+            scope === "global"
+                ? Routes.applicationCommands(clientId)
+                : Routes.applicationGuildCommands(clientId, guildId);
+
+        const resp = (await rest.put(routes, {
+            body: commands,
+        })) as any[];
 
         console.log("Discord updated", resp.length, "commands.");
 

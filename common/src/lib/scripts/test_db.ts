@@ -1,8 +1,8 @@
 // Test database connection
 
-import { isDbReady } from "../db_utils";
+import { dbHandler } from "@/lib/db_handler";
 
-const test = await isDbReady();
+const test = await dbHandler.isReady();
 
 if (test.isSuccess) {
     console.log("Database is ready.");

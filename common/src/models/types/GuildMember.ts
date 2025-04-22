@@ -1,8 +1,8 @@
-import type { Role } from "../enums";
+import { Role } from "../enums";
 
-export type GuildMember = {
+export interface GuildMember {
     userId: string;
     role: Role;
     level: number;
     lastActivityOn?: Date;
-};
+}
