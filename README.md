@@ -51,21 +51,6 @@ To update flake inputs:
 nix flake update
 ```
 
-## Database Configuration
-
-1. Ensure PostgreSQL is installed and running.
-2. Create a database for the bot:
-    ```bash
-    createdb homina
-    ```
-3. Update the `.env` file with your database credentials (`DB_NAME`, `DB_USER`, `DB_PWD`).
-4. Run the following command to create the necessary tables:
-    ```bash
-    bun run createTables
-    ```
-
----
-
 ## Environment Variables
 
 Create a `.env` file in the root of the project and add the following variables:
@@ -85,6 +70,21 @@ DB_NAME=your-database-name
 DB_USER=your-database-user
 DB_PWD=your-database-password (use " " if no password)
 ```
+
+## Database Configuration
+
+1. Ensure PostgreSQL is installed and running.
+2. Create a database for the bot:
+    ```bash
+    createdb homina
+    ```
+3. Update the `.env` file with your database credentials (`DB_NAME`, `DB_USER`, `DB_PWD`).
+4. Run the following command to create the necessary tables:
+    ```bash
+    bun run createTables
+    ```
+
+---
 
 ## Before running the bot
 
