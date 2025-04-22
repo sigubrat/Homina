@@ -23,6 +23,33 @@ Before running the project, ensure you have the following installed:
 -   [Node.js](https://nodejs.org/) or [Bun](https://bun.sh/) (latest version recommended)
 -   [PostgreSQL](https://www.postgresql.org/) for database management
 -   A Discord bot token (create one via the [Discord Developer Portal](https://discord.com/developers/applications))
+-   **Optional**: Nix (to use the provided flake for a reproducible dev shell/environment)
+
+### Nix flake
+
+> Nix is a powerful package manager for Linux and macOS, designed to provide a reliable and reproducible way to manage software dependencies. Nix allows you to create isolated environments and build systems, preventing dependency conflicts and ensuring consistent development and deployment environments.
+
+If you are using Nix, you don't need to manually install anything.
+
+You have two options for development:
+
+1. Use nix direnv and create a .envrc in your root folder with the following:
+
+```shell
+use flake
+```
+
+2. Use the nix shell
+
+```shell
+nix develop
+```
+
+To update flake inputs:
+
+```shell
+nix flake update
+```
 
 ## Database Configuration
 
@@ -124,6 +151,7 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 ### Database Connection Errors
 
 -   Ensure PostgreSQL is running and the credentials in the `.env` file are correct.
+-   Run the db test script: `bun run testDb`
 -   Verify that the database exists by running:
     ```bash
     psql -l

@@ -1,7 +1,6 @@
-// filepath: c:\Users\sigur\Projects\Homina\lib\scripts\deploy-commands.ts
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord.js";
-import { getCommands } from "../utils";
+import { getCommands } from "../../../common/src/lib/utils";
 import * as path from "path";
 
 const commandsPath = path.join(__dirname, "../../commands/utility");
