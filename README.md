@@ -111,7 +111,13 @@ bun run deployCommands
 To run the bot:
 
 ```bash
-bun run bot
+bun run dev
+```
+
+To run the bot with hot-reload
+
+```bash
+bun run hot
 ```
 
 The bot checks the database connection before starting up, but if you want to test it without waiting for the bot you can use:
