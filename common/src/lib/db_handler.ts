@@ -242,20 +242,17 @@ export class DatabaseHandler {
         );
 
         // User-guild api token table - This table is used to store discord user-guild api token mapping
-        const DiscordApiTokenMapping = this.sequelize.define(
-            "discordApiTokenMappings",
-            {
-                userId: {
-                    type: DataTypes.STRING,
-                    allowNull: false,
-                    primaryKey: true,
-                },
-                token: {
-                    type: DataTypes.STRING,
-                    allowNull: false,
-                },
-            }
-        );
+        this.sequelize.define("discordApiTokenMappings", {
+            userId: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                primaryKey: true,
+            },
+            token: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
+        });
 
         //**
         // SCHEMA RELATIONSHIPS
@@ -273,7 +270,7 @@ export class DatabaseHandler {
         raid.hasMany(publicHeroDetail, { foreignKey: "raidId" });
         publicHeroDetail.belongsTo(raid, { foreignKey: "raidId" });
 
-        this.sequelize.sync({ force: true });
+        this.sequelize.sync({});
     }
 
     public async isReady(): Promise<DbTestResult> {
@@ -302,6 +299,26 @@ export class DatabaseHandler {
         } catch (error) {
             console.error("Error storing registered user to database:", error);
             return false;
+        }
+    }
+
+    public async getUserToken(userId: string): Promise<string | null> {
+        try {
+            const result = await this.sequelize.models[
+                "discordApiTokenMappings"
+            ]?.findOne({
+                where: {
+                    userId: userId,
+                },
+            });
+            if (!result) {
+                return null;
+            }
+
+            return result.getDataValue("token") as string;
+        } catch (error) {
+            console.error("Error retrieving user token from database:", error);
+            return null;
         }
     }
 }

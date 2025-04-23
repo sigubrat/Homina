@@ -1,5 +1,5 @@
 import { REST } from "@discordjs/rest";
-import { Collection, Routes } from "discord.js";
+import { Routes } from "discord.js";
 import { getAllCommands } from "../utils";
 import readline from "readline";
 
@@ -20,7 +20,6 @@ const deployCommands = async () => {
          *   Guild-based deployment is faster, but the commands will only be available in the specified guild
          *   Global deployment can take up to an hour, but the commands will be available in all servers
          */
-        let scope: string;
         const rl = readline.createInterface({
             input: process.stdin,
             output: process.stdout,
@@ -29,10 +28,11 @@ const deployCommands = async () => {
             rl.question("Deploy to (guild/global) [guild]: ", res)
         );
         rl.close();
-        scope = answer.trim().toLowerCase() === "global" ? "global" : "guild";
+        const scope =
+            answer.trim().toLowerCase() === "global" ? "global" : "guild";
         console.log(`Chosen scope: ${scope}`);
 
-        let commandsCollection = await getAllCommands();
+        const commandsCollection = await getAllCommands();
 
         const commands = Array.from(commandsCollection.values()).map(
             (command) => command.data
@@ -70,4 +70,6 @@ const deployCommands = async () => {
     }
 };
 
-deployCommands();
+await deployCommands();
+
+process.exit(0);

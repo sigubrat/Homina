@@ -1,7 +1,7 @@
 import * as fs from "fs/promises";
 import * as path from "path";
 import { Collection } from "discord.js";
-import HominaHttpClient from "../../../common/src/client/tacticus-client";
+import HominaTacticusClient from "../../../common/src/client/tacticus-client";
 
 async function getCommands(
     commandsPath: string
@@ -31,7 +31,7 @@ export async function getAllCommands(): Promise<Collection<string, any>> {
         .filter((d) => d.isDirectory())
         .map((d) => d.name);
 
-    let commandsCollection = new Collection<string, any>();
+    const commandsCollection = new Collection<string, any>();
     for (const category of categoryDirs) {
         const commandsPath = path.join(commandsRoot, category);
         const commands = await getCommands(commandsPath);
@@ -42,7 +42,7 @@ export async function getAllCommands(): Promise<Collection<string, any>> {
 
 export async function testApiToken(token: string): Promise<boolean> {
     try {
-        const client = new HominaHttpClient();
+        const client = new HominaTacticusClient();
 
         const resp = await client.getGuild(token);
 
