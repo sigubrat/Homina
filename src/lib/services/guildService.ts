@@ -20,8 +20,6 @@ export class GuildService {
 
             const resp = await this.client.getGuild(apiKey);
 
-            console.log("GuildService.getGuildSeasons - resp:", resp);
-
             if (!resp.success || !resp.guild) {
                 return null;
             }
@@ -33,42 +31,10 @@ export class GuildService {
         }
     }
 
-    async getTokensBySeason(
+    async getGuildRaidResultBySeason(
         userId: string,
         season: number
-    ): Promise<Record<string, number> | null> {
-        const apiKey = await dbController.getUserToken(userId);
-        if (!apiKey) {
-            return null;
-        }
-
-        const resp = await this.client.getGuildRaidBySeason(apiKey, season);
-        if (!resp || !resp.entries) {
-            return null;
-        }
-
-        const entries: Raid[] = resp.entries;
-
-        const tokens: Record<string, number> = {};
-
-        entries.forEach((entry) => {
-            // Bombs don't count as tokens used
-            if (!entry.userId || entry.damageType === DamageType.BOMB) {
-                return;
-            }
-            const username = getPlayerName(entry.userId);
-            if (!username) {
-                throw new Error(
-                    "Player name missing in the mapping " + entry.userId
-                );
-            }
-            tokens[username] = (tokens[username] ?? 0) + 1;
-        });
-
-        return tokens;
-    }
-
-    async getDamageBySeason(userId: string, season: number) {
+    ): Promise<GuildRaidResult[] | null> {
         const apiKey = await dbController.getUserToken(userId);
         if (!apiKey) {
             return null;
