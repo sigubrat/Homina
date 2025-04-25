@@ -3,3 +3,4 @@ export * from "./Guild";
 export * from "./GuildRaidResponse";
 export * from "./Raid";
 export * from "./PublicHeroDetail";
+export * from "./GuildRaidResult";

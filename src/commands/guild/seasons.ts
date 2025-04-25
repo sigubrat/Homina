@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from "discord.js";
-import { GuildService } from "../../lib/services/guildService";
+import { GuildService } from "../../lib/services/GuildService";
 
 export const cooldown = 5;
 
