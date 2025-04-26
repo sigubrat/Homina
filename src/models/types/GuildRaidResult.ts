@@ -3,4 +3,5 @@ export interface GuildRaidResult {
     totalDamage: number;
     totalTokens: number;
     boss: string;
+    set: number;
 }

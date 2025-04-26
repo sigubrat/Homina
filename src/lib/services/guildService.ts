@@ -78,6 +78,7 @@ export class GuildService {
                     totalDamage: entry.damageDealt,
                     totalTokens: 1,
                     boss: entry.type,
+                    set: entry.set,
                 });
             }
         });
@@ -141,6 +142,7 @@ export class GuildService {
                     totalDamage: entry.damageDealt,
                     totalTokens: 1,
                     boss: entry.type,
+                    set: entry.set,
                 });
             }
         });

@@ -39,11 +39,19 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 
     const season = interaction.options.getNumber("season");
+    const rarity = interaction.options.getString("tier") as Rarity;
 
     if (!season || !Number.isInteger(season) || season <= 0) {
         await interaction.editReply({
             content:
                 "Invalid season number. Please provide a positive integer.",
+        });
+        return;
+    }
+
+    if (!rarity) {
+        await interaction.editReply({
+            content: "Invalid rarity. Please provide a valid rarity.",
         });
         return;
     }
@@ -54,7 +62,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const result = await service.getGuildRaidResultByTierSeasonPerBoss(
             interaction.user.id,
             season,
-            Rarity.LEGENDARY
+            rarity
         );
 
         if (
@@ -75,7 +83,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 const chartBuffer =
                     await chartService.createSeasonDamageChartAvg(
                         data.sort((a, b) => b.totalDamage - a.totalDamage),
-                        `Damage dealt in season ${season} - ${bossName}`
+                        `Damage dealt in season ${season} - ${
+                            rarity[0] ? rarity[0].toUpperCase() : " "
+                        }${(data[0] ? data[0].set : 0) + 1} ${bossName}`
                     );
                 return chartBuffer;
             }
