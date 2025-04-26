@@ -1,0 +1,111 @@
+import { ChartService } from "@/lib/services/ChartService";
+import { GuildService } from "@/lib/services/GuildService";
+import { Rarity } from "@/models/enums";
+import {
+    AttachmentBuilder,
+    ChatInputCommandInteraction,
+    EmbedBuilder,
+    SlashCommandBuilder,
+} from "discord.js";
+
+export const cooldown = 5;
+
+export const data = new SlashCommandBuilder()
+    .setName("season-by-tier")
+    .addNumberOption((option) =>
+        option
+            .setName("season")
+            .setDescription("The season number")
+            .setRequired(true)
+    )
+    .addStringOption((option) => {
+        return option
+            .setName("tier")
+            .setDescription("The tier of the boss")
+            .setRequired(true)
+            .addChoices(
+                { name: "Legendary", value: Rarity.LEGENDARY },
+                { name: "Epic", value: Rarity.EPIC },
+                { name: "Rare", value: Rarity.RARE },
+                { name: "Uncommon", value: Rarity.UNCOMMON },
+                { name: "Common", value: Rarity.COMMON }
+            );
+    })
+    .setDescription(
+        "Show guild raid stats for a specific boss tier in a specific season"
+    );
+
+export async function execute(interaction: ChatInputCommandInteraction) {
+    await interaction.deferReply();
+
+    const season = interaction.options.getNumber("season");
+
+    if (!season || !Number.isInteger(season) || season <= 0) {
+        await interaction.editReply({
+            content:
+                "Invalid season number. Please provide a positive integer.",
+        });
+        return;
+    }
+
+    const service = new GuildService();
+
+    try {
+        const result = await service.getGuildRaidResultByTierSeasonPerBoss(
+            interaction.user.id,
+            season,
+            Rarity.LEGENDARY
+        );
+
+        if (
+            !result ||
+            typeof result !== "object" ||
+            Object.keys(result).length === 0
+        ) {
+            await interaction.editReply({
+                content:
+                    "No data found for the specified season. Ensure you are registered and have the correct permissions.",
+            });
+            return;
+        }
+
+        const chartService = new ChartService(1200, 600);
+        const chartPromises = Object.entries(result).map(
+            async ([bossName, data]) => {
+                const chartBuffer =
+                    await chartService.createSeasonDamageChartAvg(
+                        data.sort((a, b) => b.totalDamage - a.totalDamage),
+                        `Damage dealt in season ${season} - ${bossName}`
+                    );
+                return chartBuffer;
+            }
+        );
+
+        const charts = await Promise.all(chartPromises);
+        const chartAttachments = charts.map((chartBuffer, index) => {
+            return new AttachmentBuilder(chartBuffer, {
+                name: `graph-${index}.png`,
+            });
+        });
+
+        const embed = new EmbedBuilder()
+            .setColor(0x0099ff)
+            .setTitle(`Damage dealt in season ${season}`)
+            .setDescription(
+                "The graph shows the contribution of each member to a guild raid season:\n" +
+                    "- **Bar chart**: Damage dealt (left y-axis)\n" +
+                    "- **Line chart**: Total tokens used (right y-axis)"
+            )
+            .setImage("attachment://graph-0.png"); // Set the first chart as the main image
+
+        await interaction.editReply({
+            embeds: [embed],
+            files: chartAttachments,
+        });
+    } catch (error) {
+        console.error("Error fetching guild raid results: ", error);
+        await interaction.editReply({
+            content: "An error occurred while fetching guild raid results.",
+        });
+    }
+}

@@ -106,4 +106,117 @@ export class ChartService {
 
         return chart;
     }
+
+    async createSeasonDamageChartAvg(data: GuildRaidResult[], title: string) {
+        const canvas = new ChartJSNodeCanvas({
+            width: this.width,
+            height: this.height,
+        });
+
+        const usernames = data.map((data) => data.username);
+        const damage = data.map((data) => data.totalDamage);
+        const totalTokens = data.map((data) => data.totalTokens);
+        const avgDamagePerToken = data.map((data) =>
+            data.totalTokens > 0 ? data.totalDamage / data.totalTokens : 0
+        );
+
+        const chart = await canvas.renderToBuffer({
+            type: "bar",
+            data: {
+                labels: usernames,
+                datasets: [
+                    {
+                        type: "line",
+                        label: "Total Tokens",
+                        data: totalTokens,
+                        borderColor: CHART_COLORS.orange,
+                        borderWidth: 3,
+                        fill: false,
+                        tension: 0,
+                        pointRadius: 3,
+                        yAxisID: "y2",
+                    },
+                    {
+                        type: "line",
+                        label: "Avg Damage per Token",
+                        data: avgDamagePerToken,
+                        borderColor: CHART_COLORS.yellow,
+                        borderWidth: 3,
+                        fill: false,
+                        tension: 0,
+                        pointRadius: 3,
+                        yAxisID: "y",
+                    },
+                    {
+                        backgroundColor: CHART_COLORS.blue,
+                        label: title,
+                        data: damage,
+                        borderWidth: 1,
+                    },
+                ],
+            },
+            options: {
+                plugins: {
+                    title: {
+                        display: true,
+                        text: title,
+                        font: {
+                            size: 20,
+                        },
+                        color: "white",
+                    },
+                    legend: {
+                        display: true,
+                        labels: {
+                            color: "white",
+                            font: {
+                                size: 14,
+                            },
+                        },
+                    },
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: "white",
+                            font: {
+                                size: 14,
+                            },
+                        },
+                        grid: {
+                            display: false,
+                        },
+                    },
+                    y: {
+                        ticks: {
+                            color: "white",
+                            font: {
+                                size: 14,
+                            },
+                        },
+                        grid: {
+                            color: "rgba(255, 255, 255, 0.4)",
+                        },
+                    },
+                    y2: {
+                        type: "linear",
+                        position: "right",
+                        ticks: {
+                            color: "white",
+                            font: {
+                                size: 14,
+                            },
+                        },
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                    },
+                },
+                responsive: true,
+                maintainAspectRatio: false,
+            },
+        });
+
+        return chart;
+    }
 }

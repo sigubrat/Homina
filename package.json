@@ -17,7 +17,6 @@
   "scripts": {
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
-    "hot": "bun run --hot index.ts",
     "dev": "bun run index.ts",
     "deployCommands": "bun src/lib/scripts/deploy_commands.ts",
     "testDb": "bun run src/lib/scripts/test_db.ts"
