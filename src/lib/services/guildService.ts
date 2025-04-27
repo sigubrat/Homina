@@ -2,10 +2,13 @@ import { HominaTacticusClient } from "@/client";
 import { dbController } from "@/lib";
 import type { GuildRaidResult, Raid } from "@/models/types";
 import { getPlayerName } from "../../../player-mapping";
-import { DamageType, Rarity } from "@/models/enums";
+import { DamageType, EncounterType, Rarity } from "@/models/enums";
+import type { TeamDistribution } from "@/models/types/TeamDistribution";
+import { inTeamsCheck } from "../utils";
 
 export class GuildService {
     private client: HominaTacticusClient;
+    private metaTeamThreshold = 3; // Minimum number of meta heroes to be considered a meta team
 
     constructor() {
         this.client = new HominaTacticusClient();
@@ -148,5 +151,121 @@ export class GuildService {
         });
 
         return groupedResults;
+    }
+
+    async getMetaTeamDistribution(
+        userId: string,
+        season: number,
+        tier?: Rarity
+    ) {
+        /**
+         * There are 3 meta teams in tacticus at the moment:
+         * 1. Multi-hit team (Ragnar, Eldryon, Kharn, Aunshi, Snotflogga, Calgar and Big Boss Gulgortz)
+         * 2. Psyker team (Neurothrope, Yazakhor, Abraxas, Ahrimann, Eldryon, Roswitha, Mephiston),
+         * 3. Mech team (Exitor Rho, Tan Gida, Actus, Sho'syl, Vitruvius, Big Boss Gulgortz, Aneph Null)
+         *
+         * For each entry in the data, we need to figure out which team it most likely is by checking if they have a majority of the meta team members.
+         */
+        try {
+            const apiKey = await dbController.getUserToken(userId);
+            if (!apiKey) {
+                return null;
+            }
+
+            const resp = await this.client.getGuildRaidBySeason(apiKey, season);
+            if (!resp || !resp.entries) {
+                return null;
+            }
+
+            let entries: Raid[] = resp.entries;
+
+            if (tier) {
+                entries = entries.filter((entry) => entry.rarity === tier);
+            }
+
+            const totalDistribution: TeamDistribution = {
+                mech: 0,
+                multihit: 0,
+                psyker: 0,
+                mechDamage: 0,
+                multihitDamage: 0,
+                psykerDamage: 0,
+                other: 0,
+                otherDamage: 0,
+            };
+
+            entries.forEach((entry) => {
+                // bombs don't count as damage
+                if (
+                    !entry.userId ||
+                    entry.damageType === DamageType.BOMB ||
+                    entry.encounterType === EncounterType.SIDE_BOSS
+                ) {
+                    return;
+                }
+
+                const heroes = entry.heroDetails.map((hero) => hero.unitId);
+
+                const distribution: TeamDistribution = {
+                    multihit: 0,
+                    mech: 0,
+                    psyker: 0,
+                    other: 0,
+                };
+
+                for (const hero of heroes) {
+                    const check = inTeamsCheck(hero);
+                    distribution.mech += check.inMech ? 1 : 0;
+                    distribution.multihit += check.inMulti ? 1 : 0;
+                    distribution.psyker += check.inPsyker ? 1 : 0;
+                }
+
+                // find which property of distrubution has the highest value
+                const values = [
+                    distribution.mech,
+                    distribution.multihit,
+                    distribution.psyker,
+                ];
+
+                // Check that at least one of the values is 3 or more, or else we count it as non-meta (other)
+                if (
+                    distribution.mech < this.metaTeamThreshold &&
+                    distribution.multihit < this.metaTeamThreshold &&
+                    distribution.psyker < this.metaTeamThreshold
+                ) {
+                    totalDistribution.other += 1;
+                    totalDistribution.otherDamage =
+                        (totalDistribution.otherDamage || 0) +
+                        entry.damageDealt;
+                    return;
+                }
+
+                const maxValue = Math.max(...values);
+                const maxIndex = values.indexOf(maxValue);
+
+                if (maxIndex === 0) {
+                    totalDistribution.mech = (totalDistribution.mech || 0) + 1;
+                    totalDistribution.mechDamage =
+                        (totalDistribution.mechDamage || 0) + entry.damageDealt;
+                } else if (maxIndex === 1) {
+                    totalDistribution.multihit =
+                        (totalDistribution.multihit || 0) + 1;
+                    totalDistribution.multihitDamage =
+                        (totalDistribution.multihitDamage || 0) +
+                        entry.damageDealt;
+                } else if (maxIndex === 2) {
+                    totalDistribution.psyker =
+                        (totalDistribution.psyker || 0) + 1;
+                    totalDistribution.psykerDamage =
+                        (totalDistribution.psykerDamage || 0) +
+                        entry.damageDealt;
+                }
+            });
+
+            return totalDistribution;
+        } catch (error) {
+            console.error("Error fetching guild seasons: ", error);
+            return null;
+        }
     }
 }

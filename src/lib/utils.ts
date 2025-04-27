@@ -80,3 +80,62 @@ const NAMED_COLORS = [
 export function namedColor(index: number) {
     return NAMED_COLORS[index % NAMED_COLORS.length];
 }
+
+//**
+// Tacticus utils
+//  */
+
+// PublicHeroDetail ids
+
+export const multiHitTeam = [
+    "ultraInceptorSgt", // Bellator
+    "eldarAutarch", // Aethana
+    "orksRuntherd", // Snotflogga
+    "eldarFarseer", // Eldryon
+    "orksWarboss", // Gulgortz
+    "worldKharn", // Kharn
+    "spaceBlackmane", // Ragnar
+    "tauCrisis", // Re'vas
+];
+
+export const mechTeam = [
+    "necroSpyder", // Aleph-Null
+    "admecManipulus", // Actus
+    "admecMarshall", // Tan Gi'da
+    "admecRuststalker", // Exitor-Rho
+    "orksWarboss", // Gulgortz
+    "tauMarksman", // Sho'syl
+    "tauCrisis", // Re'vas
+    "admecDominus", // Vitruvius
+];
+
+export const psykerTeam = [
+    "eldarFarseer", // Eldryon
+    "thousTzaangor", // Yazaghor
+    "thousAhriman", // Ahriman
+    "tyranNeurothrope", // Neurothrope
+    "thousInfernalMaster", // Abraxas
+    "adeptCanoness", // Roswitha
+    "genesMagus", // Xybia
+    "bloodMephiston", // Mephiston
+];
+
+export interface TeamCheck {
+    inMulti: boolean;
+    inMech: boolean;
+    inPsyker: boolean;
+}
+
+export function inTeamsCheck(hero: string): TeamCheck {
+    const teamCheck: TeamCheck = {
+        inMulti: false,
+        inMech: false,
+        inPsyker: false,
+    };
+
+    teamCheck.inMulti = multiHitTeam.includes(hero);
+    teamCheck.inMech = mechTeam.includes(hero);
+    teamCheck.inPsyker = psykerTeam.includes(hero);
+
+    return teamCheck;
+}
