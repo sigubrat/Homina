@@ -199,9 +199,9 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 
 Here’s an example of the bot in action:
 
-![Bot Example](https://via.placeholder.com/800x400?text=Screenshot+Placeholder)
+![season-by-tier example](docs/img/season-by-tier.png)
 
----
+## ![meta team distribution](docs/img/meta-distribution.png)
 
 ## Acknowledgments
 
