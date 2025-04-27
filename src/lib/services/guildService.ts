@@ -1,7 +1,7 @@
 import { HominaTacticusClient } from "@/client";
 import { dbController } from "@/lib";
 import type { GuildRaidResult, Raid } from "@/models/types";
-import { getPlayerName } from "../../../player-mapping";
+import { getPlayerName } from "@/lib/utils";
 import { DamageType, EncounterType, Rarity } from "@/models/enums";
 import type { TeamDistribution } from "@/models/types/TeamDistribution";
 import { inTeamsCheck } from "../utils";
@@ -57,12 +57,12 @@ export class GuildService {
 
         const damagePeruser: GuildRaidResult[] = [];
 
-        entries.forEach((entry) => {
+        for (const entry of entries) {
             // Bombs don't count as damage
             if (!entry.userId || entry.damageType === DamageType.BOMB) {
-                return;
+                continue;
             }
-            const username = getPlayerName(entry.userId);
+            const username = await getPlayerName(entry.userId);
             if (!username) {
                 throw new Error(
                     "Player name missing in the mapping " + entry.userId
@@ -84,8 +84,7 @@ export class GuildService {
                     set: entry.set,
                 });
             }
-        });
-
+        }
         return damagePeruser;
     }
 
@@ -112,10 +111,10 @@ export class GuildService {
 
         const groupedResults: Record<string, GuildRaidResult[]> = {};
 
-        entries.forEach((entry) => {
+        for (const entry of entries) {
             // Bombs don't count as damage
             if (!entry.userId || entry.damageType === DamageType.BOMB) {
-                return;
+                continue;
             }
 
             const boss = entry.type;
@@ -125,7 +124,7 @@ export class GuildService {
                 groupedResults[boss] = [];
             }
 
-            const username = getPlayerName(entry.userId);
+            const username = await getPlayerName(entry.userId);
             if (!username) {
                 throw new Error(
                     "Player name missing in the mapping " + entry.userId
@@ -148,7 +147,7 @@ export class GuildService {
                     set: entry.set,
                 });
             }
-        });
+        }
 
         return groupedResults;
     }
@@ -194,7 +193,7 @@ export class GuildService {
                 otherDamage: 0,
             };
 
-            entries.forEach((entry) => {
+            for (const entry of entries) {
                 // bombs don't count as damage
                 if (
                     !entry.userId ||
@@ -260,7 +259,7 @@ export class GuildService {
                         (totalDistribution.psykerDamage || 0) +
                         entry.damageDealt;
                 }
-            });
+            }
 
             return totalDistribution;
         } catch (error) {

@@ -24,7 +24,7 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .env.local
 
 # player mapping (sensitive)
-player-mapping.ts
+player-mapping.json
 
 # caches
 .eslintcache

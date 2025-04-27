@@ -6,7 +6,7 @@ import {
     EmbedBuilder,
     SlashCommandBuilder,
 } from "discord.js";
-import { getPlayerList } from "../../../player-mapping";
+import { getPlayerList } from "@/lib/utils";
 
 const CHART_WIDTH = 1200;
 const CHART_HEIGHT = 800;
@@ -59,7 +59,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         // Add users that did not participate in the season
-        const players = getPlayerList();
+        const players = await getPlayerList();
         const playersNotParticipated = players.filter(
             (player) => !result.some((entry) => entry.username === player)
         );

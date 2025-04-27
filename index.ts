@@ -52,6 +52,19 @@ const startBot = async () => {
             process.exit(1);
         }
 
+        // Check if player-mapping.json file exists
+        const playerMappingPath = path.join(
+            __dirname,
+            "src/lib/player-mapping/player-mapping.json"
+        );
+
+        if (!fs.existsSync(playerMappingPath)) {
+            console.error(
+                "player-mapping.json file not found. Please ensure the file exists."
+            );
+            process.exit(1);
+        }
+
         const commands = await getAllCommands();
         commands.forEach((command) => {
             client.commands.set(command.data.name, command);
