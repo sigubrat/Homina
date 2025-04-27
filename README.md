@@ -1,5 +1,9 @@
 # homina
 
+<div align="center">
+    <img src="docs/img/homina-logo.png" alt="Homina Logo" width="300" height="auto">
+</div>
+
 **_Homina-homina-homina_**
 
 Blessed is the Machine Spirit.
