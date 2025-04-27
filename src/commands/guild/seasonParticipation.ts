@@ -6,6 +6,7 @@ import {
     EmbedBuilder,
     SlashCommandBuilder,
 } from "discord.js";
+import { getPlayerList } from "../../../player-mapping";
 
 const CHART_WIDTH = 1200;
 const CHART_HEIGHT = 800;
@@ -56,6 +57,22 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             });
             return;
         }
+
+        // Add users that did not participate in the season
+        const players = getPlayerList();
+        const playersNotParticipated = players.filter(
+            (player) => !result.some((entry) => entry.username === player)
+        );
+
+        playersNotParticipated.forEach((player) => {
+            result.push({
+                username: player,
+                totalDamage: 0,
+                totalTokens: 0,
+                boss: "None",
+                set: 0,
+            });
+        });
 
         const chartService = new ChartService(CHART_WIDTH, CHART_HEIGHT);
 
