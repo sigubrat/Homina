@@ -205,7 +205,9 @@ Here’s an example of the bot in action:
 
 ![season-by-tier example](docs/img/season-by-tier.png)
 
-## ![meta team distribution](docs/img/meta-distribution.png)
+![meta team distribution](docs/img/meta-distribution.png)
+
+![inactive members](docs/img/homina-inactivity.png)
 
 ## Acknowledgments
 
