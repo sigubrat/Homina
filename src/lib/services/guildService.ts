@@ -1,10 +1,10 @@
 import { HominaTacticusClient } from "@/client";
 import { dbController } from "@/lib";
 import type { GuildRaidResult, Raid } from "@/models/types";
-import { getPlayerName } from "@/lib/utils";
 import { DamageType, EncounterType, Rarity } from "@/models/enums";
 import type { TeamDistribution } from "@/models/types/TeamDistribution";
 import { inTeamsCheck } from "../utils";
+import type { GuildMemberMapping } from "@/models/types/GuildMemberMapping";
 
 export class GuildService {
     private client: HominaTacticusClient;
@@ -12,6 +12,113 @@ export class GuildService {
 
     constructor() {
         this.client = new HominaTacticusClient();
+    }
+
+    async getGuildId(userId: string): Promise<string | null> {
+        try {
+            const apiKey = await dbController.getUserToken(userId);
+            if (!apiKey) {
+                return null;
+            }
+
+            const resp = await this.client.getGuild(apiKey);
+
+            if (!resp.success || !resp.guild) {
+                return null;
+            }
+
+            return resp.guild.guildId;
+        } catch (error) {
+            console.error("Error fetching guild ID: ", error);
+            return null;
+        }
+    }
+
+    async getGuildMembers(userId: string): Promise<string[] | null> {
+        try {
+            const apiKey = await dbController.getUserToken(userId);
+            if (!apiKey) {
+                return null;
+            }
+
+            const resp = await this.client.getGuild(apiKey);
+
+            if (!resp.success || !resp.guild) {
+                return null;
+            }
+
+            return resp.guild.members.map((member) => member.userId);
+        } catch (error) {
+            console.error("Error fetching guild members: ", error);
+            return null;
+        }
+    }
+
+    async getPlayerList(guildId: string): Promise<GuildMemberMapping[] | null> {
+        try {
+            const members = await dbController.getGuildMembersByGuildId(
+                guildId
+            );
+            if (!members) {
+                return null;
+            }
+
+            return members;
+        } catch (error) {
+            console.error("Error fetching player list: ", error);
+            return null;
+        }
+    }
+
+    async updateGuildMembers(
+        guildId: string,
+        members: GuildMemberMapping[]
+    ): Promise<number> {
+        let updatedCount = 0;
+        try {
+            // Find out if any guild members are no longer in the guild and therefore need to be deleted
+            const guildMembers = await dbController.getGuildMembersByGuildId(
+                guildId
+            );
+
+            if (!guildMembers) {
+                return -1;
+            }
+
+            const guildMemberIds = guildMembers.map((member) => member.userId);
+            const membersToDelete = guildMemberIds.filter(
+                (id) => !members.some((member) => member.userId === id)
+            );
+
+            for (const id of membersToDelete) {
+                const result = await dbController.deletePlayerName(id, guildId);
+                console.log(
+                    `Deleted player ${id} from guild ${guildId}: ${result}`
+                );
+                if (!result) {
+                    continue;
+                }
+            }
+
+            // Update the new guild members
+            for (const member of members) {
+                const result = await dbController.updatePlayerName(
+                    member.userId,
+                    member.username,
+                    guildId
+                );
+                if (!result) {
+                    continue;
+                }
+
+                updatedCount += 1;
+            }
+
+            return updatedCount;
+        } catch (error) {
+            console.error("Error updating guild members: ", error);
+            return -1;
+        }
     }
 
     async getGuildSeasons(userId: string): Promise<number[] | null> {
@@ -62,7 +169,7 @@ export class GuildService {
             if (!entry.userId || entry.damageType === DamageType.BOMB) {
                 continue;
             }
-            const username = await getPlayerName(entry.userId);
+            const username = await dbController.getPlayerName(entry.userId);
             if (!username) {
                 throw new Error(
                     "Player name missing in the mapping " + entry.userId
@@ -124,7 +231,7 @@ export class GuildService {
                 groupedResults[boss] = [];
             }
 
-            const username = await getPlayerName(entry.userId);
+            const username = await dbController.getPlayerName(entry.userId);
             if (!username) {
                 throw new Error(
                     "Player name missing in the mapping " + entry.userId

@@ -139,37 +139,3 @@ export function inTeamsCheck(hero: string): TeamCheck {
 
     return teamCheck;
 }
-
-let playerMappingCache: Record<string, string> = {};
-
-async function loadPlayerMapping(
-    forceReload = false
-): Promise<Record<string, string>> {
-    if (forceReload || Object.keys(playerMappingCache).length === 0) {
-        console.log("Loading player mapping from file...");
-        const filePath = path.join(
-            __dirname,
-            "/player-mapping/player-mapping.json"
-        );
-        try {
-            const data = await fs.readFile(filePath, "utf-8");
-            playerMappingCache = JSON.parse(data);
-        } catch (error) {
-            console.error("Failed to load player mapping:", error);
-            playerMappingCache = {}; // Fallback to an empty object
-        }
-    }
-    return playerMappingCache;
-}
-
-export async function getPlayerName(
-    playerId: string
-): Promise<string | undefined> {
-    const playerMapping = await loadPlayerMapping();
-    return playerMapping[playerId];
-}
-
-export async function getPlayerList(): Promise<string[]> {
-    const playerMapping = await loadPlayerMapping();
-    return Object.values(playerMapping);
-}

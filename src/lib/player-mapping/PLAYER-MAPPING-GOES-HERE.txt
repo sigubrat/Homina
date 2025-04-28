@@ -1,1 +1,0 @@
-Create a new file in the same folder with the name: player-mapping.json

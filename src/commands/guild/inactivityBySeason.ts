@@ -1,5 +1,4 @@
 import { GuildService } from "@/lib/services/GuildService";
-import { getPlayerList } from "@/lib/utils";
 import { Rarity } from "@/models/enums";
 import type { InactiveUser } from "@/models/types/InactiveUser";
 import {
@@ -95,13 +94,33 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         // Then find out who did not participate at all
-        const players = await getPlayerList();
+        const guildId = await service.getGuildId(interaction.user.id);
+        if (!guildId) {
+            await interaction.editReply({
+                content:
+                    "Could not find your guild's ID. Please make sure you have registered your API-token",
+            });
+            return;
+        }
+        const players = await service.getPlayerList(guildId);
+        if (!players || players.length === 0) {
+            await interaction.editReply({
+                content:
+                    "No players found in the guild. Please make sure you have registered your API-token",
+            });
+            return;
+        }
+
         const playersNotParticipated = players.filter(
-            (player) => !result.some((entry) => entry.username === player)
+            (player) =>
+                !result.some((entry) => entry.username === player.username)
         );
 
         for (const player of playersNotParticipated) {
-            inactiveUsers.push({ username: player, tokens: 0 } as InactiveUser);
+            inactiveUsers.push({
+                username: player.username,
+                tokens: 0,
+            } as InactiveUser);
         }
 
         if (inactiveUsers.length === 0) {

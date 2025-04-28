@@ -32,3 +32,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         -   `season` (required): The season to check (minimum value: 70).
         -   `threshold` (optional): The minimum number of tokens required to be considered active (default: 1, minimum value: 1).
 -   Added this changelog. Future updates will be explained here.
+
+## [0.5.0] - 2025-04-28
+
+### Changed
+
+Reworked entirely how player-mappings are handled. Instead of a stupid JSON-file, they are now stored in the database. This means that the bot can be used without users running their own instance :tada: Hopefully Snowprint changes the API to include the username in their API, but this works until then.
+
+### Added
+
+-   A new `/get-member-ids` command that returns a JSON file with your guildmembers' ids and a placeholder value for you to fill out.
+-   A new `/update-members`command where you can update your guild's members by providing a JSON file containing userId and username mappings. See the README if you're unsure on how to do this

@@ -6,7 +6,6 @@ import {
     EmbedBuilder,
     SlashCommandBuilder,
 } from "discord.js";
-import { getPlayerList } from "@/lib/utils";
 
 const CHART_WIDTH = 1200;
 const CHART_HEIGHT = 800;
@@ -59,14 +58,30 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         // Add users that did not participate in the season
-        const players = await getPlayerList();
+        const guildId = await service.getGuildId(interaction.user.id);
+        if (!guildId) {
+            await interaction.editReply({
+                content:
+                    "Could not find your guild's ID. Please make sure you have registered your API-token",
+            });
+            return;
+        }
+        const players = await service.getPlayerList(guildId);
+        if (!players || players.length === 0) {
+            await interaction.editReply({
+                content:
+                    "No players found in the guild. Please make sure you have registered your API-token",
+            });
+            return;
+        }
         const playersNotParticipated = players.filter(
-            (player) => !result.some((entry) => entry.username === player)
+            (player) =>
+                !result.some((entry) => entry.username === player.username)
         );
 
         playersNotParticipated.forEach((player) => {
             result.push({
-                username: player,
+                username: player.username,
                 totalDamage: 0,
                 totalTokens: 0,
                 boss: "None",

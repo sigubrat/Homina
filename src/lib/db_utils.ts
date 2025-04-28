@@ -1,5 +1,3 @@
-import { Sequelize } from "sequelize";
-
 export interface DbTestResult {
     isSuccess: boolean;
     message?: string;

@@ -78,19 +78,26 @@ DB_PWD=your-database-password (use " " if no password)
 
 ## Player mapping
 
-The public Tacticus API provided by Snowprint does not, as of writing this, include the usernames of the user—only their id. Therefore we need to do some mapping on our own so that we can get pretty outputs for our guild data. This unfortunately also means that each guild must for the time being host their own discord bot. I am working on a solution where someone can upload a mapping config, but neither option is very pleasant. Hopefully Snowprint change their mind and add usernames to the guild data on members.
+The public Tacticus API provided by Snowprint does not, as of writing this, include the usernames of the user—only their id. Therefore we need to do some mapping on our own so that we can get pretty outputs for our guild data. Hopefully Snowprint change their mind and add usernames to the guild data on members.
 
 For now:
 
--   add the file `src/lib/player-mapping/player-mapping.json`.
-    -   You should see a folder named `player-mapping/`with a `PLAYER-MAPPING-GOES-HERE.txt` file showing you where to place it. The txt file can be deleted.
--   Add the mappings in this format with your own data:
--   _I am sorry for how troublesome this is. I will try my best to make it easier._
+1.  Use the `/get-member-ids` command and save the JSON file to your device
+
+This file contains the id of every member in your guild and a placeholder for their username. See the [example](#json-placeholder-example) below.
+
+2. Open the game, click to the GUILDS tab, press your guild and find the Members list.
+
+3. Replace the `replace-with-username` with the usernames of your guild members **in the order that they're displayed in the app** and save your changes. You can do this by simply opening the file you saved with any editor of your choice. NB! Make sure you don't have a comma after the last line.
+
+4. Use the `/update-members` command and attach the file you saved.
+
+### JSON Placeholder Example
 
 ```json
 {
-    "user-id-1": "username",
-    "user-id-2": "username"
+    "user-id-example-1": "replace-with-username",
+    "user-id-example-2": "replace-with-username"
 }
 ```
 
@@ -115,12 +122,6 @@ To install dependencies:
 
 ```bash
 bun install
-```
-
-To create database tables:
-
-```bash
-bun run createTables
 ```
 
 To deploy commands so that they're available in Discord:
@@ -149,11 +150,14 @@ bun run testDb
 
 The bot, as of writing this, comes with the following commands:
 
--   Register - Register your api token to your discord user id. This is stored in the database for lookups in the other commands.
--   Seasons - Returns the seasons that have stored data for your guild
--   Season participation - Returns a graph displaying the total damage done in guild raid and total tokens used for a given season
--   Season by tier - Returns graphs displaying the total damage done to specific guild bosses of the given season, tokens used and the mean damage per token
--   Meta team distribution - Calculates the distribution of the 3 main meta teams used in tacticus over a season and the distribution of damage dealt by the meta teams. Entries that don't fit into a meta team category is grouped as 'other'
+-   `/register` - Register your api token to your discord user id. This is stored in the database for lookups in the other commands.
+-   `/get-member-ids` - Get a JSON file of your guild members' guild-ids
+-   `/update-members` - Update the userId-username mappings of your guild members
+-   `/seasons` - Returns the seasons that have stored data for your guild
+-   `/season-participation` - Returns a graph displaying the total damage done in guild raid and total tokens used for a given season
+-   `/season-by-tier` - Returns graphs displaying the total damage done to specific guild bosses of the given season, tokens used and the mean damage per token
+-   `/meta-team-distribution` - Calculates the distribution of the 3 main meta teams used in tacticus over a season and the distribution of damage dealt by the meta teams. Entries that don't fit into a meta team category is grouped as 'other'
+-   `/inactivity-by-season`- Find out who did not use the given number of tokens for a given season.
 
 ## Contributing
 
@@ -184,18 +188,7 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 
 ## Common Issues
 
-### Database Connection Errors
-
--   Ensure PostgreSQL is running and the credentials in the `.env` file are correct.
--   Run the db test script: `bun run testDb`
--   Verify that the database exists by running:
-    ```bash
-    psql -l
-    ```
-
-### Missing Environment Variables
-
--   Double-check that all required variables are present in the `.env` file.
+-   Updating your guild member mappings - Make sure the JSON is valid and that the last line in the object does not have a trailing comma. There are websites that validate your JSON if you're unsure.
 
 ---
 
