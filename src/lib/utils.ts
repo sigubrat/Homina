@@ -2,6 +2,7 @@ import * as fs from "fs/promises";
 import * as path from "path";
 import { Collection } from "discord.js";
 import { HominaTacticusClient } from "@/client";
+import type { GuildRaidResult } from "@/models/types";
 
 async function getCommands(
     commandsPath: string
@@ -138,4 +139,12 @@ export function inTeamsCheck(hero: string): TeamCheck {
     teamCheck.inPsyker = psykerTeam.includes(hero);
 
     return teamCheck;
+}
+
+// Nb! Relies on the user providing sorted data
+export function getTopDamageDealers(sortedData: GuildRaidResult[]) {
+    return sortedData.map((player, index) => {
+        const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : "🥉";
+        return `${medal} ${player.username}: ${player.totalDamage}`;
+    });
 }

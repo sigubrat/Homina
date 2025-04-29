@@ -6,6 +6,7 @@ import {
     EmbedBuilder,
     SlashCommandBuilder,
 } from "discord.js";
+import { getTopDamageDealersLines } from "@/lib/utils";
 
 const CHART_WIDTH = 1200;
 const CHART_HEIGHT = 800;
@@ -89,10 +90,17 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             });
         });
 
+        const sortedResult = result.sort(
+            (a, b) => b.totalDamage - a.totalDamage
+        );
+
+        // Get the top 3 damage dealers)
+        const topDamageDealers = getTopDamageDealersLines(sortedResult);
+
         const chartService = new ChartService(CHART_WIDTH, CHART_HEIGHT);
 
         const chartBuffer = await chartService.createSeasonDamageChart(
-            result.sort((a, b) => b.totalDamage - a.totalDamage),
+            sortedResult,
             `Damage dealt in season ${season}`
         );
 
@@ -106,7 +114,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setDescription(
                 "The graph shows the contribution of each member to a guild raid season:\n" +
                     "- **Bar chart**: Damage dealt (left y-axis)\n" +
-                    "- **Line chart**: Total tokens used (right y-axis)"
+                    "- **Line chart**: Total tokens used (right y-axis)\n" +
+                    `\n**Top ${topDamageDealers.length} Damage Dealers:**
+                    ${topDamageDealers.join("\n")}`
             )
             .setImage("attachment://graph.png");
 
