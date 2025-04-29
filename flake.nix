@@ -16,16 +16,6 @@
             pkgs.bun
             pkgs.postgresql
           ];
-
-          shellHook = ''
-            echo "Entering Homina dev shell…"
-            export BOT_TOKEN?=""
-            export CLIENT_ID?=""
-            export GUILD_ID?=""
-            export DB_NAME?=""
-            export DB_USER?=""
-            export DB_PWD?=""
-          '';
         };
       }
     );
