@@ -13,7 +13,7 @@ export const cooldown = 5;
 export const data = new SlashCommandBuilder()
     .setName("inactivity-by-season")
     .setDescription(
-        "Find out who did not use the required number of tokens in a season or see how many tokens used by setting a high threshold"
+        "Find out who did not use the required number of tokens in a season"
     )
     .addNumberOption((option) => {
         return option
