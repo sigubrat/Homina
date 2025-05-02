@@ -1,4 +1,5 @@
 import { GuildService } from "@/lib/services/GuildService.ts";
+import { sortInactiveUsersDesc } from "@/lib/utils";
 import { Rarity } from "@/models/enums";
 import type { InactiveUser } from "@/models/types/InactiveUser";
 import {
@@ -83,7 +84,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         // Find out who participated but did not use the required number of tokens
-        const inactiveUsers: InactiveUser[] = [];
+        let inactiveUsers: InactiveUser[] = [];
         for (const entry of result) {
             if (entry.totalTokens < threshold) {
                 inactiveUsers.push({
@@ -130,7 +131,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
-        inactiveUsers.sort((a, b) => b.tokens - a.tokens);
+        inactiveUsers = sortInactiveUsersDesc(inactiveUsers);
 
         // Create a nice embed table with the results
         const table = inactiveUsers

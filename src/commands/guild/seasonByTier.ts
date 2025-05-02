@@ -1,5 +1,6 @@
 import { ChartService } from "@/lib/services/ChartService";
 import { GuildService } from "@/lib/services/GuildService.ts";
+import { sortGuildRaidResultDesc } from "@/lib/utils";
 import { Rarity } from "@/models/enums";
 import {
     AttachmentBuilder,
@@ -82,7 +83,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             async ([bossName, data]) => {
                 const chartBuffer =
                     await chartService.createSeasonDamageChartAvg(
-                        data.sort((a, b) => b.totalDamage - a.totalDamage),
+                        sortGuildRaidResultDesc(data),
                         `Damage dealt in season ${season} - ${
                             rarity[0] ? rarity[0].toUpperCase() : " "
                         }${(data[0] ? data[0].set : 0) + 1} ${bossName}`
