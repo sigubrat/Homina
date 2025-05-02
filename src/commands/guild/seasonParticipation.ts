@@ -94,7 +94,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             (a, b) => b.totalDamage - a.totalDamage
         );
 
-        // Get the top 3 damage dealers)
         const topDamageDealers = getTopNDamageDealers(sortedResult, 3);
 
         const chartService = new ChartService(CHART_WIDTH, CHART_HEIGHT);
