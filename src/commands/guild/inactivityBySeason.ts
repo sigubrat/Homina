@@ -130,6 +130,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
+        inactiveUsers.sort((a, b) => b.tokens - a.tokens);
+
         // Create a nice embed table with the results
         const table = inactiveUsers
             .map(
