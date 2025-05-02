@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction } from "discord.js";
-import { GuildService } from "@/lib/services/GuildService";
+import { GuildService } from "@/lib/services/GuildService.ts";
 import { ChartService } from "@/lib/services/ChartService";
 import {
     AttachmentBuilder,

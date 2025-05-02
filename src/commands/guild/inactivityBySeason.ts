@@ -1,4 +1,4 @@
-import { GuildService } from "@/lib/services/GuildService";
+import { GuildService } from "@/lib/services/GuildService.ts";
 import { Rarity } from "@/models/enums";
 import type { InactiveUser } from "@/models/types/InactiveUser";
 import {
