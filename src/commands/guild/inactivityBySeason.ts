@@ -25,7 +25,7 @@ export const data = new SlashCommandBuilder()
         return option
             .setName("threshold")
             .setDescription(
-                "The minimum number of tokens used to be considered active in your guild (Default: 1)"
+                "The minimum number of tokens used to be considered active in your guild (Default: 1). Set this unreasonably high to just see the number of tokens used by each guild member."
             )
             .setRequired(false)
             .setMinValue(1);
