@@ -1,4 +1,4 @@
-import { GuildService } from "@/lib/services/GuildService";
+import { GuildService } from "@/lib/services/GuildService.ts";
 import type { GuildMemberMapping } from "@/models/types/GuildMemberMapping";
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 

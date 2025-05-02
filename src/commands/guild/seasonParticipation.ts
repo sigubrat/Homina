@@ -1,12 +1,12 @@
 import { ChatInputCommandInteraction } from "discord.js";
-import { GuildService } from "@/lib/services/GuildService";
+import { GuildService } from "@/lib/services/GuildService.ts";
 import { ChartService } from "@/lib/services/ChartService";
 import {
     AttachmentBuilder,
     EmbedBuilder,
     SlashCommandBuilder,
 } from "discord.js";
-import { getTopNDamageDealers } from "@/lib/utils";
+import { getTopNDamageDealers, sortGuildRaidResultDesc } from "@/lib/utils";
 
 const CHART_WIDTH = 1200;
 const CHART_HEIGHT = 800;
@@ -90,9 +90,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             });
         });
 
-        const sortedResult = result.sort(
-            (a, b) => b.totalDamage - a.totalDamage
-        );
+        const sortedResult = sortGuildRaidResultDesc(result);
 
         const topDamageDealers = getTopNDamageDealers(sortedResult, 3);
 
@@ -114,8 +112,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 "The graph shows the contribution of each member to a guild raid season:\n" +
                     "- **Bar chart**: Damage dealt (left y-axis)\n" +
                     "- **Line chart**: Total tokens used (right y-axis)\n" +
-                    `\n**Top ${topDamageDealers.length} Damage Dealers:**
-                    ${topDamageDealers.join("\n")}`
+                    `**Top ${topDamageDealers.length} Damage Dealers:**\n` +
+                    `${topDamageDealers.join("\n")}`
             )
             .setImage("attachment://graph.png");
 

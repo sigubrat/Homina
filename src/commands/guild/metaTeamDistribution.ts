@@ -1,5 +1,5 @@
 import { ChartService } from "@/lib/services/ChartService";
-import { GuildService } from "@/lib/services/GuildService";
+import { GuildService } from "@/lib/services/GuildService.ts";
 import { Rarity } from "@/models/enums";
 import {
     AttachmentBuilder,

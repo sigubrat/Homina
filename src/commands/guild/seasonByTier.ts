@@ -1,5 +1,6 @@
 import { ChartService } from "@/lib/services/ChartService";
-import { GuildService } from "@/lib/services/GuildService";
+import { GuildService } from "@/lib/services/GuildService.ts";
+import { sortGuildRaidResultDesc } from "@/lib/utils";
 import { Rarity } from "@/models/enums";
 import {
     AttachmentBuilder,
@@ -82,7 +83,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             async ([bossName, data]) => {
                 const chartBuffer =
                     await chartService.createSeasonDamageChartAvg(
-                        data.sort((a, b) => b.totalDamage - a.totalDamage),
+                        sortGuildRaidResultDesc(data),
                         `Damage dealt in season ${season} - ${
                             rarity[0] ? rarity[0].toUpperCase() : " "
                         }${(data[0] ? data[0].set : 0) + 1} ${bossName}`
@@ -102,7 +103,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setColor(0x0099ff)
             .setTitle(`Damage dealt in season ${season}`)
             .setDescription(
-                "The graph shows the contribution of each member to a guild raid season:\n" +
+                "The graph shows the damage dealt to individual guild bosses (does not include damage or tokens to primes):\n" +
                     "- **Bar chart**: Damage dealt (left y-axis)\n" +
                     "- **Line chart**: Total tokens used (right y-axis)"
             )

@@ -3,6 +3,7 @@ import * as path from "path";
 import { Collection } from "discord.js";
 import { HominaTacticusClient } from "@/client";
 import type { GuildRaidResult } from "@/models/types";
+import type { InactiveUser } from "@/models/types/InactiveUser";
 
 async function getCommands(
     commandsPath: string
@@ -148,4 +149,12 @@ export function getTopNDamageDealers(sortedData: GuildRaidResult[], n: number) {
         const formattedDamage = player.totalDamage.toLocaleString();
         return `${medal} ${player.username}: ${formattedDamage}`;
     });
+}
+
+export function sortGuildRaidResultDesc(data: GuildRaidResult[]) {
+    return data.sort((a, b) => b.totalDamage - a.totalDamage);
+}
+
+export function sortInactiveUsersDesc(data: InactiveUser[]) {
+    return data.sort((a, b) => b.tokens - a.tokens);
 }
