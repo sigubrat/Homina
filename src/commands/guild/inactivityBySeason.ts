@@ -13,7 +13,7 @@ export const cooldown = 5;
 export const data = new SlashCommandBuilder()
     .setName("inactivity-by-season")
     .setDescription(
-        "Find out who did not use the required number of tokens in a season"
+        "Find out who did not use the required number of tokens in a season or see how many tokens used by setting a high threshold"
     )
     .addNumberOption((option) => {
         return option
@@ -26,7 +26,7 @@ export const data = new SlashCommandBuilder()
         return option
             .setName("threshold")
             .setDescription(
-                "The minimum number of tokens used to be considered active in your guild (Default: 1). Set this unreasonably high to just see the number of tokens used by each guild member."
+                "The minimum number of tokens used to be considered active in your guild (Default: 1)."
             )
             .setRequired(false)
             .setMinValue(1);
