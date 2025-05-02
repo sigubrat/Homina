@@ -102,7 +102,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setColor(0x0099ff)
             .setTitle(`Damage dealt in season ${season}`)
             .setDescription(
-                "The graph shows the contribution of each member to a guild raid season:\n" +
+                "The graph shows the damage dealt to individual guild bosses (does not include damage or tokens to primes):\n" +
                     "- **Bar chart**: Damage dealt (left y-axis)\n" +
                     "- **Line chart**: Total tokens used (right y-axis)"
             )
