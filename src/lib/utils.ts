@@ -142,9 +142,10 @@ export function inTeamsCheck(hero: string): TeamCheck {
 }
 
 // Nb! Relies on the user providing sorted data
-export function getTopDamageDealers(sortedData: GuildRaidResult[]) {
-    return sortedData.map((player, index) => {
+export function getTopNDamageDealers(sortedData: GuildRaidResult[], n: number) {
+    return sortedData.slice(0, n).map((player, index) => {
         const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : "🥉";
-        return `${medal} ${player.username}: ${player.totalDamage}`;
+        const formattedDamage = player.totalDamage.toLocaleString();
+        return `${medal} ${player.username}: ${formattedDamage}`;
     });
 }

@@ -6,7 +6,7 @@ import {
     EmbedBuilder,
     SlashCommandBuilder,
 } from "discord.js";
-import { getTopDamageDealersLines } from "@/lib/utils";
+import { getTopNDamageDealers } from "@/lib/utils";
 
 const CHART_WIDTH = 1200;
 const CHART_HEIGHT = 800;
@@ -95,7 +95,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         );
 
         // Get the top 3 damage dealers)
-        const topDamageDealers = getTopDamageDealersLines(sortedResult);
+        const topDamageDealers = getTopNDamageDealers(sortedResult, 3);
 
         const chartService = new ChartService(CHART_WIDTH, CHART_HEIGHT);
 
