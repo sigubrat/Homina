@@ -12,6 +12,25 @@ This is a simple Discord bot in early access, intended to provide guilds with us
 
 To invite the bot to your server, click [here](https://discord.com/oauth2/authorize?client_id=1351837170498801714)
 
+The discord support server can be found [here](https://discord.gg/FajYxuWY9b)
+
+## Features
+
+The bot, as of writing this, comes with the following commands:
+
+-   `/help` - Get useful information about the bot
+-   `/register` - Register your api token to your discord user id. This is stored in the database for lookups in the other commands.
+-   `/get-member-ids` - Get a JSON file of your guild members' guild-ids
+-   `/update-members` - Update the userId-username mappings of your guild members
+-   `/seasons` - Returns the seasons that have stored data for your guild
+-   `/season-participation` - Returns a graph displaying the total damage done in guild raid and total tokens used for a given season
+-   `/season-by-tier` - Returns graphs displaying the total damage done to specific guild bosses of the given season, tokens used and the mean damage per token
+-   `/meta-team-distribution` - Calculates the distribution of the 3 main meta teams used in tacticus over a season and the distribution of damage dealt by the meta teams. Entries that don't fit into a meta team category is grouped as 'other'
+-   `/inactivity-by-season`- Find out who did not use the given number of tokens for a given season.
+-   `/delete` - Deletes your discord id and tacticus api token from the database (effectively undo `/register`)
+
+This should be all the information you need if you just want to invite the bot to your server. Further information will be for those who want technical information about the bot.
+
 ---
 
 ## Stack
@@ -152,21 +171,6 @@ bun run testDb
 ```
 
 ---
-
-## Features
-
-The bot, as of writing this, comes with the following commands:
-
--   `/help` - Get useful information about the bot
--   `/register` - Register your api token to your discord user id. This is stored in the database for lookups in the other commands.
--   `/get-member-ids` - Get a JSON file of your guild members' guild-ids
--   `/update-members` - Update the userId-username mappings of your guild members
--   `/seasons` - Returns the seasons that have stored data for your guild
--   `/season-participation` - Returns a graph displaying the total damage done in guild raid and total tokens used for a given season
--   `/season-by-tier` - Returns graphs displaying the total damage done to specific guild bosses of the given season, tokens used and the mean damage per token
--   `/meta-team-distribution` - Calculates the distribution of the 3 main meta teams used in tacticus over a season and the distribution of damage dealt by the meta teams. Entries that don't fit into a meta team category is grouped as 'other'
--   `/inactivity-by-season`- Find out who did not use the given number of tokens for a given season.
--   `/delete` - Deletes your discord id and tacticus api token from the database (effectively undo `/register`)
 
 ## Contributing
 
