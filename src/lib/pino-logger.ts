@@ -9,7 +9,7 @@ const fileTransport = pino.transport({
         },
         {
             target: "pino/file",
-            options: { destination: ".logs/error.log" },
+            options: { destination: "./logs/error.log" },
             level: "error",
         },
     ],
