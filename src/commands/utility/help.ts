@@ -1,4 +1,9 @@
-import { EmbedBuilder, MessageFlags, SlashCommandBuilder } from "discord.js";
+import {
+    ChatInputCommandInteraction,
+    EmbedBuilder,
+    MessageFlags,
+    SlashCommandBuilder,
+} from "discord.js";
 
 export const cooldown = 5; // Cooldown in seconds
 
@@ -6,9 +11,10 @@ export const data = new SlashCommandBuilder()
     .setName("help")
     .setDescription("Get an overview of the bot commands");
 
-export async function execute(interaction: any) {
+export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
+    // @ts-expect-error - This works because our client is extended with commands (see index.ts in root)
     const commands = interaction.client.commands.map((command: any) => {
         return `* \`/${command.data.name}\` - ${command.data.description}`;
     });

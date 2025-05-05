@@ -1,6 +1,10 @@
-import { MessageFlags, SlashCommandBuilder } from "discord.js";
+import {
+    ChatInputCommandInteraction,
+    MessageFlags,
+    SlashCommandBuilder,
+} from "discord.js";
 import { testApiToken } from "../../lib/utils";
-import { dbController } from "@/lib";
+import { dbController, logger } from "@/lib";
 
 export const cooldown = 5; // Cooldown in seconds
 
@@ -16,10 +20,16 @@ export const data = new SlashCommandBuilder()
     )
     .setDescription("Register your account to use the bot");
 
-export async function execute(interaction: any) {
+export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const apiToken = interaction.options.getString("api-token");
+    if (!apiToken) {
+        await interaction.editReply({
+            content: "API token is required.",
+        });
+        return;
+    }
 
     let result = await testApiToken(apiToken);
 
@@ -27,12 +37,18 @@ export async function execute(interaction: any) {
         result = await dbController.registerUser(interaction.user.id, apiToken);
     }
 
+    logger.info(
+        `User ${interaction.user.username} succesfully registered a token`
+    );
+
     const response = result
         ? "Token succesfully registered to your user"
         : "Token is invalid or does not have the required permissions";
 
     await interaction.editReply({
-        flags: MessageFlags.Ephemeral,
         content: response,
+        options: {
+            flags: MessageFlags.Ephemeral,
+        },
     });
 }
