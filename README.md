@@ -10,6 +10,8 @@ Blessed is the Machine Spirit.
 
 This is a simple Discord bot in early access, intended to provide guilds with useful information regarding its members, guild, and guild raid information. It will be updated as Snowprint updates their public API.
 
+To invite the bot to your server, click [here](https://discord.com/oauth2/authorize?client_id=1351837170498801714)
+
 ---
 
 ## Stack
@@ -155,6 +157,7 @@ bun run testDb
 
 The bot, as of writing this, comes with the following commands:
 
+-   `/help` - Get useful information about the bot
 -   `/register` - Register your api token to your discord user id. This is stored in the database for lookups in the other commands.
 -   `/get-member-ids` - Get a JSON file of your guild members' guild-ids
 -   `/update-members` - Update the userId-username mappings of your guild members
@@ -163,6 +166,7 @@ The bot, as of writing this, comes with the following commands:
 -   `/season-by-tier` - Returns graphs displaying the total damage done to specific guild bosses of the given season, tokens used and the mean damage per token
 -   `/meta-team-distribution` - Calculates the distribution of the 3 main meta teams used in tacticus over a season and the distribution of damage dealt by the meta teams. Entries that don't fit into a meta team category is grouped as 'other'
 -   `/inactivity-by-season`- Find out who did not use the given number of tokens for a given season.
+-   `/delete` - Deletes your discord id and tacticus api token from the database (effectively undo `/register`)
 
 ## Contributing
 
