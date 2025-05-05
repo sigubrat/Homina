@@ -114,6 +114,11 @@ This file contains the id of every member in your guild and a placeholder for th
     bun run createTables
     ```
 
+## Logging
+
+1. Create the folder `logs` in the root of the project
+2. Create the log files `app.log` and `error.log`
+
 ---
 
 ## Before running the bot

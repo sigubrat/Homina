@@ -1,7 +1,7 @@
 import { Client, GatewayIntentBits, Collection } from "discord.js";
 import * as path from "path";
 import * as fs from "fs";
-import { dbController } from "@/lib";
+import { dbController, logger } from "@/lib";
 import { getAllCommands } from "@/lib/utils";
 
 export class IClient extends Client {
@@ -77,7 +77,7 @@ const startBot = async () => {
 
         // Log in to Discord
         await client.login(token);
-        console.log("Bot logged in successfully.");
+        logger.info("Bot logged in successfully.");
     } catch (error) {
         console.error("Error starting the bot:", error);
         process.exit(1); // Exit the process if there's a critical error
