@@ -109,6 +109,22 @@ export class DatabaseController {
         }
     }
 
+    public async deleteUser(userId: string): Promise<number | undefined> {
+        try {
+            const res = await this.sequelize.models[
+                "discordApiTokenMappings"
+            ]?.destroy({
+                where: {
+                    userId: userId,
+                },
+            });
+            return res;
+        } catch (error) {
+            console.error("Error deleting user from database:", error);
+            return undefined;
+        }
+    }
+
     public async getUserToken(userId: string): Promise<string | null> {
         try {
             const result = await this.sequelize.models[
