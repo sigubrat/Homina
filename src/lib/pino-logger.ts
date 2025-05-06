@@ -16,7 +16,7 @@ const fileTransport = pino.transport({
         {
             target: "pino-roll",
             options: {
-                file: "./logs/errors/error",
+                file: "./logs/error/error",
                 frequency: "daily",
                 extension: ".log",
                 dateFormat: "dd-MM-yyyy",
