@@ -1,4 +1,4 @@
-export interface InactiveUser {
+export interface TokensUsed {
     username: string;
     tokens: number;
 }

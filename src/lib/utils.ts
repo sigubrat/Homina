@@ -3,7 +3,7 @@ import * as path from "path";
 import { Collection } from "discord.js";
 import { HominaTacticusClient } from "@/client";
 import type { GuildRaidResult } from "@/models/types";
-import type { InactiveUser } from "@/models/types/InactiveUser";
+import type { TokensUsed } from "@/models/types/TokensUsed";
 
 async function getCommands(
     commandsPath: string
@@ -157,6 +157,6 @@ export function sortGuildRaidResultDesc(data: GuildRaidResult[]) {
     return data.sort((a, b) => b.totalDamage - a.totalDamage);
 }
 
-export function sortInactiveUsersDesc(data: InactiveUser[]) {
+export function sortTokensUsed(data: TokensUsed[]) {
     return data.sort((a, b) => b.tokens - a.tokens);
 }

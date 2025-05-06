@@ -23,6 +23,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.8.0] - 2025-05-06
+
+Minor bugfixes and a new command
+
+## Added
+
+-   `/tokens-by-season` command that returns a list of tokens used by each member in a given guild season. This is pretty much the same as `/inactivity-by-season` with a very high threshold, but is more intuitive as its own command.
+
 ## [0.7.2] - 2025-05-06
 
 Refactors how canvases are used to save memory and adds a background and some padding to charts.

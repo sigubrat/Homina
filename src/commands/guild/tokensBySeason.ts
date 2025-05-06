@@ -12,9 +12,9 @@ import {
 export const cooldown = 5;
 
 export const data = new SlashCommandBuilder()
-    .setName("inactivity-by-season")
+    .setName("tokens-by-season")
     .setDescription(
-        "Find out who did not use the required number of tokens in a season"
+        "Find out how many tokens each member has used in a specific season"
     )
     .addNumberOption((option) => {
         return option
@@ -22,15 +22,6 @@ export const data = new SlashCommandBuilder()
             .setDescription("The season to check")
             .setRequired(true)
             .setMinValue(70);
-    })
-    .addNumberOption((option) => {
-        return option
-            .setName("threshold")
-            .setDescription(
-                "The minimum number of tokens used to be considered active in your guild (Default: 1)."
-            )
-            .setRequired(false)
-            .setMinValue(1);
     })
     .addStringOption((option) => {
         return option
@@ -50,7 +41,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 
     const season = interaction.options.getNumber("season") as number;
-    const threshold = interaction.options.getNumber("threshold") || 1;
     const rarity = interaction.options.getString("rarity") as
         | Rarity
         | undefined;
@@ -66,7 +56,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const service = new GuildService();
 
     logger.info(
-        `${interaction.user.username} attempting to use /inactivity-by-season for season ${season}`
+        `${interaction.user.username} attempting to use /tokens-by-season for season ${season}`
     );
 
     try {
@@ -89,14 +79,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         // Find out who participated but did not use the required number of tokens
-        let inactiveUsers: TokensUsed[] = [];
+        let tokensUsed: TokensUsed[] = [];
         for (const entry of result) {
-            if (entry.totalTokens < threshold) {
-                inactiveUsers.push({
-                    username: entry.username,
-                    tokens: entry.totalTokens,
-                } as TokensUsed);
-            }
+            tokensUsed.push({
+                username: entry.username,
+                tokens: entry.totalTokens,
+            } as TokensUsed);
         }
 
         // Then find out who did not participate at all
@@ -123,23 +111,16 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         );
 
         for (const player of playersNotParticipated) {
-            inactiveUsers.push({
+            tokensUsed.push({
                 username: player.username,
                 tokens: 0,
             } as TokensUsed);
         }
 
-        if (inactiveUsers.length === 0) {
-            await interaction.editReply({
-                content: `All users in the guild have used at least ${threshold} tokens in season ${season}.`,
-            });
-            return;
-        }
-
-        inactiveUsers = sortTokensUsed(inactiveUsers);
+        tokensUsed = sortTokensUsed(tokensUsed);
 
         // Create a nice embed table with the results
-        const table = inactiveUsers
+        const table = tokensUsed
             .map(
                 (user) =>
                     `\`${user.username}\` - ${user.tokens} token${
@@ -149,16 +130,15 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .join("\n");
 
         const embed = new EmbedBuilder()
-            .setTitle(`Inactive users in season ${season}`)
+            .setTitle(`Tokens used in season ${season}`)
             .setColor(0x0099ff)
             .setDescription(
-                "The number of players who did not use the required number of tokens:\n" +
-                    `- **Threshold**: ${threshold} token(s)\n` + // Ensure no extra spaces or indentation
+                `Tokens used by each player\n` +
                     `- **Rarity:** ${rarity ?? "All Rarities"}\n` // Keep this aligned with the previous line
             )
             .setFields([
                 {
-                    name: "Inactive Users",
+                    name: "Tokens used",
                     value: table,
                 },
             ]);
@@ -166,12 +146,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         await interaction.editReply({ embeds: [embed] });
 
         logger.info(
-            `${interaction.user.username} succesfully used /inactivity-by-season for season ${season}`
+            `${interaction.user.username} succesfully used /tokens-by-season for season ${season}`
         );
     } catch (error) {
-        logger.error("Error fetching guild raid result: ", error);
+        logger.error("Error occured in tokens-by-season: ", error);
         await interaction.editReply({
-            content: "An error occurred while fetching the guild raid result.",
+            content:
+                "An error occured while attempting to get tokens used in season: " +
+                season,
         });
         return;
     }
