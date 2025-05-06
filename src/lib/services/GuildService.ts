@@ -1,5 +1,5 @@
 import { HominaTacticusClient } from "@/client";
-import { dbController } from "@/lib";
+import { dbController, logger } from "@/lib";
 import type { GuildRaidResult, Raid } from "@/models/types";
 import { DamageType, EncounterType, Rarity } from "@/models/enums";
 import type { TeamDistribution } from "@/models/types/TeamDistribution";
@@ -29,7 +29,7 @@ export class GuildService {
 
             return resp.guild.guildId;
         } catch (error) {
-            console.error("Error fetching guild ID: ", error);
+            logger.error("Error fetching guild ID: ", error);
             return null;
         }
     }
@@ -49,7 +49,7 @@ export class GuildService {
 
             return resp.guild.members.map((member) => member.userId);
         } catch (error) {
-            console.error("Error fetching guild members: ", error);
+            logger.error("Error fetching guild members: ", error);
             return null;
         }
     }
@@ -65,7 +65,7 @@ export class GuildService {
 
             return members;
         } catch (error) {
-            console.error("Error fetching player list: ", error);
+            logger.error("Error fetching player list: ", error);
             return null;
         }
     }
@@ -92,9 +92,6 @@ export class GuildService {
 
             for (const id of membersToDelete) {
                 const result = await dbController.deletePlayerName(id, guildId);
-                console.log(
-                    `Deleted player ${id} from guild ${guildId}: ${result}`
-                );
                 if (!result) {
                     continue;
                 }
@@ -116,7 +113,7 @@ export class GuildService {
 
             return updatedCount;
         } catch (error) {
-            console.error("Error updating guild members: ", error);
+            logger.error("Error updating guild members: ", error);
             return -1;
         }
     }
@@ -136,7 +133,7 @@ export class GuildService {
 
             return resp.guild.guildRaidSeasons;
         } catch (error) {
-            console.error("Error fetching guild seasons: ", error);
+            logger.error("Error fetching guild seasons: ", error);
             return null;
         }
     }
@@ -304,7 +301,7 @@ export class GuildService {
                     entry.damageType === DamageType.BOMB ||
                     entry.encounterType === EncounterType.SIDE_BOSS
                 ) {
-                    return;
+                    continue;
                 }
 
                 const heroes = entry.heroDetails.map((hero) => hero.unitId);
@@ -340,7 +337,7 @@ export class GuildService {
                     totalDistribution.otherDamage =
                         (totalDistribution.otherDamage || 0) +
                         entry.damageDealt;
-                    return;
+                    continue;
                 }
 
                 const maxValue = Math.max(...values);
@@ -367,7 +364,7 @@ export class GuildService {
 
             return totalDistribution;
         } catch (error) {
-            console.error("Error fetching guild seasons: ", error);
+            logger.error("Error fetching guild seasons: ", error);
             return null;
         }
     }
