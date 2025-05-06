@@ -3,13 +3,25 @@ import { pino } from "pino";
 const fileTransport = pino.transport({
     targets: [
         {
-            target: "pino/file",
-            options: { destination: "./logs/app.log" },
+            target: "pino-roll",
+            options: {
+                file: "./logs/app/app",
+                frequency: "daily",
+                extension: ".log",
+                dateFormat: "dd-MM-yyyy",
+                limit: { count: 30 },
+            },
             level: "info",
         },
         {
-            target: "pino/file",
-            options: { destination: "./logs/error.log" },
+            target: "pino-roll",
+            options: {
+                file: "./logs/errors/error",
+                frequency: "daily",
+                extension: ".log",
+                dateFormat: "dd-MM-yyyy",
+                limit: { count: 30 },
+            },
             level: "error",
         },
     ],
