@@ -17,6 +17,10 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 
+    logger.info(
+        `${interaction.user.username} attempting to use /get-member-ids and received the member list`
+    );
+
     const service = new GuildService();
 
     try {
@@ -57,7 +61,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             `${interaction.user.username} used /get-member-ids and received the member list`
         );
     } catch (error) {
-        console.error("Error fetching members:", error);
+        logger.error("Error fetching members:", error);
         await interaction.editReply({
             content: "An error occurred while fetching the member list.",
         });

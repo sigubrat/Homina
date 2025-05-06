@@ -12,6 +12,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 
     const service = new GuildService();
+
+    logger.info(`${interaction.user.username} attempting to use /seasons`);
+
     try {
         const result = await service.getGuildSeasons(interaction.user.id);
 
@@ -28,13 +31,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             await interaction.editReply({
                 content: `Available seasons for your guild: ${result.join(
                     ", "
-                )}`,
+                )} (Nb! Snowprint seems to have a bug with the API where it doesn't return all seasons)`,
             });
         }
 
         logger.info(`${interaction.user.username} used /seasons`);
     } catch (error) {
-        console.error("Error fetching guild seasons: ", error);
+        logger.error("Error fetching guild seasons: ", error);
         await interaction.editReply({
             content: "An error occurred while fetching guild seasons.",
         });

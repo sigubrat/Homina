@@ -60,6 +60,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     const service = new GuildService();
 
+    logger.info(
+        `${interaction.user.username} attempting to use /season-by-tier ${season} ${rarity}`
+    );
+
     try {
         const result = await service.getGuildRaidResultByTierSeasonPerBoss(
             interaction.user.id,
@@ -116,10 +120,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         });
 
         logger.info(
-            `${interaction.user.username} used /season-by-tier ${season} ${rarity}`
+            `${interaction.user.username} succesfully used /season-by-tier ${season} ${rarity}`
         );
     } catch (error) {
-        console.error("Error fetching guild raid results: ", error);
+        logger.error("Error fetching guild raid results: ", error);
         await interaction.editReply({
             content: "An error occurred while fetching guild raid results.",
         });

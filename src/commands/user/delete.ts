@@ -14,6 +14,8 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
+    logger.info(`${interaction.user.username} attempting to use /delete`);
+
     const result = await dbController.deleteUser(interaction.user.id);
 
     const response = result
@@ -25,7 +27,5 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         content: response,
     });
 
-    logger.info(
-        `${interaction.user.username} (${interaction.user.id}) used /delete`
-    );
+    logger.info(`${interaction.user.username} succesfully used /delete`);
 }

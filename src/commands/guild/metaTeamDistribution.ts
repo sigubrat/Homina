@@ -37,6 +37,10 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 
+    logger.info(
+        `${interaction.user.username} attempting to use /meta-team-distribution`
+    );
+
     const season = interaction.options.getNumber("season") as number;
     const rarity = interaction.options.getString("tier");
 
@@ -104,10 +108,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         });
 
         logger.info(
-            `${interaction.user.username} used /meta-team-distribution for season ${season}`
+            `${interaction.user.username} succesfully used /meta-team-distribution for season ${season}`
         );
     } catch (error) {
-        console.error("Error fetching guild raid result:", error);
+        logger.error("Error fetching guild raid result:", error);
         await interaction.editReply({
             content: "An error occurred while fetching the guild raid result.",
         });

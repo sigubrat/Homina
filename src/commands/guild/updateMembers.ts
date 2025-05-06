@@ -27,6 +27,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         return;
     }
 
+    logger.info(
+        `${interaction.user.username} attempting to update guild members`
+    );
+
     try {
         const fileExtension = file.name.split(".").pop()?.toLowerCase();
         if (fileExtension !== "json") {
@@ -96,7 +100,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             content: `Succesfully updated all guild members.`,
         });
     } catch (error) {
-        console.error("Error processing the attachment:", error);
+        logger.error("Error processing the attachment:", error);
         await interaction.editReply({
             content:
                 "An error occurred while processing the attached file. Please ensure it is valid JSON.",

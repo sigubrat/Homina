@@ -31,6 +31,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         return;
     }
 
+    logger.info(
+        `User ${interaction.user.username} attempting to register a token`
+    );
+
     let result = await testApiToken(apiToken);
 
     if (result) {

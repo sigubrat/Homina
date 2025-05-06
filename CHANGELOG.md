@@ -23,6 +23,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.7.1] - 2025-05-06
+
+Fixes breaking bug in the cases where a player is not registered to the guild or has left the guild and is therefore no longer mapped to a username. Graphs now include a listing for 'Unknown' player in these cases.
+
+Adds improved logging for more effective debugging.
+
+Special thanks to `Mr. Squiggles` for notifying about the errors.
+
 ## [0.7.0] - 2025-05-06
 
 Homina is now up and running on a dedicated server and should be available to the public at almost all times (some downtime between updates may occur).

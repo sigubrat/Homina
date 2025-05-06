@@ -169,11 +169,9 @@ export class GuildService {
             if (!entry.userId || entry.damageType === DamageType.BOMB) {
                 continue;
             }
-            const username = await dbController.getPlayerName(entry.userId);
+            let username = await dbController.getPlayerName(entry.userId);
             if (!username) {
-                throw new Error(
-                    "Player name missing in the mapping " + entry.userId
-                );
+                username = "Unknown";
             }
             const existingEntry = damagePeruser.find(
                 (e) => e.username === username
@@ -231,11 +229,10 @@ export class GuildService {
                 groupedResults[boss] = [];
             }
 
-            const username = await dbController.getPlayerName(entry.userId);
+            let username = await dbController.getPlayerName(entry.userId);
             if (!username) {
-                throw new Error(
-                    "Player name missing in the mapping " + entry.userId
-                );
+                // If a user is not registered or left the guild, we set their username to "Unknown"
+                username = "Unknown";
             }
 
             const existingUserEntry = groupedResults[boss].find(

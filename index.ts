@@ -25,7 +25,7 @@ if (!dbUser) missingVars.push("DB_USER");
 if (!dbPwd) missingVars.push("DB_PWD");
 
 if (missingVars.length > 0) {
-    console.error(
+    logger.error(
         `Missing environment variables: ${missingVars.join(
             ", "
         )}. Please ensure all required variables are set.`
@@ -45,7 +45,7 @@ const startBot = async () => {
         // Check database connection
         const res = await dbController.isReady();
         if (!res.isSuccess) {
-            console.error(
+            logger.error(
                 "Database test failed with error message: ",
                 res.message
             );
@@ -79,7 +79,7 @@ const startBot = async () => {
         await client.login(token);
         logger.info("Bot logged in successfully.");
     } catch (error) {
-        console.error("Error starting the bot:", error);
+        logger.error("Error starting the bot:", error);
         process.exit(1); // Exit the process if there's a critical error
     }
 };

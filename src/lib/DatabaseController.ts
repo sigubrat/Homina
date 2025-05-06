@@ -1,6 +1,7 @@
 import { DataTypes, Sequelize } from "sequelize";
 import { validateEnvVars, type DbTestResult } from "./db_utils";
 import type { GuildMemberMapping } from "@/models/types/GuildMemberMapping";
+import { logger } from "./pino-logger";
 
 export class DatabaseController {
     private sequelize: Sequelize;
@@ -32,7 +33,7 @@ export class DatabaseController {
             );
             console.log("Attempting to define models and sync database...");
         } catch (error) {
-            console.error("Unable to connect to the database:", error);
+            logger.error("Unable to connect to the database:", error);
             process.exit(1);
         }
 
@@ -75,7 +76,7 @@ export class DatabaseController {
             await this.sequelize.sync({ force: false });
             console.log("Models defined and database synced successfully.");
         } catch (error) {
-            console.error("Error syncing database:", error);
+            logger.error("Error syncing database:", error);
             process.exit(1);
         }
     }
@@ -85,7 +86,7 @@ export class DatabaseController {
             await this.sequelize.authenticate();
             console.log("Database is ready for use");
         } catch (error) {
-            console.error("Unable to connect to the database:", error);
+            logger.error("Unable to connect to the database:", error);
             return {
                 isSuccess: false,
                 message: "Unable to connect to the database.",
@@ -104,7 +105,7 @@ export class DatabaseController {
 
             return true;
         } catch (error) {
-            console.error("Error storing registered user to database:", error);
+            logger.error("Error storing registered user to database:", error);
             return false;
         }
     }
@@ -120,7 +121,7 @@ export class DatabaseController {
             });
             return res;
         } catch (error) {
-            console.error("Error deleting user from database:", error);
+            logger.error("Error deleting user from database:", error);
             return undefined;
         }
     }
@@ -140,7 +141,7 @@ export class DatabaseController {
 
             return result.getDataValue("token") as string;
         } catch (error) {
-            console.error("Error retrieving user token from database:", error);
+            logger.error("Error retrieving user token from database:", error);
             return null;
         }
     }
@@ -165,7 +166,7 @@ export class DatabaseController {
                 } as GuildMemberMapping;
             });
         } catch (error) {
-            console.error("Error retrieving player name from database:", error);
+            logger.error("Error retrieving player name from database:", error);
             return null;
         }
     }
@@ -184,7 +185,7 @@ export class DatabaseController {
 
             return result.getDataValue("username") as string;
         } catch (error) {
-            console.error("Error retrieving player name from database:", error);
+            logger.error("Error retrieving player name from database:", error);
             return null;
         }
     }
@@ -197,7 +198,7 @@ export class DatabaseController {
         try {
             const guildMembersModel = this.sequelize.models["GuildMembers"];
             if (!guildMembersModel) {
-                console.error("GuildMembers model is not defined.");
+                logger.error("GuildMembers model is not defined.");
                 return false;
             }
 
@@ -208,13 +209,13 @@ export class DatabaseController {
             });
 
             if (!res) {
-                console.error("Error updating player name in database.");
+                logger.error("Error updating player name in database.");
                 return false;
             }
 
             return true;
         } catch (error) {
-            console.error(
+            logger.error(
                 `Error updating player name for userId: ${userId}, name: ${name}`,
                 error
             );
@@ -229,7 +230,7 @@ export class DatabaseController {
         try {
             const guildMembersModel = this.sequelize.models["GuildMembers"];
             if (!guildMembersModel) {
-                console.error("GuildMembers model is not defined.");
+                logger.error("GuildMembers model is not defined.");
                 return -1;
             }
 
@@ -240,7 +241,7 @@ export class DatabaseController {
                 },
             });
         } catch (error) {
-            console.error(
+            logger.error(
                 `Error deleting player name for userId: ${userId}`,
                 error
             );

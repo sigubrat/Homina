@@ -65,6 +65,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     const service = new GuildService();
 
+    logger.info(
+        `${interaction.user.username} attempting to use /inactivity-by-season for season ${season}`
+    );
+
     try {
         const result = await service.getGuildRaidResultBySeason(
             interaction.user.id,
@@ -162,10 +166,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         await interaction.editReply({ embeds: [embed] });
 
         logger.info(
-            `${interaction.user.username} used /inactivity-by-season for season ${season}`
+            `${interaction.user.username} succesfully used /inactivity-by-season for season ${season}`
         );
     } catch (error) {
-        console.error("Error fetching guild raid result: ", error);
+        logger.error("Error fetching guild raid result: ", error);
         await interaction.editReply({
             content: "An error occurred while fetching the guild raid result.",
         });
