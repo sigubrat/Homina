@@ -9,9 +9,6 @@ import {
 import { getTopNDamageDealers, sortGuildRaidResultDesc } from "@/lib/utils";
 import { logger } from "@/lib";
 
-const CHART_WIDTH = 1200;
-const CHART_HEIGHT = 800;
-
 export const cooldown = 5;
 
 export const data = new SlashCommandBuilder()
@@ -99,7 +96,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const topDamageDealers = getTopNDamageDealers(sortedResult, 3);
 
-        const chartService = new ChartService(CHART_WIDTH, CHART_HEIGHT);
+        const chartService = new ChartService();
 
         const chartBuffer = await chartService.createSeasonDamageChart(
             sortedResult,

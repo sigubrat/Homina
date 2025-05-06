@@ -67,6 +67,7 @@ export const CHART_COLORS = {
     blue: "rgb(54, 162, 235)",
     purple: "rgb(153, 102, 255)",
     grey: "rgb(201, 203, 207)",
+    discordbg: "rgb(57,58,65)",
 };
 
 const NAMED_COLORS = [
@@ -77,6 +78,7 @@ const NAMED_COLORS = [
     CHART_COLORS.blue,
     CHART_COLORS.purple,
     CHART_COLORS.grey,
+    CHART_COLORS.discordbg,
 ];
 
 export function namedColor(index: number) {

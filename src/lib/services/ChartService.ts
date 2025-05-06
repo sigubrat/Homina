@@ -3,21 +3,17 @@ import { ChartJSNodeCanvas } from "chartjs-node-canvas";
 import { CHART_COLORS } from "../utils";
 import type { TeamDistribution } from "@/models/types/TeamDistribution";
 
+const CHART_WIDTH = 1200;
+const CHART_HEIGHT = 800;
+
+const canvas = new ChartJSNodeCanvas({
+    width: CHART_WIDTH,
+    height: CHART_HEIGHT,
+    backgroundColour: CHART_COLORS.discordbg,
+});
+
 export class ChartService {
-    private width: number;
-    private height: number;
-
-    constructor(width: number, height: number) {
-        this.width = width;
-        this.height = height;
-    }
-
     async createSeasonDamageChart(data: GuildRaidResult[], title: string) {
-        const canvas = new ChartJSNodeCanvas({
-            width: this.width,
-            height: this.height,
-        });
-
         const usernames = data.map((data) => data.username); // Extract labels
         const damage = data.map((data) => data.totalDamage); // Extract values
         const totalTokens = data.map((data) => data.totalTokens); // Extract total tokens
@@ -100,6 +96,14 @@ export class ChartService {
                         },
                     },
                 },
+                layout: {
+                    padding: {
+                        left: 20,
+                        right: 20,
+                        bottom: 10,
+                        top: 10,
+                    },
+                },
                 responsive: true,
                 maintainAspectRatio: false,
             },
@@ -109,11 +113,6 @@ export class ChartService {
     }
 
     async createSeasonDamageChartAvg(data: GuildRaidResult[], title: string) {
-        const canvas = new ChartJSNodeCanvas({
-            width: this.width,
-            height: this.height,
-        });
-
         const usernames = data.map((data) => data.username);
         const damage = data.map((data) => data.totalDamage);
         const totalTokens = data.map((data) => data.totalTokens);
@@ -213,6 +212,14 @@ export class ChartService {
                         },
                     },
                 },
+                layout: {
+                    padding: {
+                        left: 20,
+                        right: 20,
+                        bottom: 10,
+                        top: 10,
+                    },
+                },
                 responsive: true,
                 maintainAspectRatio: false,
             },
@@ -226,11 +233,6 @@ export class ChartService {
         title: string,
         showDamage: boolean = false
     ) {
-        const canvas = new ChartJSNodeCanvas({
-            width: this.width,
-            height: this.height,
-        });
-
         if (showDamage) {
             data.mech = data.mechDamage ?? 0;
             data.multihit = data.multihitDamage ?? 0;
@@ -293,6 +295,14 @@ export class ChartService {
                                 size: 14,
                             },
                         },
+                    },
+                },
+                layout: {
+                    padding: {
+                        left: 20,
+                        right: 20,
+                        bottom: 10,
+                        top: 10,
                     },
                 },
                 responsive: true,

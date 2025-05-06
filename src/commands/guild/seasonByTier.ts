@@ -83,7 +83,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
-        const chartService = new ChartService(1200, 600);
+        const chartService = new ChartService();
         const chartPromises = Object.entries(result).map(
             async ([bossName, data]) => {
                 const chartBuffer =

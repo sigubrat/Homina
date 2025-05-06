@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.7.2] - 2025-05-06
+
+Refactors how canvases are used to save memory and adds a background and some padding to charts.
+
 ## [0.7.1] - 2025-05-06
 
 Fixes breaking bug in the cases where a player is not registered to the guild or has left the guild and is therefore no longer mapped to a username. Graphs now include a listing for 'Unknown' player in these cases.
