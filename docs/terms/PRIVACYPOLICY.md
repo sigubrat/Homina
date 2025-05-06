@@ -26,7 +26,7 @@ We maintain logs to ensure the proper operation and debugging of the bot. The lo
 
 ## 5. Data Sharing and Security
 
--   **Data Sharing**: Your data is stored securely in our PostgreSQL database and is not shared with third parties without your consent, unless required by law.
+-   **Data Sharing**: Your data is stored securely in our PostgreSQL database and is not shared with third parties, unless required by law.
 
 ## 6. Changes to This Policy
 
