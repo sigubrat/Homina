@@ -1,3 +1,4 @@
+import { logger } from "@/lib";
 import { Collection, Events, MessageFlags } from "discord.js";
 
 export const name = Events.InteractionCreate;
