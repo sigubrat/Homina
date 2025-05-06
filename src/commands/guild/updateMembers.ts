@@ -1,3 +1,4 @@
+import { logger } from "@/lib";
 import { GuildService } from "@/lib/services/GuildService.ts";
 import type { GuildMemberMapping } from "@/models/types/GuildMemberMapping";
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
@@ -86,6 +87,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             });
             return;
         }
+
+        logger.info(
+            `Updated guild members for user ${interaction.user.username}`
+        );
 
         await interaction.editReply({
             content: `Succesfully updated all guild members.`,

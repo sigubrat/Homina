@@ -7,6 +7,7 @@ import {
     SlashCommandBuilder,
 } from "discord.js";
 import { getTopNDamageDealers, sortGuildRaidResultDesc } from "@/lib/utils";
+import { logger } from "@/lib";
 
 const CHART_WIDTH = 1200;
 const CHART_HEIGHT = 800;
@@ -118,6 +119,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setImage("attachment://graph.png");
 
         await interaction.editReply({ embeds: [embed], files: [attachment] });
+
+        logger.info(`${interaction.user.username} used /season-participation`);
     } catch (error) {
         console.error("Error executing command:", error);
         await interaction.editReply({

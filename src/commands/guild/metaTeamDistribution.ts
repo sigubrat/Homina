@@ -1,3 +1,4 @@
+import { logger } from "@/lib";
 import { ChartService } from "@/lib/services/ChartService";
 import { GuildService } from "@/lib/services/GuildService.ts";
 import { Rarity } from "@/models/enums";
@@ -101,6 +102,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             embeds: [embed],
             files: [attachment, dmgAttachment],
         });
+
+        logger.info(
+            `${interaction.user.username} used /meta-team-distribution for season ${season}`
+        );
     } catch (error) {
         console.error("Error fetching guild raid result:", error);
         await interaction.editReply({

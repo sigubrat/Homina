@@ -1,3 +1,4 @@
+import { logger } from "@/lib";
 import { GuildService } from "@/lib/services/GuildService.ts";
 import { sortInactiveUsersDesc } from "@/lib/utils";
 import { Rarity } from "@/models/enums";
@@ -159,6 +160,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             ]);
 
         await interaction.editReply({ embeds: [embed] });
+
+        logger.info(
+            `${interaction.user.username} used /inactivity-by-season for season ${season}`
+        );
     } catch (error) {
         console.error("Error fetching guild raid result: ", error);
         await interaction.editReply({

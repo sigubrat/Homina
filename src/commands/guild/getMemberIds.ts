@@ -1,3 +1,4 @@
+import { logger } from "@/lib";
 import { GuildService } from "@/lib/services/GuildService.ts";
 import {
     AttachmentBuilder,
@@ -51,6 +52,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             content: "Here is the member list JSON file:",
             files: [attachment],
         });
+
+        logger.info(
+            `${interaction.user.username} used /get-member-ids and received the member list`
+        );
     } catch (error) {
         console.error("Error fetching members:", error);
         await interaction.editReply({

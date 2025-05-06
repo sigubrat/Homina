@@ -1,3 +1,4 @@
+import { logger } from "@/lib";
 import { ChartService } from "@/lib/services/ChartService";
 import { GuildService } from "@/lib/services/GuildService.ts";
 import { sortGuildRaidResultDesc } from "@/lib/utils";
@@ -113,6 +114,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             embeds: [embed],
             files: chartAttachments,
         });
+
+        logger.info(
+            `${interaction.user.username} used /season-by-tier ${season} ${rarity}`
+        );
     } catch (error) {
         console.error("Error fetching guild raid results: ", error);
         await interaction.editReply({

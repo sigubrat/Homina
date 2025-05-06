@@ -3,7 +3,7 @@ import {
     MessageFlags,
     SlashCommandBuilder,
 } from "discord.js";
-import { dbController } from "@/lib";
+import { dbController, logger } from "@/lib";
 
 export const cooldown = 5; // Cooldown in seconds
 
@@ -24,4 +24,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         options: { flags: MessageFlags.Ephemeral },
         content: response,
     });
+
+    logger.info(
+        `${interaction.user.username} (${interaction.user.id}) used /delete`
+    );
 }

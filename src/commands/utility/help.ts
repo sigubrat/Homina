@@ -1,3 +1,4 @@
+import { logger } from "@/lib";
 import {
     ChatInputCommandInteraction,
     EmbedBuilder,
@@ -43,4 +44,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.editReply({
         embeds: [embed],
     });
+
+    logger.info(`${interaction.user.username} used /help`);
 }

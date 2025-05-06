@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
 import { GuildService } from "../../lib/services/GuildService";
+import { logger } from "@/lib";
 
 export const cooldown = 5;
 
@@ -30,6 +31,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 )}`,
             });
         }
+
+        logger.info(`${interaction.user.username} used /seasons`);
     } catch (error) {
         console.error("Error fetching guild seasons: ", error);
         await interaction.editReply({
