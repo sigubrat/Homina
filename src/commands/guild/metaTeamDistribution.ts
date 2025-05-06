@@ -73,7 +73,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
-        const chartService = new ChartService(1200, 800);
+        const chartService = new ChartService();
 
         const chart = await chartService.createMetaTeamDistributionChart(
             result,
