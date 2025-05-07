@@ -2,6 +2,11 @@
 
 <div align="center">
     <img src="docs/img/homina-logo.png" alt="Homina Logo" width="300" height="auto">
+
+![GitHub package.json version (branch)](https://img.shields.io/github/package-json/v/sigubrat/Homina/main)
+![GitHub Repo stars](https://img.shields.io/github/stars/sigubrat/Homina)
+![Discord](https://img.shields.io/discord/1145610731849519157?logo=discord&link=https://discord.gg/FajYxuWY9b)
+
 </div>
 
 **_Homina-homina-homina_**
