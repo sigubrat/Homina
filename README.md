@@ -207,13 +207,19 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 
 ## Screenshots
 
-Here’s an example of the bot in action:
+Here are some examples of the bot in action:
 
-![season-by-tier example](docs/img/season-by-tier.png)
-
-![meta team distribution](docs/img/meta-distribution.png)
-
-![inactive members](docs/img/homina-inactivity.png)
+|            ![help example](docs/img/help.png)             |
+| :-------------------------------------------------------: |
+|                     The help command                      |
+|  ![season-by-tier options example](docs/img/options.png)  |
+|              Features optional tier options               |
+|  ![season-by-tier example](docs/img/season-by-tier.png)   |
+|              Get detailed graphs for a tier               |
+| ![meta team distribution](docs/img/meta_distribution.png) |
+| See how well your guild utilises the different meta teams |
+|    ![inactive members](docs/img/homina-inactivity.png)    |
+|               Check who's not contributing                |
 
 ## Acknowledgments
 
