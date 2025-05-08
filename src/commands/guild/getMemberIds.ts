@@ -4,6 +4,7 @@ import {
     AttachmentBuilder,
     ChatInputCommandInteraction,
     EmbedBuilder,
+    MessageFlags,
     SlashCommandBuilder,
 } from "discord.js";
 
@@ -76,6 +77,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         await interaction.editReply({
             embeds: [embed],
             files: [attachment],
+            options: {
+                flags: MessageFlags.Ephemeral,
+            },
         });
 
         logger.info(
