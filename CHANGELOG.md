@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.8.1] - 2025-05-08
+
+This patch focuses on improving meta distribution by adding missing meta team members and adding a lynchpin check to the meta distribution calculator.
+
 ## [0.8.0] - 2025-05-06
 
 Minor bugfixes and a new command
