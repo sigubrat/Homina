@@ -100,6 +100,10 @@ export const multiHitTeam = [
     "worldKharn", // Kharn
     "spaceBlackmane", // Ragnar
     "tauCrisis", // Re'vas
+    "templHelbrecht", // Helbrecht
+    "bloodDante", // Dante
+    "ultraCalgar", // Calgar
+    "tauAunShi", // Aun'shi
 ];
 
 export const mechTeam = [
@@ -111,6 +115,7 @@ export const mechTeam = [
     "tauMarksman", // Sho'syl
     "tauCrisis", // Re'vas
     "admecDominus", // Vitruvius
+    "templHelbrecht", // Helbrecht
 ];
 
 export const psykerTeam = [
@@ -142,6 +147,20 @@ export function inTeamsCheck(hero: string): TeamCheck {
     teamCheck.inPsyker = psykerTeam.includes(hero);
 
     return teamCheck;
+}
+
+const lynchpinHeroes: Record<string, string> = {
+    multihit: "spaceBlackmane",
+    mech: "admecRuststalker",
+    psyker: "tyranNeurothrope",
+};
+
+export function hasLynchpinHero(heroes: string[], team: string): boolean {
+    const hero = lynchpinHeroes[team];
+    if (!hero) {
+        return false;
+    }
+    return heroes.includes(hero);
 }
 
 // Nb! Relies on the user providing sorted data

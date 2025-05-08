@@ -3,7 +3,7 @@ import { dbController, logger } from "@/lib";
 import type { GuildRaidResult, Raid } from "@/models/types";
 import { DamageType, EncounterType, Rarity } from "@/models/enums";
 import type { TeamDistribution } from "@/models/types/TeamDistribution";
-import { inTeamsCheck } from "../utils";
+import { hasLynchpinHero, inTeamsCheck } from "../utils";
 import type { GuildMemberMapping } from "@/models/types/GuildMemberMapping";
 
 export class GuildService {
@@ -342,18 +342,33 @@ export class GuildService {
 
                 const maxValue = Math.max(...values);
                 const maxIndex = values.indexOf(maxValue);
+                const teams = ["mech", "multihit", "psyker"];
+                const team = teams[maxIndex];
 
-                if (maxIndex === 0) {
+                if (!team) {
+                    return new Error("teams[maxIndex] is somehow undefined");
+                }
+
+                if (!hasLynchpinHero(heroes, team)) {
+                    totalDistribution.other += 1;
+                    totalDistribution.otherDamage =
+                        (totalDistribution.otherDamage || 0) +
+                        entry.damageDealt;
+                    continue;
+                }
+
+                if (team === "mech") {
+                    // Check if the team has a lynchpin hero
                     totalDistribution.mech = (totalDistribution.mech || 0) + 1;
                     totalDistribution.mechDamage =
                         (totalDistribution.mechDamage || 0) + entry.damageDealt;
-                } else if (maxIndex === 1) {
+                } else if (team === "multihit") {
                     totalDistribution.multihit =
                         (totalDistribution.multihit || 0) + 1;
                     totalDistribution.multihitDamage =
                         (totalDistribution.multihitDamage || 0) +
                         entry.damageDealt;
-                } else if (maxIndex === 2) {
+                } else if (team === "psyker") {
                     totalDistribution.psyker =
                         (totalDistribution.psyker || 0) + 1;
                     totalDistribution.psykerDamage =
