@@ -98,7 +98,7 @@ export class DatabaseController {
 
     public async registerUser(userId: string, token: string): Promise<boolean> {
         try {
-            await this.sequelize.models["discordApiTokenMappings"]?.create({
+            await this.sequelize.models["discordApiTokenMappings"]?.upsert({
                 userId: userId,
                 token: token,
             });

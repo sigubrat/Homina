@@ -23,6 +23,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.8.4]
+
+### Fixed
+
+-   Registering a token when you already have one registered no longer causes a database error
+
 ## [0.8.3] - 2025-05-08
 
 Hotfixes to logging errors properly

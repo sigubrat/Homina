@@ -36,21 +36,34 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     );
 
     let result = await testApiToken(apiToken);
+    if (!result) {
+        await interaction.editReply({
+            content:
+                "Token is invalid or does not have the required permissions",
+            options: {
+                flags: MessageFlags.Ephemeral,
+            },
+        });
+        return;
+    }
 
-    if (result) {
-        result = await dbController.registerUser(interaction.user.id, apiToken);
+    result = await dbController.registerUser(interaction.user.id, apiToken);
+    if (!result) {
+        await interaction.editReply({
+            content: "Something went wrong while registering your token",
+            options: {
+                flags: MessageFlags.Ephemeral,
+            },
+        });
+        return;
     }
 
     logger.info(
         `User ${interaction.user.username} succesfully registered a token`
     );
 
-    const response = result
-        ? "Token succesfully registered to your user"
-        : "Token is invalid or does not have the required permissions";
-
     await interaction.editReply({
-        content: response,
+        content: "Token succesfully registered to your user",
         options: {
             flags: MessageFlags.Ephemeral,
         },
