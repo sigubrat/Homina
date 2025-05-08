@@ -45,10 +45,7 @@ const startBot = async () => {
         // Check database connection
         const res = await dbController.isReady();
         if (!res.isSuccess) {
-            logger.error(
-                "Database test failed with error message: ",
-                res.message
-            );
+            logger.error(res.message, "Database test failed");
             process.exit(1);
         }
 
@@ -79,7 +76,7 @@ const startBot = async () => {
         await client.login(token);
         logger.info("Bot logged in successfully.");
     } catch (error) {
-        logger.error("Error starting the bot:", error);
+        logger.error(error, "Error starting the bot:");
         process.exit(1); // Exit the process if there's a critical error
     }
 };

@@ -33,7 +33,7 @@ export class DatabaseController {
             );
             console.log("Attempting to define models and sync database...");
         } catch (error) {
-            logger.error("Unable to connect to the database:", error);
+            logger.error(error, "Unable to connect to the database:");
             process.exit(1);
         }
 
@@ -76,7 +76,7 @@ export class DatabaseController {
             await this.sequelize.sync({ force: false });
             console.log("Models defined and database synced successfully.");
         } catch (error) {
-            logger.error("Error syncing database:", error);
+            logger.error(error, "Error syncing database");
             process.exit(1);
         }
     }
@@ -86,7 +86,7 @@ export class DatabaseController {
             await this.sequelize.authenticate();
             console.log("Database is ready for use");
         } catch (error) {
-            logger.error("Unable to connect to the database:", error);
+            logger.error(error, "Unable to connect to the database:");
             return {
                 isSuccess: false,
                 message: "Unable to connect to the database.",
@@ -105,7 +105,7 @@ export class DatabaseController {
 
             return true;
         } catch (error) {
-            logger.error("Error storing registered user to database:", error);
+            logger.error(error, "Error storing registered user to database");
             return false;
         }
     }
@@ -121,7 +121,7 @@ export class DatabaseController {
             });
             return res;
         } catch (error) {
-            logger.error("Error deleting user from database:", error);
+            logger.error(error, "Error deleting user from database");
             return undefined;
         }
     }
@@ -141,7 +141,7 @@ export class DatabaseController {
 
             return result.getDataValue("token") as string;
         } catch (error) {
-            logger.error("Error retrieving user token from database:", error);
+            logger.error(error, "Error retrieving user token from database");
             return null;
         }
     }
@@ -166,7 +166,7 @@ export class DatabaseController {
                 } as GuildMemberMapping;
             });
         } catch (error) {
-            logger.error("Error retrieving player name from database:", error);
+            logger.error(error, "Error retrieving player name from database");
             return null;
         }
     }
@@ -185,7 +185,7 @@ export class DatabaseController {
 
             return result.getDataValue("username") as string;
         } catch (error) {
-            logger.error("Error retrieving player name from database:", error);
+            logger.error(error, "Error retrieving player name from database");
             return null;
         }
     }
@@ -209,7 +209,7 @@ export class DatabaseController {
             });
 
             if (!res) {
-                logger.error("Error updating player name in database.");
+                logger.error(`Error updating player name ${name} in database.`);
                 return false;
             }
 
@@ -242,8 +242,8 @@ export class DatabaseController {
             });
         } catch (error) {
             logger.error(
-                `Error deleting player name for userId: ${userId}`,
-                error
+                error,
+                `Error deleting player name for userId: ${userId}`
             );
             return -1;
         }

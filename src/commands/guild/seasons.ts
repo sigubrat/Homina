@@ -37,7 +37,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         logger.info(`${interaction.user.username} used /seasons`);
     } catch (error) {
-        logger.error("Error fetching guild seasons: ", error);
+        logger.error(error, "Error fetching guild seasons");
         await interaction.editReply({
             content: "An error occurred while fetching guild seasons.",
         });

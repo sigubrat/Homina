@@ -44,7 +44,7 @@ export async function execute(interaction: any) {
     try {
         await command.execute(interaction);
     } catch (error) {
-        logger.error(error);
+        logger.error(error, "Failed to create interaction command");
         if (interaction.replied || interaction.deferred) {
             await interaction.followUp({
                 content: "There was an error while executing this command!",

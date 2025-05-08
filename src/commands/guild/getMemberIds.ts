@@ -61,7 +61,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             `${interaction.user.username} used /get-member-ids and received the member list`
         );
     } catch (error) {
-        logger.error("Error fetching members:", error);
+        logger.error(error, "Error fetching members:");
         await interaction.editReply({
             content: "An error occurred while fetching the member list.",
         });

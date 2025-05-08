@@ -125,7 +125,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             `${interaction.user.username} succesfully used /season-participation`
         );
     } catch (error) {
-        logger.error("Error executing command:", error);
+        logger.error(error, "Error executing command");
         await interaction.editReply({
             content:
                 "An error occurred while processing your request. Please try again later.",

@@ -100,7 +100,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             content: `Succesfully updated all guild members.`,
         });
     } catch (error) {
-        logger.error("Error processing the attachment:", error);
+        logger.error(error, "Error processing the attachment");
         await interaction.editReply({
             content:
                 "An error occurred while processing the attached file. Please ensure it is valid JSON.",

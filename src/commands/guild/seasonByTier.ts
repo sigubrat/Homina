@@ -123,7 +123,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             `${interaction.user.username} succesfully used /season-by-tier ${season} ${rarity}`
         );
     } catch (error) {
-        logger.error("Error fetching guild raid results: ", error);
+        logger.error(error, "Error fetching guild raid results");
         await interaction.editReply({
             content: "An error occurred while fetching guild raid results.",
         });

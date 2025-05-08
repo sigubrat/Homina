@@ -29,7 +29,7 @@ export class GuildService {
 
             return resp.guild.guildId;
         } catch (error) {
-            logger.error("Error fetching guild ID: ", error);
+            logger.error(error, "Error fetching guild ID");
             return null;
         }
     }
@@ -49,7 +49,7 @@ export class GuildService {
 
             return resp.guild.members.map((member) => member.userId);
         } catch (error) {
-            logger.error("Error fetching guild members: ", error);
+            logger.error(error, "Error fetching guild members");
             return null;
         }
     }
@@ -65,7 +65,7 @@ export class GuildService {
 
             return members;
         } catch (error) {
-            logger.error("Error fetching player list: ", error);
+            logger.error(error, "Error fetching player list");
             return null;
         }
     }
@@ -113,7 +113,7 @@ export class GuildService {
 
             return updatedCount;
         } catch (error) {
-            logger.error("Error updating guild members: ", error);
+            logger.error(error, "Error updating guild members: ");
             return -1;
         }
     }
@@ -133,7 +133,7 @@ export class GuildService {
 
             return resp.guild.guildRaidSeasons;
         } catch (error) {
-            logger.error("Error fetching guild seasons: ", error);
+            logger.error(error, "Error fetching guild seasons: ");
             return null;
         }
     }
@@ -379,7 +379,7 @@ export class GuildService {
 
             return totalDistribution;
         } catch (error) {
-            logger.error("Error fetching guild seasons: ", error);
+            logger.error(error, "Error fetching guild seasons: ");
             return null;
         }
     }

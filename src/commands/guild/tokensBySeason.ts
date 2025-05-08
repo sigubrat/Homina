@@ -149,7 +149,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             `${interaction.user.username} succesfully used /tokens-by-season for season ${season}`
         );
     } catch (error) {
-        logger.error("Error occured in tokens-by-season: ", error);
+        logger.error(error, "Error occured in tokens-by-season: ");
         await interaction.editReply({
             content:
                 "An error occured while attempting to get tokens used in season: " +
