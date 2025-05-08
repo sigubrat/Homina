@@ -346,7 +346,7 @@ export class GuildService {
                 const team = teams[maxIndex];
 
                 if (!team) {
-                    return new Error("teams[maxIndex] is somehow undefined");
+                    throw new Error("teams[maxIndex] is somehow undefined");
                 }
 
                 if (!hasLynchpinHero(heroes, team)) {

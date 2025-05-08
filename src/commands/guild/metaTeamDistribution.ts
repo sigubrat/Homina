@@ -61,8 +61,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             rarity ? (rarity as Rarity) : undefined
         );
 
-        console.log(result);
-
         if (
             !result ||
             typeof result !== "object" ||
