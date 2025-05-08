@@ -17,7 +17,7 @@ export const data = new SlashCommandBuilder()
     );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
-    await interaction.deferReply();
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     logger.info(
         `${interaction.user.username} attempting to use /get-member-ids and received the member list`
