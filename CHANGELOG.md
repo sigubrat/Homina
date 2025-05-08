@@ -23,7 +23,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
-## [0.8.4]
+## [0.8.5] - 2025-05-08
+
+`/get-member-ids` result is now only visible to the user who called the command.
+
+## [0.8.4] - 2025-05-08
 
 ### Fixed
 
