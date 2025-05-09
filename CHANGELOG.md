@@ -23,6 +23,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.9.0] - 2025-05-09
+
+Special thanks to `WolfLord 5's` for the feature request.
+
+### Added
+
+-   `/available-tokens-bombs` command that returns a list of users who have bombs or guild raid tokens available
+
 ## [0.8.5] - 2025-05-08
 
 `/get-member-ids` result is now only visible to the user who called the command.

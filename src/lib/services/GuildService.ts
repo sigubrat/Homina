@@ -1,9 +1,14 @@
 import { HominaTacticusClient } from "@/client";
 import { dbController, logger } from "@/lib";
-import type { GuildRaidResult, Raid } from "@/models/types";
+import type {
+    GuildRaidAvailable,
+    GuildRaidResult,
+    Raid,
+    TokensAndBombs,
+} from "@/models/types";
 import { DamageType, EncounterType, Rarity } from "@/models/enums";
 import type { TeamDistribution } from "@/models/types/TeamDistribution";
-import { hasLynchpinHero, inTeamsCheck } from "../utils";
+import { getUnixTimestamp, hasLynchpinHero, inTeamsCheck } from "../utils";
 import type { GuildMemberMapping } from "@/models/types/GuildMemberMapping";
 
 export class GuildService {
@@ -380,6 +385,107 @@ export class GuildService {
             return totalDistribution;
         } catch (error) {
             logger.error(error, "Error fetching guild seasons: ");
+            return null;
+        }
+    }
+
+    async getAvailableTokensAndBombs(userId: string) {
+        const tokenCooldown = 12;
+        const maxTokens = 3;
+        const now = new Date();
+
+        try {
+            const apiKey = await dbController.getUserToken(userId);
+            if (!apiKey) {
+                return null;
+            }
+
+            const resp = await this.client.getGuildRaidByCurrentSeason(apiKey);
+            if (!resp || !resp.entries) {
+                return null;
+            }
+
+            const entries = resp.entries;
+            if (!entries) {
+                return null;
+            }
+
+            const users: Record<string, TokensAndBombs> = {};
+
+            for (const entry of entries) {
+                let username = await dbController.getPlayerName(entry.userId);
+                if (!username) {
+                    username = "Unknown";
+                }
+
+                if (!users[username]) {
+                    users[username] = {
+                        tokens: [],
+                        bombs: [],
+                    };
+                }
+
+                if (entry.damageType === DamageType.BOMB) {
+                    users[username]?.bombs.push(entry);
+                } else {
+                    users[username]?.tokens.push(entry);
+                }
+            }
+
+            // Find the most recent bomb used and up to 3 most recent tokens used
+            const result: Record<string, GuildRaidAvailable> = {};
+
+            Object.entries(users).forEach(([userId, data]) => {
+                const temp: GuildRaidAvailable = {
+                    tokens: maxTokens,
+                    bombs: 0,
+                };
+
+                const mostRecentBomb = data.bombs
+                    .sort((a, b) => {
+                        return b.startedOn - a.startedOn;
+                    })
+                    .find(() => true);
+
+                if (!mostRecentBomb) {
+                    temp.bombs = 1;
+                } else {
+                    const diff =
+                        getUnixTimestamp(now) - mostRecentBomb.startedOn;
+                    const diffHours = diff / 3600;
+                    if (diffHours > 18) temp.bombs = 1;
+                }
+
+                const sortedTokensDesc = data.tokens
+                    .sort((a, b) => b.startedOn - a.startedOn)
+                    .slice(0, maxTokens);
+
+                let rechargedToken = 0;
+                for (let i = 0; i < sortedTokensDesc.length; i++) {
+                    const token = sortedTokensDesc[i];
+
+                    if (!token) {
+                        break;
+                    }
+                    const diffHours =
+                        (getUnixTimestamp(now) - token.startedOn) / 3600;
+                    const threshold = tokenCooldown * (i + 1);
+                    if (diffHours < threshold) {
+                        break;
+                    } else {
+                        rechargedToken += 1;
+                    }
+                }
+
+                temp.tokens =
+                    maxTokens - (sortedTokensDesc.length - rechargedToken);
+
+                result[userId] = temp;
+            });
+
+            return result;
+        } catch (error) {
+            logger.error(error, "Error fetching available tokens and bombs: ");
             return null;
         }
     }

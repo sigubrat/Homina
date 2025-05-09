@@ -179,3 +179,7 @@ export function sortGuildRaidResultDesc(data: GuildRaidResult[]) {
 export function sortTokensUsed(data: TokensUsed[]) {
     return data.sort((a, b) => b.tokens - a.tokens);
 }
+
+export function getUnixTimestamp(date: Date) {
+    return Math.floor(date.getTime() / 1000);
+}
