@@ -434,7 +434,6 @@ export class GuildService {
 
             // Find the most recent bomb used and up to 3 most recent tokens used
             const result: Record<string, GuildRaidAvailable> = {};
-
             Object.entries(users).forEach(([userId, data]) => {
                 const temp: GuildRaidAvailable = {
                     tokens: maxTokens,
@@ -442,9 +441,7 @@ export class GuildService {
                 };
 
                 const mostRecentBomb = data.bombs
-                    .sort((a, b) => {
-                        return b.startedOn - a.startedOn;
-                    })
+                    .sort((a, b) => b.startedOn - a.startedOn)
                     .find(() => true);
 
                 if (!mostRecentBomb) {
@@ -456,29 +453,27 @@ export class GuildService {
                     if (diffHours > 18) temp.bombs = 1;
                 }
 
+                // Use up to maxTokens token usages
                 const sortedTokensDesc = data.tokens
                     .sort((a, b) => b.startedOn - a.startedOn)
                     .slice(0, maxTokens);
+                const tokensUsed = sortedTokensDesc.length;
 
-                let rechargedToken = 0;
-                for (let i = 0; i < sortedTokensDesc.length; i++) {
-                    const token = sortedTokensDesc[i];
-
-                    if (!token) {
-                        break;
-                    }
+                if (tokensUsed === 0) {
+                    temp.tokens = maxTokens;
+                } else {
+                    // Because tokens are sorted in descending order, the oldest token is the last one in the list.
+                    const earliestUsed = sortedTokensDesc[tokensUsed - 1];
                     const diffHours =
-                        (getUnixTimestamp(now) - token.startedOn) / 3600;
-                    const threshold = tokenCooldown * (i + 1);
-                    if (diffHours < threshold) {
-                        break;
-                    } else {
-                        rechargedToken += 1;
-                    }
+                        (getUnixTimestamp(now) - earliestUsed!.startedOn) /
+                        3600;
+                    // Compute how many tokens have recharged since the cooldown started
+                    const rechargedCount = Math.min(
+                        tokensUsed,
+                        Math.floor(diffHours / tokenCooldown)
+                    );
+                    temp.tokens = maxTokens - (tokensUsed - rechargedCount);
                 }
-
-                temp.tokens =
-                    maxTokens - (sortedTokensDesc.length - rechargedToken);
 
                 result[userId] = temp;
             });
