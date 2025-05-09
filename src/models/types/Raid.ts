@@ -14,8 +14,8 @@ export interface Raid {
     rarity: Rarity;
     damageDealt: number;
     damageType: DamageType;
-    startedOn: Date;
-    completedOn: Date;
+    startedOn: number;
+    completedOn: number;
     heroDetails: PublicHeroDetail[];
     machineOfWarDetails: PublicHeroDetail;
     globalConfigHash: string;

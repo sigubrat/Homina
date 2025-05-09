@@ -66,6 +66,30 @@ class HominaTacticusClient {
 
         return body;
     }
+
+    async getGuildRaidByCurrentSeason(
+        apiKey: string
+    ): Promise<GuildRaidResponse> {
+        try {
+            const response = await fetch(`${this.baseUrl}/guildRaid`, {
+                method: "GET",
+                headers: {
+                    Accept: "application/json",
+                    "X-API-KEY": `${apiKey}`,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`GET request failed: ${response.statusText}`);
+            }
+
+            const body = (await response.json()) as GuildRaidResponse;
+
+            return body;
+        } catch (error) {
+            throw new Error(`GET request failed: ${error}`);
+        }
+    }
 }
 
 // Typeguards because TS shenanigans
