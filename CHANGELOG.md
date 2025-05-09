@@ -23,6 +23,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.9.1] - 2025-05-09
+
+Temporarily disables the `/available-tokens-bombs` command due to a bug leading to incorrect data.
+
+There is unfortunately no way to calculate this data correctly with just the guild APIs and a solution would require API tokens for each player.
+
 ## [0.9.0] - 2025-05-09
 
 Special thanks to `WolfLord 5's` for the feature request.
