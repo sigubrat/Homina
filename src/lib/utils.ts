@@ -99,7 +99,6 @@ export const multiHitTeam = [
     "orksWarboss", // Gulgortz
     "worldKharn", // Kharn
     "spaceBlackmane", // Ragnar
-    "tauCrisis", // Re'vas
     "templHelbrecht", // Helbrecht
     "bloodDante", // Dante
     "ultraCalgar", // Calgar
