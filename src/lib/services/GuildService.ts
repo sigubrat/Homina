@@ -4,11 +4,18 @@ import type {
     GuildRaidAvailable,
     GuildRaidResult,
     Raid,
+    Token,
     TokensAndBombs,
 } from "@/models/types";
 import { DamageType, EncounterType, Rarity } from "@/models/enums";
 import type { TeamDistribution } from "@/models/types/TeamDistribution";
-import { getUnixTimestamp, hasLynchpinHero, inTeamsCheck } from "../utils";
+import {
+    evaluateToken,
+    getUnixTimestamp,
+    hasLynchpinHero,
+    inTeamsCheck,
+    timestampInSecondsToString,
+} from "../utils";
 import type { GuildMemberMapping } from "@/models/types/GuildMemberMapping";
 
 export class GuildService {
@@ -390,7 +397,8 @@ export class GuildService {
     }
 
     async getAvailableTokensAndBombs(userId: string) {
-        const tokenCooldown = 12;
+        const tokenCooldownInSeconds = 12 * 60 * 60;
+        const bombCooldownInSeconds = 18 * 60 * 60;
         const maxTokens = 3;
         const now = new Date();
 
@@ -447,39 +455,59 @@ export class GuildService {
                     })
                     .find(() => true);
 
-                if (!mostRecentBomb) {
-                    temp.bombs = 1;
-                } else {
+                temp.bombs = 1;
+                if (mostRecentBomb) {
+                    // diff in seconds
                     const diff =
                         getUnixTimestamp(now) - mostRecentBomb.startedOn;
-                    const diffHours = diff / 3600;
-                    if (diffHours > 18) temp.bombs = 1;
-                }
-
-                const sortedTokensDesc = data.tokens
-                    .sort((a, b) => b.startedOn - a.startedOn)
-                    .slice(0, maxTokens);
-
-                let rechargedToken = 0;
-                for (let i = 0; i < sortedTokensDesc.length; i++) {
-                    const token = sortedTokensDesc[i];
-
-                    if (!token) {
-                        break;
-                    }
-                    const diffHours =
-                        (getUnixTimestamp(now) - token.startedOn) / 3600;
-                    const threshold = tokenCooldown * (i + 1);
-                    if (diffHours < threshold) {
-                        break;
-                    } else {
-                        rechargedToken += 1;
+                    const diffHours = Math.floor(diff / 3600);
+                    if (diffHours < 18) {
+                        temp.bombs = 0;
+                        temp.bombCooldown = timestampInSecondsToString(
+                            bombCooldownInSeconds - diff
+                        );
                     }
                 }
 
-                temp.tokens =
-                    maxTokens - (sortedTokensDesc.length - rechargedToken);
+                const sortedTokensAsc = data.tokens.sort(
+                    (a, b) => a.startedOn - b.startedOn
+                );
 
+                // We have two possible cases at the beginning of a season:
+                // 1. The user used up all their tokens and refreshed 2 of them during the cooldown period and is therefore at 2
+                // 2. The user was able to recharge all their tokens during the pause and is now at max
+                // We start with the assumption that they are at 2 and then add an extra token if we find out that's not correct
+
+                const initialTimestamp =
+                    sortedTokensAsc[0]?.startedOn ?? getUnixTimestamp(now);
+                let token: Token = {
+                    refreshTime: initialTimestamp,
+                    count: 2,
+                };
+
+                sortedTokensAsc
+                    .filter((raid) => {
+                        return raid.startedOn !== null;
+                    })
+                    .forEach((raid) => {
+                        token = evaluateToken(token, raid.startedOn);
+                        token.count--;
+
+                        // Check if we're experiencing case 2
+                        if (token.count < 0) {
+                            token.count = 0;
+                            token.refreshTime = raid.startedOn;
+                        }
+                    });
+
+                token = evaluateToken(token, getUnixTimestamp(now));
+                if (token.count < maxTokens) {
+                    const tokenDiff = getUnixTimestamp(now) - token.refreshTime;
+                    temp.tokenCooldown = timestampInSecondsToString(
+                        tokenCooldownInSeconds - tokenDiff
+                    );
+                }
+                temp.tokens = token.count;
                 result[userId] = temp;
             });
 

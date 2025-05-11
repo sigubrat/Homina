@@ -23,6 +23,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.10.0] - 2025-05-11
+
+Provides functionality to see your guild's available GR tokens and bombs.
+
+### Changed
+
+-   `/available-bombs-tokens` has changed name to `/gr-availability`
+
+### Fixed
+
+Fixes the incorrect calculation of available guild raid tokens
+
+### Added
+
+Adds cooldown timers for both bombs and guild raid tokens if there are any
+
 ## [0.9.1] - 2025-05-09
 
 Temporarily disables the `/available-tokens-bombs` command due to a bug leading to incorrect data.
