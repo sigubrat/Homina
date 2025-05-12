@@ -44,18 +44,18 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const table = Object.entries(result).map(([userId, available]) => {
             let tokenStatus: string;
             if (available.tokens === 0) {
-                tokenStatus = "❌" + available.tokenCooldown;
+                tokenStatus = `❌ \`${available.tokenCooldown}\``;
             } else {
                 tokenStatus =
                     available.tokens === 3
                         ? "✅ 3/3"
-                        : `✅ ${available.tokens}/3 cooldown: ${available.tokenCooldown}`;
+                        : `✅ ${available.tokens}/3 cooldown: \`${available.tokenCooldown}\``;
             }
 
             const bombStatus =
                 available.bombs > 0
                     ? "✅ Available"
-                    : "❌" + available.bombCooldown;
+                    : `❌ \`${available.bombCooldown}\``;
             return `\`${userId}\` - ${tokenStatus} - Bomb: ${bombStatus}`;
         });
 
