@@ -2,7 +2,7 @@ import * as fs from "fs/promises";
 import * as path from "path";
 import { Collection } from "discord.js";
 import { HominaTacticusClient } from "@/client";
-import type { GuildRaidResult } from "@/models/types";
+import type { GuildRaidResult, Token } from "@/models/types";
 import type { TokensUsed } from "@/models/types/TokensUsed";
 
 async function getCommands(
@@ -99,7 +99,6 @@ export const multiHitTeam = [
     "orksWarboss", // Gulgortz
     "worldKharn", // Kharn
     "spaceBlackmane", // Ragnar
-    "tauCrisis", // Re'vas
     "templHelbrecht", // Helbrecht
     "bloodDante", // Dante
     "ultraCalgar", // Calgar
@@ -182,4 +181,29 @@ export function sortTokensUsed(data: TokensUsed[]) {
 
 export function getUnixTimestamp(date: Date) {
     return Math.floor(date.getTime() / 1000);
+}
+
+export function evaluateToken(token: Token, timestampInSeconds: number): Token {
+    const twelveHoursInSeconds = 12 * 60 * 60;
+    const maxTokens = 3;
+    const nRecharged = Math.floor(
+        (timestampInSeconds - token.refreshTime) / twelveHoursInSeconds
+    );
+
+    if (nRecharged + token.count >= maxTokens) {
+        token.count = maxTokens;
+        token.refreshTime = timestampInSeconds;
+    } else {
+        token.count += nRecharged;
+        token.refreshTime += nRecharged * twelveHoursInSeconds;
+    }
+
+    return token;
+}
+
+export function timestampInSecondsToString(timestampInSeconds: number): string {
+    const timeInHours = Math.floor(timestampInSeconds / 3600);
+    const timeInMinutes = Math.floor((timestampInSeconds % 3600) / 60);
+    const timeInSeconds = timestampInSeconds % 60;
+    return `${timeInHours}h ${timeInMinutes}m ${timeInSeconds}s`;
 }
