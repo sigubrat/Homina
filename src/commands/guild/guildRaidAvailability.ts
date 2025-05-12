@@ -74,7 +74,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             )
             .setTimestamp()
             .setFooter({
-                text: "Data fetched from the guild raid API",
+                text: "Data fetched from the guild raid API.\n(NB! Inaccuracies may occur for users who have joined mid-season)",
             });
 
         for (let i = 0; i < table.length; i += 10) {
