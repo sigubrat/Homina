@@ -5,4 +5,5 @@ export interface GuildRaidResult {
     boss: string;
     set: number;
     tier: number;
+    startedOn: number;
 }

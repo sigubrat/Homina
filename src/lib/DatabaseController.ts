@@ -1,7 +1,7 @@
 import { DataTypes, Sequelize } from "sequelize";
 import { validateEnvVars, type DbTestResult } from "./db_utils";
 import type { GuildMemberMapping } from "@/models/types/GuildMemberMapping";
-import { logger } from "./pino-logger";
+import { logger } from "./HominaLogger";
 
 export class DatabaseController {
     private sequelize: Sequelize;

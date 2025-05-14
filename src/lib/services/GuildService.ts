@@ -197,6 +197,7 @@ export class GuildService {
                     boss: entry.type,
                     set: entry.set,
                     tier: entry.tier,
+                    startedOn: entry.startedOn,
                 });
             }
         }
@@ -260,6 +261,7 @@ export class GuildService {
                     boss: entry.type,
                     set: entry.set,
                     tier: entry.tier,
+                    startedOn: entry.startedOn,
                 });
             }
         }
