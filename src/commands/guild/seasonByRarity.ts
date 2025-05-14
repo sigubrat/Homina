@@ -22,8 +22,8 @@ export const data = new SlashCommandBuilder()
     )
     .addStringOption((option) => {
         return option
-            .setName("tier")
-            .setDescription("The tier of the boss")
+            .setName("rarity")
+            .setDescription("The rarity of the boss")
             .setRequired(true)
             .addChoices(
                 { name: "Legendary", value: Rarity.LEGENDARY },
@@ -41,7 +41,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 
     const season = interaction.options.getNumber("season");
-    const rarity = interaction.options.getString("tier") as Rarity;
+    const rarity = interaction.options.getString("rarity") as Rarity;
 
     if (!season || !Number.isInteger(season) || season <= 0) {
         await interaction.editReply({
@@ -65,7 +65,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     );
 
     try {
-        const result = await service.getGuildRaidResultByTierSeasonPerBoss(
+        const result = await service.getGuildRaidResultByRaritySeasonPerBoss(
             interaction.user.id,
             season,
             rarity

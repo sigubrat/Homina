@@ -196,16 +196,17 @@ export class GuildService {
                     totalTokens: 1,
                     boss: entry.type,
                     set: entry.set,
+                    tier: entry.tier,
                 });
             }
         }
         return damagePeruser;
     }
 
-    async getGuildRaidResultByTierSeasonPerBoss(
+    async getGuildRaidResultByRaritySeasonPerBoss(
         userId: string,
         season: number,
-        tier: Rarity
+        rarity: Rarity
     ) {
         const apiKey = await dbController.getUserToken(userId);
         if (!apiKey) {
@@ -219,8 +220,8 @@ export class GuildService {
 
         let entries: Raid[] = resp.entries;
 
-        if (tier) {
-            entries = entries.filter((entry) => entry.rarity === tier);
+        if (rarity) {
+            entries = entries.filter((entry) => entry.rarity === rarity);
         }
 
         const groupedResults: Record<string, GuildRaidResult[]> = {};
@@ -258,6 +259,7 @@ export class GuildService {
                     totalTokens: 1,
                     boss: entry.type,
                     set: entry.set,
+                    tier: entry.tier,
                 });
             }
         }
