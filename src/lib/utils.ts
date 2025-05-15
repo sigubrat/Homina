@@ -202,12 +202,18 @@ export function evaluateToken(token: Token, timestampInSeconds: number): Token {
 }
 
 export function timestampInSecondsToString(timestampInSeconds: number): string {
-    const timeInDays = Math.floor(timestampInSeconds / (3600 * 24));
-    const days = timeInDays > 0 ? `${timeInDays}d ` : "";
-    const timeInHours = Math.floor(timestampInSeconds / 3600);
-    const timeInMinutes = Math.floor((timestampInSeconds % 3600) / 60);
-    const timeInSeconds = timestampInSeconds % 60;
-    return `${days}${timeInHours}h ${timeInMinutes}m ${timeInSeconds}s`;
+    const secondsPerDay = 24 * 3600;
+    const days = Math.floor(timestampInSeconds / secondsPerDay);
+    const remAfterDays = timestampInSeconds % secondsPerDay;
+
+    const hours = Math.floor(remAfterDays / 3600);
+    const remAfterHours = remAfterDays % 3600;
+
+    const minutes = Math.floor(remAfterHours / 60);
+    const seconds = remAfterHours % 60;
+
+    const daysPart = days > 0 ? `${days}d ` : "";
+    return `${daysPart}${hours}h ${minutes}m ${seconds}s`;
 }
 
 export function mapTierToRarity(tier: number): string {
@@ -227,5 +233,5 @@ export function mapTierToRarity(tier: number): string {
         return "Legendary";
     }
 
-    return `Legendary round ${tier - 4}`;
+    return `Legendary - loop ${tier - 4}`;
 }
