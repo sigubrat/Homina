@@ -23,6 +23,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.11.0] - 2025-05-15
+
+### Added
+
+-   Command `/gr-time-used` to see how much time and tokens it took to take down a guild-raid boss
+
+    -   Mandatory season option
+    -   Optional rarity option
+    -   Pagination
+
+-   Pagination library that extends Discord.js' EmbedBuilder
+-   New Data transformation service
+-   First testsuite
+
 ## [0.10.0] - 2025-05-11
 
 Provides functionality to see your guild's available GR tokens and bombs.
