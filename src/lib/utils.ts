@@ -202,8 +202,36 @@ export function evaluateToken(token: Token, timestampInSeconds: number): Token {
 }
 
 export function timestampInSecondsToString(timestampInSeconds: number): string {
-    const timeInHours = Math.floor(timestampInSeconds / 3600);
-    const timeInMinutes = Math.floor((timestampInSeconds % 3600) / 60);
-    const timeInSeconds = timestampInSeconds % 60;
-    return `${timeInHours}h ${timeInMinutes}m ${timeInSeconds}s`;
+    const secondsPerDay = 24 * 3600;
+    const days = Math.floor(timestampInSeconds / secondsPerDay);
+    const remAfterDays = timestampInSeconds % secondsPerDay;
+
+    const hours = Math.floor(remAfterDays / 3600);
+    const remAfterHours = remAfterDays % 3600;
+
+    const minutes = Math.floor(remAfterHours / 60);
+    const seconds = remAfterHours % 60;
+
+    const daysPart = days > 0 ? `${days}d ` : "";
+    return `${daysPart}${hours}h ${minutes}m ${seconds}s`;
+}
+
+export function mapTierToRarity(tier: number): string {
+    if (tier < 0) {
+        throw new Error("Tier cannot be negative");
+    }
+
+    if (tier === 0) {
+        return "Common";
+    } else if (tier === 1) {
+        return "Uncommon";
+    } else if (tier === 2) {
+        return "Rare";
+    } else if (tier === 3) {
+        return "Epic";
+    } else if (tier === 4) {
+        return "Legendary";
+    }
+
+    return `Legendary - loop ${tier - 4}`;
 }

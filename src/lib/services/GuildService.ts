@@ -153,7 +153,7 @@ export class GuildService {
     async getGuildRaidResultBySeason(
         userId: string,
         season: number,
-        tier?: Rarity
+        rarity?: Rarity
     ): Promise<GuildRaidResult[] | null> {
         const apiKey = await dbController.getUserToken(userId);
         if (!apiKey) {
@@ -167,8 +167,8 @@ export class GuildService {
 
         let entries: Raid[] = resp.entries;
 
-        if (tier) {
-            entries = entries.filter((entry) => entry.rarity === tier);
+        if (rarity) {
+            entries = entries.filter((entry) => entry.rarity === rarity);
         }
 
         const damagePeruser: GuildRaidResult[] = [];
@@ -196,16 +196,18 @@ export class GuildService {
                     totalTokens: 1,
                     boss: entry.type,
                     set: entry.set,
+                    tier: entry.tier,
+                    startedOn: entry.startedOn,
                 });
             }
         }
         return damagePeruser;
     }
 
-    async getGuildRaidResultByTierSeasonPerBoss(
+    async getGuildRaidResultByRaritySeasonPerBoss(
         userId: string,
         season: number,
-        tier: Rarity
+        rarity: Rarity
     ) {
         const apiKey = await dbController.getUserToken(userId);
         if (!apiKey) {
@@ -219,8 +221,8 @@ export class GuildService {
 
         let entries: Raid[] = resp.entries;
 
-        if (tier) {
-            entries = entries.filter((entry) => entry.rarity === tier);
+        if (rarity) {
+            entries = entries.filter((entry) => entry.rarity === rarity);
         }
 
         const groupedResults: Record<string, GuildRaidResult[]> = {};
@@ -258,6 +260,8 @@ export class GuildService {
                     totalTokens: 1,
                     boss: entry.type,
                     set: entry.set,
+                    tier: entry.tier,
+                    startedOn: entry.startedOn,
                 });
             }
         }
@@ -516,5 +520,34 @@ export class GuildService {
             logger.error(error, "Error fetching available tokens and bombs: ");
             return null;
         }
+    }
+
+    async getGuildRaidBySeason(
+        userId: string,
+        season: number,
+        rarity?: Rarity
+    ) {
+        const apiKey = await dbController.getUserToken(userId);
+        if (!apiKey) {
+            return null;
+        }
+
+        const resp = await this.client.getGuildRaidBySeason(apiKey, season);
+        if (!resp || !resp.entries) {
+            return null;
+        }
+
+        if (rarity) {
+            resp.entries = resp.entries.filter(
+                (entry) => entry.rarity === rarity
+            );
+        }
+
+        const entries = resp.entries;
+        if (!entries) {
+            return null;
+        }
+
+        return entries;
     }
 }

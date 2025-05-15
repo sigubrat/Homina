@@ -9,6 +9,7 @@
         "chart.js": "^4.4.9",
         "chartjs-node-canvas": "^5.0.0",
         "discord.js": "^14.18.0",
+        "pagination.djs": "^4.0.18",
         "pg": "^8.15.1",
         "pg-hstore": "^2.3.4",
         "pino": "^7.0.0-rc.9",
@@ -354,6 +355,8 @@
     "p-locate": ["p-locate@5.0.0", "", { "dependencies": { "p-limit": "^3.0.2" } }, "sha512-LaNjtRWUBY++zB5nE/NwcaoMylSPk+S+ZHNB1TzdbMJMny6dynpAGt7X/tl/QYq3TIeE6nxHppbo2LGymrG5Pw=="],
 
     "package-json-from-dist": ["package-json-from-dist@1.0.1", "", {}, "sha512-UEZIS3/by4OC8vL3P2dTXRETpebLI2NiI5vIrjaD/5UtrkFX/tNbwjTSRAGC/+7CAo2pIcBaRgWmcBBHcsaCIw=="],
+
+    "pagination.djs": ["pagination.djs@4.0.18", "", { "peerDependencies": { "discord.js": "^14.18.0" } }, "sha512-FlKjdUFEA/UKne5Lt4ohcM2F59d5+AYkFdvPI+zpSAPl8n2ujeCNWwQGzOvpY45tMv+GQDc6w2d1Rl7O/UIHzg=="],
 
     "parent-module": ["parent-module@1.0.1", "", { "dependencies": { "callsites": "^3.0.0" } }, "sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g=="],
 

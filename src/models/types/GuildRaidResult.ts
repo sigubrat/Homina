@@ -4,4 +4,6 @@ export interface GuildRaidResult {
     totalTokens: number;
     boss: string;
     set: number;
+    tier: number;
+    startedOn: number;
 }
