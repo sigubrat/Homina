@@ -11,19 +11,19 @@ describe("DataTransformationServiceSuite - Algebra", () => {
             testGuildRaidData
         );
         expect(transformedData).toEqual({
-            "TervigonLeviathan-Common-0": {
+            "TervigonLeviathan-Common": {
                 time: "0h 0m 0s",
                 tokens: 1,
             },
-            "HiveTyrantLeviathan-Common-1": {
+            "HiveTyrantLeviathan-Common": {
                 time: "0h 1m 1s",
                 tokens: 1,
             },
-            "HiveTyrantGorgon-Common-2": {
+            "HiveTyrantGorgon-Common": {
                 time: "0h 0m 59s",
                 tokens: 1,
             },
-            "ScreamerKiller-Common-3": {
+            "ScreamerKiller-Common": {
                 time: "0h 27m 32s",
                 tokens: 2,
             },

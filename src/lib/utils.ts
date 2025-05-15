@@ -233,5 +233,5 @@ export function mapTierToRarity(tier: number): string {
         return "Legendary";
     }
 
-    return `Legendary - loop ${tier - 4}`;
+    return `Legendary (loop ${tier - 4})`;
 }

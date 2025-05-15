@@ -14,9 +14,7 @@ export class DataTransformationService {
                 if (curr.damageType === "Bomb") {
                     return acc;
                 }
-                const key = `${curr.type}-${mapTierToRarity(curr.tier)}-${
-                    curr.set
-                }`;
+                const key = `${curr.type}-${mapTierToRarity(curr.tier)}`;
                 if (!acc[key]) {
                     acc[key] = [];
                 }
