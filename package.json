@@ -30,6 +30,7 @@
         "chart.js": "^4.4.9",
         "chartjs-node-canvas": "^5.0.0",
         "discord.js": "^14.18.0",
+        "pagination.djs": "^4.0.18",
         "pg": "^8.15.1",
         "pg-hstore": "^2.3.4",
         "pino": "^7.0.0-rc.9",

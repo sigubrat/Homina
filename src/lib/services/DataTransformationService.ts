@@ -1,24 +1,29 @@
-import type { GuildRaidResult } from "@/models/types";
+import type { Raid } from "@/models/types";
 import type { TimeUsed } from "@/models/types/TimeUsed";
 import { logger } from "../HominaLogger";
-import { timestampInSecondsToString } from "../utils";
+import { mapTierToRarity, timestampInSecondsToString } from "../utils";
 
 export class DataTransformationService {
     constructor() {}
 
     async timeUsedPerBoss(
-        seasonData: GuildRaidResult[]
+        seasonData: Raid[]
     ): Promise<Record<string, TimeUsed>> {
         const groupedData = seasonData.reduce(
-            (acc: Record<string, GuildRaidResult[]>, curr: GuildRaidResult) => {
-                const key = `${curr.boss}-${curr.tier}`;
+            (acc: Record<string, Raid[]>, curr: Raid) => {
+                if (curr.damageType === "Bomb") {
+                    return acc;
+                }
+                const key = `${curr.type}-${mapTierToRarity(curr.tier)}-${
+                    curr.set
+                }`;
                 if (!acc[key]) {
                     acc[key] = [];
                 }
                 acc[key].push(curr);
                 return acc;
             },
-            {} as Record<string, GuildRaidResult[]> // initial accumulator value
+            {} as Record<string, Raid[]> // initial accumulator value
         );
 
         const result: Record<string, TimeUsed> = {};
@@ -31,10 +36,8 @@ export class DataTransformationService {
                 );
                 continue;
             }
-            console.log(`Processing boss: ${boss}`);
             // If this is the first boss, we take the first entry for that boss and the last and calculate the time
             if (previousKey === null) {
-                console.log(`First boss: ${boss}`);
                 const firstEntry = data[0];
                 const lastEntry = data[data.length - 1];
                 if (!firstEntry || !lastEntry) {
@@ -55,7 +58,6 @@ export class DataTransformationService {
                 continue;
             }
 
-            console.log(`Not first boss: ${boss}`);
             const lastEntry = data[data.length - 1];
             if (!lastEntry) {
                 logger.error(
@@ -63,24 +65,16 @@ export class DataTransformationService {
                 );
                 continue;
             }
-            if (!groupedData[previousKey]) {
+
+            const previousData = groupedData[previousKey];
+            if (!previousData) {
                 logger.error(
-                    `Previous key ${previousKey} not found in groupedData while calculating time used`
+                    `Previous data not found for boss ${previousKey} while calculating time used`
                 );
                 continue;
             }
-            if (
-                groupedData[previousKey][
-                    groupedData[previousKey].length - 1
-                ] === undefined
-            ) {
-                logger.error(
-                    `Previous last entry not found for boss ${previousKey} while calculating time used`
-                );
-                continue;
-            }
-            const previousLast =
-                groupedData[previousKey][groupedData[previousKey].length - 1];
+
+            const previousLast = previousData[previousData.length - 1];
             if (!previousLast) {
                 logger.error(
                     `Previous last entry not found for boss ${previousKey}`
@@ -102,13 +96,6 @@ export class DataTransformationService {
             );
 
             const timeUsed = timestampInSecondsToString(timeInSeconds);
-
-            result[boss] = {
-                time: timeUsed,
-                tokens: data.length,
-            };
-
-            previousKey = boss;
 
             result[boss] = {
                 time: timeUsed,
