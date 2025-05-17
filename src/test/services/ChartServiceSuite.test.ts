@@ -2,6 +2,8 @@ import { ChartService } from "@/lib/services/ChartService";
 import { GuildRaidResultFixture } from "../testFixtures";
 import { describe, expect, test } from "bun:test";
 
+console.log("ChartServiceSuite - Algebra");
+
 const chartService = new ChartService();
 const testData = GuildRaidResultFixture;
 
@@ -16,3 +18,5 @@ describe("ChartServiceSuite - Algebra", () => {
         expect(result.byteLength).toBeGreaterThan(0);
     });
 });
+
+console.log("ChartServiceSuite - Algebra - END");
