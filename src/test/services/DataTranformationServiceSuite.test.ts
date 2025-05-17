@@ -1,12 +1,12 @@
 import { DataTransformationService } from "@/lib/services/DataTransformationService";
 import { describe, expect, test } from "bun:test";
-import { guildRaidResultFixture } from "../testFixtures";
+import { RaidResultFixture } from "../testFixtures";
 
 const dtsService = new DataTransformationService();
-const testGuildRaidData = guildRaidResultFixture;
+const testGuildRaidData = RaidResultFixture;
 
 describe("DataTransformationServiceSuite - Algebra", () => {
-    test("Should properly transform guild raid data to tokens and time used per boss", async () => {
+    test("timeUsedPerBoss - Should properly transform guild raid data to tokens and time used per boss", async () => {
         const transformedData = await dtsService.timeUsedPerBoss(
             testGuildRaidData
         );

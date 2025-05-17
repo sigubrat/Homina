@@ -16,9 +16,6 @@ async function getCommands(
             const command = await import(path.join(commandsPath, file));
             if (command.data && command.data.name) {
                 commandsCollection.set(command.data.name, command);
-                console.log(`Loaded command: ${command.data.name}`);
-            } else {
-                console.warn(`Skipping file: ${file} (missing data or name)`);
             }
         }
     }
@@ -201,7 +198,7 @@ export function evaluateToken(token: Token, timestampInSeconds: number): Token {
     return token;
 }
 
-export function timestampInSecondsToString(timestampInSeconds: number): string {
+export function SecondsToString(timestampInSeconds: number): string {
     const secondsPerDay = 24 * 3600;
     const days = Math.floor(timestampInSeconds / secondsPerDay);
     const remAfterDays = timestampInSeconds % secondsPerDay;
