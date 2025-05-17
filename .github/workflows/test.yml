@@ -31,4 +31,4 @@ jobs:
                   bun --version
                   node --version
             - name: Run tests with verbose output
-              run: bun test --verbose
+              run: bun test; echo $?
