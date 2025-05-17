@@ -9,6 +9,10 @@ on:
 jobs:
     test:
         runs-on: ubuntu-latest
+        env:
+            DB_NAME: my_database_test
+            DB_USER: test_user
+            DB_PWD: secret_password
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
