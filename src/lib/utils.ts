@@ -16,9 +16,6 @@ async function getCommands(
             const command = await import(path.join(commandsPath, file));
             if (command.data && command.data.name) {
                 commandsCollection.set(command.data.name, command);
-                console.log(`Loaded command: ${command.data.name}`);
-            } else {
-                console.warn(`Skipping file: ${file} (missing data or name)`);
             }
         }
     }
@@ -27,19 +24,24 @@ async function getCommands(
 }
 
 export async function getAllCommands(): Promise<Collection<string, any>> {
-    const commandsRoot = path.join(__dirname, "../commands");
-    const sources = await fs.readdir(commandsRoot, { withFileTypes: true });
-    const categoryDirs = sources
-        .filter((d) => d.isDirectory())
-        .map((d) => d.name);
+    try {
+        const commandsRoot = path.join(__dirname, "../commands");
+        const sources = await fs.readdir(commandsRoot, { withFileTypes: true });
+        const categoryDirs = sources
+            .filter((d) => d.isDirectory())
+            .map((d) => d.name);
 
-    const commandsCollection = new Collection<string, any>();
-    for (const category of categoryDirs) {
-        const commandsPath = path.join(commandsRoot, category);
-        const commands = await getCommands(commandsPath);
-        commands.forEach((cmd, key) => commandsCollection.set(key, cmd));
+        const commandsCollection = new Collection<string, any>();
+        for (const category of categoryDirs) {
+            const commandsPath = path.join(commandsRoot, category);
+            const commands = await getCommands(commandsPath);
+            commands.forEach((cmd, key) => commandsCollection.set(key, cmd));
+        }
+        return commandsCollection;
+    } catch (error) {
+        console.error("Error loading commands:", error);
+        throw error;
     }
-    return commandsCollection;
 }
 
 export async function testApiToken(token: string): Promise<boolean> {
@@ -201,7 +203,7 @@ export function evaluateToken(token: Token, timestampInSeconds: number): Token {
     return token;
 }
 
-export function timestampInSecondsToString(timestampInSeconds: number): string {
+export function SecondsToString(timestampInSeconds: number): string {
     const secondsPerDay = 24 * 3600;
     const days = Math.floor(timestampInSeconds / secondsPerDay);
     const remAfterDays = timestampInSeconds % secondsPerDay;

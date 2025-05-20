@@ -1,7 +1,7 @@
 import type { Raid } from "@/models/types";
 import type { TimeUsed } from "@/models/types/TimeUsed";
 import { logger } from "../HominaLogger";
-import { mapTierToRarity, timestampInSecondsToString } from "../utils";
+import { mapTierToRarity, SecondsToString } from "../utils";
 
 export class DataTransformationService {
     constructor() {}
@@ -49,7 +49,7 @@ export class DataTransformationService {
                 );
 
                 result[boss] = {
-                    time: timestampInSecondsToString(timeInSeconds),
+                    time: SecondsToString(timeInSeconds),
                     tokens: data.length,
                 };
                 previousKey = boss;
@@ -93,7 +93,7 @@ export class DataTransformationService {
                 previousLast.startedOn - lastEntry.startedOn
             );
 
-            const timeUsed = timestampInSecondsToString(timeInSeconds);
+            const timeUsed = SecondsToString(timeInSeconds);
 
             result[boss] = {
                 time: timeUsed,

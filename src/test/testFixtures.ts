@@ -1,7 +1,7 @@
 import { DamageType, EncounterType, Rarity } from "@/models/enums";
-import type { Raid } from "@/models/types";
+import type { GuildRaidResult, Raid } from "@/models/types";
 
-export const guildRaidResultFixture: Raid[] = [
+export const RaidResultFixture: Raid[] = [
     {
         userId: "testUser1",
         tier: 0,
@@ -100,5 +100,44 @@ export const guildRaidResultFixture: Raid[] = [
         machineOfWarDetails: { unitId: "", power: 0 },
 
         globalConfigHash: "",
+    },
+];
+
+export const GuildRaidResultFixture: GuildRaidResult[] = [
+    {
+        username: "testUser1",
+        totalDamage: 18000,
+        totalTokens: 10,
+        boss: "TervigonLeviathan",
+        set: 0,
+        tier: 0,
+        startedOn: 1742984513,
+    },
+    {
+        username: "testUser22",
+        totalDamage: 63000, // sum of two runs in sets 1 & 2
+        totalTokens: 20,
+        boss: "HiveTyrantLeviathan",
+        set: 1,
+        tier: 0,
+        startedOn: 1742984574,
+    },
+    {
+        username: "testUser24",
+        totalDamage: 91135,
+        totalTokens: 25,
+        boss: "ScreamerKiller",
+        set: 3,
+        tier: 0,
+        startedOn: 1742985806,
+    },
+    {
+        username: "testUser32",
+        totalDamage: 27800,
+        totalTokens: 12,
+        boss: "ScreamerKiller",
+        set: 3,
+        tier: 0,
+        startedOn: 1742986285,
     },
 ];

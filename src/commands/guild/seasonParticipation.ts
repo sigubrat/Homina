@@ -89,6 +89,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 totalTokens: 0,
                 boss: "None",
                 set: 0,
+                tier: 0,
+                startedOn: 0,
             });
         });
 

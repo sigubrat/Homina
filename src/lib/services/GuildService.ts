@@ -14,7 +14,7 @@ import {
     getUnixTimestamp,
     hasLynchpinHero,
     inTeamsCheck,
-    timestampInSecondsToString,
+    SecondsToString,
 } from "../utils";
 import type { GuildMemberMapping } from "@/models/types/GuildMemberMapping";
 
@@ -467,7 +467,7 @@ export class GuildService {
                     const diffHours = Math.floor(diff / 3600);
                     if (diffHours < 18) {
                         temp.bombs = 0;
-                        temp.bombCooldown = timestampInSecondsToString(
+                        temp.bombCooldown = SecondsToString(
                             bombCooldownInSeconds - diff
                         );
                     }
@@ -507,7 +507,7 @@ export class GuildService {
                 token = evaluateToken(token, getUnixTimestamp(now));
                 if (token.count < maxTokens) {
                     const tokenDiff = getUnixTimestamp(now) - token.refreshTime;
-                    temp.tokenCooldown = timestampInSecondsToString(
+                    temp.tokenCooldown = SecondsToString(
                         tokenCooldownInSeconds - tokenDiff
                     );
                 }
