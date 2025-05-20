@@ -2,8 +2,6 @@ import { DataTransformationService } from "@/lib/services/DataTransformationServ
 import { describe, expect, test } from "bun:test";
 import { RaidResultFixture } from "../testFixtures";
 
-console.log("DataTransformationServiceSuite - Algebra");
-
 const dtsService = new DataTransformationService();
 const testGuildRaidData = RaidResultFixture;
 
@@ -32,5 +30,3 @@ describe("DataTransformationServiceSuite - Algebra", () => {
         });
     });
 });
-
-console.log("DataTransformationServiceSuite - Algebra - END");

@@ -15,8 +15,6 @@ import {
 import type { GuildRaidResult } from "@/models/types";
 import { describe, expect, test } from "bun:test";
 
-console.log("utilsSuite - Algebra");
-
 describe("utilsSuite - Algebra", () => {
     test("getCommands - Should fetch a promise that resolves to a collection of commands", async () => {
         const commands = await getAllCommands();
@@ -206,5 +204,3 @@ describe("utilsSuite - Algebra", () => {
         expect(() => mapTierToRarity(-1)).toThrow("Tier cannot be negative");
     });
 });
-
-console.log("utilsSuite - Algebra - END");
