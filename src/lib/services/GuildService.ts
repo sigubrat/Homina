@@ -153,7 +153,8 @@ export class GuildService {
     async getGuildRaidResultBySeason(
         userId: string,
         season: number,
-        rarity?: Rarity
+        rarity?: Rarity,
+        includePrimes: boolean = true
     ): Promise<GuildRaidResult[] | null> {
         const apiKey = await dbController.getUserToken(userId);
         if (!apiKey) {
@@ -178,6 +179,14 @@ export class GuildService {
             if (!entry.userId || entry.damageType === DamageType.BOMB) {
                 continue;
             }
+
+            if (
+                !includePrimes &&
+                entry.encounterType === EncounterType.SIDE_BOSS
+            ) {
+                continue;
+            }
+
             let username = await dbController.getPlayerName(entry.userId);
             if (!username) {
                 username = "Unknown";
@@ -189,6 +198,14 @@ export class GuildService {
             if (existingEntry) {
                 existingEntry.totalDamage += entry.damageDealt;
                 existingEntry.totalTokens += 1;
+                existingEntry.maxDmg = Math.max(
+                    existingEntry.maxDmg ?? 0,
+                    entry.damageDealt
+                );
+                existingEntry.minDmg = Math.min(
+                    existingEntry.minDmg ?? entry.damageDealt,
+                    entry.damageDealt
+                );
             } else {
                 damagePeruser.push({
                     username: username,
@@ -198,6 +215,8 @@ export class GuildService {
                     set: entry.set,
                     tier: entry.tier,
                     startedOn: entry.startedOn,
+                    minDmg: undefined,
+                    maxDmg: 0,
                 });
             }
         }
@@ -253,6 +272,14 @@ export class GuildService {
             if (existingUserEntry) {
                 existingUserEntry.totalDamage += entry.damageDealt;
                 existingUserEntry.totalTokens += 1;
+                existingUserEntry.maxDmg = Math.max(
+                    existingUserEntry.maxDmg ?? 0,
+                    entry.damageDealt
+                );
+                existingUserEntry.minDmg = Math.min(
+                    existingUserEntry.minDmg ?? entry.damageDealt,
+                    entry.damageDealt
+                );
             } else {
                 groupedResults[boss].push({
                     username: username,
@@ -262,6 +289,8 @@ export class GuildService {
                     set: entry.set,
                     tier: entry.tier,
                     startedOn: entry.startedOn,
+                    minDmg: undefined,
+                    maxDmg: 0,
                 });
             }
         }
@@ -311,7 +340,7 @@ export class GuildService {
             };
 
             for (const entry of entries) {
-                // bombs don't count as damage
+                // bombs and sideboss don't count as damage
                 if (
                     !entry.userId ||
                     entry.damageType === DamageType.BOMB ||
@@ -394,6 +423,200 @@ export class GuildService {
             }
 
             return totalDistribution;
+        } catch (error) {
+            logger.error(error, "Error fetching guild seasons: ");
+            return null;
+        }
+    }
+
+    async getMetaTeamDistributionPerPlayer(
+        userId: string,
+        season: number,
+        tier?: Rarity
+    ) {
+        try {
+            const apiKey = await dbController.getUserToken(userId);
+            if (!apiKey) {
+                return null;
+            }
+
+            const resp = await this.client.getGuildRaidBySeason(apiKey, season);
+            if (!resp || !resp.entries) {
+                return null;
+            }
+
+            let entries: Raid[] = resp.entries;
+
+            if (tier) {
+                entries = entries.filter((entry) => entry.rarity === tier);
+            }
+
+            const groupedResults: Record<string, Raid[]> = {};
+            for (const entry of entries) {
+                const userID = entry.userId;
+                // bombs and sideboss don't count as damage
+                if (
+                    !entry.userId ||
+                    entry.damageType === DamageType.BOMB ||
+                    entry.encounterType === EncounterType.SIDE_BOSS
+                ) {
+                    continue;
+                }
+
+                // Ensure groupedResults[username] is initialized
+                if (!groupedResults[userID]) {
+                    groupedResults[userID] = [];
+                }
+
+                groupedResults[userID].push(entry);
+            }
+
+            const result: Record<string, TeamDistribution> = {};
+            for (const key in groupedResults) {
+                // Replace ID with username
+                const entries = groupedResults[key];
+                const username = await dbController.getPlayerName(key);
+                if (!username || !entries) {
+                    continue;
+                }
+
+                const totalDistribution: TeamDistribution = {
+                    mech: 0,
+                    multihit: 0,
+                    psyker: 0,
+                    mechDamage: 0,
+                    multihitDamage: 0,
+                    psykerDamage: 0,
+                    other: 0,
+                    otherDamage: 0,
+                };
+
+                for (const entry of entries) {
+                    // bombs and sideboss don't count as damage
+                    if (
+                        !entry.userId ||
+                        entry.damageType === DamageType.BOMB ||
+                        entry.encounterType === EncounterType.SIDE_BOSS
+                    ) {
+                        continue;
+                    }
+
+                    const heroes = entry.heroDetails.map((hero) => hero.unitId);
+
+                    const distribution: TeamDistribution = {
+                        multihit: 0,
+                        mech: 0,
+                        psyker: 0,
+                        other: 0,
+                    };
+
+                    for (const hero of heroes) {
+                        const check = inTeamsCheck(hero);
+                        distribution.mech += check.inMech ? 1 : 0;
+                        distribution.multihit += check.inMulti ? 1 : 0;
+                        distribution.psyker += check.inPsyker ? 1 : 0;
+                    }
+
+                    // find which property of distrubution has the highest value
+                    const values = [
+                        distribution.mech,
+                        distribution.multihit,
+                        distribution.psyker,
+                    ];
+
+                    // Check that at least one of the values is 3 or more, or else we count it as non-meta (other)
+                    if (
+                        distribution.mech < this.metaTeamThreshold &&
+                        distribution.multihit < this.metaTeamThreshold &&
+                        distribution.psyker < this.metaTeamThreshold
+                    ) {
+                        totalDistribution.other += 1;
+                        totalDistribution.otherDamage =
+                            (totalDistribution.otherDamage || 0) +
+                            entry.damageDealt;
+                        continue;
+                    }
+
+                    const maxValue = Math.max(...values);
+                    const maxIndex = values.indexOf(maxValue);
+                    const teams = ["mech", "multihit", "psyker"];
+                    const team = teams[maxIndex];
+
+                    if (!team) {
+                        throw new Error("teams[maxIndex] is somehow undefined");
+                    }
+
+                    if (!hasLynchpinHero(heroes, team)) {
+                        totalDistribution.other += 1;
+                        totalDistribution.otherDamage =
+                            (totalDistribution.otherDamage || 0) +
+                            entry.damageDealt;
+                        continue;
+                    }
+
+                    if (team === "mech") {
+                        // Check if the team has a lynchpin hero
+                        totalDistribution.mech =
+                            (totalDistribution.mech || 0) + 1;
+                        totalDistribution.mechDamage =
+                            (totalDistribution.mechDamage || 0) +
+                            entry.damageDealt;
+                    } else if (team === "multihit") {
+                        totalDistribution.multihit =
+                            (totalDistribution.multihit || 0) + 1;
+                        totalDistribution.multihitDamage =
+                            (totalDistribution.multihitDamage || 0) +
+                            entry.damageDealt;
+                    } else if (team === "psyker") {
+                        totalDistribution.psyker =
+                            (totalDistribution.psyker || 0) + 1;
+                        totalDistribution.psykerDamage =
+                            (totalDistribution.psykerDamage || 0) +
+                            entry.damageDealt;
+                    }
+                }
+
+                // Calculate percentages
+                const totalEntries = entries.length;
+                const totalDamage =
+                    totalDistribution.mechDamage! +
+                    totalDistribution.multihitDamage! +
+                    totalDistribution.psykerDamage! +
+                    totalDistribution.otherDamage!;
+
+                if (totalDamage === 0 || totalEntries === 0) {
+                    result[username] = {
+                        mech: 0,
+                        multihit: 0,
+                        psyker: 0,
+                        other: 0,
+                        mechDamage: 0,
+                        multihitDamage: 0,
+                        psykerDamage: 0,
+                        otherDamage: 0,
+                    };
+                    continue;
+                }
+
+                const percentages: TeamDistribution = {
+                    mech: (totalDistribution.mech / totalEntries) * 100,
+                    multihit: (totalDistribution.multihit / totalEntries) * 100,
+                    psyker: (totalDistribution.psyker / totalEntries) * 100,
+                    other: (totalDistribution.other / totalEntries) * 100,
+                    mechDamage:
+                        (totalDistribution.mechDamage! / totalDamage) * 100,
+                    multihitDamage:
+                        (totalDistribution.multihitDamage! / totalDamage) * 100,
+                    psykerDamage:
+                        (totalDistribution.psykerDamage! / totalDamage) * 100,
+                    otherDamage:
+                        (totalDistribution.otherDamage! / totalDamage) * 100,
+                };
+
+                result[username] = percentages;
+            }
+
+            return result;
         } catch (error) {
             logger.error(error, "Error fetching guild seasons: ");
             return null;
