@@ -9,7 +9,7 @@ export class CryptoService {
         const iv = crypto.randomBytes(IV_LENGTH);
         const cipher = crypto.createCipheriv(
             "aes-256-cbc",
-            Buffer.from(key),
+            Buffer.from(key, "hex"),
             iv
         );
         let encrypted = cipher.update(text, "utf8", "base64");
@@ -24,7 +24,7 @@ export class CryptoService {
         }
         const decipher = crypto.createDecipheriv(
             "aes-256-cbc",
-            Buffer.from(key),
+            Buffer.from(key, "hex"),
             Buffer.from(iv, "base64")
         );
         let decrypted = decipher.update(encrypted, "base64", "utf8");
@@ -35,7 +35,7 @@ export class CryptoService {
 
 function getEncryptionKey(): string {
     const key = process.env.ENCRYPTION_KEY;
-    if (!key || Buffer.from(key).length !== 32) {
+    if (!key || Buffer.from(key, "hex").length !== 32) {
         throw new Error(
             "ENCRYPTION_KEY must be set and must be 32 characters long."
         );
