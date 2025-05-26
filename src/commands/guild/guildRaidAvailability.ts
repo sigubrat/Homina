@@ -41,23 +41,33 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
-        const table = Object.entries(result).map(([userId, available]) => {
-            let tokenStatus: string;
-            if (available.tokens === 0) {
-                tokenStatus = `❌ \`${available.tokenCooldown}\``;
-            } else {
-                tokenStatus =
-                    available.tokens === 3
-                        ? "✅ 3/3"
-                        : `✅ ${available.tokens}/3 cooldown: \`${available.tokenCooldown}\``;
-            }
+        const table = Object.entries(result)
+            .map(([userId, available]) => {
+                let tokenIcon: string;
+                if (available.tokens === 0) {
+                    tokenIcon = "❌";
+                } else if (available.tokens === 3) {
+                    tokenIcon = "⚠️";
+                } else {
+                    tokenIcon = "✅";
+                }
 
-            const bombStatus =
-                available.bombs > 0
-                    ? "✅ Available"
-                    : `❌ \`${available.bombCooldown}\``;
-            return `\`${userId}\` - ${tokenStatus} - Bomb: ${bombStatus}`;
-        });
+                if (!available.tokenCooldown)
+                    available.tokenCooldown = "NO COOLDOWN";
+
+                const tokenStatus = `${tokenIcon} \`${available.tokens}/3\` cooldown: \`${available.tokenCooldown}\``;
+
+                const bombIcon = available.bombs > 0 ? "✅" : `❌`;
+                const bombStatus = `${bombIcon} \`${
+                    available.bombCooldown ?? "NO COOLDOWN"
+                }\``;
+                return {
+                    text: `${tokenStatus} - Bomb: ${bombStatus} - **${userId}**`,
+                    tokens: available.tokens,
+                };
+            })
+            .sort((a, b) => b.tokens - a.tokens) // Sort by tokens descending
+            .map((item) => item.text);
 
         if (table.length === 0) {
             await interaction.editReply({

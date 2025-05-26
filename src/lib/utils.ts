@@ -208,11 +208,15 @@ export function SecondsToString(timestampInSeconds: number): string {
     const days = Math.floor(timestampInSeconds / secondsPerDay);
     const remAfterDays = timestampInSeconds % secondsPerDay;
 
-    const hours = Math.floor(remAfterDays / 3600);
+    const hours = Math.floor(remAfterDays / 3600)
+        .toString()
+        .padStart(2, "0");
     const remAfterHours = remAfterDays % 3600;
 
-    const minutes = Math.floor(remAfterHours / 60);
-    const seconds = remAfterHours % 60;
+    const minutes = Math.floor(remAfterHours / 60)
+        .toString()
+        .padStart(2, "0");
+    const seconds = (remAfterHours % 60).toString().padStart(2, "0");
 
     const daysPart = days > 0 ? `${days}d ` : "";
     return `${daysPart}${hours}h ${minutes}m ${seconds}s`;
