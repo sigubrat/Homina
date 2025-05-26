@@ -193,7 +193,7 @@ describe("utilsSuite - Algebra", () => {
     test("timestampInSecondsToString - Should convert timestamp to string correctly", () => {
         const timestampInSeconds = 86400 + 3600 + 60 + 1; // 1 day, 1 hour, 1 minute, and 1 second
         const result = SecondsToString(timestampInSeconds);
-        expect(result).toBe("1d 1h 1m 1s");
+        expect(result).toBe("1d 01h 01m 01s");
     });
 
     test("mapTierToRarity - Should map tier to rarity correctly", () => {

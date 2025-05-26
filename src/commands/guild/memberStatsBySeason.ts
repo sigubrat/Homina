@@ -1,12 +1,17 @@
 import { logger } from "@/lib";
+import { CsvService } from "@/lib/services/CsvService";
 import { GuildService } from "@/lib/services/GuildService.ts";
 import { Rarity } from "@/models/enums";
 import type { GuildRaidResult } from "@/models/types";
 import type { TeamDistribution } from "@/models/types/TeamDistribution";
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import {
+    AttachmentBuilder,
+    ChatInputCommandInteraction,
+    SlashCommandBuilder,
+} from "discord.js";
 import { Pagination } from "pagination.djs";
 
-interface MemberStatsPerSeason extends GuildRaidResult {
+export interface MemberStatsPerSeason extends GuildRaidResult {
     distribution: TeamDistribution;
 }
 
@@ -36,6 +41,12 @@ export const data = new SlashCommandBuilder()
                 { name: "Uncommon", value: Rarity.UNCOMMON },
                 { name: "Common", value: Rarity.COMMON }
             );
+    })
+    .addBooleanOption((option) => {
+        return option
+            .setName("export")
+            .setDescription("Export the results as a CSV file")
+            .setRequired(false);
     });
 
 export async function execute(interaction: ChatInputCommandInteraction) {
@@ -190,6 +201,17 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         pagination.paginateFields(true);
+
+        if (interaction.options.getBoolean("export")) {
+            const csvService = new CsvService();
+            const csvBuffer = await csvService.createMemberStats(mergedResults);
+            pagination.setAttachments([
+                new AttachmentBuilder(csvBuffer, {
+                    name: `member-stats-season-${season}.csv`,
+                }),
+            ]);
+        }
+
         pagination.render();
 
         logger.info(

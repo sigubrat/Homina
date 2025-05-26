@@ -1,5 +1,6 @@
 import { DamageType, EncounterType, Rarity } from "@/models/enums";
 import type { GuildRaidResult, Raid } from "@/models/types";
+import type { MemberStatsPerSeason } from "@/commands/guild/memberStatsBySeason";
 
 export const RaidResultFixture: Raid[] = [
     {
@@ -139,5 +140,71 @@ export const GuildRaidResultFixture: GuildRaidResult[] = [
         set: 3,
         tier: 0,
         startedOn: 1742986285,
+    },
+];
+
+export const MemberStatsPerSeasonFixture: MemberStatsPerSeason[] = [
+    {
+        username: "Alpha",
+        totalDamage: 10000,
+        totalTokens: 5,
+        minDmg: 1000,
+        maxDmg: 3000,
+        boss: "BossA",
+        set: 1,
+        tier: 0,
+        startedOn: 123456,
+        distribution: {
+            multihit: 2,
+            mech: 1,
+            psyker: 1,
+            other: 1,
+            multihitDamage: 4000,
+            mechDamage: 2000,
+            psykerDamage: 3000,
+            otherDamage: 1000,
+        },
+    },
+    {
+        username: "Bravo",
+        totalDamage: 20000,
+        totalTokens: 10,
+        minDmg: 1500,
+        maxDmg: 4000,
+        boss: "BossB",
+        set: 2,
+        tier: 1,
+        startedOn: 654321,
+        distribution: {
+            multihit: 3,
+            mech: 2,
+            psyker: 2,
+            other: 3,
+            multihitDamage: 8000,
+            mechDamage: 4000,
+            psykerDamage: 5000,
+            otherDamage: 3000,
+        },
+    },
+    {
+        username: "",
+        totalDamage: 0,
+        totalTokens: 0,
+        minDmg: 0,
+        maxDmg: 0,
+        boss: "BossC",
+        set: 3,
+        tier: 2,
+        startedOn: 111111,
+        distribution: {
+            multihit: 0,
+            mech: 0,
+            psyker: 0,
+            other: 0,
+            multihitDamage: 0,
+            mechDamage: 0,
+            psykerDamage: 0,
+            otherDamage: 0,
+        },
     },
 ];

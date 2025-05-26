@@ -12,19 +12,19 @@ describe("DataTransformationServiceSuite - Algebra", () => {
         );
         expect(transformedData).toEqual({
             "TervigonLeviathan-Common": {
-                time: "0h 0m 0s",
+                time: "00h 00m 00s",
                 tokens: 1,
             },
             "HiveTyrantLeviathan-Common": {
-                time: "0h 1m 1s",
+                time: "00h 01m 01s",
                 tokens: 1,
             },
             "HiveTyrantGorgon-Common": {
-                time: "0h 0m 59s",
+                time: "00h 00m 59s",
                 tokens: 1,
             },
             "ScreamerKiller-Common": {
-                time: "0h 27m 32s",
+                time: "00h 27m 32s",
                 tokens: 2,
             },
         });
