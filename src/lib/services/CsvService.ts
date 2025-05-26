@@ -9,13 +9,13 @@ export class CsvService {
             const avg = member.totalDamage / (member.totalTokens || 1);
             output += `"${member.username || "Unknown"}",${
                 member.totalDamage
-            },${member.totalTokens},${avg.toFixed(2)},${member.maxDmg}, ${
+            },${member.totalTokens},${avg.toFixed(2)},${member.maxDmg},${
                 member.minDmg
-            }, ${member.distribution.multihit},${member.distribution.mech}, ${
+            },${member.distribution.multihit},${member.distribution.mech},${
                 member.distribution.psyker
             },${member.distribution.other},${
                 member.distribution.multihitDamage
-            }, ${member.distribution.mechDamage}, ${
+            }, ${member.distribution.mechDamage},${
                 member.distribution.psykerDamage
             },${member.distribution.otherDamage}\n`;
         }
