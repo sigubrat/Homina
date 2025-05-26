@@ -216,7 +216,7 @@ export class GuildService {
                     tier: entry.tier,
                     startedOn: entry.startedOn,
                     minDmg: entry.damageDealt,
-                    maxDmg: 0,
+                    maxDmg: entry.damageDealt,
                 });
             }
         }
@@ -289,8 +289,8 @@ export class GuildService {
                     set: entry.set,
                     tier: entry.tier,
                     startedOn: entry.startedOn,
-                    minDmg: undefined,
-                    maxDmg: 0,
+                    minDmg: entry.damageDealt,
+                    maxDmg: entry.damageDealt,
                 });
             }
         }

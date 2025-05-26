@@ -15,7 +15,7 @@ export class CsvService {
                 member.distribution.psyker
             },${member.distribution.other},${
                 member.distribution.multihitDamage
-            }, ${member.distribution.mechDamage},${
+            },${member.distribution.mechDamage},${
                 member.distribution.psykerDamage
             },${member.distribution.otherDamage}\n`;
         }
