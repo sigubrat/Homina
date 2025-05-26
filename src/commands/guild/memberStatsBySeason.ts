@@ -158,12 +158,17 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         });
 
         const pagination = new Pagination(interaction, {
-            limit: 2,
+            limit: 4,
         })
             .setColor("#0099ff")
             .setTitle("Member stats for season " + season)
             .setDescription(
-                "See the detailed statistics for each member in the specified season. Note that team distribution does not include data from sidebosses/primes"
+                `See the detailed statistics for each member in the specified season.
+
+                :family: - Team distribution used by the player
+                :bar_chart: - Percentage of total damage dealt by meta teams
+
+                *Note that team distribution does not include data from sidebosses/primes*`
             )
             .setTimestamp();
 
@@ -175,15 +180,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             const formattedAvg =
                 stats.totalDamage /
                 (stats.totalTokens > 0 ? stats.totalTokens : 1);
-            const formattedTeamDistribution = `__Teams__:
-            **Distribution:** Multihit: \`${stats.distribution.multihit.toFixed(
+            const formattedTeamDistribution = `:family:  Multihit: \`${stats.distribution.multihit.toFixed(
                 1
             )}%\` Mech: \`${stats.distribution.mech.toFixed(
                 1
             )}%\` Neuro: \`${stats.distribution.psyker.toFixed(
                 1
             )}%\` Other: \`${stats.distribution.other.toFixed(1)}%\`
-            **Damage**: Multihit: \`${stats.distribution.multihitDamage?.toFixed(
+            :bar_chart: Multihit: \`${stats.distribution.multihitDamage?.toFixed(
                 1
             )}%\` Mech: \`${stats.distribution.mechDamage?.toFixed(
                 1
@@ -195,7 +199,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 name: `${stats.username}`,
                 value: `Total Damage: \`${formattedDamage}\`\nTotal Tokens: \`${formattedTokens}\`\nAvg: \`${formattedAvg.toFixed(
                     1
-                )}\`\nMax damage: \`${formattedMax}\`\nMin damage: \`${formattedMin}\`\n\n${formattedTeamDistribution}`,
+                )}\`\nMax damage: \`${formattedMax}\`\nMin damage: \`${formattedMin}\`\n${formattedTeamDistribution}`,
                 inline: false,
             });
         }
