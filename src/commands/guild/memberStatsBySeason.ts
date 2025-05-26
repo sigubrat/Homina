@@ -158,7 +158,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         });
 
         const pagination = new Pagination(interaction, {
-            limit: 4,
+            limit: 6,
         })
             .setColor("#0099ff")
             .setTitle("Member stats for season " + season)
@@ -175,31 +175,63 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         for (const stats of mergedResults) {
             const formattedDamage = stats.totalDamage.toLocaleString();
             const formattedTokens = stats.totalTokens.toLocaleString();
-            const formattedMax = stats.maxDmg?.toFixed(1) ?? "N/A";
-            const formattedMin = stats.minDmg?.toFixed(1) ?? "N/A";
-            const formattedAvg =
+            const formattedMax =
+                stats.maxDmg?.toLocaleString("default", {
+                    maximumFractionDigits: 1,
+                }) ?? "N/A";
+            const formattedMin =
+                stats.minDmg?.toLocaleString("default", {
+                    maximumFractionDigits: 1,
+                }) ?? "N/A";
+            const formattedAvg = (
                 stats.totalDamage /
-                (stats.totalTokens > 0 ? stats.totalTokens : 1);
-            const formattedTeamDistribution = `:family:  Multihit: \`${stats.distribution.multihit.toFixed(
-                1
-            )}%\` Mech: \`${stats.distribution.mech.toFixed(
-                1
-            )}%\` Neuro: \`${stats.distribution.psyker.toFixed(
-                1
-            )}%\` Other: \`${stats.distribution.other.toFixed(1)}%\`
-            :bar_chart: Multihit: \`${stats.distribution.multihitDamage?.toFixed(
-                1
-            )}%\` Mech: \`${stats.distribution.mechDamage?.toFixed(
-                1
-            )}%\` Neuro: \`${stats.distribution.psykerDamage?.toFixed(
-                1
-            )}%\` Other: \`${stats.distribution.otherDamage?.toFixed(1)}%\``;
+                (stats.totalTokens > 0 ? stats.totalTokens : 1)
+            ).toLocaleString("default", {
+                maximumFractionDigits: 1,
+            });
+            const formattedTeamDistribution = `:family:  Multihit: \`${stats.distribution.multihit.toLocaleString(
+                "default",
+                {
+                    maximumFractionDigits: 1,
+                }
+            )}%\` Mech: \`${stats.distribution.mech.toLocaleString("default", {
+                maximumFractionDigits: 1,
+            })}%\` Neuro: \`${stats.distribution.psyker.toLocaleString(
+                "default",
+                {
+                    maximumFractionDigits: 1,
+                }
+            )}%\` Other: \`${stats.distribution.other.toLocaleString(
+                "default",
+                {
+                    maximumFractionDigits: 1,
+                }
+            )}%\`
+            :bar_chart: Multihit: \`${stats.distribution.multihitDamage?.toLocaleString(
+                "default",
+                {
+                    maximumFractionDigits: 1,
+                }
+            )}%\` Mech: \`${stats.distribution.mechDamage?.toLocaleString(
+                "default",
+                {
+                    maximumFractionDigits: 1,
+                }
+            )}%\` Neuro: \`${stats.distribution.psykerDamage?.toLocaleString(
+                "default",
+                {
+                    maximumFractionDigits: 1,
+                }
+            )}%\` Other: \`${stats.distribution.otherDamage?.toLocaleString(
+                "default",
+                {
+                    maximumFractionDigits: 1,
+                }
+            )}%\``;
 
             pagination.addFields({
                 name: `${stats.username}`,
-                value: `Total Damage: \`${formattedDamage}\`\nTotal Tokens: \`${formattedTokens}\`\nAvg: \`${formattedAvg.toFixed(
-                    1
-                )}\`\nMax damage: \`${formattedMax}\`\nMin damage: \`${formattedMin}\`\n${formattedTeamDistribution}`,
+                value: `Total Damage: \`${formattedDamage}\` — Total Tokens: \`${formattedTokens}\` — Avg: \`${formattedAvg}\`\nMax damage: \`${formattedMax}\` — Min damage: \`${formattedMin}\`\n${formattedTeamDistribution}`,
                 inline: false,
             });
         }
