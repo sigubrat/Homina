@@ -6,7 +6,6 @@
 ![GitHub package.json version (branch)](https://img.shields.io/github/package-json/v/sigubrat/Homina/main)
 ![GitHub Repo stars](https://img.shields.io/github/stars/sigubrat/Homina)
 ![Discord](https://img.shields.io/discord/1145610731849519157?logo=discord&link=https://discord.gg/FajYxuWY9b)
-![Static Badge](https://img.shields.io/badge/Installed%20servers-17-blue)
 
 </div>
 
