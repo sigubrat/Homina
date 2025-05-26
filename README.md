@@ -6,7 +6,6 @@
 ![GitHub package.json version (branch)](https://img.shields.io/github/package-json/v/sigubrat/Homina/main)
 ![GitHub Repo stars](https://img.shields.io/github/stars/sigubrat/Homina)
 ![Discord](https://img.shields.io/discord/1145610731849519157?logo=discord&link=https://discord.gg/FajYxuWY9b)
-![Static Badge](https://img.shields.io/badge/Installed%20servers-17-blue)
 
 </div>
 
@@ -24,16 +23,20 @@ The discord support server can be found [here](https://discord.gg/FajYxuWY9b)
 
 The bot, as of writing this, comes with the following commands:
 
--   `/help` - Get useful information about the bot
--   `/register` - Register your api token to your discord user id. This is stored in the database for lookups in the other commands.
--   `/get-member-ids` - Get a JSON file of your guild members' guild-ids
--   `/update-members` - Update the userId-username mappings of your guild members
--   `/seasons` - Returns the seasons that have stored data for your guild
--   `/season-participation` - Returns a graph displaying the total damage done in guild raid and total tokens used for a given season
--   `/season-by-tier` - Returns graphs displaying the total damage done to specific guild bosses of the given season, tokens used and the mean damage per token
--   `/meta-team-distribution` - Calculates the distribution of the 3 main meta teams used in tacticus over a season and the distribution of damage dealt by the meta teams. Entries that don't fit into a meta team category is grouped as 'other'
--   `/inactivity-by-season`- Find out who did not use the given number of tokens for a given season.
--   `/delete` - Deletes your discord id and tacticus api token from the database (effectively undo `/register`)
+-   `/help` - Get useful information about the bot and its commands
+-   `/register` - Register your API token to your Discord user ID (required for most features)
+-   `/delete` - Delete your Discord ID and Tacticus API token from the database (undo `/register`)
+-   `/get-member-ids` - Get a JSON file of your guild members' IDs for username mapping
+-   `/update-members` - Update the userId-username mappings of your guild members by uploading a JSON file
+-   `/seasons` - List the available guild raid seasons for your guild
+-   `/season-participation` - See how much each member has participated in a specific guild raid season
+-   `/season-by-tier` - Get graphs for total damage, tokens used, and mean damage per token for a specific boss tier in a season
+-   `/meta-team-distribution` - See the distribution of meta teams used and their damage share in a season (optionally by boss tier)
+-   `/inactivity-by-season` - Find out who did not use the required number of tokens in a given season
+-   `/tokens-by-season` - Get a list of tokens used by each member in a given guild season
+-   `/gr-availability` - Get an overview of how many guild raid tokens and bombs each member has available
+-   `/gr-time-used` - See how long it takes to complete each raid boss in a given season (with optional tier filter)
+-   `/member-stats-per-season` - Get detailed stats per member for a given season, with optional CSV export
 
 This should be all the information you need if you just want to invite the bot to your server. Further information will be for those who want technical information about the bot.
 

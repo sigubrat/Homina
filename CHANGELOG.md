@@ -9,11 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--
+- `/member-stats-per-season` command that provides more detailed stats per member for a given season
 
 ### Changed
 
--
+- `/gr-availability` formatting updated for better readability
 
 ### Fixed
 
@@ -22,6 +22,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - -->
+
+## [0.12.0] - 2025-05-26
+
+This patch provides a new command that gives more detailed statistics per member in a given season, with the option of exporting it as a .CSV file which can be imported into Excel, Google sheets etc. The patch also improves readability of the availability command.
+
+### Added
+
+-   `/member-stats-per-season` command that provides more detailed stats per member for a given season
+    -   Required param: season (number) - The Guild raid season
+    -   Optional param: rarity (Rarity) - If you want to filter stats by rarity
+    -   Optional param: export (boolean) - Do you want a csv of the data?
+
+### Changed
+
+-   Improves readability of the `/gr-availability` command.
+    -   3/3 tokens now leads to a ⚠️ icon
+    -   Names are at the end in bold to align all data
+    -   Times are now always of the same length
+    -   No cooldown now has text the same length of timestamps
+    -   Data is sorted based on guild raid tokens
 
 ## [0.11.0] - 2025-05-15
 
