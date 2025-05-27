@@ -21,8 +21,8 @@ validateEnvVars([
     "DB_PWD",
 ]);
 
-const OLD_KEY = process.env.OLD_ENCRYPTION_KEY!;
-const NEW_KEY = process.env.ENCRYPTION_KEY!;
+const OLD_KEY = CryptoService.getOldEncryptionKey();
+const NEW_KEY = CryptoService.getEncryptionKey();
 
 async function migrate() {
     const TokenModel = sequelize.define("discordApiTokenMappings", {
