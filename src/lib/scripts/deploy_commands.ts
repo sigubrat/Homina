@@ -3,7 +3,7 @@ import { Routes } from "discord.js";
 import { getAllCommands } from "@/lib/utils";
 import readline from "readline";
 import { InfisicalClient } from "@/client/InfisicalClient";
-import { validateEnvVars } from "../db_utils";
+import { validateEnvVars } from "@/lib/db_utils";
 
 const infisicalClient = new InfisicalClient();
 await infisicalClient.init();

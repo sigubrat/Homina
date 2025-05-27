@@ -6,12 +6,9 @@ import { CryptoService } from "./services/CryptoService";
 
 export class DatabaseController {
     private sequelize: Sequelize;
-    private cryptoService: CryptoService;
 
     constructor() {
         validateEnvVars(["DB_NAME", "DB_USER", "DB_PWD"]);
-
-        this.cryptoService = new CryptoService();
 
         this.sequelize = new Sequelize(
             process.env.DB_NAME!,

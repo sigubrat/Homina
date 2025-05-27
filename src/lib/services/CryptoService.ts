@@ -43,7 +43,7 @@ function getEncryptionKey(): string {
 
 export function getOldEncryptionKey(): string {
     const key = process.env.OLD_ENCRYPTION_KEY;
-    if (!key || Buffer.from(key).length !== 32) {
+    if (!key || Buffer.from(key, "hex").length !== 32) {
         throw new Error(
             "OLD_ENCRYPTION_KEY must be set and must be 32 characters long."
         );

@@ -13,7 +13,13 @@ const sequelize = new Sequelize(
     }
 );
 
-validateEnvVars(["OLD_ENCRYPTION_KEY", "ENCRYPTION_KEY"]);
+validateEnvVars([
+    "OLD_ENCRYPTION_KEY",
+    "ENCRYPTION_KEY",
+    "DB_NAME",
+    "DB_USER",
+    "DB_PWD",
+]);
 
 const OLD_KEY = process.env.OLD_ENCRYPTION_KEY!;
 const NEW_KEY = process.env.ENCRYPTION_KEY!;
