@@ -173,6 +173,21 @@ export class DatabaseController {
         }
     }
 
+    public async getNumberOfUsers(): Promise<number> {
+        try {
+            const res = await this.sequelize.models[
+                "discordApiTokenMappings"
+            ]?.count();
+            return res || 0;
+        } catch (error) {
+            logger.error(
+                error,
+                "Error retrieving number of users from database"
+            );
+            return 0;
+        }
+    }
+
     public async getUserToken(userId: string): Promise<string | null> {
         try {
             const result = await this.sequelize.models[

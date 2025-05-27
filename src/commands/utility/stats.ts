@@ -1,0 +1,54 @@
+import { dbController, logger } from "@/lib";
+import { EmbedBuilder } from "@discordjs/builders";
+import {
+    ChatInputCommandInteraction,
+    MessageFlags,
+    SlashCommandBuilder,
+} from "discord.js";
+
+export const cooldown = 5;
+
+export const data = new SlashCommandBuilder()
+    .setName("bot-stats")
+    .setDescription("Get statistics about the bot and its performance");
+
+export async function execute(interaction: ChatInputCommandInteraction) {
+    try {
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+        const client = interaction.client;
+
+        const uptime = client.uptime
+            ? `${Math.floor(client.uptime / 1000)} seconds`
+            : "N/A";
+        const guildCount = client.guilds.cache.size;
+        const registeredUser = await dbController.getNumberOfUsers();
+
+        const statsEmbed = new EmbedBuilder()
+            .setColor(0x0099ff)
+            .setTitle("Bot Statistics")
+            .setDescription("Here are the current statistics for the bot:")
+            .addFields([
+                { name: "Uptime", value: uptime, inline: true },
+                {
+                    name: "Server count",
+                    value: guildCount.toString(),
+                    inline: true,
+                },
+                {
+                    name: "User Count",
+                    value: registeredUser.toString(),
+                    inline: true,
+                },
+            ])
+            .setTimestamp();
+
+        await interaction.editReply({ embeds: [statsEmbed] });
+    } catch (error) {
+        logger.error(error);
+        await interaction.editReply({
+            content: "An error occurred while fetching the bot statistics.",
+            options: { flags: MessageFlags.Ephemeral },
+        });
+    }
+}
