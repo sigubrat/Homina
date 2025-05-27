@@ -23,6 +23,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.13.0] - 2025-05-27
+
+This update provides encryption of Tacticus API tokens, including those already registered, with the intent of increasing privacy of users.
+
+### Added
+
+-   CryptoService - A service that performs AES-256-CBC encryption and decryption
+-   Use of an external secrets manager for encryption key and other bot-related secrets
+
+## Changed
+
+-   The Tacticus API token column is now encrypted when written to the database and decrypted on database reads
+-   Existing API tokens have been encrypted
+
 ## [0.12.0] - 2025-05-26
 
 This patch provides a new command that gives more detailed statistics per member in a given season, with the option of exporting it as a .CSV file which can be imported into Excel, Google sheets etc. The patch also improves readability of the availability command.
