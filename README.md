@@ -19,6 +19,25 @@ To invite the bot to your server, click [here](https://discord.com/oauth2/author
 
 The discord support server can be found [here](https://discord.gg/FajYxuWY9b)
 
+## Table of Contents
+
+<!-- TOC -->
+
+-   [Features](#features)
+-   [Stack](#stack)
+-   [Prerequisites](#prerequisites)
+-   [Environment Variables](#environment-variables)
+-   [Player mapping](#player-mapping)
+-   [Database Configuration](#database-configuration)
+-   [Before running the bot](#before-running-the-bot)
+-   [Usage](#usage)
+-   [Contributing](#contributing)
+-   [License](#license)
+-   [Common Issues](#common-issues)
+-   [Screenshots](#screenshots)
+-   [Acknowledgments](#acknowledgments)
+<!-- /TOC -->
+
 ## Features
 
 The bot, as of writing this, comes with the following commands:
@@ -58,6 +77,7 @@ Before running the project, ensure you have the following installed:
 -   [PostgreSQL](https://www.postgresql.org/) for database management
 -   A Discord bot token (create one via the [Discord Developer Portal](https://discord.com/developers/applications))
 -   Set your [environment variables](#environment-variables) and player mappings (see further down)
+-   Set up a secret manager using Infisical
 -   **Optional**: Nix (to use the provided flake for a reproducible dev shell/environment)
 
 ### Nix flake
@@ -90,20 +110,22 @@ nix flake update
 
 Create a `.env` file in the root of the project and add the following variables:
 
--   BOT_TOKEN - Your discord's bot token
--   CLIENT_ID - (Your application's client id ([Discord Developer Portal](https://discord.com/developers/applications) -> General Information -> application id))
--   GUILD_ID - Your development server's id
 -   DB_NAME - Name of your postgres database
 -   DB_USER - Your postgres database username
 -   DB_PWD - The password to your postgres database
+-   INFISICAL_SECRET - Your Infisical secret key
+-   INFISICAL_ID - Your Infisical project ID
+-   INFISICAL_WORKSPACE - Your Infisical workspace ID
+-   NODE_ENV - The environment (either `dev` for development or `prod` for production)
 
 ```plaintext
-BOT_TOKEN=your-bot-token
-CLIENT_ID=your-client-id
-GUILD_ID=your-guild-id
 DB_NAME=your-database-name
 DB_USER=your-database-user
-DB_PWD=your-database-password (use " " if no password)
+DB_PWD=your-database-password
+INFISICAL_SECRET=your-infisical-secret
+INFISICAL_ID=your-infisical-id
+INFISICAL_WORKSPACE=your-infisical-workspace-id
+NODE_ENV=dev|prod
 ```
 
 ## Player mapping
@@ -139,10 +161,6 @@ This file contains the id of every member in your guild and a placeholder for th
     createdb homina
     ```
 3. Update the `.env` file with your database credentials (`DB_NAME`, `DB_USER`, `DB_PWD`).
-4. Run the following command to create the necessary tables:
-    ```bash
-    bun run createTables
-    ```
 
 ---
 

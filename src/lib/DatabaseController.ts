@@ -2,6 +2,7 @@ import { DataTypes, Sequelize } from "sequelize";
 import { validateEnvVars, type DbTestResult } from "./db_utils";
 import type { GuildMemberMapping } from "@/models/types/GuildMemberMapping";
 import { logger } from "./HominaLogger";
+import { CryptoService } from "./services/CryptoService";
 
 export class DatabaseController {
     private sequelize: Sequelize;
@@ -55,17 +56,51 @@ export class DatabaseController {
         });
 
         // User-guild api token table - This table is used to store discord user-guild api token mapping
-        this.sequelize.define("discordApiTokenMappings", {
-            userId: {
-                type: DataTypes.STRING,
-                allowNull: false,
-                primaryKey: true,
+        this.sequelize.define(
+            "discordApiTokenMappings",
+            {
+                userId: {
+                    type: DataTypes.STRING,
+                    allowNull: false,
+                    primaryKey: true,
+                },
+                token: {
+                    type: DataTypes.STRING,
+                    allowNull: false,
+                },
             },
-            token: {
-                type: DataTypes.STRING,
-                allowNull: false,
-            },
-        });
+            {
+                hooks: {
+                    beforeCreate: (instance: any) => {
+                        if (instance.token) {
+                            instance.token = CryptoService.encrypt(
+                                instance.token
+                            );
+                        }
+                    },
+                    beforeUpdate: (instance: any) => {
+                        if (instance.token) {
+                            instance.token = CryptoService.encrypt(
+                                instance.token
+                            );
+                        }
+                    },
+                    afterFind: (result: any) => {
+                        if (!result) return;
+                        if (Array.isArray(result)) {
+                            result.forEach((row) => {
+                                if (row.token)
+                                    row.token = CryptoService.decrypt(
+                                        row.token
+                                    );
+                            });
+                        } else if (result.token) {
+                            result.token = CryptoService.decrypt(result.token);
+                        }
+                    },
+                },
+            }
+        );
 
         this.sequelize.define("PlayerTokens", {
             userId: {
