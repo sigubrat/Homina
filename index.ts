@@ -3,34 +3,11 @@ import * as path from "path";
 import * as fs from "fs";
 import { dbController, logger } from "@/lib";
 import { getAllCommands } from "@/lib/utils";
+import { InfisicalClient } from "@/client/InfisicalClient";
 
 export class IClient extends Client {
     commands = new Collection<string, any>();
     cooldowns = new Collection<string, Collection<string, number>>();
-}
-
-const token = process.env.BOT_TOKEN;
-const clientId = process.env.CLIENT_ID;
-const guildId = process.env.GUILD_ID;
-const dbName = process.env.DB_NAME;
-const dbUser = process.env.DB_USER;
-const dbPwd = process.env.DB_PWD;
-
-const missingVars = [];
-if (!token) missingVars.push("BOT_TOKEN");
-if (!clientId) missingVars.push("CLIENT_ID");
-if (!guildId) missingVars.push("GUILD_ID");
-if (!dbName) missingVars.push("DB_NAME");
-if (!dbUser) missingVars.push("DB_USER");
-if (!dbPwd) missingVars.push("DB_PWD");
-
-if (missingVars.length > 0) {
-    logger.error(
-        `Missing environment variables: ${missingVars.join(
-            ", "
-        )}. Please ensure all required variables are set.`
-    );
-    process.exit(1);
 }
 
 console.log("Starting Discord bot...");
@@ -42,6 +19,11 @@ const client = new IClient({
 // Load commands and start the bot
 const startBot = async () => {
     try {
+        // Fetch secrets from Infisical
+        const infisicalClient = new InfisicalClient();
+        await infisicalClient.init();
+        await infisicalClient.fetchSecrets();
+
         // Check database connection
         const res = await dbController.isReady();
         if (!res.isSuccess) {
@@ -73,7 +55,7 @@ const startBot = async () => {
         }
 
         // Log in to Discord
-        await client.login(token);
+        await client.login(process.env.BOT_TOKEN!);
         logger.info("Bot logged in successfully.");
     } catch (error) {
         logger.error(error, "Error starting the bot:");

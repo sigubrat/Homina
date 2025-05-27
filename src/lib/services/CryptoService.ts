@@ -3,10 +3,8 @@ import { validateEnvVars } from "../db_utils";
 
 export class CryptoService {
     static encrypt(text: string, key = getEncryptionKey()): string {
-        validateEnvVars(["ENCRYPTION_KEY", "IV_LENGTH"]);
-        const IV_LENGTH = parseInt(process.env.IV_LENGTH || "16", 10);
-
-        const iv = crypto.randomBytes(IV_LENGTH);
+        validateEnvVars(["ENCRYPTION_KEY"]);
+        const iv = crypto.randomBytes(16);
         const cipher = crypto.createCipheriv(
             "aes-256-cbc",
             Buffer.from(key, "hex"),

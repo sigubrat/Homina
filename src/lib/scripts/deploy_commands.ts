@@ -2,17 +2,18 @@ import { REST } from "@discordjs/rest";
 import { Routes } from "discord.js";
 import { getAllCommands } from "@/lib/utils";
 import readline from "readline";
+import { InfisicalClient } from "@/client/InfisicalClient";
+import { validateEnvVars } from "../db_utils";
 
-const token = process.env.BOT_TOKEN;
-const clientId = process.env.CLIENT_ID;
-const guildId = process.env.GUILD_ID;
+const infisicalClient = new InfisicalClient();
+await infisicalClient.init();
+await infisicalClient.fetchSecrets();
 
-if (!token || !clientId || !guildId) {
-    console.error(
-        "Missing environment variables: BOT_TOKEN, CLIENT_ID, or GUILD_ID."
-    );
-    process.exit(1);
-}
+validateEnvVars(["BOT_TOKEN", "CLIENT_ID", "GUILD_ID"]);
+
+const token = process.env.BOT_TOKEN!;
+const clientId = process.env.CLIENT_ID!;
+const guildId = process.env.GUILD_ID!;
 
 const deployCommands = async () => {
     try {

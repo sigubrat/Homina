@@ -9,13 +9,7 @@ export class DatabaseController {
     private cryptoService: CryptoService;
 
     constructor() {
-        validateEnvVars([
-            "DB_NAME",
-            "DB_USER",
-            "DB_PWD",
-            "ENCRYPTION_KEY",
-            "IV_LENGTH",
-        ]);
+        validateEnvVars(["DB_NAME", "DB_USER", "DB_PWD"]);
 
         this.cryptoService = new CryptoService();
 
