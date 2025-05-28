@@ -6,7 +6,7 @@ import {
     SlashCommandBuilder,
 } from "discord.js";
 
-export const cooldown = 5;
+export const cooldown = 60;
 
 export const data = new SlashCommandBuilder()
     .setName("bot-stats")

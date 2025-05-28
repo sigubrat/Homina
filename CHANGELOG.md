@@ -23,6 +23,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.14.0] - 2025-05-28
+
+### Added
+
+-   `/bot-stats` - An initial bot stats command that shows the current uptime, count of servers running the bot and the number of registered users. (60 second cooldown).
+
 ## [0.13.1] - 2025-05-28
 
 Hotfix of the register command not properly encrypting tokens.
