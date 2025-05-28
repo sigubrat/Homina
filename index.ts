@@ -1,4 +1,9 @@
-import { Client, GatewayIntentBits, Collection } from "discord.js";
+import {
+    Client,
+    GatewayIntentBits,
+    Collection,
+    ActivityType,
+} from "discord.js";
 import * as path from "path";
 import * as fs from "fs";
 import { dbController, logger } from "@/lib";
@@ -14,6 +19,15 @@ console.log("Starting Discord bot...");
 
 const client = new IClient({
     intents: [GatewayIntentBits.Guilds],
+    presence: {
+        activities: [
+            {
+                type: ActivityType.Custom,
+                name: "Worshiping the machine spirit",
+            },
+        ],
+        status: "online",
+    },
 });
 
 // Load commands and start the bot
@@ -53,6 +67,8 @@ const startBot = async () => {
                 client.on(event.name, (...args) => event.execute(...args));
             }
         }
+
+        client.user?.setActivity("test", { type: ActivityType.Custom });
 
         // Log in to Discord
         await client.login(process.env.BOT_TOKEN!);
