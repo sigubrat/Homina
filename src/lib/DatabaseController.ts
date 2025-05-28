@@ -71,19 +71,11 @@ export class DatabaseController {
             },
             {
                 hooks: {
-                    beforeCreate: (instance: any) => {
-                        if (instance.token) {
-                            instance.token = CryptoService.encrypt(
-                                instance.token
-                            );
-                        }
-                    },
-                    beforeUpdate: (instance: any) => {
-                        if (instance.token) {
-                            instance.token = CryptoService.encrypt(
-                                instance.token
-                            );
-                        }
+                    beforeUpsert(attributes: any) {
+                        if (!attributes.token) return;
+                        attributes.token = CryptoService.encrypt(
+                            attributes.token
+                        );
                     },
                     afterFind: (result: any) => {
                         if (!result) return;
@@ -145,9 +137,10 @@ export class DatabaseController {
 
     public async registerUser(userId: string, token: string): Promise<boolean> {
         try {
+            const encryptedToken = CryptoService.encrypt(token);
             await this.sequelize.models["discordApiTokenMappings"]?.upsert({
                 userId: userId,
-                token: token,
+                token: encryptedToken,
             });
 
             return true;

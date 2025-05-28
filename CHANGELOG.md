@@ -23,6 +23,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.13.1] - 2025-05-28
+
+Hotfix of the register command not properly encrypting tokens.
+
+### Fixed
+
+-   `/register` now properly encrypts the token. A limitation I was unaware of it in the database-library I'm using led to my encryption hook not being called on new registrations.
+
 ## [0.13.0] - 2025-05-27
 
 This update provides encryption of Tacticus API tokens, including those already registered, with the intent of increasing privacy of users.
