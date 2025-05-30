@@ -37,11 +37,15 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         // Construct the JSON object
-        const memberData: Record<string, string> = {};
-        for (const member of members) {
+        const memberDataPromises = members.map(async (member) => {
             const username = await service.getUsernameById(member);
-            memberData[member] = username ?? "replace-with-username";
-        }
+            return { [member]: username ?? "replace-with-username" };
+        });
+        const memberDataArray = await Promise.all(memberDataPromises);
+        const memberData = memberDataArray.reduce(
+            (acc, curr) => Object.assign(acc, curr),
+            {}
+        );
 
         const jsonBuffer = Buffer.from(
             JSON.stringify(memberData, null, 2),

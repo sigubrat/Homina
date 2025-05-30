@@ -1,3 +1,4 @@
+import { logger } from "@/lib";
 import { GuildService } from "@/lib/services/GuildService";
 import {
     ChatInputCommandInteraction,
@@ -72,7 +73,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             });
         }
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         await interaction.editReply({
             content: "An error occurred while trying to remove the member.",
             options: {
