@@ -56,6 +56,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         logger.info(`${interaction.user.username} used /help`);
     } catch (error) {
-        console.error(error);
+        logger.error(error, "Error executing /help command");
+        await interaction.editReply({
+            content:
+                "An error occurred while trying to fetch help information.",
+            options: {
+                flags: MessageFlags.Ephemeral,
+            },
+        });
     }
 }

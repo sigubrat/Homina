@@ -23,6 +23,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.15.0] - 2025-05-30
+
+This gives you more options for management of guild members.
+
+### Added
+
+-   `/add-member` - Add a user-username mapping for your guild
+-   `/remove-member` - Remove a user-username mapping in your guild
+
+### Changed
+
+-   `/get-member-ids` - Now includes usernames in the JSON file if they exist.
+-   `/seasons` - Changed format to an embed with some more information about the data and the current season
+-   All uses of the word 'tier' has been replaced with 'rarity' as it is more intuitive
+
 ## [0.14.0] - 2025-05-28
 
 ### Added

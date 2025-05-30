@@ -42,20 +42,23 @@ The discord support server can be found [here](https://discord.gg/FajYxuWY9b)
 
 The bot, as of writing this, comes with the following commands:
 
--   `/help` - Get useful information about the bot and its commands
--   `/register` - Register your API token to your Discord user ID (required for most features)
--   `/delete` - Delete your Discord ID and Tacticus API token from the database (undo `/register`)
--   `/get-member-ids` - Get a JSON file of your guild members' IDs for username mapping
--   `/update-members` - Update the userId-username mappings of your guild members by uploading a JSON file
--   `/seasons` - List the available guild raid seasons for your guild
--   `/season-participation` - See how much each member has participated in a specific guild raid season
--   `/season-by-tier` - Get graphs for total damage, tokens used, and mean damage per token for a specific boss tier in a season
--   `/meta-team-distribution` - See the distribution of meta teams used and their damage share in a season (optionally by boss tier)
--   `/inactivity-by-season` - Find out who did not use the required number of tokens in a given season
--   `/tokens-by-season` - Get a list of tokens used by each member in a given guild season
--   `/gr-availability` - Get an overview of how many guild raid tokens and bombs each member has available
--   `/gr-time-used` - See how long it takes to complete each raid boss in a given season (with optional tier filter)
--   `/member-stats-per-season` - Get detailed stats per member for a given season, with optional CSV export
+-   `/help` – Get an overview of the bot commands
+-   `/bot-stats` – Get statistics about the bot and its performance
+-   `/register` – Register your account to use the bot (requires API token)
+-   `/delete` – Delete your Discord account and API token from the bot
+-   `/get-member-ids` – Get a list of members in the guild for use in registering usernames
+-   `/update-members` – Update the guild member list by providing a JSON file
+-   `/add-member` – Add a member to the guild by providing their user ID and username
+-   `/remove-member` – Remove a member from the guild by providing their username or user ID
+-   `/seasons` – Get the available guild raid seasons for your guild
+-   `/season-participation` – Check how much each member has participated in a specific guild raid season
+-   `/season-by-rarity` – Get graphs for total damage, tokens used, and mean damage per token for a specific boss rarity in a season
+-   `/meta-team-distribution` – See the distribution of meta teams used and their damage share in a season (optionally by boss rarity)
+-   `/inactivity-by-season` – Find out who did not use the required number of tokens in a season
+-   `/tokens-by-season` – Find out how many tokens each member has used in a specific season
+-   `/gr-availability` – Get an overview of how many guild raid tokens and bombs each member has available
+-   `/gr-time-used` – See how long it takes to complete each raid boss in a given season (with optional rarity filter)
+-   `/member-stats-per-season` – Display detailed statistics for each member in a specific season
 
 This should be all the information you need if you just want to invite the bot to your server. Further information will be for those who want technical information about the bot.
 
@@ -234,10 +237,10 @@ Here are some examples of the bot in action:
 |            ![help example](docs/img/help.png)             |
 | :-------------------------------------------------------: |
 |                     The help command                      |
-|  ![season-by-tier options example](docs/img/options.png)  |
-|              Features optional tier options               |
-|  ![season-by-tier example](docs/img/season-by-tier.png)   |
-|              Get detailed graphs for a tier               |
+| ![season-by-rarity options example](docs/img/options.png) |
+|             Features optional rarity options              |
+| ![season-by-rarity example](docs/img/season-by-tier.png)  |
+|             Get detailed graphs for a rarity              |
 | ![meta team distribution](docs/img/meta_distribution.png) |
 | See how well your guild utilises the different meta teams |
 |    ![inactive members](docs/img/homina-inactivity.png)    |

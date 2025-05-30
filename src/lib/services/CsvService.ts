@@ -1,4 +1,4 @@
-import type { MemberStatsPerSeason } from "@/commands/guild/memberStatsBySeason";
+import type { MemberStatsPerSeason } from "@/commands/guild-raid/memberStatsBySeason";
 
 export class CsvService {
     async createMemberStats(data: MemberStatsPerSeason[]) {

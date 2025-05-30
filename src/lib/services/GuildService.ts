@@ -26,9 +26,14 @@ export class GuildService {
         this.client = new HominaTacticusClient();
     }
 
-    async getGuildId(userId: string): Promise<string | null> {
+    /**
+     * Fetches the guild ID for a given user ID.
+     * @param discordId The ID of the user to fetch the guild ID for.
+     * @returns The guild ID or null if not found or an error occurred.
+     */
+    async getGuildId(discordId: string): Promise<string | null> {
         try {
-            const apiKey = await dbController.getUserToken(userId);
+            const apiKey = await dbController.getUserToken(discordId);
             if (!apiKey) {
                 return null;
             }
@@ -46,6 +51,11 @@ export class GuildService {
         }
     }
 
+    /**
+     * Fetches the members of a guild for a given user ID.
+     * @param userId The ID of the user to fetch guild members for.
+     * @returns A list of user IDs of the guild members or null if an error occurred.
+     */
     async getGuildMembers(userId: string): Promise<string[] | null> {
         try {
             const apiKey = await dbController.getUserToken(userId);
@@ -66,6 +76,30 @@ export class GuildService {
         }
     }
 
+    /**
+     * Fetches the username of a player by their user ID.
+     * @param userId The ID of the user to fetch the username for.
+     * @returns The username of the user or null if not found.
+     */
+    async getUsernameById(userId: string): Promise<string | null> {
+        try {
+            const username = await dbController.getPlayerName(userId);
+            if (!username) {
+                return null;
+            }
+
+            return username;
+        } catch (error) {
+            logger.error(error, "Error fetching username by ID");
+            return null;
+        }
+    }
+
+    /**
+     * Fetches the player list for a given guild ID.
+     * @param guildId The ID of the guild to fetch members for.
+     * @returns A list of GuildMemberMapping objects or null if an error occurred.
+     */
     async getPlayerList(guildId: string): Promise<GuildMemberMapping[] | null> {
         try {
             const members = await dbController.getGuildMembersByGuildId(
@@ -82,6 +116,14 @@ export class GuildService {
         }
     }
 
+    /**
+     * Updates the guild members in the database.
+     * If a member is no longer in the guild, they will be deleted.
+     * If a member is new or has changed their username, they will be updated.
+     * @param guildId The ID of the guild to update members for.
+     * @param members The list of members to update.
+     * @returns The number of updated members, or -1 if an error occurred.
+     */
     async updateGuildMembers(
         guildId: string,
         members: GuildMemberMapping[]
@@ -103,7 +145,10 @@ export class GuildService {
             );
 
             for (const id of membersToDelete) {
-                const result = await dbController.deletePlayerName(id, guildId);
+                const result = await dbController.deletePlayerNameById(
+                    id,
+                    guildId
+                );
                 if (!result) {
                     continue;
                 }
@@ -130,6 +175,75 @@ export class GuildService {
         }
     }
 
+    async updateGuildMember(
+        tacticusId: string,
+        newUsername: string,
+        guildId: string
+    ) {
+        try {
+            const result = await dbController.updatePlayerName(
+                tacticusId,
+                newUsername,
+                guildId
+            );
+
+            return result;
+        } catch (error) {
+            logger.error(error, `Error updating guild member: ${tacticusId}`);
+            return false;
+        }
+    }
+
+    /**
+     * Deletes a guild member by their Tacticus ID.
+     * @param tacticusId The Tacticus ID of the member to delete.
+     * @param guildId The ID of the guild to delete the member from.
+     * @returns True if the member was deleted, false otherwise.
+     */
+    async deleteGuildMemberById(
+        tacticusId: string,
+        guildId: string
+    ): Promise<boolean> {
+        try {
+            const result = await dbController.deletePlayerNameById(
+                tacticusId,
+                guildId
+            );
+            return result > 0;
+        } catch (error) {
+            logger.error(error, `Error deleting guild member: ${tacticusId}`);
+            return false;
+        }
+    }
+
+    /**
+     * Deletes a guild member by their username.
+     * @param username The username of the member to delete.
+     * @param guildId The ID of the guild to delete the member from.
+     * @returns True if the member was deleted, false otherwise.
+     */
+    async deleteGuildMemberByUsername(
+        username: string,
+        guildId: string
+    ): Promise<boolean> {
+        try {
+            const result = await dbController.deletePlayerNameByUsername(
+                username,
+                guildId
+            );
+
+            return result > 0;
+        } catch (error) {
+            logger.error(error, `Error deleting guild member: ${username}`);
+            return false;
+        }
+    }
+
+    /**
+     * Fetches the seasons of the guild for a given user ID.
+     * @param userId The ID of the user to fetch guild seasons for.
+     * @returns A list of seasons or null if an error occurred.
+     */
     async getGuildSeasons(userId: string): Promise<number[] | null> {
         try {
             const apiKey = await dbController.getUserToken(userId);
@@ -150,6 +264,14 @@ export class GuildService {
         }
     }
 
+    /**
+     * Fetches the guild raid results for a given user ID and season.
+     * @param userId The ID of the user to fetch guild raid results for.
+     * @param season The season to fetch results for.
+     * @param rarity Optional rarity filter for the raid results.
+     * @param includePrimes Whether to include prime encounters in the results.
+     * @returns A list of GuildRaidResult objects or null if an error occurred.
+     */
     async getGuildRaidResultBySeason(
         userId: string,
         season: number,
@@ -223,6 +345,13 @@ export class GuildService {
         return damagePeruser;
     }
 
+    /**
+     * Fetches the guild raid results grouped by rarity and season for each boss.
+     * @param userId The ID of the user to fetch guild raid results for.
+     * @param season The season to fetch results for.
+     * @param rarity Optional rarity filter for the raid results.
+     * @returns A record of boss names to their respective GuildRaidResult arrays or null if an error occurred.
+     */
     async getGuildRaidResultByRaritySeasonPerBoss(
         userId: string,
         season: number,
@@ -298,6 +427,13 @@ export class GuildService {
         return groupedResults;
     }
 
+    /**
+     * Fetches the meta team distribution for a given user ID and season.
+     * @param userId The ID of the user to fetch meta team distribution for.
+     * @param season The season to fetch results for.
+     * @param tier Optional rarity filter for the raid results.
+     * @returns A TeamDistribution object or null if an error occurred.
+     */
     async getMetaTeamDistribution(
         userId: string,
         season: number,
@@ -429,6 +565,13 @@ export class GuildService {
         }
     }
 
+    /**
+     * Fetches the meta team distribution per player for a given user ID and season.
+     * @param userId The ID of the user to fetch meta team distribution for.
+     * @param season The season to fetch results for.
+     * @param tier Optional rarity filter for the raid results.
+     * @returns A record of usernames to their respective TeamDistribution objects or null if an error occurred.
+     */
     async getMetaTeamDistributionPerPlayer(
         userId: string,
         season: number,
@@ -623,6 +766,11 @@ export class GuildService {
         }
     }
 
+    /**
+     * Fetches the available tokens and bombs for a given user ID.
+     * @param userId The ID of the user to fetch available tokens and bombs for.
+     * @returns A record of usernames to their respective GuildRaidAvailable objects or null if an error occurred.
+     */
     async getAvailableTokensAndBombs(userId: string) {
         const tokenCooldownInSeconds = 12 * 60 * 60;
         const bombCooldownInSeconds = 18 * 60 * 60;
@@ -745,6 +893,13 @@ export class GuildService {
         }
     }
 
+    /**
+     * Fetches the guild raid entries for a given user ID and season.
+     * @param userId The ID of the user to fetch guild raid entries for.
+     * @param season The season to fetch entries for.
+     * @param rarity Optional rarity filter for the raid entries.
+     * @returns A list of Raid objects or null if an error occurred.
+     */
     async getGuildRaidBySeason(
         userId: string,
         season: number,

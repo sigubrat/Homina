@@ -181,13 +181,13 @@ export class DatabaseController {
         }
     }
 
-    public async getUserToken(userId: string): Promise<string | null> {
+    public async getUserToken(discordId: string): Promise<string | null> {
         try {
             const result = await this.sequelize.models[
                 "discordApiTokenMappings"
             ]?.findOne({
                 where: {
-                    userId: userId,
+                    userId: discordId,
                 },
             });
             if (!result) {
@@ -225,6 +225,7 @@ export class DatabaseController {
             return null;
         }
     }
+
     public async getPlayerName(userId: string): Promise<string | null> {
         try {
             const result = await this.sequelize.models["GuildMembers"]?.findOne(
@@ -278,7 +279,7 @@ export class DatabaseController {
         }
     }
 
-    public async deletePlayerName(
+    public async deletePlayerNameById(
         userId: string,
         guildId: string
     ): Promise<number> {
@@ -299,6 +300,32 @@ export class DatabaseController {
             logger.error(
                 error,
                 `Error deleting player name for userId: ${userId}`
+            );
+            return -1;
+        }
+    }
+
+    public async deletePlayerNameByUsername(
+        username: string,
+        guildId: string
+    ): Promise<number> {
+        try {
+            const guildMembersModel = this.sequelize.models["GuildMembers"];
+            if (!guildMembersModel) {
+                logger.error("GuildMembers model is not defined.");
+                return -1;
+            }
+
+            return await guildMembersModel.destroy({
+                where: {
+                    username: username,
+                    guildId: guildId,
+                },
+            });
+        } catch (error) {
+            logger.error(
+                error,
+                `Error deleting player name for username: ${username}`
             );
             return -1;
         }

@@ -1,7 +1,11 @@
 import { logger } from "@/lib";
 import { GuildService } from "@/lib/services/GuildService.ts";
 import type { GuildMemberMapping } from "@/models/types/GuildMemberMapping";
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import {
+    ChatInputCommandInteraction,
+    MessageFlags,
+    SlashCommandBuilder,
+} from "discord.js";
 
 export const cooldown = 5;
 
@@ -16,7 +20,7 @@ export const data = new SlashCommandBuilder()
     });
 
 export async function execute(interaction: ChatInputCommandInteraction) {
-    await interaction.deferReply();
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const file = interaction.options.getAttachment("file");
 
@@ -104,6 +108,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         await interaction.editReply({
             content:
                 "An error occurred while processing the attached file. Please ensure it is valid JSON.",
+            options: {
+                flags: MessageFlags.Ephemeral,
+            },
         });
         return;
     }

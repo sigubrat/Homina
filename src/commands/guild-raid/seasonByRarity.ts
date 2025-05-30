@@ -13,7 +13,7 @@ import {
 export const cooldown = 5;
 
 export const data = new SlashCommandBuilder()
-    .setName("season-by-tier")
+    .setName("season-by-rarity")
     .addNumberOption((option) =>
         option
             .setName("season")
@@ -34,7 +34,7 @@ export const data = new SlashCommandBuilder()
             );
     })
     .setDescription(
-        "Show guild raid stats for a specific boss tier in a specific season"
+        "Show guild raid stats for a specific boss rarity in a specific season"
     );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
@@ -61,7 +61,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const service = new GuildService();
 
     logger.info(
-        `${interaction.user.username} attempting to use /season-by-tier ${season} ${rarity}`
+        `${interaction.user.username} attempting to use /season-by-rarity ${season} ${rarity}`
     );
 
     try {
@@ -120,7 +120,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         });
 
         logger.info(
-            `${interaction.user.username} succesfully used /season-by-tier ${season} ${rarity}`
+            `${interaction.user.username} succesfully used /season-by-rarity ${season} ${rarity}`
         );
     } catch (error) {
         logger.error(error, "Error fetching guild raid results");

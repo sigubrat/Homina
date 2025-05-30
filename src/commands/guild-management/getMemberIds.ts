@@ -37,18 +37,17 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         // Construct the JSON object
-        const memberData = members.reduce((acc, member) => {
-            acc[member] = "replace-with-username";
-            return acc;
-        }, {} as Record<string, string>);
+        const memberData: Record<string, string> = {};
+        for (const member of members) {
+            const username = await service.getUsernameById(member);
+            memberData[member] = username ?? "replace-with-username";
+        }
 
-        // Convert JSON object to a buffer
         const jsonBuffer = Buffer.from(
             JSON.stringify(memberData, null, 2),
             "utf-8"
         );
 
-        // Create an attachment from the buffer
         const attachment = new AttachmentBuilder(jsonBuffer, {
             name: "memberlist.json",
         });
@@ -89,6 +88,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         logger.error(error, "Error fetching members:");
         await interaction.editReply({
             content: "An error occurred while fetching the member list.",
+            options: {
+                flags: MessageFlags.Ephemeral,
+            },
         });
     }
 }
