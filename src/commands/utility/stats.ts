@@ -1,4 +1,5 @@
 import { dbController, logger } from "@/lib";
+import { SecondsToString } from "@/lib/utils";
 import { EmbedBuilder } from "@discordjs/builders";
 import {
     ChatInputCommandInteraction,
@@ -18,9 +19,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const client = interaction.client;
 
-        const uptime = client.uptime
-            ? `${Math.floor(client.uptime / 1000)} seconds`
-            : "N/A";
+        const uptime = client.uptime ? Math.floor(client.uptime / 1000) : 0;
+        const formattedUptime = SecondsToString(uptime);
         const guildCount = client.guilds.cache.size;
         const registeredUser = await dbController.getNumberOfUsers();
 
@@ -29,7 +29,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setTitle("Bot Statistics")
             .setDescription("Here are the current statistics for the bot:")
             .addFields([
-                { name: "Uptime", value: uptime, inline: true },
+                { name: "Uptime", value: formattedUptime, inline: true },
                 {
                     name: "Server count",
                     value: guildCount.toString(),
