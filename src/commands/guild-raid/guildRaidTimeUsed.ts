@@ -20,8 +20,8 @@ export const data = new SlashCommandBuilder()
     )
     .addStringOption((option) => {
         return option
-            .setName("tier")
-            .setDescription("The tier of the boss")
+            .setName("rarity")
+            .setDescription("The rarity of the boss")
             .setRequired(false)
             .addChoices(
                 { name: "Legendary", value: Rarity.LEGENDARY },
@@ -46,7 +46,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         return;
     }
 
-    const rarity = interaction.options.getString("tier") as Rarity;
+    const rarity = interaction.options.getString("rarity") as Rarity;
 
     const service = new GuildService();
     const transformer = new DataTransformationService();
@@ -98,7 +98,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     } catch (error) {
         logger.error(
             error,
-            `Error while executing /season-by-tier command for user ${userID}`
+            `Error while executing /gr-time-used command for user ${userID}`
         );
         await interaction.editReply({
             content:

@@ -1,6 +1,6 @@
 import { DamageType, EncounterType, Rarity } from "@/models/enums";
 import type { GuildRaidResult, Raid } from "@/models/types";
-import type { MemberStatsPerSeason } from "@/commands/guild/memberStatsBySeason";
+import type { MemberStatsPerSeason } from "@/commands/guild-raid/memberStatsBySeason";
 
 export const RaidResultFixture: Raid[] = [
     {

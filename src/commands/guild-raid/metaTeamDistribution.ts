@@ -21,8 +21,8 @@ export const data = new SlashCommandBuilder()
     )
     .addStringOption((option) => {
         return option
-            .setName("tier")
-            .setDescription("The tier of the boss")
+            .setName("rarity")
+            .setDescription("The rarity of the boss")
             .setRequired(false)
             .addChoices(
                 { name: "Legendary", value: Rarity.LEGENDARY },
@@ -42,7 +42,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     );
 
     const season = interaction.options.getNumber("season") as number;
-    const rarity = interaction.options.getString("tier");
+    const rarity = interaction.options.getString("rarity");
 
     if (!Number.isInteger(season) || season <= 0) {
         await interaction.editReply({

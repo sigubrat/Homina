@@ -1,4 +1,8 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
+import {
+    SlashCommandBuilder,
+    ChatInputCommandInteraction,
+    EmbedBuilder,
+} from "discord.js";
 import { GuildService } from "../../lib/services/GuildService";
 import { logger } from "@/lib";
 
@@ -28,10 +32,32 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 content: "No seasons available for your guild",
             });
         } else {
+            const embed = new EmbedBuilder()
+                .setColor("#0099ff")
+                .setTitle("Available Guild Raid Seasons")
+                .setDescription(
+                    `Fetches the seasons your guild has available data for. The public API does not include data pre season 70.`
+                )
+                .addFields([
+                    {
+                        name: "Current season",
+                        value:
+                            result[result.length - 1]?.toString() ??
+                            "Something went wrong...",
+                        inline: true,
+                    },
+                    {
+                        name: "Seasons",
+                        value: result.join(", "),
+                        inline: false,
+                    },
+                ])
+                .setFooter({
+                    text: "Note: Snowprint may not return all seasons due to a known API bug.",
+                });
+
             await interaction.editReply({
-                content: `Available seasons for your guild: ${result.join(
-                    ", "
-                )} (Nb! Snowprint seems to have a bug with the API where it doesn't return all seasons)`,
+                embeds: [embed],
             });
         }
 

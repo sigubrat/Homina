@@ -222,22 +222,28 @@ export function SecondsToString(timestampInSeconds: number): string {
     return `${daysPart}${hours}h ${minutes}m ${seconds}s`;
 }
 
-export function mapTierToRarity(tier: number): string {
-    if (tier < 0) {
+export function mapTierToRarity(rarity: number): string {
+    if (rarity < 0) {
         throw new Error("Tier cannot be negative");
     }
 
-    if (tier === 0) {
+    if (rarity === 0) {
         return "Common";
-    } else if (tier === 1) {
+    } else if (rarity === 1) {
         return "Uncommon";
-    } else if (tier === 2) {
+    } else if (rarity === 2) {
         return "Rare";
-    } else if (tier === 3) {
+    } else if (rarity === 3) {
         return "Epic";
-    } else if (tier === 4) {
+    } else if (rarity === 4) {
         return "Legendary";
     }
 
-    return `Legendary (loop ${tier - 4})`;
+    return `Legendary (loop ${rarity - 4})`;
+}
+
+export function isValidUUIDv4(uuid: string): boolean {
+    const uuidRegex =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(uuid);
 }
