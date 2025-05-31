@@ -94,18 +94,6 @@ export class DatabaseController {
             }
         );
 
-        this.sequelize.define("PlayerTokens", {
-            userId: {
-                type: DataTypes.STRING,
-                allowNull: false,
-                primaryKey: true,
-            },
-            token: {
-                type: DataTypes.STRING,
-                allowNull: false,
-            },
-        });
-
         //**
         // SCHEMA RELATIONSHIPS
         //  */
