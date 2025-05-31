@@ -1,6 +1,6 @@
 Homina Discord Bot - Terms of Service
 
-Last Updated: [06.05.2025]
+Last Updated: [31.05.2025]
 
 1. Acceptance of Terms  
    By using Homina Discord Bot ("Bot"), you agree to these Terms of Service. If you do not accept, please do not use the Bot.
@@ -18,4 +18,4 @@ Last Updated: [06.05.2025]
    These Terms may be updated periodically. Continued use of the Bot after changes constitutes acceptance of the new terms.
 
 6. Contact  
-   For questions or concerns regarding these Terms of Service, please contact the Bot developer.
+   For questions or concerns regarding these Terms of Service, please contact the Bot developer which can be reached on the bot's Discord support server.
