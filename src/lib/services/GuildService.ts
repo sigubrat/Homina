@@ -298,7 +298,7 @@ export class GuildService {
 
         for (const entry of entries) {
             // Bombs don't count as damage
-            if (!entry.userId || entry.damageType === DamageType.BOMB) {
+            if (!entry.userId) {
                 continue;
             }
 
@@ -318,6 +318,10 @@ export class GuildService {
             );
 
             if (existingEntry) {
+                if (entry.damageType === DamageType.BOMB) {
+                    existingEntry.bombCount++;
+                    continue; // Bombs don't count as damage
+                }
                 existingEntry.totalDamage += entry.damageDealt;
                 existingEntry.totalTokens += 1;
                 existingEntry.maxDmg = Math.max(
@@ -329,17 +333,33 @@ export class GuildService {
                     entry.damageDealt
                 );
             } else {
-                damagePeruser.push({
-                    username: username,
-                    totalDamage: entry.damageDealt,
-                    totalTokens: 1,
-                    boss: entry.type,
-                    set: entry.set,
-                    tier: entry.tier,
-                    startedOn: entry.startedOn,
-                    minDmg: entry.damageDealt,
-                    maxDmg: entry.damageDealt,
-                });
+                if (entry.damageType === DamageType.BOMB) {
+                    damagePeruser.push({
+                        username: username,
+                        totalDamage: 0,
+                        totalTokens: 0,
+                        boss: entry.type,
+                        set: entry.set,
+                        tier: entry.tier,
+                        startedOn: entry.startedOn,
+                        minDmg: 0,
+                        maxDmg: 0,
+                        bombCount: 1,
+                    });
+                } else {
+                    damagePeruser.push({
+                        username: username,
+                        totalDamage: entry.damageDealt,
+                        totalTokens: 1,
+                        boss: entry.type,
+                        set: entry.set,
+                        tier: entry.tier,
+                        startedOn: entry.startedOn,
+                        minDmg: entry.damageDealt,
+                        maxDmg: entry.damageDealt,
+                        bombCount: 0,
+                    });
+                }
             }
         }
         return damagePeruser;
@@ -377,7 +397,7 @@ export class GuildService {
 
         for (const entry of entries) {
             // Bombs don't count as damage
-            if (!entry.userId || entry.damageType === DamageType.BOMB) {
+            if (!entry.userId) {
                 continue;
             }
 
@@ -399,6 +419,10 @@ export class GuildService {
             );
 
             if (existingUserEntry) {
+                if (entry.damageType === DamageType.BOMB) {
+                    existingUserEntry.bombCount++;
+                    continue; // Bombs don't count as damage
+                }
                 existingUserEntry.totalDamage += entry.damageDealt;
                 existingUserEntry.totalTokens += 1;
                 existingUserEntry.maxDmg = Math.max(
@@ -410,21 +434,75 @@ export class GuildService {
                     entry.damageDealt
                 );
             } else {
-                groupedResults[boss].push({
-                    username: username,
-                    totalDamage: entry.damageDealt,
-                    totalTokens: 1,
-                    boss: entry.type,
-                    set: entry.set,
-                    tier: entry.tier,
-                    startedOn: entry.startedOn,
-                    minDmg: entry.damageDealt,
-                    maxDmg: entry.damageDealt,
-                });
+                if (entry.damageType === DamageType.BOMB) {
+                    groupedResults[boss].push({
+                        bombCount: 1,
+                        username: username,
+                        totalDamage: 0,
+                        totalTokens: 0,
+                        boss: entry.type,
+                        set: entry.set,
+                        tier: entry.tier,
+                        startedOn: entry.startedOn,
+                        minDmg: 0,
+                        maxDmg: 0,
+                    });
+                } else {
+                    groupedResults[boss].push({
+                        bombCount: 0,
+                        username: username,
+                        totalDamage: entry.damageDealt,
+                        totalTokens: 1,
+                        boss: entry.type,
+                        set: entry.set,
+                        tier: entry.tier,
+                        startedOn: entry.startedOn,
+                        minDmg: entry.damageDealt,
+                        maxDmg: entry.damageDealt,
+                    });
+                }
             }
         }
 
         return groupedResults;
+    }
+
+    async getGuildRaidBombsBySeason(
+        userId: string,
+        season: number,
+        rarity?: Rarity
+    ): Promise<Record<string, number> | null> {
+        const apiKey = await dbController.getUserToken(userId);
+        if (!apiKey) {
+            return null;
+        }
+
+        const resp = await this.client.getGuildRaidBySeason(apiKey, season);
+        if (!resp || !resp.entries) {
+            return null;
+        }
+
+        let entries: Raid[] = resp.entries;
+
+        if (rarity) {
+            entries = entries.filter((entry) => entry.rarity === rarity);
+        }
+
+        const bombs: Raid[] = entries.filter(
+            (entry) => entry.damageType === DamageType.BOMB
+        );
+
+        const bombsPerUser: Record<string, number> = {};
+        for (const bomb of bombs) {
+            let username = await dbController.getPlayerName(bomb.userId);
+            if (!username) {
+                username = "Unknown";
+            }
+
+            bombsPerUser[username] = (bombsPerUser[username] ?? 0) + 1;
+        }
+
+        return bombsPerUser;
     }
 
     /**

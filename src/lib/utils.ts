@@ -247,3 +247,23 @@ export function isValidUUIDv4(uuid: string): boolean {
         /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     return uuidRegex.test(uuid);
 }
+
+export function numericMedian(arr: number[]): number {
+    if (arr.length === 0) return 0;
+
+    arr.sort((a, b) => a - b);
+    const middleIndex = Math.floor(arr.length / 2);
+
+    if (arr.length % 2 === 0) {
+        return (arr[middleIndex - 1]! + arr[middleIndex]!) / 2;
+    } else {
+        return arr[middleIndex]!;
+    }
+}
+
+export function numericAverage(arr: number[]): number {
+    if (arr.length === 0) return 0;
+
+    const sum = arr.reduce((acc, val) => acc + val, 0);
+    return sum / arr.length;
+}

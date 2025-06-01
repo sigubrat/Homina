@@ -8,4 +8,5 @@ export interface GuildRaidResult {
     set: number;
     tier: number;
     startedOn: number;
+    bombCount: number;
 }
