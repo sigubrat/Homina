@@ -352,17 +352,18 @@ export class ChartService {
         return chart;
     }
 
-    async createBombChart(
+    async createNumberUsedChart(
         data: Record<string, number>,
         title: string,
         guildAvg: number,
-        avgLabel: string
+        avgLabel: string,
+        maxValue: number
     ) {
         const entries = Object.entries(data);
         entries.sort((a, b) => b[1] - a[1]);
 
         const usernames = entries.map(([username]) => username);
-        const bombCounts = entries.map(([, bombCount]) => bombCount);
+        const uses = entries.map(([, n]) => n);
 
         if (usernames.length === 0) {
             throw new Error("No data to display in the chart.");
@@ -387,7 +388,7 @@ export class ChartService {
                     },
                     {
                         label: title,
-                        data: bombCounts,
+                        data: uses,
                         backgroundColor: (context: any) => {
                             const value =
                                 context.dataset.data[context.dataIndex];
@@ -442,7 +443,7 @@ export class ChartService {
                         grid: {
                             color: "rgba(255, 255, 255, 0.4)",
                         },
-                        max: 16,
+                        max: maxValue,
                         min: 0,
                     },
                 },

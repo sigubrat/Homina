@@ -1,9 +1,10 @@
 import { logger } from "@/lib";
+import { ChartService } from "@/lib/services/ChartService";
 import { GuildService } from "@/lib/services/GuildService.ts";
-import { sortTokensUsed } from "@/lib/utils";
+import { numericAverage, numericMedian } from "@/lib/utils";
 import { Rarity } from "@/models/enums";
-import type { TokensUsed } from "@/models/types/TokensUsed";
 import {
+    AttachmentBuilder,
     ChatInputCommandInteraction,
     EmbedBuilder,
     SlashCommandBuilder,
@@ -12,7 +13,7 @@ import {
 export const cooldown = 5;
 
 export const data = new SlashCommandBuilder()
-    .setName("tokens-by-season")
+    .setName("season-tokens")
     .setDescription(
         "Find out how many tokens each member has used in a specific season"
     )
@@ -35,7 +36,25 @@ export const data = new SlashCommandBuilder()
                 { name: "Uncommon", value: Rarity.UNCOMMON },
                 { name: "Common", value: Rarity.COMMON }
             );
-    });
+    })
+    .addStringOption((option) =>
+        option
+            .setName("average-method")
+            .setChoices(
+                {
+                    name: "Average",
+                    value: "average",
+                },
+                {
+                    name: "Median",
+                    value: "median",
+                }
+            )
+            .setDescription(
+                "Median is recommended if you have big variation in damage, average otherwise"
+            )
+            .setRequired(false)
+    );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
@@ -79,12 +98,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         // Find out who participated but did not use the required number of tokens
-        let tokensUsed: TokensUsed[] = [];
+        const tokensUsed: Record<string, number> = {};
         for (const entry of result) {
-            tokensUsed.push({
-                username: entry.username,
-                tokens: entry.totalTokens,
-            } as TokensUsed);
+            tokensUsed[entry.username] = entry.totalTokens || 0;
         }
 
         // Then find out who did not participate at all
@@ -111,39 +127,45 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         );
 
         for (const player of playersNotParticipated) {
-            tokensUsed.push({
-                username: player.username,
-                tokens: 0,
-            } as TokensUsed);
+            tokensUsed[player.username] = 0;
         }
 
-        tokensUsed = sortTokensUsed(tokensUsed);
+        const chartService = new ChartService();
 
-        // Create a nice embed table with the results
-        const table = tokensUsed
-            .map(
-                (user) =>
-                    `\`${user.username}\` - ${user.tokens} token${
-                        user.tokens > 1 ? "s" : ""
-                    }`
-            )
-            .join("\n");
+        const averageMethod =
+            interaction.options.getString("average-method") === "average"
+                ? "Average"
+                : "Median";
+
+        const avg =
+            averageMethod === "Average"
+                ? numericAverage(Object.values(tokensUsed))
+                : numericMedian(Object.values(tokensUsed));
+
+        const chartBuffer = await chartService.createNumberUsedChart(
+            tokensUsed,
+            `Tokens used in season ${season}${rarity ? ` (${rarity})` : ""}`,
+            avg,
+            averageMethod,
+            30
+        );
+
+        const attachment = new AttachmentBuilder(chartBuffer, {
+            name: `tokens-used-season-${season}.png`,
+        });
 
         const embed = new EmbedBuilder()
-            .setTitle(`Tokens used in season ${season}`)
-            .setColor(0x0099ff)
-            .setDescription(
-                `Tokens used by each player\n` +
-                    `- **Rarity:** ${rarity ?? "All Rarities"}\n` // Keep this aligned with the previous line
+            .setColor("#0099ff")
+            .setTitle(
+                `Tokens used in season ${season}${rarity ? ` (${rarity})` : ""}`
             )
-            .setFields([
-                {
-                    name: "Tokens used",
-                    value: table,
-                },
-            ]);
+            .setDescription(
+                `Average tokens used: ${avg.toFixed(2)} (${averageMethod})`
+            )
+            .setImage(`attachment://tokens-used-season-${season}.png`)
+            .setTimestamp();
 
-        await interaction.editReply({ embeds: [embed] });
+        await interaction.editReply({ embeds: [embed], files: [attachment] });
 
         logger.info(
             `${interaction.user.username} succesfully used /tokens-by-season for season ${season}`

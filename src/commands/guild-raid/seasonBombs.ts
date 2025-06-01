@@ -80,11 +80,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const chartService = new ChartService();
 
-        const chartBuffer = await chartService.createBombChart(
+        const chartBuffer = await chartService.createNumberUsedChart(
             bombs,
-            "Bomb used in season " + season,
+            "Bombs used in season " + season,
             average,
-            averageMethod === "average" ? "Guild average" : "Guild median"
+            averageMethod === "average" ? "Guild average" : "Guild median",
+            16
         );
 
         const attachment = new AttachmentBuilder(chartBuffer, {

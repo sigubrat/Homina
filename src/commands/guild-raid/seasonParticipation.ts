@@ -133,9 +133,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const topDamageDealers = getTopNDamageDealers(sortedResult, 3);
         const average =
-            averageMethod === "average"
-                ? numericAverage(sortedResult.map((val) => val.totalDamage))
-                : numericMedian(sortedResult.map((val) => val.totalDamage));
+            averageMethod === "median"
+                ? numericMedian(sortedResult.map((val) => val.totalDamage))
+                : numericAverage(sortedResult.map((val) => val.totalDamage));
 
         const chartService = new ChartService();
 
