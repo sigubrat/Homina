@@ -85,7 +85,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             "Bombs used in season " + season,
             average,
             averageMethod === "average" ? "Guild average" : "Guild median",
-            16
+            20
         );
 
         const attachment = new AttachmentBuilder(chartBuffer, {
