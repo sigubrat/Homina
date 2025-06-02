@@ -167,13 +167,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .addFields(
                 {
                     name: averageMethod,
-                    value: `The ${averageMethod} number of bombs used: ${avg.toFixed(
+                    value: `The ${averageMethod} number of tokens used: ${avg.toFixed(
                         1
                     )}`,
                 },
                 {
                     name: "Standard deviation",
-                    value: `The standard deviation of bombs used: ${standardDeviation(
+                    value: `The standard deviation of tokens used: ${standardDeviation(
                         Object.values(tokensUsed)
                     ).toFixed(1)}`,
                 }

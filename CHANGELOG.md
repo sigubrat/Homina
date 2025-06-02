@@ -19,6 +19,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.16.1] - 2025-06-02
+
+Quick hotfix to remove a copy-paste related typo. Special thanks to @JRC for the bug-report! 
+
+### Changed
+
+- Changed incorrect use of `bombs` to `tokens` in `/season-tokens` command that was caused by an unfortunate copy-paste accident :clown:
+
+
 ## [0.16.0] - 2025-06-02
 
 This update provides functionality to see how many bombs guild members have used. Also introduces average values for certain graphs. In these cases you can choose between average (mean) or median comparison. Median is recommended if your guild has a lot of variety in its data. Average is recommended for those with less variety.
