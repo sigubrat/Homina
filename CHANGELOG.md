@@ -28,14 +28,14 @@ This update provides functionality to see how many bombs guild members have used
 -   **New command!** `/season-bombs` - Returns a graph displaying how many bombs each member has used. Also shows the average (either mean or median value) bombs used
     -   Required parameter: season (number)
     -   Optional parameter: average-method (Median or Average)
-    -   Bars equal to or above average are blue, those over 75% of average are yellow and the rest are red.
+    -   Bars are colored depending on standard deviation of the average value
 -   `/season-participation` now has two new optional parameters and also displays the guild's average damage:
     -   Optional parameter: show-bombs (True/false) - Choose if you want a line displaying number of bombs used in the graph - default: false
     -   Optional parameter: average-method (Median or Average) - default: average
 
 ### Changed
 
--   `/token-by-seasons` renamed to `/season-tokens` and now displays a graph instead of table.
+-   `/tokens-by-seasons` renamed to `/season-tokens` and now displays a graph instead of table with colored bars based on standard deviation from the average.
 
 ## [0.15.0] - 2025-05-30
 

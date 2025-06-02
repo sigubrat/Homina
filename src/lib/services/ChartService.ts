@@ -1,6 +1,6 @@
 import type { GuildRaidResult } from "@/models/types";
 import { ChartJSNodeCanvas } from "chartjs-node-canvas";
-import { CHART_COLORS } from "@/lib/utils";
+import { CHART_COLORS, standardDeviation } from "@/lib/utils";
 import type { TeamDistribution } from "@/models/types/TeamDistribution";
 
 const CHART_WIDTH = 1200;
@@ -364,6 +364,7 @@ export class ChartService {
 
         const usernames = entries.map(([username]) => username);
         const uses = entries.map(([, n]) => n);
+        const stdev = standardDeviation(uses);
 
         if (usernames.length === 0) {
             throw new Error("No data to display in the chart.");
@@ -392,11 +393,16 @@ export class ChartService {
                         backgroundColor: (context: any) => {
                             const value =
                                 context.dataset.data[context.dataIndex];
-                            if (value >= guildAvg) {
+                            if (value > guildAvg + stdev) {
+                                return CHART_COLORS.purple;
+                            } else if (value > guildAvg - stdev) {
+                                // This covers (guildAvg - stdev, guildAvg + stdev]
                                 return CHART_COLORS.blue;
-                            } else if (value >= guildAvg * 0.75) {
+                            } else if (value > guildAvg - 2 * stdev) {
+                                // This covers (guildAvg - 2*stdev, guildAvg - stdev]
                                 return CHART_COLORS.yellow;
                             } else {
+                                // value <= guildAvg - 2*stdev
                                 return CHART_COLORS.red;
                             }
                         },
@@ -408,7 +414,10 @@ export class ChartService {
                 plugins: {
                     title: {
                         display: true,
-                        text: title,
+                        text: [
+                            title,
+                            "Green: >1σ above avg   |   Blue: ±1σ of avg   |   Yellow: -1σ to -2σ   |   Red: ≤-2σ",
+                        ],
                         font: {
                             size: 18,
                         },

@@ -9,7 +9,10 @@ describe("ChartServiceSuite - Algebra", () => {
     test("CreateSeasonDamageChart - Should create a chart", async () => {
         const result = await chartService.createSeasonDamageChart(
             testData,
-            "Test"
+            "Test",
+            true,
+            "average",
+            12
         );
 
         expect(result).toBeDefined();

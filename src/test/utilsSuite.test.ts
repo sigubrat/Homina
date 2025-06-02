@@ -11,6 +11,10 @@ import {
     sortTokensUsed,
     SecondsToString,
     mapTierToRarity,
+    numericAverage,
+    standardDeviation,
+    numericMedian,
+    isValidUUIDv4,
 } from "@/lib/utils";
 import type { GuildRaidResult } from "@/models/types";
 import { describe, expect, test } from "bun:test";
@@ -202,7 +206,7 @@ describe("utilsSuite - Algebra", () => {
         expect(result).toBe("1d 01h 01m 01s");
     });
 
-    test("timestampInSecondsToString - Should handle hiding days paramter correctly", () => {
+    test("timestampInSecondsToString - Should handle hiding days parameter correctly", () => {
         const timestampInSeconds = 86400 + 3600 + 60 + 1; // 1 day, 1 hour, 1 minute, and 1 second
         const result = SecondsToString(timestampInSeconds, true);
         expect(result).toBe("25h 01m 01s");
@@ -214,5 +218,40 @@ describe("utilsSuite - Algebra", () => {
         expect(mapTierToRarity(2)).toBe("Rare");
         expect(mapTierToRarity(3)).toBe("Epic");
         expect(() => mapTierToRarity(-1)).toThrow("Tier cannot be negative");
+    });
+
+    test("numericAverage - returns correct average for non-empty array", () => {
+        expect(numericAverage([1, 2, 3, 4, 5])).toBe(3);
+        expect(numericAverage([10, 20])).toBe(15);
+    });
+    test("numericAverage - returns 0 for empty array", () => {
+        expect(numericAverage([])).toBe(0);
+    });
+
+    test("standardDeviation - returns correct stddev for array", () => {
+        expect(standardDeviation([2, 4, 4, 4, 5, 5, 7, 9])).toBeCloseTo(2, 5);
+        expect(standardDeviation([1, 1, 1, 1])).toBe(0);
+    });
+    test("standardDeviation - returns 0 for empty array", () => {
+        expect(standardDeviation([])).toBe(0);
+    });
+
+    test("numericMedian - returns correct median for odd/even arrays", () => {
+        expect(numericMedian([1, 2, 3, 4, 5])).toBe(3);
+        expect(numericMedian([1, 2, 3, 4])).toBe(2.5);
+    });
+
+    test("numericMedian - returns 0 for empty array", () => {
+        expect(numericMedian([])).toBe(0);
+    });
+
+    test("isValidUUIDv4 - validates correct and incorrect UUIDs", () => {
+        expect(isValidUUIDv4("123e4567-e89b-12d3-a456-426614174000")).toBe(
+            false
+        ); // not v4
+        expect(isValidUUIDv4("123e4567-e89b-42d3-a456-426614174000")).toBe(
+            true
+        ); // valid v4
+        expect(isValidUUIDv4("invalid-uuid")).toBe(false);
     });
 });

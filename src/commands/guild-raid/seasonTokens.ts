@@ -1,7 +1,7 @@
 import { logger } from "@/lib";
 import { ChartService } from "@/lib/services/ChartService";
 import { GuildService } from "@/lib/services/GuildService.ts";
-import { numericAverage, numericMedian } from "@/lib/utils";
+import { numericAverage, numericMedian, standardDeviation } from "@/lib/utils";
 import { Rarity } from "@/models/enums";
 import {
     AttachmentBuilder,
@@ -160,7 +160,23 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 `Tokens used in season ${season}${rarity ? ` (${rarity})` : ""}`
             )
             .setDescription(
-                `Average tokens used: ${avg.toFixed(2)} (${averageMethod})`
+                `The graph shows the number of tokens used by each member in season ${season}.\n` +
+                    "- **Bar chart:** the number of tokens used by each member.\n" +
+                    `- **Line chart:** represents the ${averageMethod.toLowerCase()} number of tokens used by the guild.`
+            )
+            .addFields(
+                {
+                    name: averageMethod,
+                    value: `The ${averageMethod} number of bombs used: ${avg.toFixed(
+                        1
+                    )}`,
+                },
+                {
+                    name: "Standard deviation",
+                    value: `The standard deviation of bombs used: ${standardDeviation(
+                        Object.values(tokensUsed)
+                    ).toFixed(1)}`,
+                }
             )
             .setImage(`attachment://tokens-used-season-${season}.png`)
             .setTimestamp();

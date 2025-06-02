@@ -270,13 +270,13 @@ export function isValidUUIDv4(uuid: string): boolean {
 export function numericMedian(arr: number[]): number {
     if (arr.length === 0) return 0;
 
-    arr.sort((a, b) => a - b);
-    const middleIndex = Math.floor(arr.length / 2);
+    const sorted = [...arr].sort((a, b) => a - b);
+    const middleIndex = Math.floor(sorted.length / 2);
 
-    if (arr.length % 2 === 0) {
-        return (arr[middleIndex - 1]! + arr[middleIndex]!) / 2;
+    if (sorted.length % 2 === 0) {
+        return (sorted[middleIndex - 1]! + sorted[middleIndex]!) / 2;
     } else {
-        return arr[middleIndex]!;
+        return sorted[middleIndex]!;
     }
 }
 
@@ -285,4 +285,13 @@ export function numericAverage(arr: number[]): number {
 
     const sum = arr.reduce((acc, val) => acc + val, 0);
     return sum / arr.length;
+}
+
+export function standardDeviation(arr: number[]): number {
+    if (arr.length === 0) return 0;
+
+    const mean = numericAverage(arr);
+    const squaredDiffs = arr.map((value) => Math.pow(value - mean, 2));
+    const variance = numericAverage(squaredDiffs);
+    return Math.sqrt(variance);
 }

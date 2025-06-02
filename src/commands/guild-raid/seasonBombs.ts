@@ -1,7 +1,7 @@
 import { logger } from "@/lib";
 import { ChartService } from "@/lib/services/ChartService";
 import { GuildService } from "@/lib/services/GuildService";
-import { numericAverage, numericMedian } from "@/lib/utils";
+import { numericAverage, numericMedian, standardDeviation } from "@/lib/utils";
 import {
     AttachmentBuilder,
     ChatInputCommandInteraction,
@@ -62,7 +62,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             season
         );
 
-        if (!bombs || bombs.length === 0) {
+        if (!bombs || Object.keys(bombs).length === 0) {
             await interaction.editReply({
                 content: `No data found for season ${season}.`,
             });
@@ -103,12 +103,20 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     "- **Bar chart:** the number of bombs used by each member.\n" +
                     `- **Line chart:** represents the ${displayAverage.toLowerCase()} number of bombs used by the guild.`
             )
-            .addFields({
-                name: displayAverage,
-                value: `The ${displayAverage} number of bombs used:  ${average.toFixed(
-                    1
-                )}`,
-            })
+            .addFields(
+                {
+                    name: displayAverage,
+                    value: `The ${displayAverage} number of bombs used:  ${average.toFixed(
+                        1
+                    )}`,
+                },
+                {
+                    name: "Standard deviation",
+                    value: `The standard deviation of bombs used: ${standardDeviation(
+                        Object.values(bombs)
+                    ).toFixed(1)}`,
+                }
+            )
             .setImage("attachment://bombs-season-" + season + ".png");
 
         await interaction.editReply({
