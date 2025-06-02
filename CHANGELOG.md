@@ -19,6 +19,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.16.0] - 2025-06-01
+
+This update provides functionality to see how many bombs guild members have used. Also introduces average values for certain graphs. In these cases you can choose between average (mean) or median comparison. Median is recommended if your guild has a lot of variety in its data. Average is recommended for those with less variety.
+
+### Added
+
+-   **New command!** `/season-bombs` - Returns a graph displaying how many bombs each member has used. Also shows the average (either mean or median value) bombs used
+    -   Required parameter: season (number)
+    -   Optional parameter: average-method (Median or Average)
+    -   Bars are colored depending on standard deviation of the average value
+-   `/season-participation` now has two new optional parameters and also displays the guild's average damage:
+    -   Optional parameter: show-bombs (True/false) - Choose if you want a line displaying number of bombs used in the graph - default: false
+    -   Optional parameter: average-method (Median or Average) - default: average
+
+### Changed
+
+-   `/tokens-by-seasons` renamed to `/season-tokens` and now displays a graph instead of table with colored bars based on standard deviation from the average.
+
 ## [0.15.0] - 2025-05-30
 
 This gives you more options for management of guild members.

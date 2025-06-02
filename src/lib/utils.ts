@@ -203,22 +203,41 @@ export function evaluateToken(token: Token, timestampInSeconds: number): Token {
     return token;
 }
 
-export function SecondsToString(timestampInSeconds: number): string {
+export function SecondsToString(
+    timestampInSeconds: number,
+    hideDays: boolean = false
+): string {
     const secondsPerDay = 24 * 3600;
     const days = Math.floor(timestampInSeconds / secondsPerDay);
     const remAfterDays = timestampInSeconds % secondsPerDay;
 
-    const hours = Math.floor(remAfterDays / 3600)
-        .toString()
-        .padStart(2, "0");
-    const remAfterHours = remAfterDays % 3600;
+    let hours: number | string;
+    let minutes: string;
+    let seconds: string;
+    let daysPart = "";
 
-    const minutes = Math.floor(remAfterHours / 60)
-        .toString()
-        .padStart(2, "0");
-    const seconds = (remAfterHours % 60).toString().padStart(2, "0");
+    if (hideDays) {
+        // All hours, no days part
+        hours = Math.floor(timestampInSeconds / 3600)
+            .toString()
+            .padStart(2, "0");
+        const remAfterHours = timestampInSeconds % 3600;
+        minutes = Math.floor(remAfterHours / 60)
+            .toString()
+            .padStart(2, "0");
+        seconds = (remAfterHours % 60).toString().padStart(2, "0");
+    } else {
+        hours = Math.floor(remAfterDays / 3600)
+            .toString()
+            .padStart(2, "0");
+        const remAfterHours = remAfterDays % 3600;
+        minutes = Math.floor(remAfterHours / 60)
+            .toString()
+            .padStart(2, "0");
+        seconds = (remAfterHours % 60).toString().padStart(2, "0");
+        daysPart = days > 0 ? `${days}d ` : "";
+    }
 
-    const daysPart = days > 0 ? `${days}d ` : "";
     return `${daysPart}${hours}h ${minutes}m ${seconds}s`;
 }
 
@@ -246,4 +265,33 @@ export function isValidUUIDv4(uuid: string): boolean {
     const uuidRegex =
         /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     return uuidRegex.test(uuid);
+}
+
+export function numericMedian(arr: number[]): number {
+    if (arr.length === 0) return 0;
+
+    const sorted = [...arr].sort((a, b) => a - b);
+    const middleIndex = Math.floor(sorted.length / 2);
+
+    if (sorted.length % 2 === 0) {
+        return (sorted[middleIndex - 1]! + sorted[middleIndex]!) / 2;
+    } else {
+        return sorted[middleIndex]!;
+    }
+}
+
+export function numericAverage(arr: number[]): number {
+    if (arr.length === 0) return 0;
+
+    const sum = arr.reduce((acc, val) => acc + val, 0);
+    return sum / arr.length;
+}
+
+export function standardDeviation(arr: number[]): number {
+    if (arr.length === 0) return 0;
+
+    const mean = numericAverage(arr);
+    const squaredDiffs = arr.map((value) => Math.pow(value - mean, 2));
+    const variance = numericAverage(squaredDiffs);
+    return Math.sqrt(variance);
 }

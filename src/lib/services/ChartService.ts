@@ -1,6 +1,6 @@
 import type { GuildRaidResult } from "@/models/types";
 import { ChartJSNodeCanvas } from "chartjs-node-canvas";
-import { CHART_COLORS } from "../utils";
+import { CHART_COLORS, standardDeviation } from "@/lib/utils";
 import type { TeamDistribution } from "@/models/types/TeamDistribution";
 
 const CHART_WIDTH = 1200;
@@ -13,34 +13,73 @@ const canvas = new ChartJSNodeCanvas({
 });
 
 export class ChartService {
-    async createSeasonDamageChart(data: GuildRaidResult[], title: string) {
-        const usernames = data.map((data) => data.username); // Extract labels
-        const damage = data.map((data) => data.totalDamage); // Extract values
-        const totalTokens = data.map((data) => data.totalTokens); // Extract total tokens
+    async createSeasonDamageChart(
+        data: GuildRaidResult[],
+        title: string,
+        showBombs: boolean = false,
+        average: "average" | "median" = "median",
+        averageValue: number
+    ) {
+        const usernames = data.map((data) => data.username);
+        const damage = data.map((data) => data.totalDamage);
+        const totalTokens = data.map((data) => data.totalTokens);
+        const bombCount = data.map((data) => data.bombCount);
+
+        // Build datasets array conditionally
+        const datasets: any[] = [
+            {
+                type: "line",
+                label: "Total Tokens",
+                data: totalTokens,
+                borderColor: CHART_COLORS.orange,
+                borderWidth: 2,
+                fill: false,
+                tension: 0,
+                pointRadius: 1.5,
+                yAxisID: "y2",
+            },
+            {
+                type: "line",
+                label:
+                    average === "average"
+                        ? "Guild average damage"
+                        : "Guild median damage",
+                data: Array(usernames.length).fill(averageValue),
+                borderColor: CHART_COLORS.yellow,
+                borderWidth: 2,
+                fill: false,
+                tension: 0,
+                pointRadius: 0,
+                yAxisID: "y",
+                borderDash: [5, 5],
+            },
+            {
+                backgroundColor: CHART_COLORS.blue,
+                label: title,
+                data: damage,
+                borderWidth: 1,
+            },
+        ];
+
+        if (showBombs) {
+            datasets.splice(1, 0, {
+                type: "line",
+                label: "Bomb Count",
+                data: bombCount,
+                borderColor: CHART_COLORS.red,
+                borderWidth: 2,
+                fill: false,
+                tension: 0,
+                pointRadius: 1.5,
+                yAxisID: "y2",
+            });
+        }
 
         const chart = await canvas.renderToBuffer({
             type: "bar",
             data: {
                 labels: usernames,
-                datasets: [
-                    {
-                        type: "line",
-                        label: "Total Tokens",
-                        data: totalTokens,
-                        borderColor: CHART_COLORS.orange,
-                        borderWidth: 2,
-                        fill: false,
-                        tension: 0,
-                        pointRadius: 1.5,
-                        yAxisID: "y2",
-                    },
-                    {
-                        backgroundColor: CHART_COLORS.blue,
-                        label: title,
-                        data: damage,
-                        borderWidth: 1,
-                    },
-                ],
+                datasets,
             },
             options: {
                 plugins: {
@@ -92,7 +131,7 @@ export class ChartService {
                             },
                         },
                         grid: {
-                            drawOnChartArea: false, // Prevent grid lines from overlapping
+                            drawOnChartArea: false,
                         },
                     },
                 },
@@ -295,6 +334,126 @@ export class ChartService {
                                 size: 14,
                             },
                         },
+                    },
+                },
+                layout: {
+                    padding: {
+                        left: 20,
+                        right: 20,
+                        bottom: 10,
+                        top: 10,
+                    },
+                },
+                responsive: true,
+                maintainAspectRatio: false,
+            },
+        });
+
+        return chart;
+    }
+
+    async createNumberUsedChart(
+        data: Record<string, number>,
+        title: string,
+        guildAvg: number,
+        avgLabel: string,
+        maxValue: number
+    ) {
+        const entries = Object.entries(data);
+        entries.sort((a, b) => b[1] - a[1]);
+
+        const usernames = entries.map(([username]) => username);
+        const uses = entries.map(([, n]) => n);
+        const stdev = standardDeviation(uses);
+
+        if (usernames.length === 0) {
+            throw new Error("No data to display in the chart.");
+        }
+
+        const chart = await canvas.renderToBuffer({
+            type: "bar",
+            data: {
+                labels: usernames,
+                datasets: [
+                    {
+                        type: "line",
+                        label: avgLabel,
+                        data: Array(usernames.length).fill(guildAvg),
+                        borderColor: CHART_COLORS.yellow,
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0,
+                        pointRadius: 0,
+                        yAxisID: "y",
+                        borderDash: [5, 5],
+                    },
+                    {
+                        label: title,
+                        data: uses,
+                        backgroundColor: (context: any) => {
+                            const value =
+                                context.dataset.data[context.dataIndex];
+                            if (value > guildAvg + stdev) {
+                                return CHART_COLORS.purple;
+                            } else if (value > guildAvg - stdev) {
+                                // This covers (guildAvg - stdev, guildAvg + stdev]
+                                return CHART_COLORS.blue;
+                            } else if (value > guildAvg - 2 * stdev) {
+                                // This covers (guildAvg - 2*stdev, guildAvg - stdev]
+                                return CHART_COLORS.yellow;
+                            } else {
+                                // value <= guildAvg - 2*stdev
+                                return CHART_COLORS.red;
+                            }
+                        },
+                        borderWidth: 1,
+                    },
+                ],
+            },
+            options: {
+                plugins: {
+                    title: {
+                        display: true,
+                        text: [
+                            title,
+                            "Green: >1σ above avg   |   Blue: ±1σ of avg   |   Yellow: -1σ to -2σ   |   Red: ≤-2σ",
+                        ],
+                        font: {
+                            size: 18,
+                        },
+                        color: "white",
+                    },
+                    legend: {
+                        display: true,
+                        labels: {
+                            color: "white",
+                        },
+                    },
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: "white",
+                            font: {
+                                size: 12,
+                            },
+                        },
+                        grid: {
+                            display: false,
+                        },
+                    },
+                    y: {
+                        ticks: {
+                            color: "white",
+                            font: {
+                                size: 14,
+                            },
+                        },
+                        grid: {
+                            color: "rgba(255, 255, 255, 0.4)",
+                        },
+                        max: maxValue,
+                        min: 0,
                     },
                 },
                 layout: {

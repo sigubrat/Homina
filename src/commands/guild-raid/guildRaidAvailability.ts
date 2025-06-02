@@ -59,8 +59,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
                 const bombIcon = available.bombs > 0 ? "✅" : `❌`;
                 const bombStatus = `${bombIcon} \`${
-                    available.bombCooldown ?? "NO COOLDOWN"
-                }\``;
+                    available.bombs > 0 ? "+" : "-"
+                }${available.bombCooldown}\``;
                 return {
                     text: `${tokenStatus} - Bomb: ${bombStatus} - **${userId}**`,
                     tokens: available.tokens,
@@ -91,6 +91,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             embed.addFields({
                 name: "",
                 value: table.slice(i, i + 10).join("\n"),
+                inline: false,
             });
         }
 

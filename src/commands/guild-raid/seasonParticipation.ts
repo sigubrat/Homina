@@ -6,7 +6,12 @@ import {
     EmbedBuilder,
     SlashCommandBuilder,
 } from "discord.js";
-import { getTopNDamageDealers, sortGuildRaidResultDesc } from "@/lib/utils";
+import {
+    getTopNDamageDealers,
+    numericAverage,
+    numericMedian,
+    sortGuildRaidResultDesc,
+} from "@/lib/utils";
 import { logger } from "@/lib";
 
 export const cooldown = 5;
@@ -18,6 +23,30 @@ export const data = new SlashCommandBuilder()
             .setName("season")
             .setDescription("The season number")
             .setRequired(true)
+    )
+    .addBooleanOption((option) =>
+        option
+            .setName("show-bombs")
+            .setDescription("Show the number of bombs used by each member")
+            .setRequired(false)
+    )
+    .addStringOption((option) =>
+        option
+            .setName("average-method")
+            .setChoices(
+                {
+                    name: "Average",
+                    value: "average",
+                },
+                {
+                    name: "Median",
+                    value: "median",
+                }
+            )
+            .setDescription(
+                "Median is recommended if you have big variation in damage, average otherwise"
+            )
+            .setRequired(false)
     )
     .setDescription(
         "Check how much each member has participated in a specific guild raid season"
@@ -35,6 +64,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         });
         return;
     }
+
+    const averageMethod = interaction.options.getString("average-method") as
+        | "average"
+        | "median"
+        | null;
 
     const service = new GuildService();
 
@@ -91,18 +125,26 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 set: 0,
                 tier: 0,
                 startedOn: 0,
+                bombCount: 0,
             });
         });
 
         const sortedResult = sortGuildRaidResultDesc(result);
 
         const topDamageDealers = getTopNDamageDealers(sortedResult, 3);
+        const average =
+            averageMethod === "median"
+                ? numericMedian(sortedResult.map((val) => val.totalDamage))
+                : numericAverage(sortedResult.map((val) => val.totalDamage));
 
         const chartService = new ChartService();
 
         const chartBuffer = await chartService.createSeasonDamageChart(
             sortedResult,
-            `Damage dealt in season ${season}`
+            `Damage dealt in season ${season}`,
+            interaction.options.getBoolean("show-bombs") ?? false,
+            averageMethod ? averageMethod : "average",
+            average
         );
 
         const attachment = new AttachmentBuilder(chartBuffer, {
