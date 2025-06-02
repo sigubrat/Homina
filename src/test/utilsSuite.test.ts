@@ -96,6 +96,7 @@ describe("utilsSuite - Algebra", () => {
                 set: 0,
                 tier: 0,
                 startedOn: 0,
+                bombCount: 0,
             },
             {
                 username: "Player2",
@@ -105,6 +106,7 @@ describe("utilsSuite - Algebra", () => {
                 set: 0,
                 tier: 0,
                 startedOn: 0,
+                bombCount: 0,
             },
             {
                 username: "Player3",
@@ -113,6 +115,7 @@ describe("utilsSuite - Algebra", () => {
                 boss: "",
                 set: 0,
                 tier: 0,
+                bombCount: 0,
                 startedOn: 0,
             },
         ];
@@ -131,6 +134,7 @@ describe("utilsSuite - Algebra", () => {
                 set: 0,
                 tier: 0,
                 startedOn: 0,
+                bombCount: 0,
             },
             {
                 username: "Player1",
@@ -140,6 +144,7 @@ describe("utilsSuite - Algebra", () => {
                 set: 0,
                 tier: 0,
                 startedOn: 0,
+                bombCount: 0,
             },
             {
                 username: "Player3",
@@ -149,6 +154,7 @@ describe("utilsSuite - Algebra", () => {
                 set: 0,
                 tier: 0,
                 startedOn: 0,
+                bombCount: 0,
             },
         ];
         const result = sortGuildRaidResultDesc(data);
@@ -194,6 +200,12 @@ describe("utilsSuite - Algebra", () => {
         const timestampInSeconds = 86400 + 3600 + 60 + 1; // 1 day, 1 hour, 1 minute, and 1 second
         const result = SecondsToString(timestampInSeconds);
         expect(result).toBe("1d 01h 01m 01s");
+    });
+
+    test("timestampInSecondsToString - Should handle hiding days paramter correctly", () => {
+        const timestampInSeconds = 86400 + 3600 + 60 + 1; // 1 day, 1 hour, 1 minute, and 1 second
+        const result = SecondsToString(timestampInSeconds, true);
+        expect(result).toBe("25h 01m 01s");
     });
 
     test("mapTierToRarity - Should map tier to rarity correctly", () => {

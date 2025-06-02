@@ -914,10 +914,17 @@ export class GuildService {
                     const diff =
                         getUnixTimestamp(now) - mostRecentBomb.startedOn;
                     const diffHours = Math.floor(diff / 3600);
+                    // Check if the bomb is still on cooldown
                     if (diffHours < 18) {
                         temp.bombs = 0;
                         temp.bombCooldown = SecondsToString(
                             bombCooldownInSeconds - diff
+                        );
+                    } else {
+                        // If the bomb is not on cooldown, we calculate how long it's been available
+                        temp.bombCooldown = SecondsToString(
+                            diff - bombCooldownInSeconds,
+                            true
                         );
                     }
                 }

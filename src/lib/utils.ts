@@ -203,22 +203,41 @@ export function evaluateToken(token: Token, timestampInSeconds: number): Token {
     return token;
 }
 
-export function SecondsToString(timestampInSeconds: number): string {
+export function SecondsToString(
+    timestampInSeconds: number,
+    hideDays: boolean = false
+): string {
     const secondsPerDay = 24 * 3600;
     const days = Math.floor(timestampInSeconds / secondsPerDay);
     const remAfterDays = timestampInSeconds % secondsPerDay;
 
-    const hours = Math.floor(remAfterDays / 3600)
-        .toString()
-        .padStart(2, "0");
-    const remAfterHours = remAfterDays % 3600;
+    let hours: number | string;
+    let minutes: string;
+    let seconds: string;
+    let daysPart = "";
 
-    const minutes = Math.floor(remAfterHours / 60)
-        .toString()
-        .padStart(2, "0");
-    const seconds = (remAfterHours % 60).toString().padStart(2, "0");
+    if (hideDays) {
+        // All hours, no days part
+        hours = Math.floor(timestampInSeconds / 3600)
+            .toString()
+            .padStart(2, "0");
+        const remAfterHours = timestampInSeconds % 3600;
+        minutes = Math.floor(remAfterHours / 60)
+            .toString()
+            .padStart(2, "0");
+        seconds = (remAfterHours % 60).toString().padStart(2, "0");
+    } else {
+        hours = Math.floor(remAfterDays / 3600)
+            .toString()
+            .padStart(2, "0");
+        const remAfterHours = remAfterDays % 3600;
+        minutes = Math.floor(remAfterHours / 60)
+            .toString()
+            .padStart(2, "0");
+        seconds = (remAfterHours % 60).toString().padStart(2, "0");
+        daysPart = days > 0 ? `${days}d ` : "";
+    }
 
-    const daysPart = days > 0 ? `${days}d ` : "";
     return `${daysPart}${hours}h ${minutes}m ${seconds}s`;
 }
 
