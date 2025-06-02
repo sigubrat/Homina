@@ -105,6 +105,8 @@ export const multiHitTeam = [
     "bloodDante", // Dante
     "ultraCalgar", // Calgar
     "tauAunShi", // Aun'shi
+    "darkaAsmodai", // Asmodai
+    "darkaCompanion", // Forcas
 ];
 
 export const mechTeam = [
