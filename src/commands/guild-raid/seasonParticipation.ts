@@ -65,10 +65,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         return;
     }
 
-    const averageMethod = interaction.options.getString("average-method") as
+    let averageMethod = interaction.options.getString("average-method") as
         | "average"
         | "median"
         | null;
+
+    if (!averageMethod) {
+        averageMethod = "average";
+    }
 
     const service = new GuildService();
 
@@ -157,9 +161,24 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setDescription(
                 "The graph shows the contribution of each member to a guild raid season:\n" +
                     "- **Bar chart**: Damage dealt (left y-axis)\n" +
-                    "- **Line chart**: Total tokens used (right y-axis)\n" +
-                    `**Top ${topDamageDealers.length} Damage Dealers:**\n` +
-                    `${topDamageDealers.join("\n")}`
+                    "- **Line chart**: Total tokens used (right y-axis)"
+            )
+            .setFields(
+                {
+                    name: "Top Damage Dealers",
+                    value:
+                        topDamageDealers.join("\n") ||
+                        "No damage dealers found",
+                },
+                {
+                    name: "Average Damage",
+                    value: `The ${averageMethod} total damage dealt is **${average.toLocaleString(
+                        undefined,
+                        {
+                            maximumFractionDigits: 2,
+                        }
+                    )}**`,
+                }
             )
             .setImage("attachment://graph.png");
 
