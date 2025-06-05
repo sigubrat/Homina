@@ -158,6 +158,17 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             });
         }
 
+        embed.addFields({
+            name: "Total tokens",
+            value: formattedTotalTokens,
+            inline: true,
+        },
+        {
+            name: "Total bombs",
+            value: formattedTotalBombs,
+            inline: true,
+        })
+
         await interaction.editReply({ embeds: [embed] });
     } catch (error) {
         logger.error(
