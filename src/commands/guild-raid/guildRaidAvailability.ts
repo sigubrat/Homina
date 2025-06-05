@@ -61,8 +61,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         const playersNotParticipated = players.filter(
-            (player) =>
-                !result[player.username]
+            (player) => !result[player.username]
         );
 
         playersNotParticipated.forEach((player) => {
@@ -75,13 +74,17 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         });
 
         const totalTokens = Object.values(result).reduce(
-            (acc, available) => acc + available.tokens, 0
+            (acc, available) => acc + available.tokens,
+            0
         );
 
-        const formattedTotalTokens = `Total tokens: \`${totalTokens}/${players.length * 3}\``;
+        const formattedTotalTokens = `Total tokens: \`${totalTokens}/${
+            players.length * 3
+        }\``;
 
         const totalBombs = Object.values(result).reduce(
-            (acc, available) => acc + available.bombs, 0
+            (acc, available) => acc + available.bombs,
+            0
         );
 
         const formattedTotalBombs = `Total bombs: \`${totalBombs}/${players.length}\``;
@@ -135,16 +138,17 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 "Here is the list of members with available tokens and bombs:\n"
             )
             .setFields(
-            {
-                name: "Total tokens",
-                value: formattedTotalTokens,
-                inline: true,
-            },
-            {
-                name: "Total bombs",
-                value: formattedTotalBombs,
-                inline: true,
-            })
+                {
+                    name: "Total tokens",
+                    value: formattedTotalTokens,
+                    inline: true,
+                },
+                {
+                    name: "Total bombs",
+                    value: formattedTotalBombs,
+                    inline: true,
+                }
+            )
             .setTimestamp()
             .setFooter({
                 text: "Data fetched from the guild raid API.\n(NB! Inaccuracies may occur for users who have joined mid-season)",
@@ -158,16 +162,18 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             });
         }
 
-        embed.addFields({
-            name: "Total tokens",
-            value: formattedTotalTokens,
-            inline: true,
-        },
-        {
-            name: "Total bombs",
-            value: formattedTotalBombs,
-            inline: true,
-        })
+        embed.addFields(
+            {
+                name: "Total tokens",
+                value: formattedTotalTokens,
+                inline: true,
+            },
+            {
+                name: "Total bombs",
+                value: formattedTotalBombs,
+                inline: true,
+            }
+        );
 
         await interaction.editReply({ embeds: [embed] });
     } catch (error) {

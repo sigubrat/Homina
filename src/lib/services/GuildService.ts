@@ -866,14 +866,50 @@ export class GuildService {
                 return null;
             }
 
-            const entries = resp.entries;
-            if (!entries) {
+            const prevSeason = await this.client.getGuildRaidBySeason(
+                apiKey,
+                resp.season - 1
+            );
+
+            const sortedEntries = prevSeason.entries
+                .filter((e) => e.damageType !== DamageType.BOMB)
+                .sort((a, b) => b.startedOn - a.startedOn);
+
+            if (!prevSeason || !prevSeason.entries) {
                 return null;
             }
 
+            const prevUsers: Record<string, Raid> = {};
+
+            // Get the last entry of each user from the previous season
+            for (const prevEntry of sortedEntries) {
+                if (prevEntry.damageType === DamageType.BOMB) {
+                    continue;
+                }
+
+                if (!prevUsers[prevEntry.userId]) {
+                    prevUsers[prevEntry.userId] = prevEntry;
+                }
+            }
+
+            // Check who hadnt used any tokens or bombs in the previous season
+            const guildId = await this.getGuildId(userId);
+            if (!guildId) {
+                return null;
+            }
+
+            const playerList = await this.getPlayerList(guildId);
+            if (!playerList || playerList.length === 0) {
+                return null;
+            }
+
+            const entries = resp.entries;
+
+            const combinedEntries = entries.concat(prevSeason.entries);
+
             const users: Record<string, TokensAndBombs> = {};
 
-            for (const entry of entries) {
+            for (const entry of combinedEntries) {
                 let username = await dbController.getPlayerName(entry.userId);
                 if (!username) {
                     username = "Unknown";
