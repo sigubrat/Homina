@@ -135,7 +135,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setColor("#0099ff")
             .setTitle("Available Tokens and Bombs")
             .setDescription(
-                "Here is the list of members with available tokens and bombs:\n"
+                "Here is the list of members with available tokens and bombs:\n Note that the token cooldowns have a certain margin of error due to unknown variables in the calculation."
             )
             .setFields(
                 {
