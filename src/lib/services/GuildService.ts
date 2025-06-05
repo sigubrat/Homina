@@ -899,7 +899,7 @@ export class GuildService {
             Object.entries(users).forEach(([userId, data]) => {
                 const temp: GuildRaidAvailable = {
                     tokens: maxTokens,
-                    bombs: 0,
+                    bombs: 1,
                 };
 
                 const mostRecentBomb = data.bombs
@@ -908,7 +908,6 @@ export class GuildService {
                     })
                     .find(() => true);
 
-                temp.bombs = 1;
                 if (mostRecentBomb) {
                     // diff in seconds
                     const diff =

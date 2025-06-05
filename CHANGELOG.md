@@ -19,6 +19,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.16.2] - 2025-06-05
+
+### Added
+
+- `/gr-available` now displays the total tokens and total bombs available in your guild 
+
+### Fixed
+
+- `/gr-available` now includes users who have not participated in guild raids so far in the season
+
+### Known bugs
+
+- `/gr-available` is currently a little off on token-calculation at the start of a season. I think it normalises fairly quickly as the season goes on. I'll be working on a fix to ensure its accuracy at the beginning of seasons.  
+
 ## [0.16.1] - 2025-06-02
 
 Quick hotfix to remove a copy-paste related typo. Special thanks to @JRC for the bug-report! 

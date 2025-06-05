@@ -41,6 +41,51 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
+        // Add players who have not used any tokens or bombs yet
+        const guildId = await service.getGuildId(interaction.user.id);
+        if (!guildId) {
+            await interaction.editReply({
+                content:
+                    "Could not find your guild's ID. Please make sure you have registered your API-token",
+            });
+            return;
+        }
+
+        const players = await service.getPlayerList(guildId);
+        if (!players || players.length === 0) {
+            await interaction.editReply({
+                content:
+                    "No players found in the guild. Please make sure you have registered your API-token",
+            });
+            return;
+        }
+
+        const playersNotParticipated = players.filter(
+            (player) =>
+                !result[player.username]
+        );
+
+        playersNotParticipated.forEach((player) => {
+            result[player.username] = {
+                tokens: 3,
+                bombs: 1,
+                tokenCooldown: undefined,
+                bombCooldown: undefined,
+            };
+        });
+
+        const totalTokens = Object.values(result).reduce(
+            (acc, available) => acc + available.tokens, 0
+        );
+
+        const formattedTotalTokens = `Total tokens: \`${totalTokens}/${players.length * 3}\``;
+
+        const totalBombs = Object.values(result).reduce(
+            (acc, available) => acc + available.bombs, 0
+        );
+
+        const formattedTotalBombs = `Total bombs: \`${totalBombs}/${players.length}\``;
+
         const table = Object.entries(result)
             .map(([userId, available]) => {
                 let tokenIcon: string;
@@ -58,9 +103,16 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 const tokenStatus = `${tokenIcon} \`${available.tokens}/3\` cooldown: \`${available.tokenCooldown}\``;
 
                 const bombIcon = available.bombs > 0 ? "✅" : `❌`;
-                const bombStatus = `${bombIcon} \`${
-                    available.bombs > 0 ? "+" : "-"
-                }${available.bombCooldown}\``;
+
+                let bombStatus: string;
+                if (!available.bombCooldown) {
+                    bombStatus = `${bombIcon} \`NOT USED YET\``;
+                } else {
+                    bombStatus = `${bombIcon} \`${
+                        available.bombs > 0 ? "+" : "-"
+                    }${available.bombCooldown}\``;
+                }
+
                 return {
                     text: `${tokenStatus} - Bomb: ${bombStatus} - **${userId}**`,
                     tokens: available.tokens,
@@ -82,6 +134,17 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setDescription(
                 "Here is the list of members with available tokens and bombs:\n"
             )
+            .setFields(
+            {
+                name: "Total tokens",
+                value: formattedTotalTokens,
+                inline: true,
+            },
+            {
+                name: "Total bombs",
+                value: formattedTotalBombs,
+                inline: true,
+            })
             .setTimestamp()
             .setFooter({
                 text: "Data fetched from the guild raid API.\n(NB! Inaccuracies may occur for users who have joined mid-season)",
