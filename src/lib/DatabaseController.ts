@@ -207,8 +207,7 @@ export class DatabaseController {
     public async cleanupOldTokens(maxAgeInDays: number = 30): Promise<number> {
         try {
             const cutoffDate = new Date();
-            // cutoffDate.setDate(cutoffDate.getDate() - maxAgeInDays);
-            cutoffDate.setSeconds(-30);
+            cutoffDate.setDate(cutoffDate.getDate() - maxAgeInDays);
 
             const res = await this.sequelize.models[
                 "discordApiTokenMappings"
@@ -220,8 +219,10 @@ export class DatabaseController {
                 },
             });
 
-            console.log(
-                `Deleted ${res} old tokens from the database older than ${maxAgeInDays} days.`
+            logger.info(
+                `Deleted ${
+                    res || 0
+                } old tokens from the database older than ${maxAgeInDays} days.`
             );
 
             return res || 0;

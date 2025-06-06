@@ -879,7 +879,7 @@ export class GuildService {
                 return null;
             }
 
-            const prevUsers: Record<string, Raid> = {};
+            const prevUsers = new Set<string>();
 
             // Get the last entry of each user from the previous season
             for (const prevEntry of sortedEntries) {
@@ -887,21 +887,27 @@ export class GuildService {
                     continue;
                 }
 
-                if (!prevUsers[prevEntry.userId]) {
-                    prevUsers[prevEntry.userId] = prevEntry;
-                }
+                prevUsers.add(prevEntry.userId);
             }
 
-            // Check who hadnt used any tokens or bombs in the previous season
             const guildId = await this.getGuildId(userId);
             if (!guildId) {
                 return null;
             }
 
-            const playerList = await this.getPlayerList(guildId);
-            if (!playerList || playerList.length === 0) {
+            const currentMembersArr = await this.getGuildMembers(userId);
+            if (!currentMembersArr || currentMembersArr.length === 0) {
                 return null;
             }
+
+            const currentMembers = new Set(currentMembersArr);
+
+            // Find out who have left the guild and therefore should not be included in the results
+            const formerMembers = new Set(
+                Array.from(prevUsers).filter(
+                    (prevId) => !currentMembers.has(prevId)
+                )
+            );
 
             const entries = resp.entries;
 
@@ -910,6 +916,11 @@ export class GuildService {
             const users: Record<string, TokensAndBombs> = {};
 
             for (const entry of combinedEntries) {
+                if (formerMembers.has(entry.userId)) {
+                    // If the user has left the guild, we skip their entries
+                    continue;
+                }
+
                 let username = await dbController.getPlayerName(entry.userId);
                 if (!username) {
                     username = "Unknown";
