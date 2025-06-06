@@ -19,28 +19,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.16.3] - 2025-06-06
+
+### Changed
+
+-   Improved `/gr-available` command:
+    -   Now includes a warning that token cooldowns may have inherent uncertainty due to data limitations, which may affect cooldown accuracy.
+    -   Enhanced embed formatting for the display of total tokens and bombs.
+
+### Fixed
+
+-   `/gr-available` now more accurately estimates token and bomb cooldowns by including data from the previous season in the calculation.
+
+### Other
+
+-   All error and success replies in `/update-members` are now ephemeral, ensuring only the user who initiated the command can see them.
+
 ## [0.16.2] - 2025-06-05
 
 ### Added
 
-- `/gr-available` now displays the total tokens and total bombs available in your guild 
+-   `/gr-available` now displays the total tokens and total bombs available in your guild
 
 ### Fixed
 
-- `/gr-available` now includes users who have not participated in guild raids so far in the season
+-   `/gr-available` now includes users who have not participated in guild raids so far in the season
 
 ### Known bugs
 
-- `/gr-available` is currently a little off on token-calculation at the start of a season. I think it normalises fairly quickly as the season goes on. I'll be working on a fix to ensure its accuracy at the beginning of seasons.  
+-   `/gr-available` is currently a little off on token-calculation at the start of a season. I think it normalises fairly quickly as the season goes on. I'll be working on a fix to ensure its accuracy at the beginning of seasons.
 
 ## [0.16.1] - 2025-06-02
 
-Quick hotfix to remove a copy-paste related typo. Special thanks to @JRC for the bug-report! 
+Quick hotfix to remove a copy-paste related typo. Special thanks to @JRC for the bug-report!
 
 ### Changed
 
-- Changed incorrect use of `bombs` to `tokens` in `/season-tokens` command that was caused by an unfortunate copy-paste accident :clown:
-
+-   Changed incorrect use of `bombs` to `tokens` in `/season-tokens` command that was caused by an unfortunate copy-paste accident :clown:
 
 ## [0.16.0] - 2025-06-02
 

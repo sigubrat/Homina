@@ -27,6 +27,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     if (!file) {
         await interaction.editReply({
             content: "No file provided. Please upload a valid JSON file.",
+            options: {
+                flags: MessageFlags.Ephemeral,
+            },
         });
         return;
     }
@@ -40,6 +43,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         if (fileExtension !== "json") {
             await interaction.editReply({
                 content: "Invalid file type. Please upload a JSON file.",
+                options: {
+                    flags: MessageFlags.Ephemeral,
+                },
             });
             return;
         }
@@ -51,6 +57,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             await interaction.editReply({
                 content:
                     "Invalid JSON format. Please ensure the file contains a valid JSON object.",
+                options: {
+                    flags: MessageFlags.Ephemeral,
+                },
             });
             return;
         }
@@ -62,6 +71,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             await interaction.editReply({
                 content:
                     "Could not find your guild's ID. Please make sure you have registered your API-token",
+                options: {
+                    flags: MessageFlags.Ephemeral,
+                },
             });
             return;
         }
@@ -74,6 +86,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             await interaction.editReply({
                 content:
                     "No members found in the provided file. Please ensure the file contains valid member data.",
+                options: {
+                    flags: MessageFlags.Ephemeral,
+                },
             });
             return;
         }
@@ -83,6 +98,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             await interaction.editReply({
                 content:
                     "Something went wrong while updating the guild members. Please try again. Contact the bot owner if the problem persists.",
+                options: {
+                    flags: MessageFlags.Ephemeral,
+                },
             });
             return;
         }
@@ -92,6 +110,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 content:
                     `Could only update (${result}/${members.length}) guild members. Please check your JSON file and try again.\n` +
                     "Contact the bot owner if the problem persists.",
+                options: {
+                    flags: MessageFlags.Ephemeral,
+                },
             });
             return;
         }
@@ -102,6 +123,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         await interaction.editReply({
             content: `Succesfully updated all guild members.`,
+            options: {
+                flags: MessageFlags.Ephemeral,
+            },
         });
     } catch (error) {
         logger.error(error, "Error processing the attachment");
