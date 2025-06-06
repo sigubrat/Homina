@@ -4,7 +4,7 @@ import type {
     GuildRaidAvailable,
     GuildRaidResult,
     Raid,
-    Token,
+    TokenStatus,
     TokensAndBombs,
 } from "@/models/types";
 import { DamageType, EncounterType, Rarity } from "@/models/enums";
@@ -60,13 +60,13 @@ export class GuildService {
         try {
             const apiKey = await dbController.getUserToken(userId);
             if (!apiKey) {
-                return null;
+                throw new Error("API key not found for user: " + userId);
             }
 
             const resp = await this.client.getGuild(apiKey);
 
             if (!resp.success || !resp.guild) {
-                return null;
+                throw new Error("Failed to fetch guild for user: " + userId);
             }
 
             return resp.guild.members.map((member) => member.userId);
@@ -91,6 +91,59 @@ export class GuildService {
             return username;
         } catch (error) {
             logger.error(error, "Error fetching username by ID");
+            return null;
+        }
+    }
+
+    /**
+     * Sets the player token for a given user ID and guild ID.
+     * @param userId The ID of the user to set the token for.
+     * @param token The token to set for the user.
+     * @param guildId The ID of the guild to set the token for.
+     * @returns True if the token was set successfully, false otherwise.
+     */
+    async setPlayerToken(
+        userId: string,
+        token: string,
+        guildId: string
+    ): Promise<boolean> {
+        try {
+            const result = await dbController.setPlayerToken(
+                userId,
+                token,
+                guildId
+            );
+            return result;
+        } catch (error) {
+            logger.error(
+                error,
+                `Error setting player token for user: ${userId}`
+            );
+            return false;
+        }
+    }
+
+    /**
+     * Fetches the player token for a given user ID and guild ID.
+     * @param userId The ID of the user to fetch the token for.
+     * @param guildId The ID of the guild to fetch the token for.
+     * @returns The player token or null if not found or an error occurred.
+     */
+    async getPlayerToken(
+        userId: string,
+        guildId: string
+    ): Promise<string | null> {
+        try {
+            const token = await dbController.getPlayerToken(userId, guildId);
+            if (!token) {
+                return null;
+            }
+            return token;
+        } catch (error) {
+            logger.error(
+                error,
+                `Error fetching player token for user: ${userId}`
+            );
             return null;
         }
     }
@@ -128,63 +181,22 @@ export class GuildService {
         guildId: string,
         members: GuildMemberMapping[]
     ): Promise<number> {
-        let updatedCount = 0;
-        try {
-            // Find out if any guild members are no longer in the guild and therefore need to be deleted
-            const guildMembers = await dbController.getGuildMembersByGuildId(
-                guildId
-            );
-
-            if (!guildMembers) {
-                return -1;
-            }
-
-            const guildMemberIds = guildMembers.map((member) => member.userId);
-            const membersToDelete = guildMemberIds.filter(
-                (id) => !members.some((member) => member.userId === id)
-            );
-
-            for (const id of membersToDelete) {
-                const result = await dbController.deletePlayerNameById(
-                    id,
-                    guildId
-                );
-                if (!result) {
-                    continue;
-                }
-            }
-
-            // Update the new guild members
-            for (const member of members) {
-                const result = await dbController.updatePlayerName(
-                    member.userId,
-                    member.username,
-                    guildId
-                );
-                if (!result) {
-                    continue;
-                }
-
-                updatedCount += 1;
-            }
-
-            return updatedCount;
-        } catch (error) {
-            logger.error(error, "Error updating guild members: ");
-            return -1;
-        }
+        // Now just call the transactional method in dbController
+        return dbController.updateGuildMembersTransactional(guildId, members);
     }
 
     async updateGuildMember(
         tacticusId: string,
         newUsername: string,
-        guildId: string
+        guildId: string,
+        apiToken?: string
     ) {
         try {
             const result = await dbController.updatePlayerName(
                 tacticusId,
                 newUsername,
-                guildId
+                guildId,
+                apiToken
             );
 
             return result;
@@ -921,103 +933,116 @@ export class GuildService {
                     continue;
                 }
 
-                let username = await dbController.getPlayerName(entry.userId);
-                if (!username) {
-                    username = "Unknown";
-                }
+                const id = entry.userId;
 
-                if (!users[username]) {
-                    users[username] = {
+                if (!users[id]) {
+                    users[id] = {
                         tokens: [],
                         bombs: [],
                     };
                 }
 
                 if (entry.damageType === DamageType.BOMB) {
-                    users[username]?.bombs.push(entry);
+                    users[id]?.bombs.push(entry);
                 } else {
-                    users[username]?.tokens.push(entry);
+                    users[id]?.tokens.push(entry);
                 }
             }
 
             // Find the most recent bomb used and up to 3 most recent tokens used
             const result: Record<string, GuildRaidAvailable> = {};
 
-            Object.entries(users).forEach(([userId, data]) => {
-                const temp: GuildRaidAvailable = {
-                    tokens: maxTokens,
-                    bombs: 1,
-                };
+            await Promise.all(
+                Object.entries(users).map(async ([userId, data]) => {
+                    const temp: GuildRaidAvailable = {
+                        tokens: maxTokens,
+                        bombs: 1,
+                    };
 
-                const mostRecentBomb = data.bombs
-                    .sort((a, b) => {
-                        return b.startedOn - a.startedOn;
-                    })
-                    .find(() => true);
+                    const playerApiToken = await this.getPlayerToken(
+                        userId,
+                        guildId
+                    );
 
-                if (mostRecentBomb) {
-                    // diff in seconds
-                    const diff =
-                        getUnixTimestamp(now) - mostRecentBomb.startedOn;
-                    const diffHours = Math.floor(diff / 3600);
-                    // Check if the bomb is still on cooldown
-                    if (diffHours < 18) {
-                        temp.bombs = 0;
-                        temp.bombCooldown = SecondsToString(
-                            bombCooldownInSeconds - diff
+                    // If there is a player API token, we can fetch the cooldowns and skip calculations
+                    if (playerApiToken) {
+                        const cd = await this.getPlayerCooldowns(
+                            playerApiToken
                         );
-                    } else {
-                        // If the bomb is not on cooldown, we calculate how long it's been available
-                        temp.bombCooldown = SecondsToString(
-                            diff - bombCooldownInSeconds,
-                            true
+                        if (cd) {
+                            result[userId] = cd;
+                            return;
+                        }
+                    }
+
+                    const mostRecentBomb = data.bombs
+                        .sort((a, b) => b.startedOn - a.startedOn)
+                        .find(() => true);
+
+                    if (mostRecentBomb) {
+                        const diff =
+                            getUnixTimestamp(now) - mostRecentBomb.startedOn;
+                        const diffHours = Math.floor(diff / 3600);
+                        if (diffHours < 18) {
+                            temp.bombs = 0;
+                            temp.bombCooldown = SecondsToString(
+                                bombCooldownInSeconds - diff
+                            );
+                        } else {
+                            temp.bombCooldown = SecondsToString(
+                                diff - bombCooldownInSeconds,
+                                true
+                            );
+                        }
+                    }
+
+                    const sortedTokensAsc = data.tokens.sort(
+                        (a, b) => a.startedOn - b.startedOn
+                    );
+
+                    const initialTimestamp =
+                        sortedTokensAsc[0]?.startedOn ?? getUnixTimestamp(now);
+                    let token: TokenStatus = {
+                        refreshTime: initialTimestamp,
+                        count: 2,
+                    };
+
+                    sortedTokensAsc
+                        .filter((raid) => raid.startedOn !== null)
+                        .forEach((raid) => {
+                            token = evaluateToken(token, raid.startedOn);
+                            token.count--;
+                            if (token.count < 0) {
+                                token.count = 0;
+                                token.refreshTime = raid.startedOn;
+                            }
+                        });
+
+                    token = evaluateToken(token, getUnixTimestamp(now));
+                    if (token.count < maxTokens) {
+                        const tokenDiff =
+                            getUnixTimestamp(now) - token.refreshTime;
+                        temp.tokenCooldown = SecondsToString(
+                            tokenCooldownInSeconds - tokenDiff
                         );
                     }
-                }
+                    temp.tokens = token.count;
+                    result[userId] = temp;
+                })
+            );
 
-                const sortedTokensAsc = data.tokens.sort(
-                    (a, b) => a.startedOn - b.startedOn
-                );
+            // Replace user IDs with usernames
+            const resultWithNames: Record<string, GuildRaidAvailable> = {};
+            await Promise.all(
+                Object.entries(result).map(async ([userId, available]) => {
+                    const username = await dbController.getPlayerName(userId);
+                    if (username) {
+                        resultWithNames[username] = available;
+                    }
+                })
+            );
 
-                // We have two possible cases at the beginning of a season:
-                // 1. The user used up all their tokens and refreshed 2 of them during the cooldown period and is therefore at 2
-                // 2. The user was able to recharge all their tokens during the pause and is now at max
-                // We start with the assumption that they are at 2 and then add an extra token if we find out that's not correct
-
-                const initialTimestamp =
-                    sortedTokensAsc[0]?.startedOn ?? getUnixTimestamp(now);
-                let token: Token = {
-                    refreshTime: initialTimestamp,
-                    count: 2,
-                };
-
-                sortedTokensAsc
-                    .filter((raid) => {
-                        return raid.startedOn !== null;
-                    })
-                    .forEach((raid) => {
-                        token = evaluateToken(token, raid.startedOn);
-                        token.count--;
-
-                        // Check if we're experiencing case 2
-                        if (token.count < 0) {
-                            token.count = 0;
-                            token.refreshTime = raid.startedOn;
-                        }
-                    });
-
-                token = evaluateToken(token, getUnixTimestamp(now));
-                if (token.count < maxTokens) {
-                    const tokenDiff = getUnixTimestamp(now) - token.refreshTime;
-                    temp.tokenCooldown = SecondsToString(
-                        tokenCooldownInSeconds - tokenDiff
-                    );
-                }
-                temp.tokens = token.count;
-                result[userId] = temp;
-            });
-
-            return result;
+            return resultWithNames;
         } catch (error) {
             logger.error(error, "Error fetching available tokens and bombs: ");
             return null;
@@ -1058,5 +1083,38 @@ export class GuildService {
         }
 
         return entries;
+    }
+
+    async getPlayerCooldowns(token: string) {
+        try {
+            const resp = await this.client.getPlayer(token);
+            if (!resp || !resp.player) {
+                return null;
+            }
+
+            const player = resp.player;
+            const status: GuildRaidAvailable = {
+                tokens: player.progress.guildRaid?.tokens.current || 0,
+                bombs: player.progress.guildRaid?.bombTokens.current || 0,
+                tokenCooldown: player.progress.guildRaid?.tokens
+                    .nextTokenInSeconds
+                    ? SecondsToString(
+                          player.progress.guildRaid.tokens.nextTokenInSeconds
+                      )
+                    : undefined,
+                bombCooldown: player.progress.guildRaid?.bombTokens
+                    .nextTokenInSeconds
+                    ? SecondsToString(
+                          player.progress.guildRaid.bombTokens
+                              .nextTokenInSeconds
+                      )
+                    : undefined,
+            };
+
+            return status;
+        } catch (error) {
+            logger.error(error, "Error fetching player cooldowns: ");
+            return null;
+        }
     }
 }

@@ -43,21 +43,64 @@ export class DatabaseController {
         }
 
         // GuildMember table
-        this.sequelize.define("GuildMembers", {
-            userId: {
-                type: DataTypes.STRING,
-                allowNull: false,
-                primaryKey: true,
+        this.sequelize.define(
+            "GuildMembers",
+            {
+                userId: {
+                    type: DataTypes.STRING,
+                    allowNull: false,
+                    primaryKey: true,
+                },
+                username: {
+                    type: DataTypes.STRING,
+                    allowNull: false,
+                },
+                guildId: {
+                    type: DataTypes.STRING,
+                    allowNull: false,
+                },
+                playerToken: {
+                    type: DataTypes.STRING,
+                    allowNull: true,
+                },
+                lastAccessed: {
+                    type: DataTypes.DATE,
+                    allowNull: false,
+                    defaultValue: DataTypes.NOW,
+                },
             },
-            username: {
-                type: DataTypes.STRING,
-                allowNull: false,
-            },
-            guildId: {
-                type: DataTypes.STRING,
-                allowNull: false,
-            },
-        });
+            {
+                hooks: {
+                    beforeUpsert(attributes: any) {
+                        if (!attributes.playerToken) return;
+                        attributes.playerToken = CryptoService.encrypt(
+                            attributes.playerToken
+                        );
+                    },
+                    beforeUpdate(attributes: any) {
+                        if (!attributes.playerToken) return;
+                        attributes.playerToken = CryptoService.encrypt(
+                            attributes.playerToken
+                        );
+                    },
+                    afterFind: (result: any) => {
+                        if (!result) return;
+                        if (Array.isArray(result)) {
+                            result.forEach((row) => {
+                                if (row.playerToken)
+                                    row.playerToken = CryptoService.decrypt(
+                                        row.playerToken
+                                    );
+                            });
+                        } else if (result.playerToken) {
+                            result.playerToken = CryptoService.decrypt(
+                                result.playerToken
+                            );
+                        }
+                    },
+                },
+            }
+        );
 
         // User-guild api token table - This table is used to store discord user-guild api token mapping
         this.sequelize.define(
@@ -80,7 +123,13 @@ export class DatabaseController {
             },
             {
                 hooks: {
-                    beforeUpsert(attributes: any) {
+                    beforeUpdate(attributes: any) {
+                        if (!attributes.token) return;
+                        attributes.token = CryptoService.encrypt(
+                            attributes.token
+                        );
+                    },
+                    beforeCreate(attributes: any) {
                         if (!attributes.token) return;
                         attributes.token = CryptoService.encrypt(
                             attributes.token
@@ -197,7 +246,7 @@ export class DatabaseController {
                 { where: { userId: discordId } }
             );
 
-            return result.getDataValue("token") as string;
+            return result.get("token") as string;
         } catch (error) {
             logger.error(error, "Error retrieving user token from database");
             return null;
@@ -209,7 +258,7 @@ export class DatabaseController {
             const cutoffDate = new Date();
             cutoffDate.setDate(cutoffDate.getDate() - maxAgeInDays);
 
-            const res = await this.sequelize.models[
+            let res = await this.sequelize.models[
                 "discordApiTokenMappings"
             ]?.destroy({
                 where: {
@@ -222,13 +271,87 @@ export class DatabaseController {
             logger.info(
                 `Deleted ${
                     res || 0
-                } old tokens from the database older than ${maxAgeInDays} days.`
+                } guild tokens from the database older than ${maxAgeInDays} days.`
+            );
+
+            res = await this.sequelize.models["GuildMembers"]?.destroy({
+                where: {
+                    lastAccessed: {
+                        [Op.lt]: cutoffDate,
+                    },
+                },
+            });
+
+            logger.info(
+                `Deleted ${
+                    res || 0
+                } guild members from the database older than ${maxAgeInDays} days.`
             );
 
             return res || 0;
         } catch (error) {
             logger.error(error, "Error cleaning up old tokens in database");
             return 0;
+        }
+    }
+
+    public async updateGuildMembersTransactional(
+        guildId: string,
+        members: GuildMemberMapping[]
+    ): Promise<number> {
+        let updatedCount = 0;
+        const sequelize = this.getSequelizeInstance();
+        const t = await sequelize.transaction();
+        try {
+            const guildMembers = await this.getGuildMembersByGuildId(guildId);
+            if (!guildMembers) {
+                await t.rollback();
+                return -1;
+            }
+
+            const guildMemberIds = guildMembers.map((member) => member.userId);
+            const membersToDelete = guildMemberIds.filter(
+                (id) => !members.some((member) => member.userId === id)
+            );
+
+            for (const id of membersToDelete) {
+                const result = await this.sequelize.models[
+                    "GuildMembers"
+                ]?.destroy({
+                    where: { userId: id, guildId },
+                    transaction: t,
+                });
+                if (!result) {
+                    continue;
+                }
+            }
+
+            for (const member of members) {
+                const result = await this.sequelize.models[
+                    "GuildMembers"
+                ]?.upsert(
+                    {
+                        userId: member.userId,
+                        username: member.username,
+                        guildId,
+                    },
+                    { transaction: t }
+                );
+                if (!result) {
+                    continue;
+                }
+                updatedCount += 1;
+            }
+
+            await t.commit();
+            return updatedCount;
+        } catch (error) {
+            await t.rollback();
+            logger.error(
+                error,
+                "Error updating guild members (transactional): "
+            );
+            return -1;
         }
     }
 
@@ -245,12 +368,20 @@ export class DatabaseController {
                 return null;
             }
 
-            return result.map((member) => {
+            const res = result.map((member) => {
                 return {
                     userId: member.getDataValue("userId") as string,
                     username: member.getDataValue("username") as string,
                 } as GuildMemberMapping;
             });
+
+            // Update lastAccessed for all members in the guild
+            await this.sequelize.models["GuildMembers"]?.update(
+                { lastAccessed: new Date() },
+                { where: { guildId: guildId } }
+            );
+
+            return res;
         } catch (error) {
             logger.error(error, "Error retrieving player name from database");
             return null;
@@ -270,6 +401,11 @@ export class DatabaseController {
                 return null;
             }
 
+            await this.sequelize.models["GuildMembers"]?.update(
+                { lastAccessed: new Date() },
+                { where: { userId: userId } }
+            );
+
             return result.getDataValue("username") as string;
         } catch (error) {
             logger.error(error, "Error retrieving player name from database");
@@ -277,10 +413,39 @@ export class DatabaseController {
         }
     }
 
-    public async updatePlayerName(
+    public async getPlayerToken(
         userId: string,
-        name: string,
         guildId: string
+    ): Promise<string | null> {
+        try {
+            const result = await this.sequelize.models["GuildMembers"]?.findOne(
+                {
+                    where: {
+                        userId: userId,
+                        guildId: guildId,
+                    },
+                }
+            );
+            if (!result) {
+                return null;
+            }
+
+            await this.sequelize.models["GuildMembers"]?.update(
+                { lastAccessed: new Date() },
+                { where: { userId: userId, guildId: guildId } }
+            );
+
+            return result.get("playerToken") as string;
+        } catch (error) {
+            logger.error(error, "Error retrieving player token from database");
+            return null;
+        }
+    }
+
+    public async setPlayerToken(
+        userId: string,
+        guildId: string,
+        apiToken: string
     ): Promise<boolean> {
         try {
             const guildMembersModel = this.sequelize.models["GuildMembers"];
@@ -289,10 +454,57 @@ export class DatabaseController {
                 return false;
             }
 
+            if (apiToken) {
+                apiToken = CryptoService.encrypt(apiToken);
+            }
+
+            const res = await guildMembersModel.upsert({
+                userId: userId,
+                guildId: guildId,
+                playerToken: apiToken,
+                lastAccessed: new Date(),
+            });
+
+            if (!res) {
+                logger.error(
+                    `Error setting player token for userId: ${userId}`
+                );
+                return false;
+            }
+
+            return true;
+        } catch (error) {
+            logger.error(
+                error,
+                `Error setting player token for userId: ${userId}, guildId: ${guildId}`
+            );
+            return false;
+        }
+    }
+
+    public async updatePlayerName(
+        userId: string,
+        name: string,
+        guildId: string,
+        apiToken?: string
+    ): Promise<boolean> {
+        try {
+            const guildMembersModel = this.sequelize.models["GuildMembers"];
+            if (!guildMembersModel) {
+                logger.error("GuildMembers model is not defined.");
+                return false;
+            }
+
+            if (apiToken) {
+                apiToken = CryptoService.encrypt(apiToken);
+            }
+
             const res = await guildMembersModel.upsert({
                 userId: userId,
                 username: name,
                 guildId: guildId,
+                playerToken: apiToken,
+                lastAccessed: new Date(),
             });
 
             if (!res) {

@@ -27,6 +27,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     if (!apiToken) {
         await interaction.editReply({
             content: "API token is required.",
+            options: {
+                flags: MessageFlags.Ephemeral,
+            },
         });
         return;
     }
