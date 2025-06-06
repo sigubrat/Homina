@@ -73,6 +73,12 @@ const startBot = async () => {
         // Log in to Discord
         await client.login(process.env.BOT_TOKEN!);
         logger.info("Bot logged in successfully.");
+
+        // Schedule token cleanup every 24 hours
+        setInterval(() => {
+            console.log("Running token cleanup...");
+            dbController.cleanupOldTokens();
+        }, 20 * 1000); // 24 hours in ms
     } catch (error) {
         logger.error(error, "Error starting the bot:");
         process.exit(1); // Exit the process if there's a critical error

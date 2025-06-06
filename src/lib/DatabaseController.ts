@@ -1,4 +1,4 @@
-import { DataTypes, Sequelize } from "sequelize";
+import { DataTypes, Sequelize, Op } from "sequelize";
 import { validateEnvVars, type DbTestResult } from "./db_utils";
 import type { GuildMemberMapping } from "@/models/types/GuildMemberMapping";
 import { logger } from "./HominaLogger";
@@ -24,6 +24,10 @@ export class DatabaseController {
         );
 
         this.defineModels();
+    }
+
+    public getSequelizeInstance(): Sequelize {
+        return this.sequelize;
     }
 
     private async defineModels() {
@@ -67,6 +71,11 @@ export class DatabaseController {
                 token: {
                     type: DataTypes.STRING,
                     allowNull: false,
+                },
+                tokenLastUsed: {
+                    type: DataTypes.DATE,
+                    allowNull: false,
+                    defaultValue: DataTypes.NOW,
                 },
             },
             {
@@ -129,6 +138,7 @@ export class DatabaseController {
             await this.sequelize.models["discordApiTokenMappings"]?.upsert({
                 userId: userId,
                 token: encryptedToken,
+                tokenLastUsed: new Date(),
             });
 
             return true;
@@ -171,9 +181,8 @@ export class DatabaseController {
 
     public async getUserToken(discordId: string): Promise<string | null> {
         try {
-            const result = await this.sequelize.models[
-                "discordApiTokenMappings"
-            ]?.findOne({
+            const model = this.sequelize.models["discordApiTokenMappings"];
+            const result = await model?.findOne({
                 where: {
                     userId: discordId,
                 },
@@ -182,10 +191,43 @@ export class DatabaseController {
                 return null;
             }
 
+            // Update tokenLastUsed to now
+            await model?.update(
+                { tokenLastUsed: new Date() },
+                { where: { userId: discordId } }
+            );
+
             return result.getDataValue("token") as string;
         } catch (error) {
             logger.error(error, "Error retrieving user token from database");
             return null;
+        }
+    }
+
+    public async cleanupOldTokens(maxAgeInDays: number = 30): Promise<number> {
+        try {
+            const cutoffDate = new Date();
+            // cutoffDate.setDate(cutoffDate.getDate() - maxAgeInDays);
+            cutoffDate.setSeconds(-30);
+
+            const res = await this.sequelize.models[
+                "discordApiTokenMappings"
+            ]?.destroy({
+                where: {
+                    tokenLastUsed: {
+                        [Op.lt]: cutoffDate,
+                    },
+                },
+            });
+
+            console.log(
+                `Deleted ${res} old tokens from the database older than ${maxAgeInDays} days.`
+            );
+
+            return res || 0;
+        } catch (error) {
+            logger.error(error, "Error cleaning up old tokens in database");
+            return 0;
         }
     }
 
