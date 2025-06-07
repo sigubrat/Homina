@@ -33,6 +33,7 @@ This update provides support for optional usage of the Player-scope API tokens a
 
 -   Umzug is now used for database migrations
 -   A job now looks for stale data in the database every 24 hours. If any data has not been used in 30 days, it gets sent to the incinerator.
+-   More input-validation of IDs in commands
 
 ## [0.16.3] - 2025-06-06
 
