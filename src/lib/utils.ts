@@ -2,8 +2,9 @@ import * as fs from "fs/promises";
 import * as path from "path";
 import { Collection } from "discord.js";
 import { HominaTacticusClient } from "@/client";
-import type { GuildRaidResult, Token } from "@/models/types";
+import type { GuildRaidResult } from "@/models/types";
 import type { TokensUsed } from "@/models/types/TokensUsed";
+import type { TokenStatus } from "@/models/types/TokenStatus";
 
 async function getCommands(
     commandsPath: string
@@ -53,6 +54,19 @@ export async function testApiToken(token: string): Promise<boolean> {
         return resp.success;
     } catch (error) {
         console.error("Error testing API token:", error);
+        return false;
+    }
+}
+
+export async function testPlayerApiToken(token: string): Promise<boolean> {
+    try {
+        const client = new HominaTacticusClient();
+
+        const resp = await client.getPlayer(token);
+
+        return resp.success;
+    } catch (error) {
+        console.error("Error testing Player API token:", error);
         return false;
     }
 }
@@ -187,7 +201,10 @@ export function getUnixTimestamp(date: Date) {
     return Math.floor(date.getTime() / 1000);
 }
 
-export function evaluateToken(token: Token, timestampInSeconds: number): Token {
+export function evaluateToken(
+    token: TokenStatus,
+    timestampInSeconds: number
+): TokenStatus {
     const twelveHoursInSeconds = 12 * 60 * 60;
     const maxTokens = 3;
     const nRecharged = Math.floor(

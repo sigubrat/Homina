@@ -137,18 +137,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setDescription(
                 "Here is the list of members with available tokens and bombs:\n Note that the token cooldowns have an inherit uncertainty due to the nature of the available data for the calculation. In certain cases the cooldown might not be accurate."
             )
-            .setFields(
-                {
-                    name: "Total tokens",
-                    value: formattedTotalTokens,
-                    inline: true,
-                },
-                {
-                    name: "Total bombs",
-                    value: formattedTotalBombs,
-                    inline: true,
-                }
-            )
             .setTimestamp()
             .setFooter({
                 text: "Data fetched from the guild raid API.\n(NB! Inaccuracies may occur for users who have joined mid-season)",

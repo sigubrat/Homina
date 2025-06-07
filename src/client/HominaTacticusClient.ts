@@ -1,3 +1,4 @@
+import type { Player } from "@/models/types";
 import type { Guild } from "@/models/types/Guild";
 import type { GuildRaidResponse } from "@/models/types/GuildRaidResponse";
 
@@ -5,6 +6,12 @@ export interface GuildApiResponse {
     success: boolean;
     message?: string;
     guild?: Guild;
+}
+
+export interface PlayerApiResponse {
+    success: boolean;
+    message?: string;
+    player?: Player;
 }
 
 class HominaTacticusClient {
@@ -35,6 +42,40 @@ class HominaTacticusClient {
         } else {
             result = {
                 guild: undefined,
+                success: false,
+            };
+        }
+
+        if (!response.ok) {
+            result.message = response.statusText;
+        }
+
+        return result;
+    }
+
+    async getPlayer(apiToken: string) {
+        const response = await fetch(`${this.baseUrl}/player`, {
+            method: "GET",
+            headers: {
+                Accept: "application/json",
+                "X-API-KEY": `${apiToken}`,
+            },
+        });
+        if (!response.ok) {
+            throw new Error(`GET request failed: ${response.statusText}`);
+        }
+        const body = await response.json();
+
+        let result: PlayerApiResponse;
+
+        if (isPlayerResponse(body)) {
+            result = {
+                player: body.player as Player,
+                success: response.ok,
+            };
+        } else {
+            result = {
+                player: undefined,
                 success: false,
             };
         }
@@ -99,6 +140,15 @@ function isGuildResponse(body: unknown): body is { guild: Guild } {
         body !== null &&
         "guild" in body &&
         typeof (body as any).guild === "object"
+    );
+}
+
+function isPlayerResponse(body: unknown): body is { player: Player } {
+    return (
+        typeof body === "object" &&
+        body !== null &&
+        "player" in body &&
+        typeof (body as any).player === "object"
     );
 }
 

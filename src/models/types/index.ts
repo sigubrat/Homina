@@ -7,3 +7,8 @@ export * from "./GuildRaidResult";
 export * from "./TokensAndBombs";
 export * from "./GuildRaidAvailable";
 export * from "./Token";
+export * from "./Unit";
+export * from "./PlayerDetails";
+export * from "./Player";
+export * from "./UnitItem";
+export * from "./TokenStatus";
