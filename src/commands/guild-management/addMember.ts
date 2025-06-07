@@ -16,6 +16,8 @@ export const data = new SlashCommandBuilder()
             .setName("user-id")
             .setDescription("The user ID of the member to add")
             .setRequired(true)
+            .setMinLength(36)
+            .setMaxLength(36)
     )
     .addStringOption((option) =>
         option
@@ -37,7 +39,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const userId = interaction.options.getString("user-id");
-    if (!userId) {
+    if (!userId || !isValidUUIDv4(userId)) {
         await interaction.editReply({
             content: "Please provide a valid user ID.",
             options: {
