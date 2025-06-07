@@ -19,6 +19,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.17.0] - 2025-06-06
+
+This update provides support for optional usage of the Player-scope API tokens and increases data privacy by deleting stale data (30 day cutoff) from the database.
+
+### Changed
+
+-   `/add-member` now takes in an optional argument of player-api token. This is of course encrypted in the database.
+-   `/gr-availability` now checks for existing player API tokens and tries to fetch GR token and bomb status from the API if available. If not, then the old calculations are used.
+-   `/gr-availability` now only shows total bombs and tokens for the guild at the bottom. The duplicate bugged me.
+
+### Added
+
+-   Umzug is now used for database migrations
+-   A job now looks for stale data in the database every 24 hours. If any data has not been used in 30 days, it gets sent to the incinerator.
+-   More input-validation of IDs in commands
+
 ## [0.16.3] - 2025-06-06
 
 ### Changed

@@ -10,7 +10,9 @@ This Privacy Policy explains how Homina Discord Bot ("Bot") collects, uses, and 
 
 -   **User Information**: We collect your Discord user ID and username when you interact with the Bot.
 -   **API Tokens**: When you use commands like `/register`, your API token is collected to connect to external services. The token is linked to your discord ID and encrypted using AES-256-bcb.
+    -   Optional: You can register Player API tokens using the `/add-member` command. This token is only used in other commands to fetch accurate data about a player. The token is encrypted using AES-256-bcb.
 -   **Guild Data**: With your consent, we store guild member mappings which consists of their tacticus ID, their username (the one displayed in the app), and the guil id to provide guild-related features.
+-   Any data that has not been accessed in 30 days gets deleted by a process that runs every 24 hours.
 
 ## 3. Data Usage
 
@@ -28,7 +30,7 @@ We maintain logs to ensure the proper operation and debugging of the bot. The lo
 ## 5. Data Sharing and Security
 
 -   **Data Sharing**: Your data is stored securely in our PostgreSQL database and is not shared with third parties, unless required by law.
--   **Security**: The server running the bot is owned by the developer of Homina and password-protected. The database storing data on the server is password-protected with a different password. The API tokens users provide is encrypted with AES-256-cbc encryption.
+-   **Security**: The server running the bot is owned by the developer of Homina and password-protected. The database storing data on the server is password-protected with a different password. The API tokens users provide is encrypted with AES-256-cbc encryption. All entries to the database are deleted if they are unused for 30 days.
 
 ## 6. Changes to This Policy
 

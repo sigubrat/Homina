@@ -19,6 +19,7 @@ export const data = new SlashCommandBuilder()
             .setName("season")
             .setDescription("The season number")
             .setRequired(true)
+            .setMinValue(70)
     )
     .addStringOption((option) => {
         return option
