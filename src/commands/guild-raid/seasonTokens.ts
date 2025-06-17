@@ -42,8 +42,8 @@ export const data = new SlashCommandBuilder()
             .setName("average-method")
             .setChoices(
                 {
-                    name: "Average",
-                    value: "average",
+                    name: "Mean",
+                    value: "mean",
                 },
                 {
                     name: "Median",
@@ -51,7 +51,7 @@ export const data = new SlashCommandBuilder()
                 }
             )
             .setDescription(
-                "Median is recommended if you have big variation in damage, average otherwise"
+                "Median is recommended if you have big variation in damage, mean otherwise"
             )
             .setRequired(false)
     );
@@ -133,12 +133,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const chartService = new ChartService();
 
         const averageMethod =
-            interaction.options.getString("average-method") === "average"
-                ? "Average"
+            interaction.options.getString("average-method") === "mean"
+                ? "Mean"
                 : "Median";
 
         const avg =
-            averageMethod === "Average"
+            averageMethod === "Mean"
                 ? numericAverage(Object.values(tokensUsed))
                 : numericMedian(Object.values(tokensUsed));
 

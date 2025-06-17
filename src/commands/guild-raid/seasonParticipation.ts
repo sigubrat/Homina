@@ -36,8 +36,8 @@ export const data = new SlashCommandBuilder()
             .setName("average-method")
             .setChoices(
                 {
-                    name: "Average",
-                    value: "average",
+                    name: "Mean",
+                    value: "mean",
                 },
                 {
                     name: "Median",
@@ -45,7 +45,7 @@ export const data = new SlashCommandBuilder()
                 }
             )
             .setDescription(
-                "Median is recommended if you have big variation in damage, average otherwise"
+                "Median is recommended if you have big variation in damage, mean otherwise"
             )
             .setRequired(false)
     )
@@ -67,12 +67,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     }
 
     let averageMethod = interaction.options.getString("average-method") as
-        | "average"
+        | "mean"
         | "median"
         | null;
 
     if (!averageMethod) {
-        averageMethod = "average";
+        averageMethod = "mean";
     }
 
     const service = new GuildService();
@@ -148,7 +148,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             sortedResult,
             `Damage dealt in season ${season}`,
             interaction.options.getBoolean("show-bombs") ?? false,
-            averageMethod ? averageMethod : "average",
+            averageMethod ? averageMethod : "mean",
             average
         );
 

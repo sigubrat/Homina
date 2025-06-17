@@ -1,7 +1,11 @@
 import { logger } from "@/lib";
 import { ChartService } from "@/lib/services/ChartService";
 import { GuildService } from "@/lib/services/GuildService.ts";
-import { sortGuildRaidResultDesc } from "@/lib/utils";
+import {
+    numericAverage,
+    numericMedian,
+    sortGuildRaidResultDesc,
+} from "@/lib/utils";
 import { Rarity } from "@/models/enums";
 import {
     AttachmentBuilder,
@@ -34,6 +38,24 @@ export const data = new SlashCommandBuilder()
                 { name: "Common", value: Rarity.COMMON }
             );
     })
+    .addStringOption((option) =>
+        option
+            .setName("average-method")
+            .setChoices(
+                {
+                    name: "Mean",
+                    value: "mean",
+                },
+                {
+                    name: "Median",
+                    value: "median",
+                }
+            )
+            .setDescription(
+                "Median is recommended if you have big variation in damage, mean otherwise"
+            )
+            .setRequired(false)
+    )
     .setDescription(
         "Show guild raid stats for a specific boss rarity in a specific season"
     );
@@ -84,15 +106,28 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
+        const averageMethod =
+            interaction.options.getString("average-method") === "mean"
+                ? "Mean"
+                : "Median";
+
         const chartService = new ChartService();
         const chartPromises = Object.entries(result).map(
             async ([bossName, data]) => {
+                const guildDamage = data.map((val) => val.totalDamage);
+                const avgDamage =
+                    averageMethod === "Mean"
+                        ? numericAverage(Object.values(guildDamage))
+                        : numericMedian(Object.values(guildDamage));
+
                 const chartBuffer =
                     await chartService.createSeasonDamageChartAvg(
                         sortGuildRaidResultDesc(data),
                         `Damage dealt in season ${season} - ${
                             rarity[0] ? rarity[0].toUpperCase() : " "
-                        }${(data[0] ? data[0].set : 0) + 1} ${bossName}`
+                        }${(data[0] ? data[0].set : 0) + 1} ${bossName}`,
+                        averageMethod,
+                        avgDamage
                     );
                 return chartBuffer;
             }
