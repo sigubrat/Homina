@@ -124,6 +124,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 set: 0,
                 tier: 0,
                 startedOn: 0,
+                bombCount: 0,
             });
         });
 

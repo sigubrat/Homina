@@ -95,6 +95,23 @@ export class GuildService {
         }
     }
 
+    async getPlayerIdByUsername(memberName: string, guildId: string) {
+        try {
+            const userId = await dbController.getGuildMemberIdByUsername(
+                memberName,
+                guildId
+            );
+
+            return userId;
+        } catch (error) {
+            logger.error(
+                error,
+                `Error fetching player ID by username: ${memberName}`
+            );
+            return null;
+        }
+    }
+
     /**
      * Sets the player token for a given user ID and guild ID.
      * @param userId The ID of the user to set the token for.
@@ -354,8 +371,8 @@ export class GuildService {
                         set: entry.set,
                         tier: entry.tier,
                         startedOn: entry.startedOn,
-                        minDmg: 0,
-                        maxDmg: 0,
+                        minDmg: undefined,
+                        maxDmg: undefined,
                         bombCount: 1,
                     });
                 } else {
@@ -387,7 +404,7 @@ export class GuildService {
     async getGuildRaidResultByRaritySeasonPerBoss(
         userId: string,
         season: number,
-        rarity: Rarity
+        rarity?: Rarity
     ) {
         const apiKey = await dbController.getUserToken(userId);
         if (!apiKey) {
@@ -1114,6 +1131,65 @@ export class GuildService {
             return status;
         } catch (error) {
             logger.error(error, "Error fetching player cooldowns: ");
+            return null;
+        }
+    }
+
+    async getMemberStatsInLastSeasons(
+        userId: string,
+        nSeasons: number,
+        rarity?: Rarity
+    ) {
+        try {
+            const apiKey = await dbController.getUserToken(userId);
+            if (!apiKey) {
+                logger.error("No API key found for user:", userId);
+                return null;
+            }
+
+            const currentSeason = await this.client.getGuildRaidByCurrentSeason(
+                apiKey
+            );
+            if (!currentSeason || !currentSeason.season) {
+                logger.error("No current season found for user:", userId);
+                return null;
+            }
+
+            const currentSeasonNumber = currentSeason.season;
+            const seasons: number[] = [];
+            for (let i = nSeasons; i > 0; i--) {
+                seasons.push(currentSeasonNumber - i);
+            }
+
+            const seasonPromises = seasons.map(
+                async (season) =>
+                    await this.getGuildRaidResultByRaritySeasonPerBoss(
+                        userId,
+                        season,
+                        rarity
+                    )
+            );
+
+            const responses = await Promise.all(seasonPromises);
+            const resultBySeason: Record<
+                number,
+                Record<string, GuildRaidResult[]> | null
+            > = {};
+
+            responses.forEach((res, idx) => {
+                const seasonNr = seasons[idx];
+                if (!seasonNr || !res) {
+                    return [] as GuildRaidResult[];
+                }
+                resultBySeason[seasons[idx]!] = res;
+            });
+
+            return resultBySeason;
+        } catch (error) {
+            logger.error(
+                error,
+                "Error fetching member stats in last seasons: "
+            );
             return null;
         }
     }
