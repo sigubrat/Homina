@@ -122,7 +122,6 @@ export const multiHitTeam = [
     "darkaAsmodai", // Asmodai
     "darkaCompanion", // Forcas
     "custoTrajann", // Trajann
-    "custoAesoth", // Aesoth
 ];
 
 export const mechTeam = [

@@ -23,11 +23,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 I'm back from vacation which means development is back on again.
 
+### Added
+
+-   `/season-tokens` and `/season-bombs` now also displays average value in the chart legend.
+-   Trajann is now included in the multi-hit team definition due to the potential variant he is part of.
+
 ### Changed
 
 -   `/season-by-rarity` now has the mean/median option and displays a dotted line for the average value
 -   Changed the use of average/median -> mean/median to be more mathematically correct.
--   `/season-tokens` and `/season-bombs` now also displays average value in the chart legend.
 
 ## [0.17.0] - 2025-06-06
 
