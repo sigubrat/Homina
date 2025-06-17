@@ -11,7 +11,7 @@ describe("ChartServiceSuite - Algebra", () => {
             testData,
             "Test",
             true,
-            "average",
+            "mean",
             12
         );
 

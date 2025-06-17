@@ -17,7 +17,7 @@ export class ChartService {
         data: GuildRaidResult[],
         title: string,
         showBombs: boolean = false,
-        average: "average" | "median" = "median",
+        average: "mean" | "median" = "median",
         averageValue: number
     ) {
         const usernames = data.map((data) => data.username);
@@ -41,7 +41,7 @@ export class ChartService {
             {
                 type: "line",
                 label:
-                    average === "average"
+                    average === "mean"
                         ? "Guild average damage"
                         : "Guild median damage",
                 data: Array(usernames.length).fill(averageValue),
@@ -151,7 +151,12 @@ export class ChartService {
         return chart;
     }
 
-    async createSeasonDamageChartAvg(data: GuildRaidResult[], title: string) {
+    async createSeasonDamageChartAvg(
+        data: GuildRaidResult[],
+        title: string,
+        average: "Mean" | "Median" = "Median",
+        averageValue: number
+    ) {
         const usernames = data.map((data) => data.username);
         const damage = data.map((data) => data.totalDamage);
         const totalTokens = data.map((data) => data.totalTokens);
@@ -177,9 +182,34 @@ export class ChartService {
                     },
                     {
                         type: "line",
+                        label:
+                            average === "Mean"
+                                ? `Guild mean damage (${averageValue.toLocaleString(
+                                      undefined,
+                                      {
+                                          maximumFractionDigits: 0,
+                                      }
+                                  )})`
+                                : `Guild median damage (${averageValue.toLocaleString(
+                                      undefined,
+                                      {
+                                          maximumFractionDigits: 0,
+                                      }
+                                  )})`,
+                        data: Array(usernames.length).fill(averageValue),
+                        borderColor: CHART_COLORS.yellow,
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0,
+                        pointRadius: 0,
+                        yAxisID: "y",
+                        borderDash: [5, 5],
+                    },
+                    {
+                        type: "line",
                         label: "Avg Damage per Token",
                         data: avgDamagePerToken,
-                        borderColor: CHART_COLORS.yellow,
+                        borderColor: CHART_COLORS.red,
                         borderWidth: 3,
                         fill: false,
                         tension: 0,
@@ -377,7 +407,12 @@ export class ChartService {
                 datasets: [
                     {
                         type: "line",
-                        label: avgLabel,
+                        label: `${avgLabel} (${guildAvg.toLocaleString(
+                            undefined,
+                            {
+                                maximumFractionDigits: 1,
+                            }
+                        )})`,
                         data: Array(usernames.length).fill(guildAvg),
                         borderColor: CHART_COLORS.yellow,
                         borderWidth: 2,

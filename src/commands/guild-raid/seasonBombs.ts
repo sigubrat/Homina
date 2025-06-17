@@ -25,8 +25,8 @@ export const data = new SlashCommandBuilder()
             .setName("average-method")
             .setChoices(
                 {
-                    name: "Average",
-                    value: "average",
+                    name: "Mean",
+                    value: "mean",
                 },
                 {
                     name: "Median",
@@ -34,7 +34,7 @@ export const data = new SlashCommandBuilder()
                 }
             )
             .setDescription(
-                "Median is recommended if you have big variation in damage, average otherwise"
+                "Median is recommended if you have big variation in damage, mean otherwise"
             )
             .setRequired(false)
     )
@@ -71,10 +71,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const averageMethod = interaction.options.getString(
             "average-method"
-        ) as "average" | "median" | null;
+        ) as "mean" | "median" | null;
 
         const average =
-            averageMethod === "average"
+            averageMethod === "mean"
                 ? numericAverage(Object.values(bombs))
                 : numericMedian(Object.values(bombs));
 
@@ -84,7 +84,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             bombs,
             "Bombs used in season " + season,
             average,
-            averageMethod === "average" ? "Guild average" : "Guild median",
+            averageMethod === "mean" ? "Guild mean" : "Guild median",
             20
         );
 
@@ -92,8 +92,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             name: `bombs-season-${season}.png`,
         });
 
-        const displayAverage =
-            averageMethod === "average" ? "Average" : "Median";
+        const displayAverage = averageMethod === "mean" ? "Mean" : "Median";
 
         const embed = new EmbedBuilder()
             .setColor("#0099ff")

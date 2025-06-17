@@ -121,6 +121,8 @@ export const multiHitTeam = [
     "tauAunShi", // Aun'shi
     "darkaAsmodai", // Asmodai
     "darkaCompanion", // Forcas
+    "custoTrajann", // Trajann
+    "custoAesoth", // Aesoth
 ];
 
 export const mechTeam = [
