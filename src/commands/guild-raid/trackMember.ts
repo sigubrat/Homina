@@ -1,6 +1,5 @@
 import { logger } from "@/lib";
 import { GuildService } from "@/lib/services/GuildService";
-import { numericAverage, numericMedian } from "@/lib/utils";
 import { Rarity } from "@/models/enums";
 import {
     ChatInputCommandInteraction,
@@ -46,24 +45,6 @@ export const data = new SlashCommandBuilder()
                 { name: "Common", value: Rarity.COMMON }
             );
     })
-    .addStringOption((option) =>
-        option
-            .setName("average-method")
-            .setChoices(
-                {
-                    name: "Mean",
-                    value: "mean",
-                },
-                {
-                    name: "Median",
-                    value: "median",
-                }
-            )
-            .setDescription(
-                "Median is recommended if you have big variation in damage, mean otherwise"
-            )
-            .setRequired(false)
-    )
     .setDescription(
         "Track a member's guild raid stats over the last 3 seasons"
     );
@@ -119,9 +100,15 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
-        // Calculate guild average damage and tokens
-        const avgMethod =
-            interaction.options.getString("average-method") ?? "mean";
+        const memberList = await service.getGuildMembers(userId);
+
+        if (!memberList || memberList.length === 0) {
+            await interaction.editReply({
+                content:
+                    "No members found in the guild. Please make sure you have registered your API-token.",
+            });
+            return;
+        }
 
         const embed = new EmbedBuilder()
             .setTitle(`Guild Raid Stats for ${member}`)
@@ -140,23 +127,17 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             if (!rarity) {
                 const vals = Object.values(stats).flat();
 
-                const allDamage = Object.values(vals).map(
-                    (season) => season?.totalDamage || 0
-                );
+                const allDamage = Object.values(vals)
+                    .map((season) => season?.totalDamage || 0)
+                    .reduce((a, b) => a + b, 0);
 
-                const allTokens = Object.values(vals).map(
-                    (season) => season?.totalTokens || 0
-                );
+                const allTokens = Object.values(vals)
+                    .map((season) => season?.totalTokens || 0)
+                    .reduce((a, b) => a + b, 0);
 
-                const guildAverageDamage =
-                    avgMethod === "mean"
-                        ? numericAverage(allDamage)
-                        : numericMedian(allDamage);
+                const guildAverageDamage = allDamage / memberList.length;
 
-                const guildAverageTokens =
-                    avgMethod === "mean"
-                        ? numericAverage(allTokens)
-                        : numericMedian(allTokens);
+                const guildAverageTokens = allTokens / memberList.length;
 
                 const userData = Object.values(vals).filter(
                     (season) => season?.username === member
