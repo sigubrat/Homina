@@ -473,8 +473,8 @@ export class GuildService {
                         set: entry.set,
                         tier: entry.tier,
                         startedOn: entry.startedOn,
-                        minDmg: 0,
-                        maxDmg: 0,
+                        minDmg: undefined,
+                        maxDmg: undefined,
                     });
                 } else {
                     groupedResults[boss].push({
@@ -1181,7 +1181,7 @@ export class GuildService {
                 if (!seasonNr || !res) {
                     return [] as GuildRaidResult[];
                 }
-                resultBySeason[seasons[idx]!] = res;
+                resultBySeason[seasonNr] = res;
             });
 
             return resultBySeason;
