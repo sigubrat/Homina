@@ -15,6 +15,7 @@ import {
     hasLynchpinHero,
     inTeamsCheck,
     SecondsToString,
+    testApiToken,
 } from "../utils";
 import type { GuildMemberMapping } from "@/models/types/GuildMemberMapping";
 
@@ -183,6 +184,33 @@ export class GuildService {
         } catch (error) {
             logger.error(error, "Error fetching player list");
             return null;
+        }
+    }
+
+    async testRegisteredGuildApiToken(
+        userId: string
+    ): Promise<{ status: boolean; message: string }> {
+        try {
+            const apiToken = await dbController.getUserToken(userId);
+            if (!apiToken) {
+                return {
+                    status: false,
+                    message: "No API token found for user",
+                };
+            }
+
+            const resp = await testApiToken(apiToken);
+            if (!resp) {
+                return { status: false, message: "Invalid API token" };
+            }
+            return { status: true, message: "API token is valid" };
+        } catch (error) {
+            logger.error(error, "Error testing player API token");
+            return {
+                status: false,
+                message:
+                    "Something went horribly wrong while testing your token. Please register it again.",
+            };
         }
     }
 

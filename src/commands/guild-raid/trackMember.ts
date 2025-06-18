@@ -32,19 +32,6 @@ export const data = new SlashCommandBuilder()
                 { name: "Common", value: Rarity.COMMON }
             );
     })
-    .addStringOption((option) => {
-        return option
-            .setName("rarity")
-            .setDescription("The rarity of the boss")
-            .setRequired(false)
-            .addChoices(
-                { name: "Legendary", value: Rarity.LEGENDARY },
-                { name: "Epic", value: Rarity.EPIC },
-                { name: "Rare", value: Rarity.RARE },
-                { name: "Uncommon", value: Rarity.UNCOMMON },
-                { name: "Common", value: Rarity.COMMON }
-            );
-    })
     .setDescription(
         "Track a member's guild raid stats over the last 3 seasons"
     );
@@ -100,21 +87,16 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
-        const memberList = await service.getGuildMembers(userId);
-
-        if (!memberList || memberList.length === 0) {
-            await interaction.editReply({
-                content:
-                    "No members found in the guild. Please make sure you have registered your API-token.",
-            });
-            return;
-        }
-
         const embed = new EmbedBuilder()
             .setTitle(`Guild Raid Stats for ${member}`)
             .setDescription(
-                `Here are the guild raid stats for ${member} over the last ${N_SEASONS} seasons.`
+                `Here are the guild raid stats for **${member}** over the last ${N_SEASONS} seasons.
+                (Make sure the usernames are updated in the bot or averages may be incorrect)`
             )
+            .addFields({
+                name: "Rarity filter",
+                value: rarity ?? "No filter applied",
+            })
             .setColor("#0099ff")
             .setTimestamp();
 
@@ -124,44 +106,45 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             }
 
             // If rarity is not provided, we don't need to calculate relative damage for each boss
+            const vals = Object.values(stats).flat();
+
+            const allDamage = Object.values(vals)
+                .map((season) => season?.totalDamage || 0)
+                .reduce((a, b) => a + b, 0);
+
+            const allTokens = Object.values(vals)
+                .map((season) => season?.totalTokens || 0)
+                .reduce((a, b) => a + b, 0);
+
+            const nMembers = new Set<string>(
+                vals.map((entry) => entry?.username)
+            ).size;
+
+            const guildAverageDamage = allDamage / nMembers;
+
+            const guildAverageTokens = allTokens / nMembers;
+
+            const userData = Object.values(vals).filter(
+                (season) => season?.username === member
+            );
+            const userDamage = userData
+                .map((season) => season.totalDamage || 0)
+                .reduce((a, b) => a + b, 0);
+
+            const userTokens = userData
+                .map((season) => season.totalTokens || 0)
+                .reduce((a, b) => a + b, 0);
+
+            const relativeDamage =
+                ((userDamage / guildAverageDamage) * 100).toFixed(1) + "%";
+
+            const relativeTokens =
+                ((userTokens / guildAverageTokens) * 100).toFixed(1) + "%";
+
             if (!rarity) {
-                const vals = Object.values(stats).flat();
-
-                const allDamage = Object.values(vals)
-                    .map((season) => season?.totalDamage || 0)
-                    .reduce((a, b) => a + b, 0);
-
-                const allTokens = Object.values(vals)
-                    .map((season) => season?.totalTokens || 0)
-                    .reduce((a, b) => a + b, 0);
-
-                const guildAverageDamage = allDamage / memberList.length;
-
-                const guildAverageTokens = allTokens / memberList.length;
-
-                const userData = Object.values(vals).filter(
-                    (season) => season?.username === member
-                );
-                const userDamage = userData
-                    .map((season) => season.totalDamage || 0)
-                    .reduce((a, b) => a + b, 0);
-
-                const userTokens = userData
-                    .map((season) => season.totalTokens || 0)
-                    .reduce((a, b) => a + b, 0);
-
-                const relativeDamage = (
-                    userDamage / guildAverageDamage
-                ).toFixed(1);
-
-                const relativeTokens = (
-                    userTokens / guildAverageTokens
-                ).toFixed(1);
-
                 embed.addFields({
                     name: `Season ${season}`,
-                    value: `Total Damage: \`${userDamage.toLocaleString()}\` — Total Tokens: \`${userTokens.toLocaleString()}\`
-                    Guild avg dmg: \`${guildAverageDamage.toLocaleString(
+                    value: `Guild avg dmg: \`${guildAverageDamage.toLocaleString(
                         undefined,
                         {
                             maximumFractionDigits: 0,
@@ -172,29 +155,86 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     Guild avg token: \`${guildAverageTokens.toLocaleString(
                         undefined,
                         { maximumFractionDigits: 0 }
-                    )}\` — User tokens: \`${userTokens}\` Relative Tokens: \`${relativeTokens}\``,
+                    )}\` — User tokens: \`${userTokens}\` — Relative Tokens: \`${relativeTokens}\``,
                 });
             } else {
-                // const formattedDamage = stats.totalDamage.toLocaleString();
-                // const formattedTokens = stats.totalTokens.toLocaleString();
-                // const formattedMax =
-                //     stats.maxDmg?.toLocaleString("default", {
-                //         maximumFractionDigits: 1,
-                //     }) ?? "N/A";
-                // const formattedMin =
-                //     stats.minDmg?.toLocaleString("default", {
-                //         maximumFractionDigits: 1,
-                //     }) ?? "N/A";
-                // const formattedAvg = (
-                //     stats.totalDamage /
-                //     (stats.totalTokens > 0 ? stats.totalTokens : 1)
-                // ).toLocaleString("default", {
-                //     maximumFractionDigits: 1,
-                // });
-                // embed.addFields({
-                //     name: `Season ${season}`,
-                //     value: `Total Damage: \`${formattedDamage}\` — Total Tokens: \`${formattedTokens}\` — Avg: \`${formattedAvg}\`\nMax damage: \`${formattedMax}\` — Min damage: \`${formattedMin}\``,
-                // });
+                // If rarity is provided, we need to calculate relative damage for each boss
+                const userStatsPerBoss: Record<string, string[]> = {};
+                for (const [boss, values] of Object.entries(stats)) {
+                    if (!values || values.length === 0) {
+                        continue;
+                    }
+                    const userData = values.find((v) => v.username === member);
+
+                    if (!userData) {
+                        continue;
+                    }
+                    const nPlayers = new Set<string>(
+                        values.map((v) => v.username)
+                    ).size;
+
+                    const totalDamage = values
+                        .map((v) => v.totalDamage || 0)
+                        .reduce((a, b) => a + b, 0);
+
+                    const avgDamage = totalDamage / nPlayers;
+
+                    const userDamage = userData.totalDamage || 0;
+                    const userTokens = userData.totalTokens || 0;
+                    const userAvg =
+                        userTokens > 0
+                            ? (userDamage / userTokens).toLocaleString(
+                                  undefined,
+                                  {
+                                      maximumFractionDigits: 1,
+                                  }
+                              )
+                            : "0";
+
+                    const relativeDamage =
+                        ((userDamage / avgDamage) * 100).toLocaleString(
+                            undefined,
+                            {
+                                maximumFractionDigits: 1,
+                            }
+                        ) + "%";
+
+                    userStatsPerBoss[boss] = [userAvg, relativeDamage];
+                }
+
+                const bossRelativeStrings = Object.entries(userStatsPerBoss)
+                    .map(([boss, user], idx) => {
+                        const bossName =
+                            rarity[0]! +
+                            (idx + 1) +
+                            " " +
+                            boss.split(/(?=[A-Z])/)[0]?.substring(0, 4);
+                        const userAvgStr = user[0];
+                        const userRelativeTotal = user[1];
+                        return `${bossName.padEnd(8)} ${userAvgStr!.padStart(
+                            10
+                        )} ${userRelativeTotal!.padStart(8)}`;
+                    })
+                    .join("\n");
+
+                embed.addFields({
+                    name: `Season ${season}`,
+                    value: `Guild avg dmg: \`${guildAverageDamage.toLocaleString(
+                        undefined,
+                        {
+                            maximumFractionDigits: 0,
+                        }
+                    )}\` — User dmg: \`${userDamage.toLocaleString(undefined, {
+                        maximumFractionDigits: 0,
+                    })}\` — Relative Damage: \`${relativeDamage}\`
+                    Guild avg token: \`${guildAverageTokens.toLocaleString(
+                        undefined,
+                        { maximumFractionDigits: 0 }
+                    )}\` — User tokens: \`${userTokens}\` — Relative Tokens: \`${relativeTokens}\`
+                    \`\`\`${"Boss".padEnd(6)} ${"User Avg".padEnd(
+                        12
+                    )} Rel. total\n${bossRelativeStrings}\`\`\``,
+                });
             }
         }
 
