@@ -19,6 +19,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.19.0]
+
+This update brings two new commands and some minor usability improvements.
+
+### Added
+
+-   New command: `/track-member` - Lets you track the performance of one member in relation to the guild average over multiple seasons.
+    -   Required parameter: username - The username as it is displayed in-game of the member you want to check.
+    -   Optional parameter: Rarity - Lets you filter the data by rarity and display more detailed stats for the individual guild bosses at that rarity.
+    -   Nb! There is no way for the bot to know how many users the guild had in prior seasons, only who participated. For most people this will be everyone, but some variations in the average value can occur in comparison to other commands who include inactive players.
+-   New command: `/test-token` - A simple test of your registered API token with (co-)leader permissions and Raid+Guild scope. No parameters required.
+
+### Changed
+
+-   `/register` now explains that you don't need to register guild-member usernames if someone in your guild has already done it.
+-   Minor changes to logging of HTTP error codes returned by the Tacticus API for better debugging
+
 ## [0.18.0] - 2025-06-17
 
 I'm back from vacation which means development is back on again.

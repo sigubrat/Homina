@@ -3,7 +3,7 @@ import {
     MessageFlags,
     SlashCommandBuilder,
 } from "discord.js";
-import { isValidUUIDv4, testApiToken } from "../../lib/utils";
+import { isValidUUIDv4, testApiToken } from "@/lib/utils";
 import { dbController, logger } from "@/lib";
 
 export const cooldown = 5; // Cooldown in seconds
@@ -69,7 +69,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     await interaction.editReply({
         content:
-            "Token succesfully registered to your user. Next step is to use `/get-member-ids` to start registering usernames for your guild",
+            "Token successfully registered to your user. Next step is to use `/get-member-ids` to start registering usernames for your guild. Note! If someone else in your guild has already registered usernames, you will not need to update them and can skip that step.",
         options: {
             flags: MessageFlags.Ephemeral,
         },

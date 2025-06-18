@@ -413,6 +413,36 @@ export class DatabaseController {
         }
     }
 
+    public async getGuildMemberIdByUsername(username: string, guildId: string) {
+        try {
+            const result = await this.sequelize.models["GuildMembers"]?.findOne(
+                {
+                    where: {
+                        username: username,
+                        guildId: guildId,
+                    },
+                }
+            );
+
+            if (!result) {
+                return null;
+            }
+
+            await this.sequelize.models["GuildMembers"]?.update(
+                { lastAccessed: new Date() },
+                { where: { username: username, guildId: guildId } }
+            );
+
+            return result.getDataValue("userId") as string;
+        } catch (error) {
+            logger.error(
+                error,
+                `Error retrieving guild member ID for username: ${username}, guildId: ${guildId}`
+            );
+            return null;
+        }
+    }
+
     public async getPlayerToken(
         userId: string,
         guildId: string

@@ -121,7 +121,7 @@ class HominaTacticusClient {
             });
 
             if (!response.ok) {
-                throw new Error(`GET request failed: ${response.statusText}`);
+                throw new Error(`GET request failed: ${response.status}`);
             }
 
             const body = (await response.json()) as GuildRaidResponse;

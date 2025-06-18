@@ -15,9 +15,33 @@ import {
     hasLynchpinHero,
     inTeamsCheck,
     SecondsToString,
+    testApiToken,
 } from "../utils";
 import type { GuildMemberMapping } from "@/models/types/GuildMemberMapping";
 
+/**
+ * Service class for managing guild-related operations in the Homina Tacticus application.
+ *
+ * Provides methods for:
+ * - Fetching and updating guild and member information.
+ * - Managing player tokens and usernames.
+ * - Retrieving and analyzing guild raid results, including meta team distributions and cooldowns.
+ * - Handling transactional updates and deletions of guild members.
+ * - Calculating available tokens and bombs for guild members.
+ *
+ * Utilizes the HominaTacticusClient for API interactions and dbController for database operations.
+ * All methods are asynchronous and handle errors gracefully, logging them and returning null or default values as appropriate.
+ *
+ * @remarks
+ * This service is intended to be used as a backend utility for Discord bots or web applications that require guild management features for Tacticus.
+ *
+ * @example
+ * ```typescript
+ * const guildService = new GuildService();
+ * const guildId = await guildService.getGuildId(discordUserId);
+ * const members = await guildService.getGuildMembers(discordUserId);
+ * ```
+ */
 export class GuildService {
     private client: HominaTacticusClient;
     private metaTeamThreshold = 3; // Minimum number of meta heroes to be considered a meta team
@@ -95,6 +119,23 @@ export class GuildService {
         }
     }
 
+    async getPlayerIdByUsername(memberName: string, guildId: string) {
+        try {
+            const userId = await dbController.getGuildMemberIdByUsername(
+                memberName,
+                guildId
+            );
+
+            return userId;
+        } catch (error) {
+            logger.error(
+                error,
+                `Error fetching player ID by username: ${memberName}`
+            );
+            return null;
+        }
+    }
+
     /**
      * Sets the player token for a given user ID and guild ID.
      * @param userId The ID of the user to set the token for.
@@ -166,6 +207,38 @@ export class GuildService {
         } catch (error) {
             logger.error(error, "Error fetching player list");
             return null;
+        }
+    }
+
+    /**
+     * Tests the registered guild API token for a given user ID.
+     * @param userId The ID of the user to test the API token for.
+     * @returns An object containing the status and message of the test.
+     */
+    async testRegisteredGuildApiToken(
+        userId: string
+    ): Promise<{ status: boolean; message: string }> {
+        try {
+            const apiToken = await dbController.getUserToken(userId);
+            if (!apiToken) {
+                return {
+                    status: false,
+                    message: "No API token found for user",
+                };
+            }
+
+            const resp = await testApiToken(apiToken);
+            if (!resp) {
+                return { status: false, message: "Invalid API token" };
+            }
+            return { status: true, message: "API token is valid" };
+        } catch (error) {
+            logger.error(error, "Error testing player API token");
+            return {
+                status: false,
+                message:
+                    "Something went horribly wrong while testing your token. Please register it again.",
+            };
         }
     }
 
@@ -354,8 +427,8 @@ export class GuildService {
                         set: entry.set,
                         tier: entry.tier,
                         startedOn: entry.startedOn,
-                        minDmg: 0,
-                        maxDmg: 0,
+                        minDmg: undefined,
+                        maxDmg: undefined,
                         bombCount: 1,
                     });
                 } else {
@@ -387,7 +460,7 @@ export class GuildService {
     async getGuildRaidResultByRaritySeasonPerBoss(
         userId: string,
         season: number,
-        rarity: Rarity
+        rarity?: Rarity
     ) {
         const apiKey = await dbController.getUserToken(userId);
         if (!apiKey) {
@@ -456,8 +529,8 @@ export class GuildService {
                         set: entry.set,
                         tier: entry.tier,
                         startedOn: entry.startedOn,
-                        minDmg: 0,
-                        maxDmg: 0,
+                        minDmg: undefined,
+                        maxDmg: undefined,
                     });
                 } else {
                     groupedResults[boss].push({
@@ -1114,6 +1187,80 @@ export class GuildService {
             return status;
         } catch (error) {
             logger.error(error, "Error fetching player cooldowns: ");
+            return null;
+        }
+    }
+
+    /**
+     * Retrieves a user's guild raid statistics for the last `nSeasons` seasons.
+     *
+     * @param userId - The unique identifier of the user whose stats are being fetched.
+     * @param nSeasons - The number of past seasons to retrieve statistics for.
+     * @param rarity - (Optional) The rarity filter to apply when fetching raid results.
+     * @returns A promise that resolves to an object mapping each season number to the corresponding guild raid results per boss,
+     *          or `null` if an error occurs or required data is missing.
+     *
+     * @remarks
+     * - Requires a valid API key for the user.
+     * - If the current season or API key cannot be determined, the function returns `null`.
+     * - Results are grouped by season and boss, filtered by the specified rarity if provided.
+     * - Errors are logged and result in a `null` return value.
+     */
+    async getMemberStatsInLastSeasons(
+        userId: string,
+        nSeasons: number,
+        rarity?: Rarity
+    ) {
+        try {
+            const apiKey = await dbController.getUserToken(userId);
+            if (!apiKey) {
+                logger.error("No API key found for user:", userId);
+                return null;
+            }
+
+            const currentSeason = await this.client.getGuildRaidByCurrentSeason(
+                apiKey
+            );
+            if (!currentSeason || !currentSeason.season) {
+                logger.error("No current season found for user:", userId);
+                return null;
+            }
+
+            const currentSeasonNumber = currentSeason.season;
+            const seasons: number[] = [];
+            for (let i = nSeasons; i > 0; i--) {
+                seasons.push(currentSeasonNumber - i);
+            }
+
+            const seasonPromises = seasons.map(
+                async (season) =>
+                    await this.getGuildRaidResultByRaritySeasonPerBoss(
+                        userId,
+                        season,
+                        rarity
+                    )
+            );
+
+            const responses = await Promise.all(seasonPromises);
+            const resultBySeason: Record<
+                number,
+                Record<string, GuildRaidResult[]> | null
+            > = {};
+
+            responses.forEach((res, idx) => {
+                const seasonNr = seasons[idx];
+                if (!seasonNr || !res) {
+                    return [] as GuildRaidResult[];
+                }
+                resultBySeason[seasonNr] = res;
+            });
+
+            return resultBySeason;
+        } catch (error) {
+            logger.error(
+                error,
+                "Error fetching member stats in last seasons: "
+            );
             return null;
         }
     }
