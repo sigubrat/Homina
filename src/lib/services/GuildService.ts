@@ -19,6 +19,29 @@ import {
 } from "../utils";
 import type { GuildMemberMapping } from "@/models/types/GuildMemberMapping";
 
+/**
+ * Service class for managing guild-related operations in the Homina Tacticus application.
+ *
+ * Provides methods for:
+ * - Fetching and updating guild and member information.
+ * - Managing player tokens and usernames.
+ * - Retrieving and analyzing guild raid results, including meta team distributions and cooldowns.
+ * - Handling transactional updates and deletions of guild members.
+ * - Calculating available tokens and bombs for guild members.
+ *
+ * Utilizes the HominaTacticusClient for API interactions and dbController for database operations.
+ * All methods are asynchronous and handle errors gracefully, logging them and returning null or default values as appropriate.
+ *
+ * @remarks
+ * This service is intended to be used as a backend utility for Discord bots or web applications that require guild management features for Tacticus.
+ *
+ * @example
+ * ```typescript
+ * const guildService = new GuildService();
+ * const guildId = await guildService.getGuildId(discordUserId);
+ * const members = await guildService.getGuildMembers(discordUserId);
+ * ```
+ */
 export class GuildService {
     private client: HominaTacticusClient;
     private metaTeamThreshold = 3; // Minimum number of meta heroes to be considered a meta team
@@ -187,6 +210,11 @@ export class GuildService {
         }
     }
 
+    /**
+     * Tests the registered guild API token for a given user ID.
+     * @param userId The ID of the user to test the API token for.
+     * @returns An object containing the status and message of the test.
+     */
     async testRegisteredGuildApiToken(
         userId: string
     ): Promise<{ status: boolean; message: string }> {
@@ -1163,6 +1191,21 @@ export class GuildService {
         }
     }
 
+    /**
+     * Retrieves a user's guild raid statistics for the last `nSeasons` seasons.
+     *
+     * @param userId - The unique identifier of the user whose stats are being fetched.
+     * @param nSeasons - The number of past seasons to retrieve statistics for.
+     * @param rarity - (Optional) The rarity filter to apply when fetching raid results.
+     * @returns A promise that resolves to an object mapping each season number to the corresponding guild raid results per boss,
+     *          or `null` if an error occurs or required data is missing.
+     *
+     * @remarks
+     * - Requires a valid API key for the user.
+     * - If the current season or API key cannot be determined, the function returns `null`.
+     * - Results are grouped by season and boss, filtered by the specified rarity if provided.
+     * - Errors are logged and result in a `null` return value.
+     */
     async getMemberStatsInLastSeasons(
         userId: string,
         nSeasons: number,
