@@ -33,7 +33,7 @@ export const data = new SlashCommandBuilder()
             );
     })
     .setDescription(
-        "Track a member's guild raid stats over the last 3 seasons"
+        `Track a member's guild raid stats over the last ${N_SEASONS} seasons`
     );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
@@ -80,7 +80,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             rarity
         );
 
-        if (!data || Object.keys.length === 0) {
+        if (!data || Object.keys(data).length === 0) {
             await interaction.editReply({
                 content: `No data found for the member ${member} in the last ${N_SEASONS} seasons.`,
             });
