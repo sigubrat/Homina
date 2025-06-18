@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
-## [0.19.0]
+## [0.19.0] - 2025-06-18
 
 This update brings two new commands and some minor usability improvements.
 
