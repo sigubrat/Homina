@@ -91,7 +91,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setTitle(`Guild Raid Stats for ${member}`)
             .setDescription(
                 `Here are the guild raid stats for **${member}** over the last ${N_SEASONS} seasons.
-                (Make sure the usernames are updated in the bot or averages may be incorrect)`
+                
+                *Nb! Does not include inactive members in a season as it can only know who participated in prior seasons. This affects the average value if you had inactive players.*
+                `
             )
             .addFields({
                 name: "Rarity filter",
