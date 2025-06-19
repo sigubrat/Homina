@@ -71,6 +71,12 @@ export async function testPlayerApiToken(token: string): Promise<boolean> {
     }
 }
 
+export function splitByCapital(text: string): string[] {
+    // Split the text by capital letters
+    const regex = /(?=[A-Z])/;
+    return text.split(regex).map((s) => s.trim());
+}
+
 //**
 // ChartJs utils
 //  */
@@ -261,24 +267,24 @@ export function SecondsToString(
     return `${daysPart}${hours}h ${minutes}m ${seconds}s`;
 }
 
-export function mapTierToRarity(rarity: number): string {
+export function mapTierToRarity(rarity: number, set: number): string {
     if (rarity < 0) {
         throw new Error("Tier cannot be negative");
     }
 
     if (rarity === 0) {
-        return "Common";
+        return `C${set}`;
     } else if (rarity === 1) {
-        return "Uncommon";
+        return `U${set}`;
     } else if (rarity === 2) {
-        return "Rare";
+        return `R${set}`;
     } else if (rarity === 3) {
-        return "Epic";
+        return `E${set}`;
     } else if (rarity === 4) {
-        return "Legendary";
+        return `L${set}`;
     }
 
-    return `Legendary (loop ${rarity - 4})`;
+    return `L${set} :recycle:${rarity - 4}`;
 }
 
 export function isValidUUIDv4(uuid: string): boolean {

@@ -15,6 +15,7 @@ import {
     standardDeviation,
     numericMedian,
     isValidUUIDv4,
+    splitByCapital,
 } from "@/lib/utils";
 import type { GuildRaidResult } from "@/models/types";
 import { describe, expect, test } from "bun:test";
@@ -213,11 +214,11 @@ describe("utilsSuite - Algebra", () => {
     });
 
     test("mapTierToRarity - Should map tier to rarity correctly", () => {
-        expect(mapTierToRarity(0)).toBe("Common");
-        expect(mapTierToRarity(1)).toBe("Uncommon");
-        expect(mapTierToRarity(2)).toBe("Rare");
-        expect(mapTierToRarity(3)).toBe("Epic");
-        expect(() => mapTierToRarity(-1)).toThrow("Tier cannot be negative");
+        expect(mapTierToRarity(0, 1)).toBe("C1");
+        expect(mapTierToRarity(1, 1)).toBe("U1");
+        expect(mapTierToRarity(2, 1)).toBe("R1");
+        expect(mapTierToRarity(3, 1)).toBe("E1");
+        expect(() => mapTierToRarity(-1, 1)).toThrow("Tier cannot be negative");
     });
 
     test("numericAverage - returns correct average for non-empty array", () => {
@@ -253,5 +254,23 @@ describe("utilsSuite - Algebra", () => {
             true
         ); // valid v4
         expect(isValidUUIDv4("invalid-uuid")).toBe(false);
+    });
+
+    test("splitByCapital - should split a camelCase string into words", () => {
+        const camelCaseString = "CamelCaseStringExample";
+        const result = splitByCapital(camelCaseString);
+        expect(result).toEqual(["Camel", "Case", "String", "Example"]);
+    });
+
+    test("splitByCapital - should handle an empty string", () => {
+        const camelCaseString = "";
+        const result = splitByCapital(camelCaseString);
+        expect(result).toEqual([""]);
+    });
+
+    test("splitByCapital - should handle first word with lowercase", () => {
+        const camelCaseString = "lowerCamelCase";
+        const result = splitByCapital(camelCaseString);
+        expect(result).toEqual(["lower", "Camel", "Case"]);
     });
 });

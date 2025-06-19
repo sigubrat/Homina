@@ -5,7 +5,7 @@ export interface Raid {
     userId: string;
     tier: number;
     set: number;
-    encounterIndexz: number;
+    encounterIndex: number;
     remainingHp: number;
     maxHp: number;
     encounterType: EncounterType;
@@ -17,6 +17,6 @@ export interface Raid {
     startedOn: number;
     completedOn: number;
     heroDetails: PublicHeroDetail[];
-    machineOfWarDetails: PublicHeroDetail;
+    machineOfWarDetails: PublicHeroDetail | null;
     globalConfigHash: string;
 }
