@@ -11,8 +11,6 @@ describe("DataTransformationServiceSuite - Algebra", () => {
             testGuildRaidData
         );
 
-        console.log(transformedData);
-
         expect(transformedData).toEqual([
             {
                 "L0 Belisarius": {
@@ -31,8 +29,6 @@ describe("DataTransformationServiceSuite - Algebra", () => {
             testGuildRaidData,
             true
         );
-
-        console.log(transformedData);
 
         expect(transformedData).toEqual([
             {

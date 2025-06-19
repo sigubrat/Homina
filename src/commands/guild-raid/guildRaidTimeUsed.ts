@@ -36,7 +36,7 @@ export const data = new SlashCommandBuilder()
     .addBooleanOption((option) =>
         option
             .setName("separate-primes")
-            .setDescription("Show primes separetely bosses (default: false)")
+            .setDescription("Show primes separately (default: false)")
             .setRequired(false)
     );
 

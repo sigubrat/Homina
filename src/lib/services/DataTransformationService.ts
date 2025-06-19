@@ -52,8 +52,8 @@ export class DataTransformationService {
                 continue;
             }
 
-            const totalTokens = data.filter((raid) =>
-                Number(raid.damageType === DamageType.BATTLE)
+            const totalTokens = data.filter(
+                (raid) => raid.damageType === DamageType.BATTLE
             ).length;
 
             const totalBombs = data.length - totalTokens;
