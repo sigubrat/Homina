@@ -86,7 +86,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         );
 
         const pagination = new Pagination(interaction, {
-            limit: separatePrimes ? 5 : 10, // Adjust limit based on rarity
+            limit: separatePrimes ? 5 : 15, // Adjust limit based on rarity
         })
             .setColor("#0099ff")
             .setTitle(`Time Used Per Boss in season ${season}`)
