@@ -455,12 +455,14 @@ export class GuildService {
      * @param userId The ID of the user to fetch guild raid results for.
      * @param season The season to fetch results for.
      * @param rarity Optional rarity filter for the raid results.
+     * @param useUsernames Whether to use usernames instead of user IDs in the results.
      * @returns A record of boss names to their respective GuildRaidResult arrays or null if an error occurred.
      */
     async getGuildRaidResultByRaritySeasonPerBoss(
         userId: string,
         season: number,
-        rarity?: Rarity
+        rarity?: Rarity,
+        useUsernames: boolean = true
     ) {
         const apiKey = await dbController.getUserToken(userId);
         if (!apiKey) {
@@ -493,10 +495,15 @@ export class GuildService {
                 groupedResults[boss] = [];
             }
 
-            let username = await dbController.getPlayerName(entry.userId);
-            if (!username) {
-                // If a user is not registered or left the guild, we set their username to "Unknown"
-                username = "Unknown";
+            let username: string | null = null;
+            if (useUsernames) {
+                username = await dbController.getPlayerName(entry.userId);
+                if (!username) {
+                    // If a user is not registered or left the guild, we set their username to "Unknown"
+                    username = "Unknown";
+                }
+            } else {
+                username = entry.userId;
             }
 
             const existingUserEntry = groupedResults[boss].find(
@@ -1237,7 +1244,8 @@ export class GuildService {
                     await this.getGuildRaidResultByRaritySeasonPerBoss(
                         userId,
                         season,
-                        rarity
+                        rarity,
+                        false
                     )
             );
 

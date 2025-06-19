@@ -127,7 +127,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             const guildAverageTokens = allTokens / nMembers;
 
             const userData = Object.values(vals).filter(
-                (season) => season?.username === member
+                (season) => season?.username === memberId
             );
             const userDamage = userData
                 .map((season) => season.totalDamage || 0)
@@ -156,7 +156,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     })}\` — Relative Damage: \`${relativeDamage}\`
                     Guild avg token: \`${guildAverageTokens.toLocaleString(
                         undefined,
-                        { maximumFractionDigits: 0 }
+                        { maximumFractionDigits: 1 }
                     )}\` — User tokens: \`${userTokens}\` — Relative Tokens: \`${relativeTokens}\``,
                 });
             } else {

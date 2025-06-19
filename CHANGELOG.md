@@ -19,6 +19,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.19.1] - 2025-06-19
+
+### Changed
+
+-   Averages in `/track-member` now include one decimal point.
+
+### Fixed
+
+-   Now uses userIDs to calculate averages in `/track-member` instead of username. Using username in older seasons with members who have left led to a lot of members being grouped under the name "Unknown", causing our elite 'player' Unknown to having a total number of tokens way above what's possible.
+
 ## [0.19.0] - 2025-06-18
 
 This update brings two new commands and some minor usability improvements.
