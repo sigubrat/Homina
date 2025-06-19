@@ -125,7 +125,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                         sortGuildRaidResultDesc(data),
                         `Damage dealt in season ${season} - ${
                             rarity[0] ? rarity[0].toUpperCase() : " "
-                        }${(data[0] ? data[0].set : 0) + 1} ${bossName}`,
+                        }${data[0] ? data[0].set : 0} ${bossName}`,
                         averageMethod,
                         avgDamage
                     );

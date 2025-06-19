@@ -193,15 +193,17 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
                     const userDamage = userData.totalDamage || 0;
                     const userTokens = userData.totalTokens || 0;
-                    const userAvg =
-                        userTokens > 0
-                            ? (userDamage / userTokens).toLocaleString(
-                                  undefined,
-                                  {
-                                      maximumFractionDigits: 1,
-                                  }
-                              )
-                            : "0";
+
+                    if (userTokens === 0) {
+                        continue;
+                    }
+
+                    const userAvg = (userDamage / userTokens).toLocaleString(
+                        undefined,
+                        {
+                            maximumFractionDigits: 1,
+                        }
+                    );
 
                     const relativeDamage =
                         ((userDamage / avgDamage) * 100).toLocaleString(
@@ -211,19 +213,20 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                             }
                         ) + "%";
 
-                    userStatsPerBoss[boss] = [userAvg, relativeDamage];
+                    const bossName =
+                        rarity[0]! +
+                        userData.set +
+                        " " +
+                        boss.split(/(?=[A-Z])/)[0]?.substring(0, 4);
+
+                    userStatsPerBoss[bossName] = [userAvg, relativeDamage];
                 }
 
                 const bossRelativeStrings = Object.entries(userStatsPerBoss)
-                    .map(([boss, user], idx) => {
-                        const bossName =
-                            rarity[0]! +
-                            (idx + 1) +
-                            " " +
-                            boss.split(/(?=[A-Z])/)[0]?.substring(0, 4);
+                    .map(([bossname, user]) => {
                         const userAvgStr = user[0];
                         const userRelativeTotal = user[1];
-                        return `${bossName.padEnd(8)} ${userAvgStr!.padStart(
+                        return `${bossname.padEnd(8)} ${userAvgStr!.padStart(
                             10
                         )} ${userRelativeTotal!.padStart(8)}`;
                     })
