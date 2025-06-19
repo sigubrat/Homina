@@ -32,7 +32,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
--   `/gr-time-used` should be more readable and compact
+-   `/gr-time-used` should be more readable and compact:
+    -   Fields added to display options selected and time spent between first and last token/bomb used
+    -   Discord emojis used to take up less space
+    -   Shortened down rarity and loop text
 
 ## [0.19.1] - 2025-06-19
 
