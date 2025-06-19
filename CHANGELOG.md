@@ -19,6 +19,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.20.0] - 2025-06-19
+
+### Added
+
+-   `/gr-time-used` now has an optional parameter `separate-primes` (True/False) which lets you show the time spent on each prime separately to the main boss.
+
+### Fixed
+
+-   Fixed data missing in `/track-member` when Rarity was selected
+-   Number of players used to calculate the average damage dealt in a guild is now capped to 30, no matter how many participated in a guild across a season.
+
+### Changed
+
+-   `/gr-time-used` should be more readable and compact:
+    -   Fields added to display options selected and time spent between first and last token/bomb used
+    -   Discord emojis used to take up less space
+    -   Shortened down rarity and loop text
+
 ## [0.19.1] - 2025-06-19
 
 ### Changed

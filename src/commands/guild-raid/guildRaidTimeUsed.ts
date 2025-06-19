@@ -1,6 +1,7 @@
 import { logger } from "@/lib";
 import { DataTransformationService } from "@/lib/services/DataTransformationService";
 import { GuildService } from "@/lib/services/GuildService";
+import { splitByCapital } from "@/lib/utils";
 import { Rarity } from "@/models/enums";
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { Pagination } from "pagination.djs";
@@ -31,7 +32,13 @@ export const data = new SlashCommandBuilder()
                 { name: "Uncommon", value: Rarity.UNCOMMON },
                 { name: "Common", value: Rarity.COMMON }
             );
-    });
+    })
+    .addBooleanOption((option) =>
+        option
+            .setName("separate-primes")
+            .setDescription("Show primes separately (default: false)")
+            .setRequired(false)
+    );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
@@ -48,6 +55,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     }
 
     const rarity = interaction.options.getString("rarity") as Rarity;
+
+    const separatePrimes =
+        interaction.options.getBoolean("separate-primes") ?? false;
 
     const service = new GuildService();
     const transformer = new DataTransformationService();
@@ -70,24 +80,73 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             });
             return;
         }
-        const transformedData = await transformer.timeUsedPerBoss(seasonData);
+        const [transformedData, totalTime] = await transformer.timeUsedPerBoss(
+            seasonData,
+            separatePrimes
+        );
 
         const pagination = new Pagination(interaction, {
-            limit: 10,
+            limit: separatePrimes ? 5 : 10, // Adjust limit based on rarity
         })
             .setColor("#0099ff")
-            .setTitle("Time Used Per Boss")
+            .setTitle(`Time Used Per Boss in season ${season}`)
             .setDescription(
-                "See how long it took your guild to defeat each boss"
+                `See how long it took your guild to defeat each boss`
+            )
+            .setFields(
+                {
+                    name: "Season",
+                    value: `${season}`,
+                    inline: true,
+                },
+                {
+                    name: "Time spent :clock:",
+                    value: totalTime,
+                    inline: true,
+                },
+                {
+                    name: "Rarity",
+                    value: rarity ? rarity : "All Rarities",
+
+                    inline: true,
+                },
+                {
+                    name: "Separate Primes",
+                    value: separatePrimes ? "Yes" : "No",
+                    inline: false,
+                }
             )
             .setTimestamp();
 
-        // Create a field for each boss in transformedData
-        for (const [boss, data] of Object.entries(transformedData)) {
-            pagination.addFields({
-                name: boss,
-                value: `Time: ${data.time} - Tokens: ${data.tokens}`,
-            });
+        if (separatePrimes) {
+            // Only display main bosses (sideboss[0] === false) once, with their sidebosses
+            for (const [boss, data] of Object.entries(transformedData)) {
+                if (!data.sideboss[0]) {
+                    // Find sidebosses for this main boss
+                    const sidebosses = Object.entries(transformedData)
+                        .filter(
+                            ([, d]) => d.sideboss[0] && d.sideboss[1] === boss
+                        )
+                        .map(([sbName, sbData]) => {
+                            const words = splitByCapital(sbName);
+                            const name = `${words.at(-2)}${words.at(-1)}`;
+                            return `   - Prime ${name} :hourglass: ${sbData.time} - :tickets: ${sbData.tokens} :boom: ${sbData.bombs}`;
+                        });
+                    const sidebossField =
+                        sidebosses.length > 0 ? `${sidebosses.join("\n")}` : "";
+                    pagination.addFields({
+                        name: boss,
+                        value: `- Boss: :hourglass: ${data.time} - :tickets: ${data.tokens} :boom: ${data.bombs}\n${sidebossField}`,
+                    });
+                }
+            }
+        } else {
+            for (const [boss, data] of Object.entries(transformedData)) {
+                pagination.addFields({
+                    name: boss,
+                    value: `:hourglass: ${data.time} - :tickets: ${data.tokens} :boom: ${data.bombs}`,
+                });
+            }
         }
 
         pagination.paginateFields(true);

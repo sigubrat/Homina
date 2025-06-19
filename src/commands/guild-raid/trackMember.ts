@@ -118,9 +118,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 .map((season) => season?.totalTokens || 0)
                 .reduce((a, b) => a + b, 0);
 
-            const nMembers = new Set<string>(
-                vals.map((entry) => entry?.username)
-            ).size;
+            let nMembers = new Set<string>(vals.map((entry) => entry?.username))
+                .size;
+
+            if (nMembers > 30) {
+                nMembers = 30;
+            }
 
             const guildAverageDamage = allDamage / nMembers;
 
@@ -166,14 +169,21 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     if (!values || values.length === 0) {
                         continue;
                     }
-                    const userData = values.find((v) => v.username === member);
+
+                    const userData = values.find(
+                        (v) => v.username === memberId
+                    );
 
                     if (!userData) {
                         continue;
                     }
-                    const nPlayers = new Set<string>(
+                    let nPlayers = new Set<string>(
                         values.map((v) => v.username)
                     ).size;
+
+                    if (nPlayers > 30) {
+                        nPlayers = 30;
+                    }
 
                     const totalDamage = values
                         .map((v) => v.totalDamage || 0)
@@ -231,7 +241,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     })}\` — Relative Damage: \`${relativeDamage}\`
                     Guild avg token: \`${guildAverageTokens.toLocaleString(
                         undefined,
-                        { maximumFractionDigits: 0 }
+                        { maximumFractionDigits: 1 }
                     )}\` — User tokens: \`${userTokens}\` — Relative Tokens: \`${relativeTokens}\`
                     \`\`\`${"Boss".padEnd(6)} ${"User Avg".padEnd(
                         12

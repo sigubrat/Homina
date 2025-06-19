@@ -2,23 +2,40 @@ import type { Raid } from "@/models/types";
 import type { TimeUsed } from "@/models/types/TimeUsed";
 import { logger } from "../HominaLogger";
 import { mapTierToRarity, SecondsToString } from "../utils";
+import { DamageType, EncounterType } from "@/models/enums";
 
 export class DataTransformationService {
     constructor() {}
 
     async timeUsedPerBoss(
-        seasonData: Raid[]
-    ): Promise<Record<string, TimeUsed>> {
+        seasonData: Raid[],
+        separatePrimes: boolean = false
+    ): Promise<[Record<string, TimeUsed>, string]> {
         const groupedData = seasonData.reduce(
             (acc: Record<string, Raid[]>, curr: Raid) => {
-                if (curr.damageType === "Bomb") {
-                    return acc;
+                let key: string;
+                if (
+                    separatePrimes &&
+                    curr.encounterType === EncounterType.SIDE_BOSS
+                ) {
+                    const unitWords = curr.unitId.split(/(?=[A-Z])/);
+                    const unit = `${unitWords.at(-2)}${unitWords.at(-1)}`;
+                    if (!unit) {
+                        logger.error(
+                            `Unit ID ${curr.unitId} is invalid or empty while calculating time used`
+                        );
+                        return acc;
+                    }
+                    key = `${mapTierToRarity(curr.tier, curr.set)} ${unit}`;
+                } else {
+                    key = `${mapTierToRarity(curr.tier, curr.set)} ${
+                        curr.type
+                    }`;
                 }
-                const key = `${curr.type}-${mapTierToRarity(curr.tier)}`;
                 if (!acc[key]) {
                     acc[key] = [];
                 }
-                acc[key].push(curr);
+                acc[key]!.push(curr);
                 return acc;
             },
             {} as Record<string, Raid[]> // initial accumulator value
@@ -34,6 +51,13 @@ export class DataTransformationService {
                 );
                 continue;
             }
+
+            const totalTokens = data.filter(
+                (raid) => raid.damageType === DamageType.BATTLE
+            ).length;
+
+            const totalBombs = data.length - totalTokens;
+
             // If this is the first boss, we take the first entry for that boss and the last and calculate the time
             if (previousKey === null) {
                 const firstEntry = data[0];
@@ -44,13 +68,23 @@ export class DataTransformationService {
                     );
                     continue;
                 }
+                const isPrime =
+                    firstEntry.encounterType === EncounterType.SIDE_BOSS;
+
                 const timeInSeconds = Math.abs(
                     firstEntry?.startedOn - lastEntry?.startedOn
                 );
 
                 result[boss] = {
                     time: SecondsToString(timeInSeconds),
-                    tokens: data.length,
+                    tokens: totalTokens,
+                    bombs: totalBombs,
+                    sideboss: [
+                        isPrime,
+                        `${mapTierToRarity(firstEntry.tier, firstEntry.set)} ${
+                            lastEntry.type
+                        }`,
+                    ],
                 };
                 previousKey = boss;
                 continue;
@@ -95,14 +129,29 @@ export class DataTransformationService {
 
             const timeUsed = SecondsToString(timeInSeconds);
 
+            const isPrime = lastEntry.encounterType === EncounterType.SIDE_BOSS;
+
             result[boss] = {
                 time: timeUsed,
-                tokens: data.length,
+                tokens: totalTokens,
+                bombs: totalBombs,
+                sideboss: [
+                    isPrime,
+                    `${mapTierToRarity(lastEntry.tier, lastEntry.set)} ${
+                        lastEntry.type
+                    }`,
+                ],
             };
 
             previousKey = boss;
         }
 
-        return result;
+        const allTimes = seasonData.map((raid) => raid.startedOn);
+        const minTime = Math.min(...allTimes);
+        const maxTime = Math.max(...allTimes);
+        const totalTime = maxTime - minTime;
+        const totalTimeUsed = SecondsToString(totalTime);
+
+        return [result, totalTimeUsed];
     }
 }
