@@ -127,7 +127,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
             const guildAverageDamage = allDamage / nMembers;
 
-            const guildAverageTokens = allTokens / nMembers;
+            let guildAverageTokens = allTokens / nMembers;
+
+            if (guildAverageTokens > 29) {
+                guildAverageTokens = 29;
+            }
 
             const userData = Object.values(vals).filter(
                 (season) => season?.username === memberId

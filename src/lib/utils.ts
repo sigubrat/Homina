@@ -321,3 +321,45 @@ export function standardDeviation(arr: number[]): number {
     const variance = numericAverage(squaredDiffs);
     return Math.sqrt(variance);
 }
+
+export function getBossEmoji(boss: string) {
+    // Remove first two chracters
+    const bossname = boss.slice(2).trim().replace(/[()]/g, "");
+    const words = splitByCapital(bossname);
+    const identifier = words.at(0);
+    if (!identifier) {
+        return "❓"; // Fallback emoji if no identifier is found
+    }
+
+    if (identifier === "Szarekh") {
+        return "<:Szarekh:1385343132950069278>";
+    } else if (identifier === "Tervigon") {
+        const version = words.at(1);
+        if (version === "Leviathan")
+            return "<:TyrantLeviathan:1385342042170851334>";
+        if (version === "Gorgon") return "<:TyrantGorgon:1385340907351441619>";
+        if (version === "Kronos") return "<:TyrantKronos:1385341128626409522>";
+    } else if (identifier === "Hive") {
+        const version = words.at(2);
+        if (version === "Leviathan")
+            return "<:TyrantLeviathan:1385342042170851334>";
+        if (version === "Gorgon") return "<:TyrantGorgon:1385340907351441619>";
+        if (version === "Kronos") return "<:TyrantKronos:1385341128626409522>";
+    } else if (identifier === "Ghazghkull") {
+        return "<:Ghazghkull:1385340195494170664>";
+    } else if (identifier === "Avatar") {
+        return "<:Avatar:1385338950834716802>";
+    } else if (identifier === "Magnus") {
+        return "<:Magnus:1385342412217520379>";
+    } else if (identifier === "Mortarion") {
+        return "<:Mortarion:1385342557969453197>";
+    } else if (identifier === "Belisarius") {
+        return "<:Cawl:1385339595578806312>";
+    } else if (identifier === "Rogal") {
+        return "<:RogalDornTank:1385342727037784174>";
+    } else if (identifier === "Screamer-") {
+        return "<:ScreamerKiller:1385342920302788608>";
+    } else {
+        return "❓"; // Fallback emoji if no specific emoji is found
+    }
+}

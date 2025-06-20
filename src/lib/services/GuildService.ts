@@ -1201,7 +1201,7 @@ export class GuildService {
     /**
      * Retrieves a user's guild raid statistics for the last `nSeasons` seasons.
      *
-     * @param userId - The unique identifier of the user whose stats are being fetched.
+     * @param userId - The unique discord identifier of the user whose stats are being fetched.
      * @param nSeasons - The number of past seasons to retrieve statistics for.
      * @param rarity - (Optional) The rarity filter to apply when fetching raid results.
      * @returns A promise that resolves to an object mapping each season number to the corresponding guild raid results per boss,
@@ -1236,6 +1236,9 @@ export class GuildService {
             const currentSeasonNumber = currentSeason.season;
             const seasons: number[] = [];
             for (let i = nSeasons; i > 0; i--) {
+                if (currentSeasonNumber - i < 70) {
+                    break;
+                }
                 seasons.push(currentSeasonNumber - i);
             }
 
@@ -1270,6 +1273,140 @@ export class GuildService {
                 "Error fetching member stats in last seasons: "
             );
             return null;
+        }
+    }
+
+    /**
+     * Retrieves the configuration IDs for the last `nSeasons` seasons for a given Discord user.
+     *
+     * @param discordId - The Discord user ID to retrieve season configs for.
+     * @param nSeasons - The number of previous seasons to retrieve configs for.
+     * @returns A promise that resolves to an array of season configuration IDs, or `null` if the API key or current season is not found.
+     *
+     * @throws Will log an error and return `null` if the user does not have an API key or if the current season cannot be determined.
+     */
+    async getNLastSeasonConfigs(discordId: string, nSeasons: number) {
+        const apikey = await dbController.getUserToken(discordId);
+        if (!apikey) {
+            logger.error("No API key found for user:", discordId);
+            return null;
+        }
+
+        const currentSeason = await this.client.getGuildRaidByCurrentSeason(
+            apikey
+        );
+        if (!currentSeason || !currentSeason.season) {
+            logger.error("No current season found for user:", discordId);
+            return null;
+        }
+
+        const currentSeasonNumber = currentSeason.season;
+        const seasons: number[] = [];
+        for (let i = nSeasons; i > 0; i--) {
+            if (currentSeasonNumber - i < 70) {
+                break;
+            }
+            seasons.push(currentSeasonNumber - i);
+        }
+        seasons.push(currentSeasonNumber);
+
+        const seasonPromises = seasons.map(
+            async (season) =>
+                await this.client.getGuildRaidBySeason(apikey, season)
+        );
+
+        const responses = await Promise.all(seasonPromises);
+
+        const configs = responses.map((resp) => ({
+            config: Number(resp.seasonConfigId.at(-1)),
+            season: resp.season,
+        }));
+
+        return configs;
+    }
+
+    /**
+     * Retrieves a list of previous season numbers that share the same configuration as a specified season.
+     *
+     * @param discordId - The Discord user ID to retrieve the API key for.
+     * @param nSeasons - The number of previous seasons to check.
+     * @param season - The season number whose configuration should be matched.
+     * @returns A promise that resolves to an array of season numbers with the same configuration as the specified season,
+     *          or `null` if the API key or season configuration cannot be found.
+     *
+     * @throws Logs errors if the API key, current season, or desired season configuration cannot be found.
+     *
+     * @example
+     * ```typescript
+     * const matchingSeasons = await guildService.getSeasonsWithSameConfig('123456789', 5, 10);
+     * // matchingSeasons might be: [5, 7, 9]
+     * ```
+     */
+    async getSeasonsWithSameConfig(
+        discordId: string,
+        nSeasons: number,
+        season: number
+    ) {
+        const apikey = await dbController.getUserToken(discordId);
+        if (!apikey) {
+            logger.error("No API key found for user:", discordId);
+            return null;
+        }
+
+        try {
+            const desiredSeason = await this.client.getGuildRaidBySeason(
+                apikey,
+                season
+            );
+
+            if (!desiredSeason || !desiredSeason.season) {
+                logger.error("No current season found for user:", discordId);
+                return null;
+            }
+
+            const desiredConfig = desiredSeason.seasonConfigId;
+
+            if (!desiredConfig) {
+                logger.error(
+                    `No season config found for season ${season} for user:`,
+                    discordId
+                );
+                return null;
+            }
+
+            const currentSeasonNumber = desiredSeason.season;
+            const seasons: number[] = [];
+            for (let i = nSeasons; i > 0; i--) {
+                if (currentSeasonNumber - i < 70) {
+                    break;
+                }
+                seasons.push(currentSeasonNumber - i);
+            }
+
+            const seasonPromises = seasons.map(
+                async (season) =>
+                    await this.client
+                        .getGuildRaidBySeason(apikey, season)
+                        .catch(() => null)
+            );
+
+            const responses = await Promise.all(seasonPromises);
+
+            const result = responses
+                .filter(
+                    (resp) =>
+                        resp &&
+                        resp.seasonConfigId.at(-1) === desiredConfig.at(-1)
+                )
+                .map((resp) => resp!.season);
+
+            return result;
+        } catch (error) {
+            logger.error(
+                error,
+                `Error fetching desired season ${season} for user:`,
+                discordId
+            );
         }
     }
 }

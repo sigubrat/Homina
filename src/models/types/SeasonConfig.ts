@@ -1,7 +1,7 @@
 export interface GrBossConfig {
-    common: string[];
-    uncommon: string[];
-    rare: string[];
-    epic: string[];
-    legendary: string[];
+    Common: string[];
+    Uncommon: string[];
+    Rare: string[];
+    Epic: string[];
+    Legendary: string[];
 }
