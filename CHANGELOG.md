@@ -19,6 +19,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.21.0] - 2025-06-20
+
+This updates provides two new commands for season configs and improvements to existing commands.
+
+### Added
+
+-   **New command!** `/season-bosses` - This command returns a display of the guild raid bosses in the previous 5 guild raid seasons.
+    -   Optional parameter: `Rarity` - filter by rarity.
+-   **New command!** `/season-same` - Displays the past seasons that has the same guild raid bosses as the provided season.
+    -   Required parameter: `season` - The number of the season you want to find a similar raid boss config for.
+
+### Changed
+
+-   Improved the readability and compactness of the `/gr-availability` command to use more emojis over text. Hopefully this makes the command more useful for mobile users.
+-   Tweaked pagination limits for `/gr-time-used` to display more data per page if primes are not displayed.
+-   Added caps to tokens used in a season and guild members in the average calculations for `/track-member`
+-   All displays of guild raid bosses with rarity and number (E3, L1 etc) are now zero-index-based -> the first one is L0 and the fifth legendary boss is L4.
+-   The label text for damage dealt in `/season-by-rarity` is changed from being the same as the graph title -> "Total damage"
+
 ## [0.20.0] - 2025-06-19
 
 ### Added

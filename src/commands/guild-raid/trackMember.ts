@@ -106,6 +106,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setColor("#0099ff")
             .setTimestamp();
 
+        if (rarity) {
+            embed.addFields({
+                name: `Rarity: ${rarity}`,
+                value: "Rarity filter applied and the damage a user did to a boss relative to the avg total damage dealt by the guild will be displayed",
+            });
+        }
+
         for (const [season, stats] of Object.entries(data)) {
             if (!stats) {
                 continue;

@@ -2,6 +2,7 @@ import { logger } from "@/lib";
 import { GRConfigService } from "@/lib/services/GRConfigService";
 import { GuildService } from "@/lib/services/GuildService";
 import { getBossEmoji } from "@/lib/utils";
+import { Rarity } from "@/models/enums";
 import {
     ChatInputCommandInteraction,
     EmbedBuilder,
@@ -12,7 +13,20 @@ export const cooldown = 5;
 
 export const data = new SlashCommandBuilder()
     .setName("season-bosses")
-    .setDescription("Get the guild boss configs for the previous seasons");
+    .setDescription("Get the guild boss configs for the previous seasons")
+    .addStringOption((option) => {
+        return option
+            .setName("rarity")
+            .setDescription("The rarity of the boss")
+            .setRequired(false)
+            .addChoices(
+                { name: "Legendary", value: Rarity.LEGENDARY },
+                { name: "Epic", value: Rarity.EPIC },
+                { name: "Rare", value: Rarity.RARE },
+                { name: "Uncommon", value: Rarity.UNCOMMON },
+                { name: "Common", value: Rarity.COMMON }
+            );
+    });
 
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply({});
@@ -20,6 +34,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const discordId = interaction.user.id;
 
     const guildService = new GuildService();
+    const rarity = interaction.options.getString("rarity") as
+        | Rarity
+        | undefined;
 
     try {
         const configs = await guildService.getNLastSeasonConfigs(discordId, 5);
@@ -41,6 +58,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 (Tervigon and Hive Tyrant use the same emoji because who cares about them anyway?)`
             )
             .setTimestamp();
+
+        if (rarity) {
+            embed.addFields({
+                name: `Rarity: ${rarity}`,
+                value: rarity,
+            });
+        }
 
         const seasons = configs!.map((season) => {
             const config = configService.getConfig(season.config);
@@ -64,15 +88,18 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             if (season) {
                 const rarities = Object.keys(season.config);
                 const bosses = rarities
-                    .map((rarity) => {
+                    .map((r) => {
+                        if (rarity && r !== rarity) {
+                            return;
+                        }
                         const bossList =
-                            season.config[rarity as keyof typeof season.config];
+                            season.config[r as keyof typeof season.config];
                         if (bossList && bossList.length > 0) {
-                            return `**${rarity.at(0)}**: ${bossList
+                            return `**${r.at(0)}**: ${bossList
                                 .map((b) => getBossEmoji(b))
                                 .join("->")}`;
                         }
-                        return `**${rarity}**: No bosses configured`;
+                        return `**${r}**: No bosses configured`;
                     })
                     .join("\n");
                 embed.addFields({
