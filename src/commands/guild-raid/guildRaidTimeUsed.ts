@@ -1,4 +1,5 @@
 import { logger } from "@/lib";
+import { MINIMUM_SEASON_THRESHOLD } from "@/lib/constants";
 import { DataTransformationService } from "@/lib/services/DataTransformationService";
 import { GuildService } from "@/lib/services/GuildService";
 import { splitByCapital } from "@/lib/utils";
@@ -18,7 +19,7 @@ export const data = new SlashCommandBuilder()
             .setName("season")
             .setDescription("The season number")
             .setRequired(true)
-            .setMinValue(70)
+            .setMinValue(MINIMUM_SEASON_THRESHOLD)
     )
     .addStringOption((option) => {
         return option
@@ -86,7 +87,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         );
 
         const pagination = new Pagination(interaction, {
-            limit: separatePrimes ? 5 : 10, // Adjust limit based on rarity
+            limit: separatePrimes ? 5 : 15, // Adjust limit based on rarity
         })
             .setColor("#0099ff")
             .setTitle(`Time Used Per Boss in season ${season}`)

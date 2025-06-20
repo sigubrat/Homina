@@ -1,4 +1,8 @@
 import { logger } from "@/lib";
+import {
+    MAXIMUM_GUILD_MEMBERS,
+    MAXIMUM_TOKENS_PER_SEASON,
+} from "@/lib/constants";
 import { GuildService } from "@/lib/services/GuildService";
 import { Rarity } from "@/models/enums";
 import {
@@ -102,6 +106,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setColor("#0099ff")
             .setTimestamp();
 
+        if (rarity) {
+            embed.addFields({
+                name: `Rarity: ${rarity}`,
+                value: "Rarity filter applied and the damage a user did to a boss relative to the avg total damage dealt by the guild will be displayed",
+            });
+        }
+
         for (const [season, stats] of Object.entries(data)) {
             if (!stats) {
                 continue;
@@ -121,13 +132,17 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             let nMembers = new Set<string>(vals.map((entry) => entry?.username))
                 .size;
 
-            if (nMembers > 30) {
-                nMembers = 30;
+            if (nMembers > MAXIMUM_GUILD_MEMBERS) {
+                nMembers = MAXIMUM_GUILD_MEMBERS;
             }
 
             const guildAverageDamage = allDamage / nMembers;
 
-            const guildAverageTokens = allTokens / nMembers;
+            let guildAverageTokens = allTokens / nMembers;
+
+            if (guildAverageTokens > MAXIMUM_TOKENS_PER_SEASON) {
+                guildAverageTokens = MAXIMUM_TOKENS_PER_SEASON;
+            }
 
             const userData = Object.values(vals).filter(
                 (season) => season?.username === memberId
@@ -181,8 +196,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                         values.map((v) => v.username)
                     ).size;
 
-                    if (nPlayers > 30) {
-                        nPlayers = 30;
+                    if (nPlayers > MAXIMUM_GUILD_MEMBERS) {
+                        nPlayers = MAXIMUM_GUILD_MEMBERS;
                     }
 
                     const totalDamage = values
@@ -193,15 +208,17 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
                     const userDamage = userData.totalDamage || 0;
                     const userTokens = userData.totalTokens || 0;
-                    const userAvg =
-                        userTokens > 0
-                            ? (userDamage / userTokens).toLocaleString(
-                                  undefined,
-                                  {
-                                      maximumFractionDigits: 1,
-                                  }
-                              )
-                            : "0";
+
+                    if (userTokens === 0) {
+                        continue;
+                    }
+
+                    const userAvg = (userDamage / userTokens).toLocaleString(
+                        undefined,
+                        {
+                            maximumFractionDigits: 1,
+                        }
+                    );
 
                     const relativeDamage =
                         ((userDamage / avgDamage) * 100).toLocaleString(
@@ -211,19 +228,20 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                             }
                         ) + "%";
 
-                    userStatsPerBoss[boss] = [userAvg, relativeDamage];
+                    const bossName =
+                        rarity[0]! +
+                        userData.set +
+                        " " +
+                        boss.split(/(?=[A-Z])/)[0]?.substring(0, 4);
+
+                    userStatsPerBoss[bossName] = [userAvg, relativeDamage];
                 }
 
                 const bossRelativeStrings = Object.entries(userStatsPerBoss)
-                    .map(([boss, user], idx) => {
-                        const bossName =
-                            rarity[0]! +
-                            (idx + 1) +
-                            " " +
-                            boss.split(/(?=[A-Z])/)[0]?.substring(0, 4);
+                    .map(([bossname, user]) => {
                         const userAvgStr = user[0];
                         const userRelativeTotal = user[1];
-                        return `${bossName.padEnd(8)} ${userAvgStr!.padStart(
+                        return `${bossname.padEnd(8)} ${userAvgStr!.padStart(
                             10
                         )} ${userRelativeTotal!.padStart(8)}`;
                     })

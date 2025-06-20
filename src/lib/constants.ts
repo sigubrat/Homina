@@ -1,0 +1,3 @@
+export const MINIMUM_SEASON_THRESHOLD = 70;
+export const MAXIMUM_GUILD_MEMBERS = 30;
+export const MAXIMUM_TOKENS_PER_SEASON = 29;

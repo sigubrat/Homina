@@ -1,4 +1,5 @@
 import { logger } from "@/lib";
+import { MINIMUM_SEASON_THRESHOLD } from "@/lib/constants";
 import { ChartService } from "@/lib/services/ChartService";
 import { GuildService } from "@/lib/services/GuildService.ts";
 import {
@@ -23,7 +24,7 @@ export const data = new SlashCommandBuilder()
             .setName("season")
             .setDescription("The season number")
             .setRequired(true)
-            .setMinValue(70)
+            .setMinValue(MINIMUM_SEASON_THRESHOLD)
     )
     .addStringOption((option) => {
         return option
@@ -125,7 +126,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                         sortGuildRaidResultDesc(data),
                         `Damage dealt in season ${season} - ${
                             rarity[0] ? rarity[0].toUpperCase() : " "
-                        }${(data[0] ? data[0].set : 0) + 1} ${bossName}`,
+                        }${data[0] ? data[0].set : 0} ${bossName}`,
                         averageMethod,
                         avgDamage
                     );

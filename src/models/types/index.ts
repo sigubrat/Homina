@@ -12,3 +12,4 @@ export * from "./PlayerDetails";
 export * from "./Player";
 export * from "./UnitItem";
 export * from "./TokenStatus";
+export * from "./SeasonConfig";

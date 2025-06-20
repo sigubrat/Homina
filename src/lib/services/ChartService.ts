@@ -218,7 +218,7 @@ export class ChartService {
                     },
                     {
                         backgroundColor: CHART_COLORS.blue,
-                        label: title,
+                        label: "Total damage",
                         data: damage,
                         borderWidth: 1,
                     },

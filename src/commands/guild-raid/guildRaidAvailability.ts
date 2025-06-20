@@ -99,25 +99,45 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 } else {
                     tokenIcon = "✅";
                 }
+                let nToken: string;
+                switch (available.tokens) {
+                    case 0:
+                        nToken = "0";
+                        break;
+                    case 1:
+                        nToken = "⅓";
+                        break;
+                    case 2:
+                        nToken = "⅔";
+                        break;
+                    default:
+                        nToken = "3⁄3";
+                        break;
+                }
 
                 if (!available.tokenCooldown)
-                    available.tokenCooldown = "NO COOLDOWN";
+                    available.tokenCooldown = "NONE..";
+                else {
+                    available.tokenCooldown = available.tokenCooldown
+                        .slice(0, -4)
+                        .replace(" ", "");
+                }
 
-                const tokenStatus = `${tokenIcon} \`${available.tokens}/3\` cooldown: \`${available.tokenCooldown}\``;
+                const tokenStatus = `${tokenIcon} ${nToken} \`${available.tokenCooldown}\``;
 
                 const bombIcon = available.bombs > 0 ? "✅" : `❌`;
 
                 let bombStatus: string;
                 if (!available.bombCooldown) {
-                    bombStatus = `${bombIcon} \`NOT USED YET\``;
+                    bombStatus = `${bombIcon} \`READY..\``;
                 } else {
                     bombStatus = `${bombIcon} \`${
                         available.bombs > 0 ? "+" : "-"
-                    }${available.bombCooldown}\``;
+                    }${available.bombCooldown.slice(0, -4).replace(" ", "")}\``;
                 }
 
                 return {
-                    text: `${tokenStatus} - Bomb: ${bombStatus} - **${userId}**`,
+                    text: `${tokenStatus} - ${bombStatus} - ${userId}`,
                     tokens: available.tokens,
                 };
             })
@@ -135,7 +155,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setColor("#0099ff")
             .setTitle("Available Tokens and Bombs")
             .setDescription(
-                "Here is the list of members with available tokens and bombs:\n Note that the token cooldowns have an inherit uncertainty due to the nature of the available data for the calculation. In certain cases the cooldown might not be accurate."
+                `Here is the list of members with available tokens and bombs.
+                
+                Note that the token cooldowns have an inherit uncertainty due to the nature of the available data for the calculation. 
+                In certain cases the cooldown might not be accurate.
+                
+                First values are tokens, second values are bombs, then usernames.`
             )
             .setTimestamp()
             .setFooter({

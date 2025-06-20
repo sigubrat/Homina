@@ -22,44 +22,40 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     try {
         const result = await service.getGuildSeasons(interaction.user.id);
 
-        if (result == null) {
+        if (!result) {
             await interaction.editReply({
                 content:
                     "Could not fetch guild seasons. Ensure you are registered and have the correct permissions",
             });
-        } else if (result.length === 0) {
-            await interaction.editReply({
-                content: "No seasons available for your guild",
-            });
-        } else {
-            const embed = new EmbedBuilder()
-                .setColor("#0099ff")
-                .setTitle("Available Guild Raid Seasons")
-                .setDescription(
-                    `Fetches the seasons your guild has available data for. The public API does not include data pre season 70.`
-                )
-                .addFields([
-                    {
-                        name: "Current season",
-                        value:
-                            result[result.length - 1]?.toString() ??
-                            "Something went wrong...",
-                        inline: true,
-                    },
-                    {
-                        name: "Seasons",
-                        value: result.join(", "),
-                        inline: false,
-                    },
-                ])
-                .setFooter({
-                    text: "Note: Snowprint may not return all seasons due to a known API bug.",
-                });
-
-            await interaction.editReply({
-                embeds: [embed],
-            });
+            return;
         }
+
+        const embed = new EmbedBuilder()
+            .setColor("#0099ff")
+            .setTitle("Available Guild Raid Seasons")
+            .setDescription(
+                `Fetches the seasons your guild has available data for. The public API does not include data pre season 70.`
+            )
+            .addFields([
+                {
+                    name: "Current season",
+                    value:
+                        result.at(-1)?.toString() ?? "Something went wrong...",
+                    inline: true,
+                },
+                {
+                    name: "Seasons",
+                    value: result.join(", "),
+                    inline: false,
+                },
+            ])
+            .setFooter({
+                text: "Note: Snowprint may not return all seasons due to a known API bug.",
+            });
+
+        await interaction.editReply({
+            embeds: [embed],
+        });
 
         logger.info(`${interaction.user.username} used /seasons`);
     } catch (error) {

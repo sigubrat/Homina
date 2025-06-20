@@ -1,4 +1,5 @@
 import { logger } from "@/lib";
+import { MINIMUM_SEASON_THRESHOLD } from "@/lib/constants";
 import { GuildService } from "@/lib/services/GuildService.ts";
 import { sortTokensUsed } from "@/lib/utils";
 import { Rarity } from "@/models/enums";
@@ -21,7 +22,7 @@ export const data = new SlashCommandBuilder()
             .setName("season")
             .setDescription("The season to check")
             .setRequired(true)
-            .setMinValue(70);
+            .setMinValue(MINIMUM_SEASON_THRESHOLD);
     })
     .addNumberOption((option) => {
         return option
