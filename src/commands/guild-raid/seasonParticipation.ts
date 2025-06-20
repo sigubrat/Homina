@@ -13,6 +13,7 @@ import {
     sortGuildRaidResultDesc,
 } from "@/lib/utils";
 import { logger } from "@/lib";
+import { MINIMUM_SEASON_THRESHOLD } from "@/lib/constants";
 
 export const cooldown = 5;
 
@@ -23,7 +24,7 @@ export const data = new SlashCommandBuilder()
             .setName("season")
             .setDescription("The season number")
             .setRequired(true)
-            .setMinValue(70)
+            .setMinValue(MINIMUM_SEASON_THRESHOLD)
     )
     .addBooleanOption((option) =>
         option

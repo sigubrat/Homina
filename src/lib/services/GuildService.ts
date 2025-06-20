@@ -18,6 +18,7 @@ import {
     testApiToken,
 } from "../utils";
 import type { GuildMemberMapping } from "@/models/types/GuildMemberMapping";
+import { MINIMUM_SEASON_THRESHOLD } from "../constants";
 
 /**
  * Service class for managing guild-related operations in the Homina Tacticus application.
@@ -1236,7 +1237,7 @@ export class GuildService {
             const currentSeasonNumber = currentSeason.season;
             const seasons: number[] = [];
             for (let i = nSeasons; i > 0; i--) {
-                if (currentSeasonNumber - i < 70) {
+                if (currentSeasonNumber - i < MINIMUM_SEASON_THRESHOLD) {
                     break;
                 }
                 seasons.push(currentSeasonNumber - i);

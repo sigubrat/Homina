@@ -1,4 +1,5 @@
 import { logger } from "@/lib";
+import { MINIMUM_SEASON_THRESHOLD } from "@/lib/constants";
 import { DataTransformationService } from "@/lib/services/DataTransformationService";
 import { GuildService } from "@/lib/services/GuildService";
 import { splitByCapital } from "@/lib/utils";
@@ -18,7 +19,7 @@ export const data = new SlashCommandBuilder()
             .setName("season")
             .setDescription("The season number")
             .setRequired(true)
-            .setMinValue(70)
+            .setMinValue(MINIMUM_SEASON_THRESHOLD)
     )
     .addStringOption((option) => {
         return option

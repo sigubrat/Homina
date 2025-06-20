@@ -1,4 +1,5 @@
 import { logger } from "@/lib";
+import { MINIMUM_SEASON_THRESHOLD } from "@/lib/constants";
 import { GuildService } from "@/lib/services/GuildService";
 import {
     ChatInputCommandInteraction,
@@ -16,7 +17,7 @@ export const data = new SlashCommandBuilder()
             .setName("season")
             .setDescription("The season number to check")
             .setRequired(true)
-            .setMinValue(70)
+            .setMinValue(MINIMUM_SEASON_THRESHOLD)
     );
 
 export async function execute(interaction: ChatInputCommandInteraction) {

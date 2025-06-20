@@ -1,4 +1,8 @@
 import { logger } from "@/lib";
+import {
+    MAXIMUM_GUILD_MEMBERS,
+    MAXIMUM_TOKENS_PER_SEASON,
+} from "@/lib/constants";
 import { GuildService } from "@/lib/services/GuildService";
 import { Rarity } from "@/models/enums";
 import {
@@ -121,16 +125,16 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             let nMembers = new Set<string>(vals.map((entry) => entry?.username))
                 .size;
 
-            if (nMembers > 30) {
-                nMembers = 30;
+            if (nMembers > MAXIMUM_GUILD_MEMBERS) {
+                nMembers = MAXIMUM_GUILD_MEMBERS;
             }
 
             const guildAverageDamage = allDamage / nMembers;
 
             let guildAverageTokens = allTokens / nMembers;
 
-            if (guildAverageTokens > 29) {
-                guildAverageTokens = 29;
+            if (guildAverageTokens > MAXIMUM_TOKENS_PER_SEASON) {
+                guildAverageTokens = MAXIMUM_TOKENS_PER_SEASON;
             }
 
             const userData = Object.values(vals).filter(
@@ -185,8 +189,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                         values.map((v) => v.username)
                     ).size;
 
-                    if (nPlayers > 30) {
-                        nPlayers = 30;
+                    if (nPlayers > MAXIMUM_GUILD_MEMBERS) {
+                        nPlayers = MAXIMUM_GUILD_MEMBERS;
                     }
 
                     const totalDamage = values
