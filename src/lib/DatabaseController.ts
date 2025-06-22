@@ -424,6 +424,20 @@ export class DatabaseController {
         }
     }
 
+    public async getGuildCount() {
+        try {
+            const result = await this.sequelize.models["GuildMembers"]?.count({
+                distinct: true,
+                col: "guildId",
+            });
+
+            return result || 0;
+        } catch (error) {
+            logger.error(error, "Error retrieving guild count from database");
+            return 0;
+        }
+    }
+
     public async getGuildMemberIdByUsername(username: string, guildId: string) {
         try {
             const result = await this.sequelize.models["GuildMembers"]?.findOne(

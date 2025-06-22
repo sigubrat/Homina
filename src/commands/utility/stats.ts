@@ -20,6 +20,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const guildCount = client.guilds.cache.size;
         const registeredUser = await dbController.getNumberOfUsers();
         const registeredMembers = await dbController.getMemberCount();
+        const registeredGuilds = await dbController.getGuildCount();
 
         const statsEmbed = new EmbedBuilder()
             .setColor(0x0099ff)
@@ -35,6 +36,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 {
                     name: "User Count",
                     value: registeredUser.toString(),
+                    inline: false,
+                },
+                {
+                    name: "Guilds Count",
+                    value: registeredGuilds.toString(),
                     inline: false,
                 },
                 {
