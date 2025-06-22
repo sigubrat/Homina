@@ -155,12 +155,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setColor("#0099ff")
             .setTitle("Available Tokens and Bombs")
             .setDescription(
-                `Here is the list of members with available tokens and bombs.
-                
-                Note that the token cooldowns have an inherit uncertainty due to the nature of the available data for the calculation. 
-                In certain cases the cooldown might not be accurate.
-                
-                First values are tokens, second values are bombs, then usernames.`
+                "Here is the list of members with available tokens and bombs.\n\n" +
+                    "Note that the token cooldowns have an inherit uncertainty due to the nature of the available data for the calculation.\nIn certain cases the cooldown might not be accurate.\n\n" +
+                    "First values are tokens, second values are bombs, then usernames."
             )
             .setTimestamp()
             .setFooter({

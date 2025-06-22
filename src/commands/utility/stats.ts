@@ -1,11 +1,7 @@
 import { dbController, logger } from "@/lib";
 import { SecondsToString } from "@/lib/utils";
 import { EmbedBuilder } from "@discordjs/builders";
-import {
-    ChatInputCommandInteraction,
-    MessageFlags,
-    SlashCommandBuilder,
-} from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 
 export const cooldown = 60;
 
@@ -15,7 +11,7 @@ export const data = new SlashCommandBuilder()
 
 export async function execute(interaction: ChatInputCommandInteraction) {
     try {
-        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+        await interaction.deferReply({});
 
         const client = interaction.client;
 
@@ -23,6 +19,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const formattedUptime = SecondsToString(uptime);
         const guildCount = client.guilds.cache.size;
         const registeredUser = await dbController.getNumberOfUsers();
+        const registeredMembers = await dbController.getMemberCount();
 
         const statsEmbed = new EmbedBuilder()
             .setColor(0x0099ff)
@@ -33,12 +30,17 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 {
                     name: "Server count",
                     value: guildCount.toString(),
-                    inline: true,
+                    inline: false,
                 },
                 {
                     name: "User Count",
                     value: registeredUser.toString(),
-                    inline: true,
+                    inline: false,
+                },
+                {
+                    name: "Guild-members Count",
+                    value: registeredMembers.toString(),
+                    inline: false,
                 },
             ])
             .setTimestamp();
@@ -48,7 +50,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         logger.error(error);
         await interaction.editReply({
             content: "An error occurred while fetching the bot statistics.",
-            options: { flags: MessageFlags.Ephemeral },
         });
     }
 }
