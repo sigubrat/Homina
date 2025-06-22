@@ -1,9 +1,5 @@
 import { logger } from "@/lib";
-import {
-    ChatInputCommandInteraction,
-    MessageFlags,
-    SlashCommandBuilder,
-} from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { Pagination } from "pagination.djs";
 
 export const cooldown = 5; // Cooldown in seconds
@@ -14,7 +10,7 @@ export const data = new SlashCommandBuilder()
 
 export async function execute(interaction: ChatInputCommandInteraction) {
     try {
-        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+        await interaction.deferReply({});
 
         // @ts-expect-error - This works because our client is extended with commands (see index.ts in root)
         const commands = interaction.client.commands.map((command: any) => {
@@ -32,7 +28,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .addFields(
                 {
                     name: "For new users",
-                    value: "1. Register your account using `/register`.\n2. Use `/get-member-ids` to get a list of members in the guild.\n3. Use the list to register usernames.\n",
+                    value: "1. Register your account using `/register` If someone in your guild has already registered your usernames you are now ready. If not, see step 2.\n2. Use `/get-member-ids` to get a list of members in the guild.\n3. Use the list and `/update-members` command to register usernames.\n",
                 },
                 {
                     name: "__Commands:__",
@@ -60,9 +56,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         await interaction.editReply({
             content:
                 "An error occurred while trying to fetch help information.",
-            options: {
-                flags: MessageFlags.Ephemeral,
-            },
         });
     }
 }

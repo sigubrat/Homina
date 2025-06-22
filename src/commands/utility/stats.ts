@@ -1,11 +1,7 @@
 import { dbController, logger } from "@/lib";
 import { SecondsToString } from "@/lib/utils";
 import { EmbedBuilder } from "@discordjs/builders";
-import {
-    ChatInputCommandInteraction,
-    MessageFlags,
-    SlashCommandBuilder,
-} from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 
 export const cooldown = 60;
 
@@ -15,7 +11,7 @@ export const data = new SlashCommandBuilder()
 
 export async function execute(interaction: ChatInputCommandInteraction) {
     try {
-        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+        await interaction.deferReply({});
 
         const client = interaction.client;
 
@@ -54,7 +50,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         logger.error(error);
         await interaction.editReply({
             content: "An error occurred while fetching the bot statistics.",
-            options: { flags: MessageFlags.Ephemeral },
         });
     }
 }

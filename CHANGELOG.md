@@ -26,6 +26,8 @@ Tiny patch this weekend as I've been a bit busy hosting guests of my partner. Go
 ### Changed
 
 -   `/bot-stats` now also shows the count of guild-member-mappings to display the number of members that are being processed by the bot.
+-   Changed visibility of `/help` and `/bot-stats`
+-   The instructions on how to register for the bot in the `/help` command now specifies that you don't need to use `/get-member-ids` and `/update-members` if someone in your guild already have done it.
 
 ## [0.21.0] - 2025-06-20
 
