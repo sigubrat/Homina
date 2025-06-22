@@ -26,9 +26,9 @@ export class DataTransformationService {
                         );
                         return acc;
                     }
-                    key = `${mapTierToRarity(curr.tier, curr.set)} ${unit}`;
+                    key = `${mapTierToRarity(curr.tier, curr.set + 1)} ${unit}`;
                 } else {
-                    key = `${mapTierToRarity(curr.tier, curr.set)} ${
+                    key = `${mapTierToRarity(curr.tier, curr.set + 1)} ${
                         curr.type
                     }`;
                 }
@@ -81,9 +81,10 @@ export class DataTransformationService {
                     bombs: totalBombs,
                     sideboss: [
                         isPrime,
-                        `${mapTierToRarity(firstEntry.tier, firstEntry.set)} ${
-                            lastEntry.type
-                        }`,
+                        `${mapTierToRarity(
+                            firstEntry.tier,
+                            firstEntry.set + 1
+                        )} ${lastEntry.type}`,
                     ],
                 };
                 previousKey = boss;
@@ -137,7 +138,7 @@ export class DataTransformationService {
                 bombs: totalBombs,
                 sideboss: [
                     isPrime,
-                    `${mapTierToRarity(lastEntry.tier, lastEntry.set)} ${
+                    `${mapTierToRarity(lastEntry.tier, lastEntry.set + 1)} ${
                         lastEntry.type
                     }`,
                 ],

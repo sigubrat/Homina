@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.21.2] - 2025-06-22
+
+The people has spoken and they are wise. All rarities are now in the range 1-5, (L1, L2, ..., L5 etc)
+
 ## [0.21.1] - 2025-06-22
 
 Tiny patch this weekend as I've been a bit busy hosting guests of my partner. Going to be moving next week, but I'll try to get at least one update out with some more functionality.
