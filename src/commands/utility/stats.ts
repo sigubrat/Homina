@@ -23,6 +23,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const formattedUptime = SecondsToString(uptime);
         const guildCount = client.guilds.cache.size;
         const registeredUser = await dbController.getNumberOfUsers();
+        const registeredMembers = await dbController.getMemberCount();
 
         const statsEmbed = new EmbedBuilder()
             .setColor(0x0099ff)
@@ -33,12 +34,17 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 {
                     name: "Server count",
                     value: guildCount.toString(),
-                    inline: true,
+                    inline: false,
                 },
                 {
                     name: "User Count",
                     value: registeredUser.toString(),
-                    inline: true,
+                    inline: false,
+                },
+                {
+                    name: "Guild-members Count",
+                    value: registeredMembers.toString(),
+                    inline: false,
                 },
             ])
             .setTimestamp();

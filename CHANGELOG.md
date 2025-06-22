@@ -19,6 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.21.1] - 2025-06-22
+
+Tiny patch this weekend as I've been a bit busy hosting guests of my partner. Going to be moving next week, but I'll try to get at least one update out with some more functionality.
+
+### Changed
+
+-   `/bot-stats` now also shows the count of guild-member-mappings to display the number of members that are being processed by the bot.
+
 ## [0.21.0] - 2025-06-20
 
 This updates provides two new commands for season configs and improvements to existing commands.
