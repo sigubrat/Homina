@@ -1410,4 +1410,66 @@ export class GuildService {
             );
         }
     }
+
+    public async getTokenByHours(discordId: string) {
+        try {
+            const apiKey = await dbController.getUserToken(discordId);
+            if (!apiKey) {
+                logger.error("No API key found for user:", discordId);
+                return null;
+            }
+
+            const currentSeason = await this.client.getGuildRaidByCurrentSeason(
+                apiKey
+            );
+
+            if (!currentSeason || !currentSeason.season) {
+                logger.error("No current season found for user:", discordId);
+                return null;
+            }
+
+            const prevSeason = await this.client.getGuildRaidBySeason(
+                apiKey,
+                currentSeason.season - 1
+            );
+
+            if (!prevSeason || !prevSeason.entries) {
+                logger.error(
+                    "No previous season entries found for user:",
+                    discordId
+                );
+                return null;
+            }
+
+            // Create a record with keys // as hours (0-23) and values as the number of tokens used in that hour
+            const timeline: Record<number, number> = {};
+            for (let i = 0; i < 24; i++) {
+                timeline[i] = 0;
+            }
+
+            const raids = currentSeason.entries
+                .concat(prevSeason.entries)
+                .filter((raid) => raid.damageType === DamageType.BATTLE);
+
+            raids.forEach((raid) => {
+                if (!raid.startedOn) {
+                    return;
+                }
+
+                const date = new Date(raid.startedOn * 1000);
+                const hour = date.getUTCHours();
+                if (!(hour in timeline)) {
+                    throw new Error(
+                        `Hour ${hour} not found in timeline for user: ${discordId}`
+                    );
+                }
+                timeline[hour]!++;
+            });
+
+            return timeline;
+        } catch (error) {
+            logger.error(error, "Error fetching token timeline: ");
+            return null;
+        }
+    }
 }

@@ -5,6 +5,7 @@ import { HominaTacticusClient } from "@/client";
 import type { GuildRaidResult } from "@/models/types";
 import type { TokensUsed } from "@/models/types/TokensUsed";
 import type { TokenStatus } from "@/models/types/TokenStatus";
+import { BOSS_EMOJIS } from "./constants";
 
 async function getCommands(
     commandsPath: string
@@ -328,38 +329,36 @@ export function getBossEmoji(boss: string) {
     const words = splitByCapital(bossname);
     const identifier = words.at(0);
     if (!identifier) {
-        return "❓"; // Fallback emoji if no identifier is found
+        return "❓";
     }
 
     if (identifier === "Szarekh") {
-        return "<:Szarekh:1385343132950069278>";
+        return BOSS_EMOJIS.Szarekh || "❓";
     } else if (identifier === "Tervigon") {
         const version = words.at(1);
-        if (version === "Leviathan")
-            return "<:TyrantLeviathan:1385342042170851334>";
-        if (version === "Gorgon") return "<:TyrantGorgon:1385340907351441619>";
-        if (version === "Kronos") return "<:TyrantKronos:1385341128626409522>";
+        if (version === "Leviathan") return BOSS_EMOJIS.TyrantLeviathan || "❓";
+        if (version === "Gorgon") return BOSS_EMOJIS.TyrantGorgon || "❓";
+        if (version === "Kronos") return BOSS_EMOJIS.TyrantKronos || "❓";
     } else if (identifier === "Hive") {
         const version = words.at(2);
-        if (version === "Leviathan")
-            return "<:TyrantLeviathan:1385342042170851334>";
-        if (version === "Gorgon") return "<:TyrantGorgon:1385340907351441619>";
-        if (version === "Kronos") return "<:TyrantKronos:1385341128626409522>";
+        if (version === "Leviathan") return BOSS_EMOJIS.TyrantLeviathan || "❓";
+        if (version === "Gorgon") return BOSS_EMOJIS.TyrantGorgon || "❓";
+        if (version === "Kronos") return BOSS_EMOJIS.TyrantKronos || "❓";
     } else if (identifier === "Ghazghkull") {
-        return "<:Ghazghkull:1385340195494170664>";
+        return BOSS_EMOJIS.Ghazghkull || "❓";
     } else if (identifier === "Avatar") {
-        return "<:Avatar:1385338950834716802>";
+        return BOSS_EMOJIS.Avatar || "❓";
     } else if (identifier === "Magnus") {
-        return "<:Magnus:1385342412217520379>";
+        return BOSS_EMOJIS.Magnus || "❓";
     } else if (identifier === "Mortarion") {
-        return "<:Mortarion:1385342557969453197>";
+        return BOSS_EMOJIS.Mortarion || "❓";
     } else if (identifier === "Belisarius") {
-        return "<:Cawl:1385339595578806312>";
+        return BOSS_EMOJIS.Belisarius || "❓";
     } else if (identifier === "Rogal") {
-        return "<:RogalDornTank:1385342727037784174>";
+        return BOSS_EMOJIS.RogalDornTank || "❓";
     } else if (identifier === "Screamer-") {
-        return "<:ScreamerKiller:1385342920302788608>";
+        return BOSS_EMOJIS.Screamer || "❓";
     } else {
-        return "❓"; // Fallback emoji if no specific emoji is found
+        return "❓";
     }
 }

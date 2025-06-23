@@ -1,6 +1,6 @@
 import type { GuildRaidResult } from "@/models/types";
 import { ChartJSNodeCanvas } from "chartjs-node-canvas";
-import { CHART_COLORS, standardDeviation } from "@/lib/utils";
+import { CHART_COLORS, numericMedian, standardDeviation } from "@/lib/utils";
 import type { TeamDistribution } from "@/models/types/TeamDistribution";
 
 const CHART_WIDTH = 1200;
@@ -501,6 +501,122 @@ export class ChartService {
                 },
                 responsive: true,
                 maintainAspectRatio: false,
+            },
+        });
+
+        return chart;
+    }
+
+    async createTimelineChart(data: Record<number, number>, title: string) {
+        const hours = Object.keys(data).map((key) => parseInt(key));
+        const values = Object.values(data);
+        if (hours.length === 0 || values.length === 0) {
+            throw new Error("No data to display in the chart.");
+        }
+        const median = numericMedian(values);
+        const stdev = standardDeviation(values);
+        const now = new Date().getUTCHours();
+
+        const chart = await canvas.renderToBuffer({
+            type: "bar",
+            data: {
+                labels: hours.map((hour) => `${hour}:00-${hour}:59`),
+                datasets: [
+                    {
+                        label: "Total activity per hour",
+                        data: values,
+                        backgroundColor: (context: any) => {
+                            const value =
+                                context.dataset.data[context.dataIndex];
+                            if (value > median + stdev) {
+                                return CHART_COLORS.green;
+                            } else if (value > median - stdev) {
+                                return CHART_COLORS.blue;
+                            } else if (value > median - 1.5 * stdev) {
+                                return CHART_COLORS.yellow;
+                            } else {
+                                return CHART_COLORS.red;
+                            }
+                        },
+                        // yellow border if the hour is the current hour
+                        borderColor: (context: any) => {
+                            const hour = parseInt(
+                                context.chart.data.labels[
+                                    context.dataIndex
+                                ].split(":")[0]
+                            );
+                            if (hour === now) {
+                                return CHART_COLORS.yellow;
+                            }
+                            return "rgba(255, 255, 255, 0.0)";
+                        },
+                        borderWidth: 2,
+                        tension: 1,
+                        pointRadius: 1.5,
+                    },
+                ],
+            },
+            options: {
+                plugins: {
+                    title: {
+                        display: true,
+                        text: title,
+                        font: {
+                            size: 20,
+                        },
+                        color: "white",
+                    },
+                    legend: {
+                        display: true,
+                        labels: {
+                            color: "white",
+                            font: {
+                                size: 14,
+                            },
+                        },
+                    },
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: (context: any) => {
+                                const hour = context.tick.label;
+                                if (parseInt(hour.split(":")[0]) === now) {
+                                    return CHART_COLORS.yellow; // Highlight current hour
+                                }
+                                return "white";
+                            },
+                            font: {
+                                size: 14,
+                            },
+                        },
+                        grid: {
+                            display: false,
+                        },
+                    },
+                    y: {
+                        ticks: {
+                            callback: function (value: number | string) {
+                                return value + "%";
+                            },
+                            color: "white",
+                            font: {
+                                size: 14,
+                            },
+                        },
+                        grid: {
+                            color: "rgba(255, 255, 255, 0.4)",
+                        },
+                    },
+                },
+                layout: {
+                    padding: {
+                        left: 20,
+                        right: 20,
+                        bottom: 10,
+                        top: 10,
+                    },
+                },
             },
         });
 

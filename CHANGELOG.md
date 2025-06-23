@@ -19,6 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.22.0] - 2025-06-23
+
+This update bring a new command so that you can be more aware what time of the day your players are available to play.
+
+### Added
+
+-   **New command!** `/activity-per-hour` - See when during the day your guild is most active based on data from the current and previous season.
+
 ## [0.21.2] - 2025-06-22
 
 The people has spoken and they are wise. All rarities are now in the range 1-5, (L1, L2, ..., L5 etc)
