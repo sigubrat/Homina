@@ -17,7 +17,9 @@ import {
     isValidUUIDv4,
     splitByCapital,
     getBossEmoji,
+    getMetaTeam,
 } from "@/lib/utils";
+import { MetaTeams } from "@/models/enums/MetaTeams";
 import type { GuildRaidResult } from "@/models/types";
 import { describe, expect, test } from "bun:test";
 
@@ -326,5 +328,48 @@ describe("utilsSuite - Algebra", () => {
         expect(getBossEmoji("")).toBe("❓");
         expect(getBossEmoji("xxUnknownBoss")).toBe("❓");
         expect(getBossEmoji("x")).toBe("❓");
+    });
+
+    test("getMetaTeam - Should return the correct meta team", () => {
+        const multihitTeam = [
+            "ultraInceptorSgt",
+            "tauCrisis",
+            "eldarFarseer",
+            "admecRuststalker",
+            "spaceBlackmane",
+        ];
+        const metaTeam = getMetaTeam(multihitTeam);
+        expect(metaTeam).toEqual(MetaTeams.MH);
+
+        const admechTeam = [
+            "necroSpyder",
+            "admecRuststalker",
+            "eldarFarseer",
+            "admecMarshall",
+            "spaceBlackmane",
+            "admecManipulus",
+        ];
+
+        expect(getMetaTeam(admechTeam)).toEqual(MetaTeams.ADMECH);
+        const neuroTeam = [
+            "eldarFarseer",
+            "tyranNeurothrope",
+            "genesMagus",
+            "necroSpyder",
+            "templHelbrecht",
+        ];
+        expect(getMetaTeam(neuroTeam)).toEqual(MetaTeams.NEURO);
+    });
+
+    test("getMetaTeam - Should return OTHER for teams not matching any meta", () => {
+        const otherTeam = [
+            "thousAhriman",
+            "tauCrisis",
+            "eldarFarseer",
+            "admecRuststalker",
+            "spaceBlackmane",
+            "thousInfernalMaster",
+        ];
+        expect(getMetaTeam(otherTeam)).toEqual(MetaTeams.OTHER);
     });
 });

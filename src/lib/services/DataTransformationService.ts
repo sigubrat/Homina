@@ -1,8 +1,9 @@
 import type { Raid } from "@/models/types";
 import type { TimeUsed } from "@/models/types/TimeUsed";
 import { logger } from "../HominaLogger";
-import { mapTierToRarity, SecondsToString } from "../utils";
+import { getMetaTeam, mapTierToRarity, SecondsToString } from "../utils";
 import { DamageType, EncounterType } from "@/models/enums";
+import type { Highscore } from "@/models/types/Highscore";
 
 export class DataTransformationService {
     constructor() {}
@@ -154,5 +155,45 @@ export class DataTransformationService {
         const totalTimeUsed = SecondsToString(totalTime);
 
         return [result, totalTimeUsed];
+    }
+
+    async seasonHighscores(seasonData: Raid[]) {
+        const result: Record<string, Highscore[]> = {};
+
+        for (const raid of seasonData) {
+            const unitWords = raid.unitId.split(/(?=[A-Z])/);
+            const unit = `${unitWords.at(-2)}${unitWords.at(-1)}`;
+            const key = `${mapTierToRarity(
+                raid.tier,
+                raid.set + 1,
+                false
+            )}${unit}`;
+
+            if (!result[key]) {
+                result[key] = [];
+            }
+
+            const existingEntry = result[key].find(
+                (entry) => entry.username === raid.userId
+            );
+
+            const team = raid.heroDetails.map((hero) => hero.unitId);
+            const metaTeam = getMetaTeam(team);
+
+            if (!existingEntry) {
+                result[key].push({
+                    username: raid.userId,
+                    value: raid.damageDealt,
+                    team: metaTeam,
+                });
+            } else {
+                if (raid.damageDealt > existingEntry.value) {
+                    existingEntry.value = raid.damageDealt;
+                    existingEntry.team = metaTeam;
+                }
+            }
+        }
+
+        return result;
     }
 }

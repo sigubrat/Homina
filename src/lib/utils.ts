@@ -6,6 +6,7 @@ import type { GuildRaidResult } from "@/models/types";
 import type { TokensUsed } from "@/models/types/TokensUsed";
 import type { TokenStatus } from "@/models/types/TokenStatus";
 import { BOSS_EMOJIS } from "./constants";
+import { MetaTeams } from "@/models/enums/MetaTeams";
 
 async function getCommands(
     commandsPath: string
@@ -188,6 +189,35 @@ export function hasLynchpinHero(heroes: string[], team: string): boolean {
     return heroes.includes(hero);
 }
 
+export function getMetaTeam(heroes: string[]): MetaTeams {
+    const teamCheck = heroes.map((hero) => inTeamsCheck(hero));
+    const distribution = {
+        mh: 0,
+        admech: 0,
+        neuro: 0,
+    };
+
+    teamCheck.forEach((check) => {
+        if (check.inMulti) distribution.mh++;
+        if (check.inMech) distribution.admech++;
+        if (check.inPsyker) distribution.neuro++;
+    });
+
+    if (distribution.mh >= 3 && hasLynchpinHero(heroes, "multihit")) {
+        return MetaTeams.MH;
+    }
+
+    if (distribution.admech >= 3 && hasLynchpinHero(heroes, "mech")) {
+        return MetaTeams.ADMECH;
+    }
+
+    if (distribution.neuro >= 3 && hasLynchpinHero(heroes, "psyker")) {
+        return MetaTeams.NEURO;
+    }
+
+    return MetaTeams.OTHER;
+}
+
 // Nb! Relies on the user providing sorted data
 export function getTopNDamageDealers(sortedData: GuildRaidResult[], n: number) {
     return sortedData.slice(0, n).map((player, index) => {
@@ -268,7 +298,11 @@ export function SecondsToString(
     return `${daysPart}${hours}h ${minutes}m ${seconds}s`;
 }
 
-export function mapTierToRarity(rarity: number, set: number): string {
+export function mapTierToRarity(
+    rarity: number,
+    set: number,
+    loops: boolean = true
+): string {
     if (rarity < 0) {
         throw new Error("Tier cannot be negative");
     }
@@ -282,6 +316,10 @@ export function mapTierToRarity(rarity: number, set: number): string {
     } else if (rarity === 3) {
         return `E${set}`;
     } else if (rarity === 4) {
+        return `L${set}`;
+    }
+
+    if (!loops) {
         return `L${set}`;
     }
 
