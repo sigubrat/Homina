@@ -1,6 +1,7 @@
 import { logger } from "@/lib";
 import { MINIMUM_SEASON_THRESHOLD } from "@/lib/constants";
 import { ChartService } from "@/lib/services/ChartService";
+import { CsvService } from "@/lib/services/CsvService";
 import { DataTransformationService } from "@/lib/services/DataTransformationService";
 import { GuildService } from "@/lib/services/GuildService";
 import { DamageType, EncounterType, Rarity } from "@/models/enums";
@@ -73,6 +74,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             filteredData
         );
 
+        const csvService = new CsvService();
+
+        const csvBuffer = await csvService.createHighscores(highscores);
+
         const chartService = new ChartService();
 
         const chartBuffer = await chartService.createHighscoreChart(
@@ -82,6 +87,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const attachment = new AttachmentBuilder(chartBuffer, {
             name: `season-${season}-highscores-${rarity}.png`,
+        });
+
+        const csvAttachment = new AttachmentBuilder(csvBuffer, {
+            name: `season-${season}-highscores-${rarity}.csv`,
         });
 
         const embed = new EmbedBuilder()
@@ -98,7 +107,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         await interaction.editReply({
             embeds: [embed],
-            files: [attachment],
+            files: [attachment, csvAttachment],
         });
     } catch (error) {
         logger.error(error, "Error fetching season results:");
