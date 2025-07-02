@@ -302,6 +302,27 @@ export class GuildService {
         }
     }
 
+    async getGuildMembersWithPlayerKey(
+        guildId: string
+    ): Promise<Record<string, boolean>> {
+        try {
+            const members = await dbController.getGuildMembersPlayerKeyStatus(
+                guildId
+            );
+            if (!members || Object.values(members).length === 0) {
+                return {};
+            }
+
+            return members;
+        } catch (error) {
+            logger.error(
+                error,
+                `Error fetching guild members with player key: ${guildId}`
+            );
+            return {};
+        }
+    }
+
     /**
      * Deletes a guild member by their username.
      * @param username The username of the member to delete.

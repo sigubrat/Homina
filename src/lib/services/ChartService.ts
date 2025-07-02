@@ -1,7 +1,14 @@
 import type { GuildRaidResult } from "@/models/types";
 import { ChartJSNodeCanvas } from "chartjs-node-canvas";
-import { CHART_COLORS, numericMedian, standardDeviation } from "@/lib/utils";
+import {
+    CHART_COLORS,
+    namedColor,
+    numericMedian,
+    standardDeviation,
+} from "@/lib/utils";
 import type { TeamDistribution } from "@/models/types/TeamDistribution";
+import type { Highscore } from "@/models/types/Highscore";
+import { dbController } from "../DatabaseController";
 
 const CHART_WIDTH = 1200;
 const CHART_HEIGHT = 800;
@@ -617,6 +624,110 @@ export class ChartService {
                         top: 10,
                     },
                 },
+            },
+        });
+
+        return chart;
+    }
+
+    async createHighscoreChart(
+        data: Record<string, Highscore[]>,
+        title: string
+    ) {
+        const allUsernames = new Set<string>();
+
+        // Collect all unique usernames across all bosses
+        for (const highscores of Object.values(data)) {
+            highscores.forEach((highscore) =>
+                allUsernames.add(highscore.username)
+            );
+        }
+
+        const userIds = Array.from(allUsernames);
+
+        const usernamesPromises = userIds.map(
+            async (id) => await dbController.getPlayerName(id)
+        );
+        const usernames = await Promise.all(usernamesPromises);
+        const labels = usernames.map((name) => name || "Unknown");
+        const datasets = Object.entries(data).map(
+            ([boss, highscores], colorIndex) => {
+                const scores = userIds.map((username) => {
+                    const userScore = highscores.find(
+                        (highscore) => highscore.username === username
+                    );
+                    return userScore ? userScore.value : 0;
+                });
+                return {
+                    type: "line" as const,
+                    label: boss,
+                    data: scores,
+                    borderColor: namedColor(colorIndex),
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0,
+                    pointRadius: 1.5,
+                };
+            }
+        );
+
+        const chart = await canvas.renderToBuffer({
+            type: "line",
+            data: {
+                labels: labels,
+                datasets,
+            },
+            options: {
+                plugins: {
+                    title: {
+                        display: true,
+                        text: title,
+                        font: {
+                            size: 18,
+                        },
+                        color: "white",
+                    },
+                    legend: {
+                        display: true,
+                        labels: {
+                            color: "white",
+                        },
+                    },
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: "white",
+                            font: {
+                                size: 12,
+                            },
+                        },
+                        grid: {
+                            display: false,
+                        },
+                    },
+                    y: {
+                        ticks: {
+                            color: "white",
+                            font: {
+                                size: 12,
+                            },
+                        },
+                        grid: {
+                            color: "rgba(255, 255, 255, 0.2)",
+                        },
+                    },
+                },
+                layout: {
+                    padding: {
+                        left: 20,
+                        right: 20,
+                        bottom: 10,
+                        top: 10,
+                    },
+                },
+                responsive: true,
+                maintainAspectRatio: false,
             },
         });
 

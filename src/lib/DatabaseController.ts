@@ -424,6 +424,45 @@ export class DatabaseController {
         }
     }
 
+    public async getGuildMembersPlayerKeyStatus(
+        guildId: string
+    ): Promise<Record<string, boolean>> {
+        try {
+            const result = await this.sequelize.models["GuildMembers"]?.findAll(
+                {
+                    where: {
+                        guildId: guildId,
+                    },
+                }
+            );
+
+            if (!result) {
+                return {};
+            }
+
+            await this.sequelize.models["GuildMembers"]?.update(
+                { lastAccessed: new Date() },
+                { where: { guildId: guildId } }
+            );
+
+            const retval: Record<string, boolean> = {};
+            result.forEach((member) => {
+                const username = member.getDataValue("username") as string;
+                const playerToken = member.getDataValue(
+                    "playerToken"
+                ) as string;
+                retval[username] = !!playerToken && playerToken.length > 0;
+            });
+            return retval;
+        } catch (error) {
+            logger.error(
+                error,
+                `Error retrieving guild members player key status for guildId: ${guildId}`
+            );
+            return {};
+        }
+    }
+
     public async getGuildCount() {
         try {
             const result = await this.sequelize.models["GuildMembers"]?.count({
