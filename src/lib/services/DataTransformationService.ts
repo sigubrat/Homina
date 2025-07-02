@@ -167,7 +167,7 @@ export class DataTransformationService {
                 raid.tier,
                 raid.set + 1,
                 false
-            )}${unit}`;
+            )} ${unit}`;
 
             if (!result[key]) {
                 result[key] = [];
