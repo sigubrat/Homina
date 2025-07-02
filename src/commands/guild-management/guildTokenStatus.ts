@@ -68,7 +68,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         await interaction.editReply({
             embeds: [embed],
-            options: { flags: MessageFlags.Ephemeral },
         });
     } catch (error) {
         logger.error(error, `Error executing /guild-token-status command`);

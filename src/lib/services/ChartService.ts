@@ -650,26 +650,26 @@ export class ChartService {
         );
         const usernames = await Promise.all(usernamesPromises);
         const labels = usernames.map((name) => name || "Unknown");
-        let i = 0;
-        const datasets = Object.entries(data).map(([boss, highscores]) => {
-            const scores = userIds.map((username) => {
-                const userScore = highscores.find(
-                    (highscore) => highscore.username === username
-                );
-                return userScore ? userScore.value : 0;
-            });
-            i++;
-            return {
-                type: "line" as const,
-                label: boss,
-                data: scores,
-                borderColor: namedColor(i),
-                borderWidth: 2,
-                fill: false,
-                tension: 0,
-                pointRadius: 1.5,
-            };
-        });
+        const datasets = Object.entries(data).map(
+            ([boss, highscores], colorIndex) => {
+                const scores = userIds.map((username) => {
+                    const userScore = highscores.find(
+                        (highscore) => highscore.username === username
+                    );
+                    return userScore ? userScore.value : 0;
+                });
+                return {
+                    type: "line" as const,
+                    label: boss,
+                    data: scores,
+                    borderColor: namedColor(colorIndex),
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0,
+                    pointRadius: 1.5,
+                };
+            }
+        );
 
         const chart = await canvas.renderToBuffer({
             type: "line",
