@@ -11,6 +11,7 @@ import { DamageType, EncounterType, Rarity } from "@/models/enums";
 import type { TeamDistribution } from "@/models/types/TeamDistribution";
 import {
     evaluateToken,
+    getMetaTeams,
     getUnixTimestamp,
     hasLynchpinHero,
     inTeamsCheck,
@@ -19,6 +20,7 @@ import {
 } from "../utils";
 import type { GuildMemberMapping } from "@/models/types/GuildMemberMapping";
 import { MINIMUM_SEASON_THRESHOLD } from "../constants";
+import type { MetaComps } from "@/models/types/MetaComps";
 
 /**
  * Service class for managing guild-related operations in the Homina Tacticus application.
@@ -1490,6 +1492,55 @@ export class GuildService {
             return timeline;
         } catch (error) {
             logger.error(error, "Error fetching token timeline: ");
+            return null;
+        }
+    }
+
+    public async getGuildComps(discordId: string, minrank: number) {
+        try {
+            const guildId = await this.getGuildId(discordId);
+            if (!guildId) {
+                logger.error("No guild ID found for user:", discordId);
+                return null;
+            }
+
+            const guildPlayerTokens = await dbController.getPlayerTokens(
+                guildId
+            );
+
+            if (guildPlayerTokens.length === 0) {
+                return null;
+            }
+
+            const tokens = guildPlayerTokens.filter((token) => token !== null);
+
+            const playerApiPromises = tokens.map(async (token) => {
+                const playerResponse = await this.client.getPlayer(token);
+                if (!playerResponse || !playerResponse.player) {
+                    return null;
+                }
+
+                return playerResponse.player;
+            });
+
+            const res = await Promise.all(playerApiPromises);
+            const players = res.filter((player) => player !== null);
+
+            const retval: Record<string, MetaComps> = {};
+            for (const player of players) {
+                const heroes = player.units
+                    .filter(
+                        (hero) => hero.rank >= minrank && hero.id !== undefined
+                    )
+                    .map((unit) => unit.id);
+
+                retval[player.details.name] = getMetaTeams(heroes);
+                // We now have all the heroes the player has and need to check what meta teams they have
+            }
+
+            return retval;
+        } catch (error) {
+            logger.error(error, "Error fetching guild comps: ");
             return null;
         }
     }

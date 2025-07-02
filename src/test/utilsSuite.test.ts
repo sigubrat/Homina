@@ -18,6 +18,8 @@ import {
     splitByCapital,
     getBossEmoji,
     getMetaTeam,
+    rankToElement,
+    rankToTier,
 } from "@/lib/utils";
 import { MetaTeams } from "@/models/enums/MetaTeams";
 import type { GuildRaidResult } from "@/models/types";
@@ -371,5 +373,38 @@ describe("utilsSuite - Algebra", () => {
             "thousInfernalMaster",
         ];
         expect(getMetaTeam(otherTeam)).toEqual(MetaTeams.OTHER);
+    });
+
+    test("rankToElement - Should convert rank to element correctly", () => {
+        expect(rankToElement(0)).toBe("Stone");
+        expect(rankToElement(3)).toBe("Iron");
+        expect(rankToElement(6)).toBe("Bronze");
+        expect(rankToElement(9)).toBe("Silver");
+        expect(rankToElement(12)).toBe("Gold");
+        expect(rankToElement(15)).toBe("Diamond");
+        expect(() => rankToElement(-1)).toThrow(
+            "Rank (-1) cannot be negative or greater than 18"
+        );
+        expect(() => rankToElement(18)).toThrow(
+            "Rank (18) cannot be negative or greater than 18"
+        );
+    });
+
+    test("rankToTier - Should convert rank to tier correctly", () => {
+        expect(rankToTier(0)).toBe("Stone 1");
+        expect(rankToTier(1)).toBe("Stone 2");
+        expect(rankToTier(2)).toBe("Stone 3");
+        expect(rankToTier(3)).toBe("Iron 1");
+        expect(rankToTier(4)).toBe("Iron 2");
+        expect(rankToTier(5)).toBe("Iron 3");
+        expect(rankToTier(6)).toBe("Bronze 1");
+        expect(rankToTier(7)).toBe("Bronze 2");
+        expect(rankToTier(8)).toBe("Bronze 3");
+        expect(() => rankToTier(-1)).toThrow(
+            "Rank (-1) cannot be negative or greater than 18"
+        );
+        expect(() => rankToTier(18)).toThrow(
+            "Rank (18) cannot be negative or greater than 18"
+        );
     });
 });
