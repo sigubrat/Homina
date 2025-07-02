@@ -19,6 +19,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.23.0] - 2025-07-02
+
+This update brings two new commands; one for seeing the highest damage each member managed to do against a boss in one battle and a utility command to see if players in your guild has registered a Player-scope api token.
+
+### Added
+
+-   **New command!** `/season-highscore` - Displays a graph showing the max damage each member did against each boss in one battle and with what meta team. Also includes a CSV file you can use as a table or open in a program like Excel to see the detailed numbers. The command only shows data for the specified Rarity to make the data possible to display in a reasonable manner.
+    -   Required param: season number
+    -   Required param: boss rarity
+-   **New command!** `/guild-token-status` - Displays a list of your guild members and shows who have a player token registered.
+
 ## [0.22.0] - 2025-06-23
 
 This update bring a new command so that you can be more aware what time of the day your players are available to play.
