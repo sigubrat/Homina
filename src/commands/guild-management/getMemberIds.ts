@@ -11,7 +11,7 @@ import {
 export const cooldown = 5;
 
 export const data = new SlashCommandBuilder()
-    .setName("get-member-ids")
+    .setName("member-ids")
     .setDescription(
         "Get a list of members in the guild for use in registering usernames"
     );
@@ -20,7 +20,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     logger.info(
-        `${interaction.user.username} attempting to use /get-member-ids and received the member list`
+        `${interaction.user.username} attempting to use /member-ids and received the member list`
     );
 
     const service = new GuildService();
@@ -86,7 +86,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         });
 
         logger.info(
-            `${interaction.user.username} used /get-member-ids and received the member list`
+            `${interaction.user.username} used /member-ids and received the member list`
         );
     } catch (error) {
         logger.error(error, "Error fetching members:");

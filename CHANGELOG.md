@@ -19,6 +19,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.24.0] - 2025-07-03
+
+It is time to make more use of the Player-scope tokens. This update provides a new command that uses the optional Player scope API keys that members or guild leaders can add using the `/add-member` command to show which meta comps members of your guild own.
+
+### Added
+
+-   **New command!** `/meta-comps` - Shows what meta teams players, that have provided a Player-scope API token, have at a minimum rank threshold of your choosing. A player having a meta team is defined as them having the lynchpin hero of that meta team (Ragnar, Rho, Neuro) and at least 5 characters that are part of the meta team or a variation of it. This approach is intended to be a compromise between what is the perfect meta team and the various variations or 'discount' versions that are out there.
+    -   Optional param: Rank [Stone, Iron, Bronze, Silver, Gold, Diamond] - The minimum rank all characters of a meta team must be for the bot to consider the player having that team.
+
+### Changed
+
+-   Changed name of command `/get-member-ids` -> `/member-ids` for simplicity.
+
 ## [0.23.0] - 2025-07-02
 
 This update brings two new commands; one for seeing the highest damage each member managed to do against a boss in one battle and a utility command to see if players in your guild has registered a Player-scope api token.

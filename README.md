@@ -41,25 +41,17 @@ The discord support server can be found [here](https://discord.gg/FajYxuWY9b)
 
 ## Features
 
-The bot, as of writing this, comes with the following commands:
-
--   `/help` – Get an overview of the bot commands
--   `/bot-stats` – Get statistics about the bot and its performance
--   `/register` – Register your account to use the bot (requires API token)
--   `/delete` – Delete your Discord account and API token from the bot
--   `/get-member-ids` – Get a list of members in the guild for use in registering usernames
--   `/update-members` – Update the guild member list by providing a JSON file
--   `/add-member` – Add a member to the guild by providing their user ID and username
--   `/remove-member` – Remove a member from the guild by providing their username or user ID
--   `/seasons` – Get the available guild raid seasons for your guild
--   `/season-participation` – Check how much each member has participated in a specific guild raid season
--   `/season-by-rarity` – Get graphs for total damage, tokens used, and mean damage per token for a specific boss rarity in a season
--   `/meta-team-distribution` – See the distribution of meta teams used and their damage share in a season (optionally by boss rarity)
--   `/inactivity-by-season` – Find out who did not use the required number of tokens in a season
--   `/tokens-by-season` – Find out how many tokens each member has used in a specific season
--   `/gr-availability` – Get an overview of how many guild raid tokens and bombs each member has available
--   `/gr-time-used` – See how long it takes to complete each raid boss in a given season (with optional rarity filter)
--   `/member-stats-per-season` – Display detailed statistics for each member in a specific season
+-   Provides detailed guild member and raid information
+-   Tracks and displays guild activity and participation
+-   Generates visual charts for guild stats using Chart.js
+-   Supports custom player mapping for accurate member names
+-   Offers commands for exporting and updating member data
+-   Integrates with PostgreSQL for persistent data storage
+-   Easy setup with environment variables and secret management
+-   Slash command support for modern Discord interaction
+-   Regular updates as the Tacticus API evolves
+-   Includes a help command and detailed usage instructions
+-   Designed for extensibility and community contributions
 
 This should be all the information you need if you just want to invite the bot to your server. Further information will be for those who want technical information about the bot.
 
@@ -138,7 +130,7 @@ The public Tacticus API provided by Snowprint does not, as of writing this, incl
 
 For now:
 
-1.  Use the `/get-member-ids` command and save the JSON file to your device
+1.  Use the `/member-ids` command and save the JSON file to your device
 
 This file contains the id of every member in your guild and a placeholder for their username. See the [example](#json-placeholder-example) below.
 

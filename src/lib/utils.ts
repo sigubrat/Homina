@@ -7,6 +7,7 @@ import type { TokensUsed } from "@/models/types/TokensUsed";
 import type { TokenStatus } from "@/models/types/TokenStatus";
 import { BOSS_EMOJIS } from "./constants";
 import { MetaTeams } from "@/models/enums/MetaTeams";
+import type { MetaComps } from "@/models/types/MetaComps";
 
 async function getCommands(
     commandsPath: string
@@ -218,6 +219,40 @@ export function getMetaTeam(heroes: string[]): MetaTeams {
     return MetaTeams.OTHER;
 }
 
+export function getMetaTeams(heroes: string[]): MetaComps {
+    const teamCheck = heroes.map((hero) => inTeamsCheck(hero));
+    const distribution = {
+        multihit: 0,
+        admech: 0,
+        neuro: 0,
+    };
+
+    const retval: MetaComps = {
+        multihit: false,
+        admech: false,
+        neuro: false,
+    };
+
+    teamCheck.forEach((check) => {
+        if (check.inMulti) distribution.multihit++;
+        if (check.inMech) distribution.admech++;
+        if (check.inPsyker) distribution.neuro++;
+    });
+
+    if (distribution.multihit >= 5 && hasLynchpinHero(heroes, "multihit")) {
+        retval.multihit = true;
+    }
+
+    if (distribution.admech >= 5 && hasLynchpinHero(heroes, "mech")) {
+        retval.admech = true;
+    }
+    if (distribution.neuro >= 5 && hasLynchpinHero(heroes, "psyker")) {
+        retval.neuro = true;
+    }
+
+    return retval;
+}
+
 // Nb! Relies on the user providing sorted data
 export function getTopNDamageDealers(sortedData: GuildRaidResult[], n: number) {
     return sortedData.slice(0, n).map((player, index) => {
@@ -399,4 +434,34 @@ export function getBossEmoji(boss: string) {
     } else {
         return "❓";
     }
+}
+
+export function rankToElement(rank: number) {
+    if (rank >= 0 && rank < 3) {
+        return "Stone";
+    } else if (rank >= 3 && rank < 6) {
+        return "Iron";
+    } else if (rank >= 6 && rank < 9) {
+        return "Bronze";
+    } else if (rank >= 9 && rank < 12) {
+        return "Silver";
+    } else if (rank >= 12 && rank < 15) {
+        return "Gold";
+    } else if (rank >= 15 && rank < 18) {
+        return "Diamond";
+    } else {
+        throw new Error(
+            `Rank (${rank}) cannot be negative or greater than or equal to 18`
+        );
+    }
+}
+
+export function rankToTier(rank: number) {
+    if (rank < 0 || rank >= 18) {
+        throw new Error(
+            `Rank (${rank}) cannot be negative or greater than or equal to 18`
+        );
+    }
+
+    return rankToElement(rank) + " " + ((rank % 3) + 1);
 }

@@ -536,6 +536,44 @@ export class DatabaseController {
         }
     }
 
+    public async getPlayerTokens(guildId: string) {
+        try {
+            const guildMembersModel = this.sequelize.models["GuildMembers"];
+            if (!guildMembersModel) {
+                logger.error("GuildMembers model is not defined.");
+                return [];
+            }
+
+            const result = await guildMembersModel.findAll({
+                where: {
+                    guildId: guildId,
+                },
+                attributes: ["playerToken"],
+            });
+
+            if (!result || result.length === 0) {
+                return [];
+            }
+
+            // Update lastAccessed for all members in the guild
+            await guildMembersModel.update(
+                { lastAccessed: new Date() },
+                { where: { guildId: guildId } }
+            );
+
+            // return all tokens as an array
+            return result.map((member) => {
+                return member.getDataValue("playerToken") as string;
+            });
+        } catch (error) {
+            logger.error(
+                error,
+                `Error retrieving player tokens for guildId: ${guildId}`
+            );
+            return [];
+        }
+    }
+
     public async setPlayerToken(
         userId: string,
         guildId: string,
