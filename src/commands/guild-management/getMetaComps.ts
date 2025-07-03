@@ -6,7 +6,7 @@ import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 export const cooldown = 5;
 
 export const data = new SlashCommandBuilder()
-    .setName("get-meta-comps")
+    .setName("meta-comps")
     .setDescription("See what meta comps players have in your guild")
     .addNumberOption((option) =>
         option

@@ -11,7 +11,7 @@ import {
 export const cooldown = 5;
 
 export const data = new SlashCommandBuilder()
-    .setName("get-member-ids")
+    .setName("member-ids")
     .setDescription(
         "Get a list of members in the guild for use in registering usernames"
     );
