@@ -62,7 +62,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             content: msg,
         });
     } catch (error) {
-        logger.error(error, `Error executing /get-meta-comps command`);
+        logger.error(error, `Error executing /meta-comps command`);
         await interaction.editReply({
             content: "An error occurred while fetching meta comps.",
         });

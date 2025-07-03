@@ -28,7 +28,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .addFields(
                 {
                     name: "For new users",
-                    value: "1. Register your account using `/register` If someone in your guild has already registered your usernames you are now ready. If not, see step 2.\n2. Use `/get-member-ids` to get a list of members in the guild.\n3. Use the list and `/update-members` command to register usernames.\n",
+                    value: "1. Register your account using `/register` If someone in your guild has already registered your usernames you are now ready. If not, see step 2.\n2. Use `/member-ids` to get a list of members in the guild.\n3. Use the list and `/update-members` command to register usernames.\n",
                 },
                 {
                     name: "__Commands:__",

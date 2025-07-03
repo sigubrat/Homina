@@ -69,7 +69,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     await interaction.editReply({
         content:
-            "Token successfully registered to your user. Next step is to use `/get-member-ids` to start registering usernames for your guild. Note! If someone else in your guild has already registered usernames, you will not need to update them and can skip that step.",
+            "Token successfully registered to your user. Next step is to use `/member-ids` to start registering usernames for your guild. Note! If someone else in your guild has already registered usernames, you will not need to update them and can skip that step.",
         options: {
             flags: MessageFlags.Ephemeral,
         },
