@@ -19,6 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.24.1] - 2025-07-04
+
+Tiny bugfix that fixes how the time-used command displays the primes for Szarekh. They were previously combined into one due to having the same unit ID, but they now receive their encounter-index added to their name to distinguish them. Thanks to @Nacktbaden for the bug report.
+
+### Fixed
+
+-   `/gr-time-used` now separates the two Menhir sidebosses in the data instead of combining them into one.
+
 ## [0.24.0] - 2025-07-03
 
 It is time to make more use of the Player-scope tokens. This update provides a new command that uses the optional Player scope API keys that members or guild leaders can add using the `/add-member` command to show which meta comps members of your guild own.
