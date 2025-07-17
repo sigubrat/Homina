@@ -101,7 +101,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             )
             .addFields({
                 name: "Graph",
-                value: "The x axis contains the players and each line repsents the highest damage each user did against a specific boss",
+                value: "The x axis contains the players and each line repsents the highest damage each user did against a specific boss (not primes)",
             })
             .setImage(`attachment://season-${season}-highscores-${rarity}.png`);
 

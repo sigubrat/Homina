@@ -19,6 +19,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.25.0] - 2025-07-17
+
+This update brings more strict definitions of how meta teams are defined in all commands related to meta teams and adds info to relevant commands on whether or not they include side-bosses/primes in their calculations.
+
+### Changed
+
+-   Meta team calculations are now more strict
+    -   Required number of meta heroes for it to count as a meta team **3 -> 5**
+    -   The admech team now checks for 3 lynchin heroes (Rho, Tan, Actus) instead of just Rho
+    -   The intention of the earlier implementation was to allow for some more casual variations that newer players often have, but I have later changed my mind as I don't think the compromise between precision and availability is worth it.
+-   More commands now display if sidebosses are included or not in calculations
+
 ## [0.24.1] - 2025-07-04
 
 Tiny bugfix that fixes how the time-used command displays the primes for Szarekh. They were previously combined into one due to having the same unit ID, but they now receive their encounter-index added to their name to distinguish them. Thanks to @Nacktbaden for the bug report.

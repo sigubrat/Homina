@@ -176,18 +176,20 @@ export function inTeamsCheck(hero: string): TeamCheck {
     return teamCheck;
 }
 
-const lynchpinHeroes: Record<string, string> = {
-    multihit: "spaceBlackmane",
-    mech: "admecRuststalker",
-    psyker: "tyranNeurothrope",
+const lynchpinHeroes: Record<string, string[]> = {
+    multihit: ["spaceBlackmane"],
+    mech: ["admecRuststalker", "admecManipulus", "admecMarshall"],
+    psyker: ["tyranNeurothrope"],
 };
 
-export function hasLynchpinHero(heroes: string[], team: string): boolean {
-    const hero = lynchpinHeroes[team];
-    if (!hero) {
+export function hasLynchpinHeroes(heroes: string[], team: string): boolean {
+    const requiredHeroes = lynchpinHeroes[team];
+    if (!requiredHeroes || requiredHeroes.length === 0) {
         return false;
     }
-    return heroes.includes(hero);
+    return requiredHeroes.every((requiredHero) =>
+        heroes.includes(requiredHero)
+    );
 }
 
 export function getMetaTeam(heroes: string[]): MetaTeams {
@@ -204,15 +206,15 @@ export function getMetaTeam(heroes: string[]): MetaTeams {
         if (check.inPsyker) distribution.neuro++;
     });
 
-    if (distribution.mh >= 3 && hasLynchpinHero(heroes, "multihit")) {
+    if (distribution.mh >= 5 && hasLynchpinHeroes(heroes, "multihit")) {
         return MetaTeams.MH;
     }
 
-    if (distribution.admech >= 3 && hasLynchpinHero(heroes, "mech")) {
+    if (distribution.admech >= 5 && hasLynchpinHeroes(heroes, "mech")) {
         return MetaTeams.ADMECH;
     }
 
-    if (distribution.neuro >= 3 && hasLynchpinHero(heroes, "psyker")) {
+    if (distribution.neuro >= 5 && hasLynchpinHeroes(heroes, "psyker")) {
         return MetaTeams.NEURO;
     }
 
@@ -239,14 +241,14 @@ export function getMetaTeams(heroes: string[]): MetaComps {
         if (check.inPsyker) distribution.neuro++;
     });
 
-    if (distribution.multihit >= 5 && hasLynchpinHero(heroes, "multihit")) {
+    if (distribution.multihit >= 5 && hasLynchpinHeroes(heroes, "multihit")) {
         retval.multihit = true;
     }
 
-    if (distribution.admech >= 5 && hasLynchpinHero(heroes, "mech")) {
+    if (distribution.admech >= 5 && hasLynchpinHeroes(heroes, "mech")) {
         retval.admech = true;
     }
-    if (distribution.neuro >= 5 && hasLynchpinHero(heroes, "psyker")) {
+    if (distribution.neuro >= 5 && hasLynchpinHeroes(heroes, "psyker")) {
         retval.neuro = true;
     }
 

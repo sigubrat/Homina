@@ -97,6 +97,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 `Here are the guild raid stats for **${member}** over the last ${N_SEASONS} seasons.
                 
                 *Nb! Does not include inactive members in a season as it can only know who participated in prior seasons. This affects the average value if you had inactive players.*
+
+                Data includes primes.
                 `
             )
             .addFields({
