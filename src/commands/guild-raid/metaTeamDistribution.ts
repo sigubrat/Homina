@@ -100,7 +100,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setTitle(`Meta Team Distribution for Season ${season}`)
             .setColor(0x0099ff)
             .setDescription(
-                "This chart shows the distribution of meta teams in the specified season."
+                "This chart shows the distribution of meta teams in the specified season.\n Battles against sidebosses are not included in the calculation."
             )
             .setImage(`attachment://${attachment.name}`);
 

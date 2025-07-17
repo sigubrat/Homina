@@ -4,7 +4,7 @@ import {
     getAllCommands,
     getTopNDamageDealers,
     getUnixTimestamp,
-    hasLynchpinHero,
+    hasLynchpinHeroes,
     inTeamsCheck,
     namedColor,
     sortGuildRaidResultDesc,
@@ -66,28 +66,28 @@ describe("utilsSuite - Algebra", () => {
         });
     });
 
-    test("hasLynchpinHero - Should provide true/false if lynchpin in team or not ", () => {
+    test("hasLynchpinHero - Should provide true/false if lynchpins in team or not ", () => {
         const teams: string[][] = [
             ["ultraInceptorSgt", "orksWarboss", "eldarFarseer"],
             ["orksRuntherd", "eldarAutarch", "ultraInceptorSgt"],
             ["spaceBlackmane", "orksRuntherd", "eldarFarseer"],
             ["tyraanNeurothrope", "orksRuntherd", "eldarAutarch"],
-            ["admecRuststalker", "orksRuntherd", "eldarFarseer"],
+            ["admecRuststalker", "admecMarshall", "admecManipulus"],
             ["tyranNeurothrope", "orksRuntherd", "eldarAutarch"],
         ];
 
         const psykerTeam = teams.reduce(
-            (acc, team) => acc + Number(hasLynchpinHero(team, "psyker")),
+            (acc, team) => acc + Number(hasLynchpinHeroes(team, "psyker")),
             0
         );
 
         const multiTeam = teams.reduce(
-            (acc, team) => acc + Number(hasLynchpinHero(team, "multihit")),
+            (acc, team) => acc + Number(hasLynchpinHeroes(team, "multihit")),
             0
         );
 
         const mechTeam = teams.reduce(
-            (acc, team) => acc + Number(hasLynchpinHero(team, "mech")),
+            (acc, team) => acc + Number(hasLynchpinHeroes(team, "mech")),
             0
         );
 
@@ -335,9 +335,9 @@ describe("utilsSuite - Algebra", () => {
     test("getMetaTeam - Should return the correct meta team", () => {
         const multihitTeam = [
             "ultraInceptorSgt",
-            "tauCrisis",
+            "orksWarboss",
             "eldarFarseer",
-            "admecRuststalker",
+            "templHelbrecht",
             "spaceBlackmane",
         ];
         const metaTeam = getMetaTeam(multihitTeam);
@@ -346,9 +346,9 @@ describe("utilsSuite - Algebra", () => {
         const admechTeam = [
             "necroSpyder",
             "admecRuststalker",
-            "eldarFarseer",
+            "tauCrisis",
             "admecMarshall",
-            "spaceBlackmane",
+            "admecDominus",
             "admecManipulus",
         ];
 
@@ -357,8 +357,8 @@ describe("utilsSuite - Algebra", () => {
             "eldarFarseer",
             "tyranNeurothrope",
             "genesMagus",
-            "necroSpyder",
-            "templHelbrecht",
+            "adeptCanoness",
+            "bloodMephiston",
         ];
         expect(getMetaTeam(neuroTeam)).toEqual(MetaTeams.NEURO);
     });

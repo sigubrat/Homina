@@ -13,7 +13,7 @@ import {
     evaluateToken,
     getMetaTeams,
     getUnixTimestamp,
-    hasLynchpinHero,
+    hasLynchpinHeroes,
     inTeamsCheck,
     SecondsToString,
     testApiToken,
@@ -507,14 +507,12 @@ export class GuildService {
         const groupedResults: Record<string, GuildRaidResult[]> = {};
 
         for (const entry of entries) {
-            // Bombs don't count as damage
             if (!entry.userId) {
                 continue;
             }
 
             const boss = entry.type;
 
-            // Ensure groupedResults[boss] is initialized
             if (!groupedResults[boss]) {
                 groupedResults[boss] = [];
             }
@@ -523,7 +521,6 @@ export class GuildService {
             if (useUsernames) {
                 username = await dbController.getPlayerName(entry.userId);
                 if (!username) {
-                    // If a user is not registered or left the guild, we set their username to "Unknown"
                     username = "Unknown";
                 }
             } else {
@@ -535,9 +532,10 @@ export class GuildService {
             );
 
             if (existingUserEntry) {
+                // Bombs don't count as damage, but we want to know how many bombs were used
                 if (entry.damageType === DamageType.BOMB) {
                     existingUserEntry.bombCount++;
-                    continue; // Bombs don't count as damage
+                    continue;
                 }
                 existingUserEntry.totalDamage += entry.damageDealt;
                 existingUserEntry.totalTokens += 1;
@@ -724,7 +722,7 @@ export class GuildService {
                     throw new Error("teams[maxIndex] is somehow undefined");
                 }
 
-                if (!hasLynchpinHero(heroes, team)) {
+                if (!hasLynchpinHeroes(heroes, team)) {
                     totalDistribution.other += 1;
                     totalDistribution.otherDamage =
                         (totalDistribution.otherDamage || 0) +
@@ -883,7 +881,7 @@ export class GuildService {
                         throw new Error("teams[maxIndex] is somehow undefined");
                     }
 
-                    if (!hasLynchpinHero(heroes, team)) {
+                    if (!hasLynchpinHeroes(heroes, team)) {
                         totalDistribution.other += 1;
                         totalDistribution.otherDamage =
                             (totalDistribution.otherDamage || 0) +
@@ -1535,7 +1533,6 @@ export class GuildService {
                     .map((unit) => unit.id);
 
                 retval[player.details.name] = getMetaTeams(heroes);
-                // We now have all the heroes the player has and need to check what meta teams they have
             }
 
             return retval;

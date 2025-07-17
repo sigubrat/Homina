@@ -175,7 +175,7 @@ describe("DataTransformationServiceSuite - Algebra", () => {
                 {
                     username: "test1",
                     value: 200,
-                    team: "Multihit",
+                    team: "Other",
                 },
                 {
                     username: "test2",

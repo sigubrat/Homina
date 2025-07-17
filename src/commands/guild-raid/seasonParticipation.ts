@@ -163,7 +163,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setDescription(
                 "The graph shows the contribution of each member to a guild raid season:\n" +
                     "- **Bar chart**: Damage dealt (left y-axis)\n" +
-                    "- **Line chart**: Total tokens used (right y-axis)"
+                    "- **Line chart**: Total tokens used (right y-axis)\n" +
+                    "- **Includes primes**: Yes"
             )
             .setFields(
                 {
