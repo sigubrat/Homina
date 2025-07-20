@@ -14,6 +14,7 @@ import {
 } from "@/lib/utils";
 import { logger } from "@/lib";
 import { MINIMUM_SEASON_THRESHOLD } from "@/lib/constants";
+import { Rarity } from "@/models/enums";
 
 export const cooldown = 5;
 
@@ -26,6 +27,19 @@ export const data = new SlashCommandBuilder()
             .setRequired(true)
             .setMinValue(MINIMUM_SEASON_THRESHOLD)
     )
+    .addStringOption((option) => {
+        return option
+            .setName("rarity")
+            .setDescription("The rarity of the boss")
+            .setRequired(false)
+            .addChoices(
+                { name: "Legendary", value: Rarity.LEGENDARY },
+                { name: "Epic", value: Rarity.EPIC },
+                { name: "Rare", value: Rarity.RARE },
+                { name: "Uncommon", value: Rarity.UNCOMMON },
+                { name: "Common", value: Rarity.COMMON }
+            );
+    })
     .addBooleanOption((option) =>
         option
             .setName("show-bombs")
@@ -57,9 +71,9 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 
-    const season = interaction.options.getNumber("season") as number;
+    const season = interaction.options.getNumber("season", true);
 
-    if (!Number.isInteger(season) || season <= 0) {
+    if (!Number.isInteger(season) || season < MINIMUM_SEASON_THRESHOLD) {
         await interaction.editReply({
             content:
                 "Invalid season number. Please provide a positive integer.",
@@ -76,6 +90,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         averageMethod = "mean";
     }
 
+    const rarity = interaction.options.getString("rarity", false) as
+        | Rarity
+        | undefined;
+
     const service = new GuildService();
 
     logger.info(
@@ -85,7 +103,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     try {
         const result = await service.getGuildRaidResultBySeason(
             interaction.user.id,
-            season
+            season,
+            rarity
         );
 
         if (
@@ -181,6 +200,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                             maximumFractionDigits: 2,
                         }
                     )}**`,
+                },
+                {
+                    name: "Rarity filter",
+                    value: rarity ? `**${rarity}**` : "None",
                 }
             )
             .setImage("attachment://graph.png");
