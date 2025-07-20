@@ -19,6 +19,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.26.0] - 2025-07-20
+
+This patch aims to provide more clarity to users regarding how to use the bot and adds optional rarity filter to `/season-participation`.
+
+## Added
+
+-   `/season-participation` now has an optional rarity filter.
+-   `/help` now has link buttons to the support channel and github repository
+
+## Changed
+
+-   `/meta-team-distribution` now has additional information regarding the charts. Hopefully these make them easier to understand.
+-   `/help` now has more detailed explanation regarding registering for the bot
+
 ## [0.25.0] - 2025-07-17
 
 This update brings more strict definitions of how meta teams are defined in all commands related to meta teams and adds info to relevant commands on whether or not they include side-bosses/primes in their calculations.
