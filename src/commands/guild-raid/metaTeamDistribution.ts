@@ -43,10 +43,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         `${interaction.user.username} attempting to use /meta-team-distribution`
     );
 
-    const season = interaction.options.getNumber("season") as number;
-    const rarity = interaction.options.getString("rarity");
+    const season = interaction.options.getNumber("season", true);
+    const rarity = interaction.options.getString("rarity", false) as
+        | Rarity
+        | undefined;
 
-    if (!Number.isInteger(season) || season <= 0) {
+    if (!Number.isInteger(season) || season < MINIMUM_SEASON_THRESHOLD) {
         await interaction.editReply({
             content:
                 "Invalid season number. Please provide a positive integer.",
@@ -100,8 +102,15 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setTitle(`Meta Team Distribution for Season ${season}`)
             .setColor(0x0099ff)
             .setDescription(
-                "This chart shows the distribution of meta teams in the specified season.\n Battles against sidebosses are not included in the calculation."
+                "This command shows the distribution of meta teams in the specified season.\n\n" +
+                    "One chart shows the percentage of battles where each meta team was used. The other chart shows what percentage of the total damage each meta team dealt.\n" +
+                    "The intent of these charts is to see how effective each team is by looking at their damage vs usage ratio.\n\n" +
+                    "Battles against sidebosses are not included in the calculation."
             )
+            .setFields({
+                name: "Rarity filter",
+                value: rarity ? `${rarity}` : "No rarity filter applied",
+            })
             .setImage(`attachment://${attachment.name}`);
 
         await interaction.editReply({
