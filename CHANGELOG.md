@@ -19,16 +19,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.27.0] - 2025-07-21
+
+This update aims to simplify the process of adding new members to the memberlist when they join your guild by bringing a new command. Now when a member joins your guild you can use this one command and just provide their username. No need for copy-pasting IDs anymore.
+
+### Added
+
+-   **New command!** - `/add-username`. Updates the username of the first member in the memberlist that doesn't have a registered username.
+
 ## [0.26.0] - 2025-07-20
 
 This patch aims to provide more clarity to users regarding how to use the bot and adds optional rarity filter to `/season-participation`.
 
-## Added
+### Added
 
 -   `/season-participation` now has an optional rarity filter.
 -   `/help` now has link buttons to the support channel and github repository
 
-## Changed
+### Changed
 
 -   `/meta-team-distribution` now has additional information regarding the charts. Hopefully these make them easier to understand.
 -   `/help` now has more detailed explanation regarding registering for the bot
