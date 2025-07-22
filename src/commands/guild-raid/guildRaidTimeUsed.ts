@@ -128,6 +128,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             )
             .setTimestamp();
 
+        if (showDelta) {
+            pagination.addFields({
+                name: "Show delta",
+                value: "Delta enabled. All delta values displayed for looped bosses use the first run as the baseline."
+            })
+        }
+
         const entries = Object.entries(transformedData);
         // entries.sort(([a], [b]) => a.slice(0, 2).localeCompare(b.slice(0, 2)));
         for (const [boss, data] of entries) {
