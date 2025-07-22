@@ -16,7 +16,7 @@ describe("DataTransformationServiceSuite - Algebra", () => {
         expect(transformedData).toEqual([
             {
                 "L1 Belisarius": {
-                    time: "00h 45m 27s",
+                    time: 2727,
                     tokens: 4,
                     bombs: 4,
                     sideboss: [true, "L1 Belisarius"],
@@ -35,19 +35,19 @@ describe("DataTransformationServiceSuite - Algebra", () => {
         expect(transformedData).toEqual([
             {
                 "L1 AdmecManipulus": {
-                    time: "00h 15m 07s",
+                    time: 907,
                     tokens: 1,
                     bombs: 3,
                     sideboss: [true, "L1 Belisarius"],
                 },
                 "L1 AdmecMarshall": {
-                    time: "00h 30m 03s",
+                    time: 1803,
                     tokens: 2,
                     bombs: 1,
                     sideboss: [true, "L1 Belisarius"],
                 },
                 "L1 Belisarius": {
-                    time: "00h 00m 17s",
+                    time: 17,
                     tokens: 1,
                     bombs: 0,
                     sideboss: [false, "L1 Belisarius"],
