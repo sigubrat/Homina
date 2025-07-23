@@ -81,12 +81,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const chart = await chartService.createMetaTeamDistributionChart(
             result,
-            `Meta Team Popularity (by Usage) - Season ${season}`
+            `How much each team was used - Season ${season}`
         );
 
         const dmgChart = await chartService.createMetaTeamDistributionChart(
             result,
-            `Meta Team Performance (by Damage) - Season ${season}`,
+            `How much damage each team dealt - Season ${season}`,
             true
         );
 
