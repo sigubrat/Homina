@@ -131,8 +131,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         if (showDelta) {
             pagination.addFields({
                 name: "Show delta",
-                value: "Delta enabled. All delta values displayed for looped bosses use the first run as the baseline."
-            })
+                value: "Delta enabled. All delta values displayed for looped bosses use the first run as the baseline.",
+            });
         }
 
         const entries = Object.entries(transformedData);
@@ -196,10 +196,36 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 const extra = sidebosses.length
                     ? "\n" + sidebosses.join("\n")
                     : "";
-                // main boss line (no delta for main boss in separatePrimes mode, but you can copy above pattern if you want)
+
+                let mainTimeDelta = "";
+                let mainTokensDelta = "";
+                let mainBombsDelta = "";
+                if (
+                    showDelta &&
+                    boss.at(0) === "L" &&
+                    boss.includes(":recycle:")
+                ) {
+                    const baseKey = boss.replace(/\s*:recycle:\d+\s*/, " ");
+                    const base = transformedData[baseKey];
+                    if (base) {
+                        const td = data.time - base.time;
+                        mainTimeDelta =
+                            td >= 0
+                                ? ` (+${SecondsToString(td)})`
+                                : ` (-${SecondsToString(Math.abs(td))})`;
+                        const tD = data.tokens - base.tokens;
+                        mainTokensDelta = tD >= 0 ? `(+${tD})` : `(${tD})`;
+                        const bD = data.bombs - base.bombs;
+                        mainBombsDelta = bD >= 0 ? `(+${bD})` : `(${bD})`;
+                    }
+                }
+
                 value =
-                    `- Boss: :hourglass: ${SecondsToString(data.time)} ` +
-                    `- :tickets: ${data.tokens} :boom: ${data.bombs}${extra}`;
+                    `- Boss: :hourglass: ${SecondsToString(
+                        data.time
+                    )} ${mainTimeDelta}` +
+                    `- :tickets: ${data.tokens} ${mainTokensDelta}` +
+                    `:boom: ${data.bombs} ${mainBombsDelta}${extra}`;
             } else {
                 // Regular listing
                 let timeDelta = "";
