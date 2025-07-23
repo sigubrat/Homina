@@ -80,7 +80,7 @@ export class DataTransformationService {
                 );
 
                 result[boss] = {
-                    time: SecondsToString(timeInSeconds),
+                    time: timeInSeconds,
                     tokens: totalTokens,
                     bombs: totalBombs,
                     sideboss: [
@@ -132,7 +132,7 @@ export class DataTransformationService {
                 previousLast.startedOn - lastEntry.startedOn
             );
 
-            const timeUsed = SecondsToString(timeInSeconds);
+            const timeUsed = timeInSeconds;
 
             const isPrime = lastEntry.encounterType === EncounterType.SIDE_BOSS;
 

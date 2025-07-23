@@ -19,6 +19,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.28.0] - 2025-07-23
+
+This update provides some new options to existing commands and tries to improve unclear descriptions.
+
+### Added
+
+-   New option for `/gr-time-used`: Show-delta. Enabling this lets you see the difference in time, tokens and bombs used for each looped legendary boss. Each delta uses the first run of the boss as the baseline for comparison.
+-   New option for `/track-member`: average-method. Previously this command used exclusively numeric mean as the method to calculate the average. Now you can choose to use median instead. Defaults to mean.
+
+### Changed
+
+-   Changed the description in `/meta-team-distribution` to make the command easier to understand.
+-   Changed the graph titles in `/meta-team-distribution` to make the graphs easier to understand.
+
 ## [0.27.0] - 2025-07-21
 
 This update aims to simplify the process of adding new members to the memberlist when they join your guild by bringing a new command. Now when a member joins your guild you can use this one command and just provide their username. No need for copy-pasting IDs anymore.

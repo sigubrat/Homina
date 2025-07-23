@@ -2,7 +2,7 @@ import { logger } from "@/lib";
 import { MINIMUM_SEASON_THRESHOLD } from "@/lib/constants";
 import { DataTransformationService } from "@/lib/services/DataTransformationService";
 import { GuildService } from "@/lib/services/GuildService";
-import { splitByCapital } from "@/lib/utils";
+import { SecondsToString, splitByCapital } from "@/lib/utils";
 import { Rarity } from "@/models/enums";
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { Pagination } from "pagination.djs";
@@ -39,12 +39,21 @@ export const data = new SlashCommandBuilder()
             .setName("separate-primes")
             .setDescription("Show primes separately (default: false)")
             .setRequired(false)
+    )
+    .addBooleanOption((option) =>
+        option
+            .setName("show-delta")
+            .setDescription(
+                "Show the delta between times, tokens and bombs used each loop"
+            )
+            .setRequired(false)
     );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 
     const userID = interaction.user.id;
+    const showDelta = interaction.options.getBoolean("show-delta") ?? false;
 
     const season = interaction.options.getNumber("season");
     if (!season || !Number.isInteger(season) || season <= 69) {
@@ -87,7 +96,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         );
 
         const pagination = new Pagination(interaction, {
-            limit: separatePrimes ? 5 : 15, // Adjust limit based on rarity
+            limit: separatePrimes ? 10 : 25, // Adjust limit based on rarity
         })
             .setColor("#0099ff")
             .setTitle(`Time Used Per Boss in season ${season}`)
@@ -119,35 +128,140 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             )
             .setTimestamp();
 
-        if (separatePrimes) {
-            // Only display main bosses (sideboss[0] === false) once, with their sidebosses
-            for (const [boss, data] of Object.entries(transformedData)) {
-                if (!data.sideboss[0]) {
-                    // Find sidebosses for this main boss
-                    const sidebosses = Object.entries(transformedData)
-                        .filter(
-                            ([, d]) => d.sideboss[0] && d.sideboss[1] === boss
-                        )
-                        .map(([sbName, sbData]) => {
-                            const words = splitByCapital(sbName);
-                            const name = `${words.at(-2)}${words.at(-1)}`;
-                            return `   - Prime ${name} :hourglass: ${sbData.time} - :tickets: ${sbData.tokens} :boom: ${sbData.bombs}`;
-                        });
-                    const sidebossField =
-                        sidebosses.length > 0 ? `${sidebosses.join("\n")}` : "";
-                    pagination.addFields({
-                        name: boss,
-                        value: `- Boss: :hourglass: ${data.time} - :tickets: ${data.tokens} :boom: ${data.bombs}\n${sidebossField}`,
+        if (showDelta) {
+            pagination.addFields({
+                name: "Show delta",
+                value: "Delta enabled. All delta values displayed for looped bosses use the first run as the baseline.",
+            });
+        }
+
+        const entries = Object.entries(transformedData);
+        // entries.sort(([a], [b]) => a.slice(0, 2).localeCompare(b.slice(0, 2)));
+        for (const [boss, data] of entries) {
+            // When splitting primes, skip the prime‐only entries
+            if (separatePrimes && data.sideboss[0]) continue;
+
+            let value: string;
+            if (separatePrimes) {
+                // Build sideboss block under the main boss
+                const sidebosses = Object.entries(transformedData)
+                    .filter(([, d]) => d.sideboss[0] && d.sideboss[1] === boss)
+                    .map(([sbName, sbData]) => {
+                        const words = splitByCapital(sbName);
+                        const suffix = `${words.at(-2)}${words.at(-1)}`;
+
+                        // delta placeholders
+                        let timeDelta = "";
+                        let tokensDelta = "";
+                        let bombsDelta = "";
+
+                        // if this is a recycled prime, compute deltas
+                        if (
+                            showDelta &&
+                            sbName.at(0) === "L" &&
+                            sbName.includes(":recycle:")
+                        ) {
+                            const baseKey = sbName.replace(
+                                /\s*:recycle:\d+\s*/,
+                                " "
+                            );
+                            const base = transformedData[baseKey];
+
+                            if (base) {
+                                const td = sbData.time - base.time;
+                                timeDelta =
+                                    td >= 0
+                                        ? ` (+${SecondsToString(td)})`
+                                        : ` (-${SecondsToString(
+                                              Math.abs(td)
+                                          )})`;
+
+                                const tD = sbData.tokens - base.tokens;
+                                tokensDelta = tD >= 0 ? `(+${tD})` : `(${tD})`;
+
+                                const bD = sbData.bombs - base.bombs;
+                                bombsDelta = bD >= 0 ? `(+${bD})` : `(${bD})`;
+                            }
+                        }
+
+                        return (
+                            `   - Prime ${suffix} :hourglass: ${SecondsToString(
+                                sbData.time
+                            )}${timeDelta} ` +
+                            `- :tickets: ${sbData.tokens} ${tokensDelta} ` +
+                            `:boom: ${sbData.bombs} ${bombsDelta}`
+                        );
                     });
+
+                const extra = sidebosses.length
+                    ? "\n" + sidebosses.join("\n")
+                    : "";
+
+                let mainTimeDelta = "";
+                let mainTokensDelta = "";
+                let mainBombsDelta = "";
+                if (
+                    showDelta &&
+                    boss.at(0) === "L" &&
+                    boss.includes(":recycle:")
+                ) {
+                    const baseKey = boss.replace(/\s*:recycle:\d+\s*/, " ");
+                    const base = transformedData[baseKey];
+                    if (base) {
+                        const td = data.time - base.time;
+                        mainTimeDelta =
+                            td >= 0
+                                ? ` (+${SecondsToString(td)})`
+                                : ` (-${SecondsToString(Math.abs(td))})`;
+                        const tD = data.tokens - base.tokens;
+                        mainTokensDelta = tD >= 0 ? `(+${tD})` : `(${tD})`;
+                        const bD = data.bombs - base.bombs;
+                        mainBombsDelta = bD >= 0 ? `(+${bD})` : `(${bD})`;
+                    }
                 }
+
+                value =
+                    `- Boss: :hourglass: ${SecondsToString(
+                        data.time
+                    )} ${mainTimeDelta}` +
+                    `- :tickets: ${data.tokens} ${mainTokensDelta}` +
+                    `:boom: ${data.bombs} ${mainBombsDelta}${extra}`;
+            } else {
+                // Regular listing
+                let timeDelta = "";
+                let tokensDelta = "";
+                let bombsDelta = "";
+                if (
+                    showDelta &&
+                    boss.at(0) === "L" &&
+                    boss.includes(":recycle:")
+                ) {
+                    const baseline =
+                        transformedData[
+                            boss.replace(/\s*:recycle:\d+\s*/, " ")
+                        ];
+
+                    if (baseline) {
+                        const timeD = data.time - baseline.time;
+                        timeDelta =
+                            timeD >= 0
+                                ? `(+${SecondsToString(timeD)})`
+                                : `(-${SecondsToString(Math.abs(timeD))})`;
+                        const tokenD = data.tokens - baseline.tokens;
+                        tokensDelta =
+                            tokenD >= 0 ? `(+${tokenD})` : `(${tokenD})`;
+                        const bombD = data.bombs - baseline.bombs;
+                        bombsDelta = bombD >= 0 ? `(+${bombD})` : `(${bombD})`;
+                    }
+                }
+                value = `:hourglass: ${SecondsToString(
+                    data.time
+                )} ${timeDelta} - :tickets: ${
+                    data.tokens
+                } ${tokensDelta} :boom: ${data.bombs} ${bombsDelta}`;
             }
-        } else {
-            for (const [boss, data] of Object.entries(transformedData)) {
-                pagination.addFields({
-                    name: boss,
-                    value: `:hourglass: ${data.time} - :tickets: ${data.tokens} :boom: ${data.bombs}`,
-                });
-            }
+
+            pagination.addFields({ name: boss, value });
         }
 
         pagination.paginateFields(true);

@@ -4,6 +4,7 @@ import {
     MAXIMUM_TOKENS_PER_SEASON,
 } from "@/lib/constants";
 import { GuildService } from "@/lib/services/GuildService";
+import { numericAverage, numericMedian } from "@/lib/utils";
 import { Rarity } from "@/models/enums";
 import {
     ChatInputCommandInteraction,
@@ -36,6 +37,24 @@ export const data = new SlashCommandBuilder()
                 { name: "Common", value: Rarity.COMMON }
             );
     })
+    .addStringOption((option) =>
+        option
+            .setName("average-method")
+            .setChoices(
+                {
+                    name: "Mean",
+                    value: "mean",
+                },
+                {
+                    name: "Median",
+                    value: "median",
+                }
+            )
+            .setDescription(
+                "Median is recommended if you have big variation in damage, mean otherwise"
+            )
+            .setRequired(false)
+    )
     .setDescription(
         `Track a member's guild raid stats over the last ${N_SEASONS} seasons`
     );
@@ -90,7 +109,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             });
             return;
         }
-
+        
+        const avgMethod = interaction.options.getString('average-method') as "mean" | "median" | undefined;
         const embed = new EmbedBuilder()
             .setTitle(`Guild Raid Stats for ${member}`)
             .setDescription(
@@ -104,6 +124,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .addFields({
                 name: "Rarity filter",
                 value: rarity ?? "No filter applied",
+            }, {
+                name: "Average method",
+                value: avgMethod ? `Using ${avgMethod} to calculate averages` : "No average method specified, using mean",
             })
             .setColor("#0099ff")
             .setTimestamp();
@@ -115,6 +138,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             });
         }
 
+
         for (const [season, stats] of Object.entries(data)) {
             if (!stats) {
                 continue;
@@ -123,45 +147,35 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             // If rarity is not provided, we don't need to calculate relative damage for each boss
             const vals = Object.values(stats).flat();
 
-            const allDamage = Object.values(vals)
-                .map((season) => season?.totalDamage || 0)
-                .reduce((a, b) => a + b, 0);
+            const damagePerMember: Record<string, number> = {};
+            const tokensPerMember: Record<string, number> = {};
 
-            const allTokens = Object.values(vals)
-                .map((season) => season?.totalTokens || 0)
-                .reduce((a, b) => a + b, 0);
-
-            let nMembers = new Set<string>(vals.map((entry) => entry?.username))
-                .size;
-
-            if (nMembers > MAXIMUM_GUILD_MEMBERS) {
-                nMembers = MAXIMUM_GUILD_MEMBERS;
+            for (const entry of vals) {
+                if (entry?.username) {
+                    damagePerMember[entry.username] = (damagePerMember[entry.username] || 0) + (entry.totalDamage || 0);
+                    tokensPerMember[entry.username] = (tokensPerMember[entry.username] || 0) + (entry.totalTokens || 0);
+                }
             }
 
-            const guildAverageDamage = allDamage / nMembers;
+            const allMemberDamages = Object.values(damagePerMember);
+            const allMemberTokens = Object.values(tokensPerMember);
 
-            let guildAverageTokens = allTokens / nMembers;
+            const guildAverageDamage = (avgMethod === "median" ? numericMedian : numericAverage)(allMemberDamages);
+            let guildAverageTokens = (avgMethod === "median" ? numericMedian : numericAverage)(allMemberTokens);
 
             if (guildAverageTokens > MAXIMUM_TOKENS_PER_SEASON) {
                 guildAverageTokens = MAXIMUM_TOKENS_PER_SEASON;
             }
 
-            const userData = Object.values(vals).filter(
-                (season) => season?.username === memberId
-            );
-            const userDamage = userData
-                .map((season) => season.totalDamage || 0)
-                .reduce((a, b) => a + b, 0);
-
-            const userTokens = userData
-                .map((season) => season.totalTokens || 0)
-                .reduce((a, b) => a + b, 0);
+            const userDamage = damagePerMember[memberId] || 0;
+            const userTokens = tokensPerMember[memberId] || 0;
 
             const relativeDamage =
-                ((userDamage / guildAverageDamage) * 100).toFixed(1) + "%";
+                guildAverageDamage > 0 ? ((userDamage / guildAverageDamage) * 100).toFixed(1) + "%" : "N/A";
 
             const relativeTokens =
-                ((userTokens / guildAverageTokens) * 100).toFixed(1) + "%";
+                guildAverageTokens > 0 ? ((userTokens / guildAverageTokens) * 100).toFixed(1) + "%" : "N/A";
+
 
             if (!rarity) {
                 embed.addFields({
@@ -204,9 +218,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
                     const totalDamage = values
                         .map((v) => v.totalDamage || 0)
-                        .reduce((a, b) => a + b, 0);
 
-                    const avgDamage = totalDamage / nPlayers;
+                    const avgDamage = avgMethod === "mean" ? totalDamage.reduce((a, b) => a + b, 0) / nPlayers : numericMedian(totalDamage);
 
                     const userDamage = userData.totalDamage || 0;
                     const userTokens = userData.totalTokens || 0;
