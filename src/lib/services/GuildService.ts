@@ -1257,7 +1257,7 @@ export class GuildService {
 
             const currentSeasonNumber = currentSeason.season;
             const seasons: number[] = [];
-            for (let i = nSeasons; i > 0; i--) {
+            for (let i = nSeasons - 1; i >= 0; i--) {
                 if (currentSeasonNumber - i < MINIMUM_SEASON_THRESHOLD) {
                     break;
                 }
