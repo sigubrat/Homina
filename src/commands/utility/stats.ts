@@ -10,9 +10,9 @@ export const data = new SlashCommandBuilder()
     .setDescription("Get statistics about the bot and its performance");
 
 export async function execute(interaction: ChatInputCommandInteraction) {
-    try {
-        await interaction.deferReply({});
+    await interaction.deferReply({});
 
+    try {
         const client = interaction.client;
 
         const uptime = client.uptime ? Math.floor(client.uptime / 1000) : 0;
