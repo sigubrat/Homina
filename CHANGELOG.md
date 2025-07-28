@@ -19,6 +19,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.29.1] - 2025-07-28
+
+A small fix to some command descriptions regarding whether or not they include primes in their calculations.
+
+### Fixed
+
+-   `/member-stats-per-season` - Description now correctly informs that the stats include primes in the calculations.
+
+### Added
+
+-   Added explicit confirmation that commands include primes to:
+    -   `/inactivity-by-season`
+    -   `/season-tokens`
+    -   `/season-participation`
+
 ## [0.29.0] - 2025-07-28
 
 This patch is mostly a maintenance patch on the technical side of things. Bit of oil to the cogs, if you will. The patch also brings a minor bugfix and some reliability improvements.

@@ -83,7 +83,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const result = await service.getGuildRaidResultBySeason(
             interaction.user.id,
             season,
-            rarity
+            rarity,
+            true
         );
 
         if (
@@ -163,7 +164,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setDescription(
                 `The graph shows the number of tokens used by each member in season ${season}.\n` +
                     "- **Bar chart:** the number of tokens used by each member.\n" +
-                    `- **Line chart:** represents the ${averageMethod.toLowerCase()} number of tokens used by the guild.`
+                    `- **Line chart:** represents the ${averageMethod.toLowerCase()} number of tokens used by the guild.\n` +
+                    "- **Includes primes:** Yes\n"
             )
             .addFields(
                 {
