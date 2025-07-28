@@ -19,6 +19,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.29.0] - 2025-07-23
+
+This patch is mostly a maintenance patch on the technical side of things. Bit of oil to the cogs, if you will. The patch also brings a minor bugfix and some reliability improvements.
+
+### Fixed
+
+- Off-by-one bug led to `/track-member` not starting from the current season which wasn't intended. If you prefer the old version let me know. 
+- Fixed some minor reliability issues regarding error handling
+
+
 ## [0.28.0] - 2025-07-23
 
 This update provides some new options to existing commands and tries to improve unclear descriptions.
