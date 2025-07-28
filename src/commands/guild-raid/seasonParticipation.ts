@@ -104,7 +104,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const result = await service.getGuildRaidResultBySeason(
             interaction.user.id,
             season,
-            rarity
+            rarity,
+            true
         );
 
         if (

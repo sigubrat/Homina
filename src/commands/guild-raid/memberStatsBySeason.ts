@@ -165,12 +165,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setColor("#0099ff")
             .setTitle("Member stats for season " + season)
             .setDescription(
-                `See the detailed statistics for each member in the specified season.
-
-                :family: - Team distribution used by the player
-                :bar_chart: - Percentage of total damage dealt by meta teams
-
-                *Note that team distribution does not include data from sidebosses/primes*`
+                "See the detailed statistics for each member in the specified season.\n\n" +
+                    ":family: - Team distribution used by the player\n" +
+                    ":bar_chart: - Percentage of total damage dealt by meta teams\n\n" +
+                    "**Includes primes:** Yes"
             )
             .setTimestamp();
 

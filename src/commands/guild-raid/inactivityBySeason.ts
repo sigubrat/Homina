@@ -74,7 +74,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const result = await service.getGuildRaidResultBySeason(
             interaction.user.id,
             season,
-            rarity
+            rarity,
+            true
         );
 
         if (
@@ -154,8 +155,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setColor(0x0099ff)
             .setDescription(
                 "The number of players who did not use the required number of tokens:\n" +
-                    `- **Threshold**: ${threshold} token(s)\n` + // Ensure no extra spaces or indentation
-                    `- **Rarity:** ${rarity ?? "All Rarities"}\n` // Keep this aligned with the previous line
+                    `- **Threshold**: ${threshold} token(s)\n` +
+                    `- **Rarity:** ${rarity ?? "All Rarities"}\n` +
+                    "- **Includes primes:** Yes\n"
             )
             .setFields([
                 {
