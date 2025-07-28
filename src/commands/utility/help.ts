@@ -15,9 +15,9 @@ export const data = new SlashCommandBuilder()
     .setDescription("Get an overview of the bot commands");
 
 export async function execute(interaction: ChatInputCommandInteraction) {
-    try {
-        await interaction.deferReply({});
+    await interaction.deferReply({});
 
+    try {
         // @ts-expect-error - This works because our client is extended with commands (see index.ts in root)
         const commands = interaction.client.commands.map((command: any) => {
             return [command.data.name, command.data.description];

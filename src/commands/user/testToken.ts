@@ -5,6 +5,7 @@ import {
     SlashCommandBuilder,
 } from "discord.js";
 import { GuildService } from "@/lib/services/GuildService";
+import { logger } from "@/lib";
 export const cooldown = 5;
 
 export const data = new SlashCommandBuilder()
@@ -16,28 +17,36 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     const userId = interaction.user.id;
 
-    const service = new GuildService();
+    try {
+        const service = new GuildService();
 
-    const testResult = await service.testRegisteredGuildApiToken(userId);
+        const testResult = await service.testRegisteredGuildApiToken(userId);
 
-    const embed = new EmbedBuilder()
-        .setColor(testResult.status ? 0x008000 : 0xff0000)
-        .setTitle("API Token Test Result")
-        .setTimestamp()
-        .setDescription("The result of testing your registered API token")
-        .addFields(
-            {
-                name: "Status",
-                value: testResult.status ? "✅ SUCCESS" : "❌ FAILED",
-            },
-            {
-                name: "Message",
-                value:
-                    testResult.message || "No additional information provided.",
-            }
-        );
+        const embed = new EmbedBuilder()
+            .setColor(testResult.status ? 0x008000 : 0xff0000)
+            .setTitle("API Token Test Result")
+            .setTimestamp()
+            .setDescription("The result of testing your registered API token")
+            .addFields(
+                {
+                    name: "Status",
+                    value: testResult.status ? "✅ SUCCESS" : "❌ FAILED",
+                },
+                {
+                    name: "Message",
+                    value:
+                        testResult.message ||
+                        "No additional information provided.",
+                }
+            );
 
-    await interaction.editReply({
-        embeds: [embed],
-    });
+        await interaction.editReply({
+            embeds: [embed],
+        });
+    } catch (error) {
+        logger.error(error, "Error testing API token");
+        await interaction.editReply({
+            content: "An error occurred while testing your API token.",
+        });
+    }
 }
