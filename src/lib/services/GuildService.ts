@@ -405,6 +405,17 @@ export class GuildService {
 
         const damagePeruser: GuildRaidResult[] = [];
 
+        const allUserIds = new Set<string>();
+        for (const entry of entries) {
+            if (entry.userId) {
+                allUserIds.add(entry.userId);
+            }
+        }
+
+        const usernames = await dbController.getPlayerNames(
+            Array.from(allUserIds)
+        );
+
         for (const entry of entries) {
             // Bombs don't count as damage
             if (!entry.userId) {
@@ -418,10 +429,7 @@ export class GuildService {
                 continue;
             }
 
-            let username = await dbController.getPlayerName(entry.userId);
-            if (!username) {
-                username = "Unknown";
-            }
+            const username = usernames[entry.userId] || "Unknown";
             const existingEntry = damagePeruser.find(
                 (e) => e.username === username
             );
