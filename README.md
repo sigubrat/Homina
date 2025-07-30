@@ -14,7 +14,7 @@
 
 Blessed is the Machine Spirit.
 
-This is a simple Discord bot in early access, intended to provide guilds with useful information regarding its members, guild, and guild raid information. It will be updated as Snowprint updates their public API.
+This is a verified Discord bot intended to provide guilds with useful information regarding its members, guild, and guild raid information. It will be updated as Snowprint updates their public API.
 
 To invite the bot to your server, click [here](https://discord.com/oauth2/authorize?client_id=1351837170498801714)
 
