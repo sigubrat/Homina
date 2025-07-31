@@ -512,6 +512,17 @@ export class GuildService {
             entries = entries.filter((entry) => entry.rarity === rarity);
         }
 
+        const allUserIds = new Set<string>();
+        for (const entry of entries) {
+            if (entry.userId) {
+                allUserIds.add(entry.userId);
+            }
+        }
+
+        const usernames = await dbController.getPlayerNames(
+            Array.from(allUserIds)
+        );
+
         const groupedResults: Record<string, GuildRaidResult[]> = {};
 
         for (const entry of entries) {
@@ -527,10 +538,7 @@ export class GuildService {
 
             let username: string | null = null;
             if (useUsernames) {
-                username = await dbController.getPlayerName(entry.userId);
-                if (!username) {
-                    username = "Unknown";
-                }
+                username = usernames[entry.userId] || "Unknown";
             } else {
                 username = entry.userId;
             }
