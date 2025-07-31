@@ -991,9 +991,10 @@ export class GuildService {
      * @returns A record of usernames to their respective GuildRaidAvailable objects or null if an error occurred.
      */
     async getAvailableTokensAndBombs(userId: string) {
-        const tokenCooldownInSeconds = 12 * 60 * 60;
-        const bombCooldownInSeconds = 18 * 60 * 60;
-        const maxTokens = 3;
+        const TOKENCOOLDOWNINSECONDS = 12 * 60 * 60;
+        const BOMBCOOLDOWNINSECONDS = 18 * 60 * 60;
+        const BOMBCOOLDOWNHOURS = 18;
+        const MAXTOKENS = 3;
         const now = new Date();
 
         try {
@@ -1084,7 +1085,7 @@ export class GuildService {
             await Promise.all(
                 Object.entries(users).map(async ([userId, data]) => {
                     const temp: GuildRaidAvailable = {
-                        tokens: maxTokens,
+                        tokens: MAXTOKENS,
                         bombs: 1,
                     };
 
@@ -1112,14 +1113,14 @@ export class GuildService {
                         const diff =
                             getUnixTimestamp(now) - mostRecentBomb.startedOn;
                         const diffHours = Math.floor(diff / 3600);
-                        if (diffHours < 18) {
+                        if (diffHours < BOMBCOOLDOWNHOURS) {
                             temp.bombs = 0;
                             temp.bombCooldown = SecondsToString(
-                                bombCooldownInSeconds - diff
+                                BOMBCOOLDOWNINSECONDS - diff
                             );
                         } else {
                             temp.bombCooldown = SecondsToString(
-                                diff - bombCooldownInSeconds,
+                                diff - BOMBCOOLDOWNINSECONDS,
                                 true
                             );
                         }
@@ -1148,11 +1149,11 @@ export class GuildService {
                         });
 
                     token = evaluateToken(token, getUnixTimestamp(now));
-                    if (token.count < maxTokens) {
+                    if (token.count < MAXTOKENS) {
                         const tokenDiff =
                             getUnixTimestamp(now) - token.refreshTime;
                         temp.tokenCooldown = SecondsToString(
-                            tokenCooldownInSeconds - tokenDiff
+                            TOKENCOOLDOWNINSECONDS - tokenDiff
                         );
                     }
                     temp.tokens = token.count;
