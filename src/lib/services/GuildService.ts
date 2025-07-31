@@ -622,12 +622,20 @@ export class GuildService {
             (entry) => entry.damageType === DamageType.BOMB
         );
 
+        const allUserIds = new Set<string>();
+        for (const entry of entries) {
+            if (entry.userId) {
+                allUserIds.add(entry.userId);
+            }
+        }
+
+        const usernames = await dbController.getPlayerNames(
+            Array.from(allUserIds)
+        );
+
         const bombsPerUser: Record<string, number> = {};
         for (const bomb of bombs) {
-            let username = await dbController.getPlayerName(bomb.userId);
-            if (!username) {
-                username = "Unknown";
-            }
+            const username = usernames[bomb.userId] || "Unknown";
 
             bombsPerUser[username] = (bombsPerUser[username] ?? 0) + 1;
         }
