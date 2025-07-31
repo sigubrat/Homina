@@ -830,11 +830,14 @@ export class GuildService {
                 groupedResults[userID].push(entry);
             }
 
+            const allUserIds = Object.keys(groupedResults);
+            const allUsernames = await dbController.getPlayerNames(allUserIds);
+
             const result: Record<string, TeamDistribution> = {};
             for (const key in groupedResults) {
                 // Replace ID with username
                 const entries = groupedResults[key];
-                const username = await dbController.getPlayerName(key);
+                const username = allUsernames[key] || "Unknown";
                 if (!username || !entries) {
                     continue;
                 }
