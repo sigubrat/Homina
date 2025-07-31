@@ -1161,15 +1161,16 @@ export class GuildService {
             );
 
             // Replace user IDs with usernames
+            const allUserIds = Object.keys(result);
+            const usernames = await dbController.getPlayerNames(allUserIds);
+
             const resultWithNames: Record<string, GuildRaidAvailable> = {};
-            await Promise.all(
-                Object.entries(result).map(async ([userId, available]) => {
-                    const username = await dbController.getPlayerName(userId);
-                    if (username) {
-                        resultWithNames[username] = available;
-                    }
-                })
-            );
+            for (const [userId, available] of Object.entries(result)) {
+                const username = usernames[userId];
+                if (username) {
+                    resultWithNames[username] = available;
+                }
+            }
 
             return resultWithNames;
         } catch (error) {
