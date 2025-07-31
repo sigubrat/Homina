@@ -655,14 +655,6 @@ export class GuildService {
         season: number,
         tier?: Rarity
     ) {
-        /**
-         * There are 3 meta teams in tacticus at the moment:
-         * 1. Multi-hit team (Ragnar, Eldryon, Kharn, Aunshi, Snotflogga, Calgar and Big Boss Gulgortz)
-         * 2. Psyker team (Neurothrope, Yazakhor, Abraxas, Ahrimann, Eldryon, Roswitha, Mephiston),
-         * 3. Mech team (Exitor Rho, Tan Gida, Actus, Sho'syl, Vitruvius, Big Boss Gulgortz, Aneph Null)
-         *
-         * For each entry in the data, we need to figure out which team it most likely is by checking if they have a majority of the meta team members.
-         */
         try {
             const apiKey = await dbController.getUserToken(userId);
             if (!apiKey) {
