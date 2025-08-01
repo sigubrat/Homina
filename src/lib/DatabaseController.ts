@@ -413,6 +413,36 @@ export class DatabaseController {
         }
     }
 
+    public async getPlayerNames(
+        userIds: string[]
+    ): Promise<Record<string, string>> {
+        try {
+            const result = await this.sequelize.models["GuildMembers"]?.findAll(
+                {
+                    where: {
+                        userId: {
+                            [Op.in]: userIds,
+                        },
+                    },
+                }
+            );
+
+            const playerNames: Record<string, string> = {};
+            if (!result || result.length === 0) {
+                return playerNames;
+            }
+            result.forEach((member) => {
+                playerNames[member.getDataValue("userId") as string] =
+                    member.getDataValue("username") as string;
+            });
+
+            return playerNames;
+        } catch (error) {
+            logger.error(error, "Error retrieving player names from database");
+            return {};
+        }
+    }
+
     public async getMemberCount() {
         try {
             const result = await this.sequelize.models["GuildMembers"]?.count();

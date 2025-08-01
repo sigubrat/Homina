@@ -19,6 +19,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.30.0] - 2025-07-08
+
+This update provides optimization of database reads to improve overall performance of the bot and some readability improvements. The bot has grown a lot quicker than I ever imagined. As a thank you for all the great feedback, help with testing, moderation, and support, I've managed to get a you little code to use in-game: HOMINA.
+
+### Changed
+
+-   Database reads for usernames are now 30x faster. Testing was done on my own computer, so the gain is possibly even higher on the server with slower HDDs vs my faster SSDs
+-   Improved mobile formatting in `/track-member` to eliminate weird indents.
+
+### Added
+
+-   `/member-stats-by-season` now displays which Rarity filter you selected.
+
 ## [0.29.1] - 2025-07-28
 
 A small fix to some command descriptions regarding whether or not they include primes in their calculations.

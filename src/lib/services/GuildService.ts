@@ -405,6 +405,17 @@ export class GuildService {
 
         const damagePeruser: GuildRaidResult[] = [];
 
+        const allUserIds = new Set<string>();
+        for (const entry of entries) {
+            if (entry.userId) {
+                allUserIds.add(entry.userId);
+            }
+        }
+
+        const usernames = await dbController.getPlayerNames(
+            Array.from(allUserIds)
+        );
+
         for (const entry of entries) {
             // Bombs don't count as damage
             if (!entry.userId) {
@@ -418,10 +429,7 @@ export class GuildService {
                 continue;
             }
 
-            let username = await dbController.getPlayerName(entry.userId);
-            if (!username) {
-                username = "Unknown";
-            }
+            const username = usernames[entry.userId] || "Unknown";
             const existingEntry = damagePeruser.find(
                 (e) => e.username === username
             );
@@ -504,6 +512,17 @@ export class GuildService {
             entries = entries.filter((entry) => entry.rarity === rarity);
         }
 
+        const allUserIds = new Set<string>();
+        for (const entry of entries) {
+            if (entry.userId) {
+                allUserIds.add(entry.userId);
+            }
+        }
+
+        const usernames = await dbController.getPlayerNames(
+            Array.from(allUserIds)
+        );
+
         const groupedResults: Record<string, GuildRaidResult[]> = {};
 
         for (const entry of entries) {
@@ -519,10 +538,7 @@ export class GuildService {
 
             let username: string | null = null;
             if (useUsernames) {
-                username = await dbController.getPlayerName(entry.userId);
-                if (!username) {
-                    username = "Unknown";
-                }
+                username = usernames[entry.userId] || "Unknown";
             } else {
                 username = entry.userId;
             }
@@ -606,12 +622,20 @@ export class GuildService {
             (entry) => entry.damageType === DamageType.BOMB
         );
 
+        const allUserIds = new Set<string>();
+        for (const entry of entries) {
+            if (entry.userId) {
+                allUserIds.add(entry.userId);
+            }
+        }
+
+        const usernames = await dbController.getPlayerNames(
+            Array.from(allUserIds)
+        );
+
         const bombsPerUser: Record<string, number> = {};
         for (const bomb of bombs) {
-            let username = await dbController.getPlayerName(bomb.userId);
-            if (!username) {
-                username = "Unknown";
-            }
+            const username = usernames[bomb.userId] || "Unknown";
 
             bombsPerUser[username] = (bombsPerUser[username] ?? 0) + 1;
         }
@@ -631,14 +655,6 @@ export class GuildService {
         season: number,
         tier?: Rarity
     ) {
-        /**
-         * There are 3 meta teams in tacticus at the moment:
-         * 1. Multi-hit team (Ragnar, Eldryon, Kharn, Aunshi, Snotflogga, Calgar and Big Boss Gulgortz)
-         * 2. Psyker team (Neurothrope, Yazakhor, Abraxas, Ahrimann, Eldryon, Roswitha, Mephiston),
-         * 3. Mech team (Exitor Rho, Tan Gida, Actus, Sho'syl, Vitruvius, Big Boss Gulgortz, Aneph Null)
-         *
-         * For each entry in the data, we need to figure out which team it most likely is by checking if they have a majority of the meta team members.
-         */
         try {
             const apiKey = await dbController.getUserToken(userId);
             if (!apiKey) {
@@ -806,11 +822,14 @@ export class GuildService {
                 groupedResults[userID].push(entry);
             }
 
+            const allUserIds = Object.keys(groupedResults);
+            const allUsernames = await dbController.getPlayerNames(allUserIds);
+
             const result: Record<string, TeamDistribution> = {};
             for (const key in groupedResults) {
                 // Replace ID with username
                 const entries = groupedResults[key];
-                const username = await dbController.getPlayerName(key);
+                const username = allUsernames[key] || "Unknown";
                 if (!username || !entries) {
                     continue;
                 }
@@ -964,9 +983,10 @@ export class GuildService {
      * @returns A record of usernames to their respective GuildRaidAvailable objects or null if an error occurred.
      */
     async getAvailableTokensAndBombs(userId: string) {
-        const tokenCooldownInSeconds = 12 * 60 * 60;
-        const bombCooldownInSeconds = 18 * 60 * 60;
-        const maxTokens = 3;
+        const TOKENCOOLDOWNINSECONDS = 12 * 60 * 60;
+        const BOMBCOOLDOWNINSECONDS = 18 * 60 * 60;
+        const BOMBCOOLDOWNHOURS = 18;
+        const MAXTOKENS = 3;
         const now = new Date();
 
         try {
@@ -1057,7 +1077,7 @@ export class GuildService {
             await Promise.all(
                 Object.entries(users).map(async ([userId, data]) => {
                     const temp: GuildRaidAvailable = {
-                        tokens: maxTokens,
+                        tokens: MAXTOKENS,
                         bombs: 1,
                     };
 
@@ -1085,14 +1105,14 @@ export class GuildService {
                         const diff =
                             getUnixTimestamp(now) - mostRecentBomb.startedOn;
                         const diffHours = Math.floor(diff / 3600);
-                        if (diffHours < 18) {
+                        if (diffHours < BOMBCOOLDOWNHOURS) {
                             temp.bombs = 0;
                             temp.bombCooldown = SecondsToString(
-                                bombCooldownInSeconds - diff
+                                BOMBCOOLDOWNINSECONDS - diff
                             );
                         } else {
                             temp.bombCooldown = SecondsToString(
-                                diff - bombCooldownInSeconds,
+                                diff - BOMBCOOLDOWNINSECONDS,
                                 true
                             );
                         }
@@ -1121,11 +1141,11 @@ export class GuildService {
                         });
 
                     token = evaluateToken(token, getUnixTimestamp(now));
-                    if (token.count < maxTokens) {
+                    if (token.count < MAXTOKENS) {
                         const tokenDiff =
                             getUnixTimestamp(now) - token.refreshTime;
                         temp.tokenCooldown = SecondsToString(
-                            tokenCooldownInSeconds - tokenDiff
+                            TOKENCOOLDOWNINSECONDS - tokenDiff
                         );
                     }
                     temp.tokens = token.count;
@@ -1134,15 +1154,16 @@ export class GuildService {
             );
 
             // Replace user IDs with usernames
+            const allUserIds = Object.keys(result);
+            const usernames = await dbController.getPlayerNames(allUserIds);
+
             const resultWithNames: Record<string, GuildRaidAvailable> = {};
-            await Promise.all(
-                Object.entries(result).map(async ([userId, available]) => {
-                    const username = await dbController.getPlayerName(userId);
-                    if (username) {
-                        resultWithNames[username] = available;
-                    }
-                })
-            );
+            for (const [userId, available] of Object.entries(result)) {
+                const username = usernames[userId];
+                if (username) {
+                    resultWithNames[username] = available;
+                }
+            }
 
             return resultWithNames;
         } catch (error) {

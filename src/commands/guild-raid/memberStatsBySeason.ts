@@ -170,6 +170,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     ":bar_chart: - Percentage of total damage dealt by meta teams\n\n" +
                     "**Includes primes:** Yes"
             )
+            .setFields({
+                name: "Rarity filter",
+                value: rarity ? `**${rarity}**.` : "None.",
+            })
             .setTimestamp();
 
         for (const stats of mergedResults) {

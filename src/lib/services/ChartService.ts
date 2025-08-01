@@ -645,11 +645,8 @@ export class ChartService {
 
         const userIds = Array.from(allUsernames);
 
-        const usernamesPromises = userIds.map(
-            async (id) => await dbController.getPlayerName(id)
-        );
-        const usernames = await Promise.all(usernamesPromises);
-        const labels = usernames.map((name) => name || "Unknown");
+        const usernames = await dbController.getPlayerNames(userIds);
+        const labels = userIds.map((id) => usernames[id] || "Unknown");
         const datasets = Object.entries(data).map(
             ([boss, highscores], colorIndex) => {
                 const scores = userIds.map((username) => {
