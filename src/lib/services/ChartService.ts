@@ -191,12 +191,21 @@ export class ChartService {
         average: "Mean" | "Median" = "Median",
         averageValue: number
     ) {
-        const usernames = data.map((data) => data.username);
-        const damage = data.map((data) => data.totalDamage);
-        const totalTokens = data.map((data) => data.totalTokens);
-        const avgDamagePerToken = data.map((data) =>
-            data.totalTokens > 0 ? data.totalDamage / data.totalTokens : 0
-        );
+        const usernames: string[] = [];
+        const damage: number[] = [];
+        const primeDamage: number[] = [];
+        const totalTokens: number[] = [];
+        const avgDamagePerToken: number[] = [];
+
+        data.forEach((item) => {
+            usernames.push(item.username);
+            damage.push(item.totalDamage);
+            primeDamage.push(item.primeDamage ?? 0);
+            totalTokens.push(item.totalTokens);
+            avgDamagePerToken.push(
+                item.totalTokens > 0 ? item.totalDamage / item.totalTokens : 0
+            );
+        });
 
         const chart = await canvas.renderToBuffer({
             type: "bar",
@@ -263,6 +272,23 @@ export class ChartService {
                         },
                     },
                     {
+                        backgroundColor: CHART_COLORS.purple,
+                        label: "Prime damage portion",
+                        data: primeDamage,
+                        borderWidth: 1,
+                        datalabels: {
+                            display: true,
+                            color: "white",
+                            anchor: "center",
+                            font: {
+                                size: 11,
+                            },
+                            formatter: function (value: number) {
+                                return value > 0 ? shortenNumber(value) : null;
+                            },
+                        },
+                    },
+                    {
                         backgroundColor: CHART_COLORS.blue,
                         label: "Total damage",
                         data: damage,
@@ -316,6 +342,7 @@ export class ChartService {
                         grid: {
                             display: false,
                         },
+                        stacked: true,
                     },
                     y: {
                         ticks: {

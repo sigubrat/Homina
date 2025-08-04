@@ -555,10 +555,18 @@ export class GuildService {
                 }
                 existingUserEntry.totalDamage += entry.damageDealt;
                 existingUserEntry.totalTokens += 1;
+
+                if (entry.encounterType === EncounterType.SIDE_BOSS) {
+                    existingUserEntry.primeDamage =
+                        (existingUserEntry.primeDamage ?? 0) +
+                        entry.damageDealt;
+                }
+
                 existingUserEntry.maxDmg = Math.max(
                     existingUserEntry.maxDmg ?? 0,
                     entry.damageDealt
                 );
+
                 existingUserEntry.minDmg = Math.min(
                     existingUserEntry.minDmg ?? entry.damageDealt,
                     entry.damageDealt
@@ -570,6 +578,7 @@ export class GuildService {
                         username: username,
                         totalDamage: 0,
                         totalTokens: 0,
+                        primeDamage: 0,
                         boss: entry.type,
                         set: entry.set + 1,
                         tier: entry.tier,
@@ -582,6 +591,10 @@ export class GuildService {
                         bombCount: 0,
                         username: username,
                         totalDamage: entry.damageDealt,
+                        primeDamage:
+                            entry.encounterType === EncounterType.SIDE_BOSS
+                                ? entry.damageDealt
+                                : 0,
                         totalTokens: 1,
                         boss: entry.type,
                         set: entry.set + 1,
