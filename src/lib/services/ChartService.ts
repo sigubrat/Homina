@@ -72,10 +72,9 @@ export class ChartService {
                 borderWidth: 1,
                 datalabels: {
                     display: true,
-                    color: "#ffffff",
-                    anchor: "center",
+                    color: CHART_COLORS.blue,
+                    anchor: "end",
                     align: "top",
-                    rotation: -45,
                     font: {
                         size: "11",
                     },
@@ -135,16 +134,22 @@ export class ChartService {
                         grid: {
                             display: false,
                         },
+                        border: {
+                            display: false,
+                        },
                     },
                     y: {
                         ticks: {
-                            color: "white",
+                            color: CHART_COLORS.blue,
                             font: {
                                 size: 12,
                             },
                         },
                         grid: {
                             color: "rgba(255, 255, 255, 0.2)",
+                        },
+                        border: {
+                            display: false,
                         },
                     },
                     y2: {
@@ -158,6 +163,9 @@ export class ChartService {
                         },
                         grid: {
                             drawOnChartArea: false,
+                        },
+                        border: {
+                            display: false,
                         },
                     },
                 },
@@ -240,18 +248,44 @@ export class ChartService {
                         fill: false,
                         tension: 0,
                         pointRadius: 3,
-                        yAxisID: "y",
+                        yAxisID: "y3",
+                        datalabels: {
+                            display: true,
+                            color: "white",
+                            anchor: "end",
+                            align: 300,
+                            font: {
+                                size: 11,
+                            },
+                            formatter: function (value: number) {
+                                return shortenNumber(value);
+                            },
+                        },
                     },
                     {
                         backgroundColor: CHART_COLORS.blue,
                         label: "Total damage",
                         data: damage,
                         borderWidth: 1,
+                        datalabels: {
+                            display: true,
+                            color: CHART_COLORS.blue,
+                            anchor: "start",
+                            align: "bottom",
+                            offset: 2,
+                            font: {
+                                size: 11,
+                            },
+                            formatter: function (value: number) {
+                                return shortenNumber(value);
+                            },
+                        },
                     },
                 ],
             },
             options: {
                 plugins: {
+                    datalabels: { display: false },
                     title: {
                         display: true,
                         text: title,
@@ -277,6 +311,7 @@ export class ChartService {
                             font: {
                                 size: 14,
                             },
+                            padding: 10,
                         },
                         grid: {
                             display: false,
@@ -284,13 +319,16 @@ export class ChartService {
                     },
                     y: {
                         ticks: {
-                            color: "white",
+                            color: CHART_COLORS.blue,
                             font: {
                                 size: 14,
                             },
                         },
                         grid: {
-                            color: "rgba(255, 255, 255, 0.4)",
+                            display: false,
+                        },
+                        border: {
+                            display: false,
                         },
                     },
                     y2: {
@@ -301,9 +339,29 @@ export class ChartService {
                             font: {
                                 size: 14,
                             },
+                            stepSize: 1,
                         },
                         grid: {
-                            drawOnChartArea: false,
+                            color: "rgba(255, 255, 255, 0.4)",
+                        },
+                        border: {
+                            display: false,
+                        },
+                    },
+                    y3: {
+                        type: "linear",
+                        position: "left",
+                        ticks: {
+                            color: CHART_COLORS.red,
+                            font: {
+                                size: 12,
+                            },
+                        },
+                        grid: {
+                            display: false,
+                        },
+                        border: {
+                            display: false,
                         },
                     },
                 },
@@ -374,6 +432,7 @@ export class ChartService {
             },
             options: {
                 plugins: {
+                    datalabels: { display: false },
                     title: {
                         display: true,
                         text: title,
@@ -468,11 +527,24 @@ export class ChartService {
                             }
                         },
                         borderWidth: 1,
+                        datalabels: {
+                            display: true,
+                            color: "white",
+                            anchor: "end",
+                            align: "top",
+                            font: {
+                                size: 11,
+                            },
+                            formatter: function (value: number) {
+                                return shortenNumber(value);
+                            },
+                        },
                     },
                 ],
             },
             options: {
                 plugins: {
+                    datalabels: { display: false },
                     title: {
                         display: true,
                         text: [
@@ -584,6 +656,7 @@ export class ChartService {
             },
             options: {
                 plugins: {
+                    datalabels: { display: false },
                     title: {
                         display: true,
                         text: title,
@@ -695,6 +768,7 @@ export class ChartService {
             },
             options: {
                 plugins: {
+                    datalabels: { display: false },
                     title: {
                         display: true,
                         text: title,
