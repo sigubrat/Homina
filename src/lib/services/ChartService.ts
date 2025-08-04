@@ -4,11 +4,13 @@ import {
     CHART_COLORS,
     namedColor,
     numericMedian,
+    shortenNumber,
     standardDeviation,
 } from "@/lib/utils";
 import type { TeamDistribution } from "@/models/types/TeamDistribution";
 import type { Highscore } from "@/models/types/Highscore";
 import { dbController } from "../DatabaseController";
+import ChartDataLabels from "chartjs-plugin-datalabels";
 
 const CHART_WIDTH = 1200;
 const CHART_HEIGHT = 800;
@@ -17,6 +19,9 @@ const canvas = new ChartJSNodeCanvas({
     width: CHART_WIDTH,
     height: CHART_HEIGHT,
     backgroundColour: CHART_COLORS.discordbg,
+    plugins: {
+        modern: [ChartDataLabels],
+    },
 });
 
 export class ChartService {
@@ -65,6 +70,19 @@ export class ChartService {
                 label: title,
                 data: damage,
                 borderWidth: 1,
+                datalabels: {
+                    display: true,
+                    color: "#ffffff",
+                    anchor: "center",
+                    align: "top",
+                    rotation: -45,
+                    font: {
+                        size: "11",
+                    },
+                    formatter: function (value: number) {
+                        return shortenNumber(value);
+                    },
+                },
             },
         ];
 
@@ -90,6 +108,7 @@ export class ChartService {
             },
             options: {
                 plugins: {
+                    datalabels: { display: false },
                     title: {
                         display: true,
                         text: title,
