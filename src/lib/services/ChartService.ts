@@ -199,7 +199,7 @@ export class ChartService {
 
         data.forEach((item) => {
             usernames.push(item.username);
-            damage.push(item.totalDamage);
+            damage.push(item.totalDamage - (item.primeDamage ?? 0));
             primeDamage.push(item.primeDamage ?? 0);
             totalTokens.push(item.totalTokens);
             avgDamagePerToken.push(
@@ -296,8 +296,8 @@ export class ChartService {
                         datalabels: {
                             display: true,
                             color: CHART_COLORS.blue,
-                            anchor: "start",
-                            align: "bottom",
+                            anchor: "end",
+                            align: "top",
                             offset: 2,
                             font: {
                                 size: 11,
@@ -357,6 +357,7 @@ export class ChartService {
                         border: {
                             display: false,
                         },
+                        stacked: true,
                     },
                     y2: {
                         type: "linear",
