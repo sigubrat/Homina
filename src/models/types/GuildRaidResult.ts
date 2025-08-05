@@ -4,6 +4,7 @@ export interface GuildRaidResult {
     totalTokens: number;
     minDmg?: number;
     maxDmg?: number;
+    primeDamage?: number;
     boss: string;
     set: number;
     tier: number;

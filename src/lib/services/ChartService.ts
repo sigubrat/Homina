@@ -4,11 +4,13 @@ import {
     CHART_COLORS,
     namedColor,
     numericMedian,
+    shortenNumber,
     standardDeviation,
 } from "@/lib/utils";
 import type { TeamDistribution } from "@/models/types/TeamDistribution";
 import type { Highscore } from "@/models/types/Highscore";
 import { dbController } from "../DatabaseController";
+import ChartDataLabels from "chartjs-plugin-datalabels";
 
 const CHART_WIDTH = 1200;
 const CHART_HEIGHT = 800;
@@ -17,6 +19,9 @@ const canvas = new ChartJSNodeCanvas({
     width: CHART_WIDTH,
     height: CHART_HEIGHT,
     backgroundColour: CHART_COLORS.discordbg,
+    plugins: {
+        modern: [ChartDataLabels],
+    },
 });
 
 export class ChartService {
@@ -65,6 +70,18 @@ export class ChartService {
                 label: title,
                 data: damage,
                 borderWidth: 1,
+                datalabels: {
+                    display: true,
+                    color: CHART_COLORS.blue,
+                    anchor: "end",
+                    align: "top",
+                    font: {
+                        size: "11",
+                    },
+                    formatter: function (value: number) {
+                        return shortenNumber(value);
+                    },
+                },
             },
         ];
 
@@ -90,6 +107,7 @@ export class ChartService {
             },
             options: {
                 plugins: {
+                    datalabels: { display: false },
                     title: {
                         display: true,
                         text: title,
@@ -116,16 +134,22 @@ export class ChartService {
                         grid: {
                             display: false,
                         },
+                        border: {
+                            display: false,
+                        },
                     },
                     y: {
                         ticks: {
-                            color: "white",
+                            color: CHART_COLORS.blue,
                             font: {
                                 size: 12,
                             },
                         },
                         grid: {
                             color: "rgba(255, 255, 255, 0.2)",
+                        },
+                        border: {
+                            display: false,
                         },
                     },
                     y2: {
@@ -139,6 +163,9 @@ export class ChartService {
                         },
                         grid: {
                             drawOnChartArea: false,
+                        },
+                        border: {
+                            display: false,
                         },
                     },
                 },
@@ -164,12 +191,21 @@ export class ChartService {
         average: "Mean" | "Median" = "Median",
         averageValue: number
     ) {
-        const usernames = data.map((data) => data.username);
-        const damage = data.map((data) => data.totalDamage);
-        const totalTokens = data.map((data) => data.totalTokens);
-        const avgDamagePerToken = data.map((data) =>
-            data.totalTokens > 0 ? data.totalDamage / data.totalTokens : 0
-        );
+        const usernames: string[] = [];
+        const damage: number[] = [];
+        const primeDamage: number[] = [];
+        const totalTokens: number[] = [];
+        const avgDamagePerToken: number[] = [];
+
+        data.forEach((item) => {
+            usernames.push(item.username);
+            damage.push(item.totalDamage - (item.primeDamage ?? 0));
+            primeDamage.push(item.primeDamage ?? 0);
+            totalTokens.push(item.totalTokens);
+            avgDamagePerToken.push(
+                item.totalTokens > 0 ? item.totalDamage / item.totalTokens : 0
+            );
+        });
 
         const chart = await canvas.renderToBuffer({
             type: "bar",
@@ -221,18 +257,61 @@ export class ChartService {
                         fill: false,
                         tension: 0,
                         pointRadius: 3,
-                        yAxisID: "y",
+                        yAxisID: "y3",
+                        datalabels: {
+                            display: true,
+                            color: "white",
+                            anchor: "end",
+                            align: 300,
+                            font: {
+                                size: 11,
+                            },
+                            formatter: function (value: number) {
+                                return shortenNumber(value);
+                            },
+                        },
+                    },
+                    {
+                        backgroundColor: CHART_COLORS.purple,
+                        label: "Prime damage portion",
+                        data: primeDamage,
+                        borderWidth: 1,
+                        datalabels: {
+                            display: true,
+                            color: "white",
+                            anchor: "center",
+                            font: {
+                                size: 11,
+                            },
+                            formatter: function (value: number) {
+                                return value > 0 ? shortenNumber(value) : null;
+                            },
+                        },
                     },
                     {
                         backgroundColor: CHART_COLORS.blue,
                         label: "Total damage",
                         data: damage,
                         borderWidth: 1,
+                        datalabels: {
+                            display: true,
+                            color: CHART_COLORS.blue,
+                            anchor: "end",
+                            align: "top",
+                            offset: 2,
+                            font: {
+                                size: 11,
+                            },
+                            formatter: function (value: number) {
+                                return shortenNumber(value);
+                            },
+                        },
                     },
                 ],
             },
             options: {
                 plugins: {
+                    datalabels: { display: false },
                     title: {
                         display: true,
                         text: title,
@@ -258,21 +337,27 @@ export class ChartService {
                             font: {
                                 size: 14,
                             },
+                            padding: 10,
                         },
                         grid: {
                             display: false,
                         },
+                        stacked: true,
                     },
                     y: {
                         ticks: {
-                            color: "white",
+                            color: CHART_COLORS.blue,
                             font: {
                                 size: 14,
                             },
                         },
                         grid: {
-                            color: "rgba(255, 255, 255, 0.4)",
+                            display: false,
                         },
+                        border: {
+                            display: false,
+                        },
+                        stacked: true,
                     },
                     y2: {
                         type: "linear",
@@ -282,9 +367,29 @@ export class ChartService {
                             font: {
                                 size: 14,
                             },
+                            stepSize: 1,
                         },
                         grid: {
-                            drawOnChartArea: false,
+                            color: "rgba(255, 255, 255, 0.4)",
+                        },
+                        border: {
+                            display: false,
+                        },
+                    },
+                    y3: {
+                        type: "linear",
+                        position: "left",
+                        ticks: {
+                            color: CHART_COLORS.red,
+                            font: {
+                                size: 12,
+                            },
+                        },
+                        grid: {
+                            display: false,
+                        },
+                        border: {
+                            display: false,
                         },
                     },
                 },
@@ -355,6 +460,7 @@ export class ChartService {
             },
             options: {
                 plugins: {
+                    datalabels: { display: false },
                     title: {
                         display: true,
                         text: title,
@@ -449,11 +555,24 @@ export class ChartService {
                             }
                         },
                         borderWidth: 1,
+                        datalabels: {
+                            display: true,
+                            color: "white",
+                            anchor: "end",
+                            align: "top",
+                            font: {
+                                size: 11,
+                            },
+                            formatter: function (value: number) {
+                                return shortenNumber(value);
+                            },
+                        },
                     },
                 ],
             },
             options: {
                 plugins: {
+                    datalabels: { display: false },
                     title: {
                         display: true,
                         text: [
@@ -565,6 +684,7 @@ export class ChartService {
             },
             options: {
                 plugins: {
+                    datalabels: { display: false },
                     title: {
                         display: true,
                         text: title,
@@ -676,6 +796,7 @@ export class ChartService {
             },
             options: {
                 plugins: {
+                    datalabels: { display: false },
                     title: {
                         display: true,
                         text: title,

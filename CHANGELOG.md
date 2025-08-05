@@ -19,7 +19,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
-## [0.30.0] - 2025-07-08
+## [0.31.0] - 2025-08-05
+
+The server is now back up and running, stronger than ever, and with it comes a new update focused on improving the details provided in graphs. I can only thank you for your patience these last couple of days. The Machine spirit should now be satisfied and stable for the foreseeable future.
+
+### Added
+
+-   Multiple graphs now have datalabels so that you know exactly what values you are reading off the graph
+
+### Changed
+
+-   `season-by-rarity` now displays damage dealt to primes as stacked bars instead of just including them in the data.
+-   `season-by-rarity`'s embed description is now more detailed so that you know what you're looking at.
+-   `season-by-rarity` now has a separate y-axis on the left side for average damage per token so that it is easier to read more detailed values and not just see trends.
+
+## [0.30.0] - 2025-07-31
 
 This update provides optimization of database reads to improve overall performance of the bot and some readability improvements. The bot has grown a lot quicker than I ever imagined. As a thank you for all the great feedback, help with testing, moderation, and support, I've managed to get a you little code to use in-game: HOMINA.
 

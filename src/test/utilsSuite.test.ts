@@ -20,6 +20,7 @@ import {
     getMetaTeam,
     rankToElement,
     rankToTier,
+    shortenNumber,
 } from "@/lib/utils";
 import { MetaTeams } from "@/models/enums/MetaTeams";
 import type { GuildRaidResult } from "@/models/types";
@@ -398,5 +399,15 @@ describe("utilsSuite - Algebra", () => {
         expect(rankToTier(8)).toBe("Bronze 3");
         expect(() => rankToTier(-1)).toThrow();
         expect(() => rankToTier(18)).toThrow();
+    });
+
+    test("shortenNumber - Should shorten numbers correctly", () => {
+        expect(shortenNumber(999)).toBe("999");
+        expect(shortenNumber(1000)).toBe("1.0K");
+        expect(shortenNumber(1500)).toBe("1.5K");
+        expect(shortenNumber(1000000)).toBe("1.0M");
+        expect(shortenNumber(2500000)).toBe("2.5M");
+        expect(shortenNumber(1000000000)).toBe("1.0B");
+        expect(shortenNumber(15000000000)).toBe("15.0B");
     });
 });

@@ -467,3 +467,10 @@ export function rankToTier(rank: number) {
 
     return rankToElement(rank) + " " + ((rank % 3) + 1);
 }
+
+export function shortenNumber(num: number): string {
+    if (num < 1e3) return num.toLocaleString();
+    if (num < 1e6) return (num / 1e3).toFixed(1) + "K";
+    if (num < 1e9) return (num / 1e6).toFixed(1) + "M";
+    return (num / 1e9).toFixed(1) + "B";
+}

@@ -11,6 +11,7 @@
         "canvas": "^3.1.2",
         "chart.js": "^4.5.0",
         "chartjs-node-canvas": "^5.0.0",
+        "chartjs-plugin-datalabels": "^2.2.0",
         "discord.js": "^14.21.0",
         "pagination.djs": "^4.0.18",
         "pg": "^8.16.3",
@@ -182,6 +183,8 @@
     "chart.js": ["chart.js@4.5.0", "", { "dependencies": { "@kurkle/color": "^0.3.0" } }, "sha512-aYeC/jDgSEx8SHWZvANYMioYMZ2KX02W6f6uVfyteuCGcadDLcYVHdfdygsTQkQ4TKn5lghoojAsPj5pu0SnvQ=="],
 
     "chartjs-node-canvas": ["chartjs-node-canvas@5.0.0", "", { "dependencies": { "canvas": "^3.1.0", "tslib": "^2.8.1" }, "peerDependencies": { "chart.js": "^4.4.8" } }, "sha512-+Lc5phRWjb+UxAIiQpKgvOaG6Mw276YQx2jl2BrxoUtI3A4RYTZuGM5Dq+s4ReYmCY42WEPSR6viF3lDSTxpvw=="],
+
+    "chartjs-plugin-datalabels": ["chartjs-plugin-datalabels@2.2.0", "", { "peerDependencies": { "chart.js": ">=3.0.0" } }, "sha512-14ZU30lH7n89oq+A4bWaJPnAG8a7ZTk7dKf48YAzMvJjQtjrgg5Dpk9f+LbjCF6bpx3RAGTeL13IXpKQYyRvlw=="],
 
     "chownr": ["chownr@1.1.4", "", {}, "sha512-jJ0bqzaylmJtVnNgzTeSOs8DPavpbYgEr/b0YL8/2GO3xJEhInFmhKMUnEJQjZumK7KXGFhUy89PrsJWlakBVg=="],
 
