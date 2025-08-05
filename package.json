@@ -21,7 +21,7 @@
         "dev": "bun run index.ts | pino-pretty -i pid,hostname -t 'yyyy-mm-dd HH:MM:ss'",
         "deployCommands": "bun src/lib/scripts/deploy_commands.ts",
         "testDb": "bun run src/lib/scripts/test_db.ts",
-        "prod": "pm2 start --interpreter ~/bun-linux-x64-baseline/bun index.ts --name Homina",
+        "prod": "pm2 start --interpreter bun index.ts --name Homina",
         "log": "bun run src/lib/scripts/format_log.ts",
         "migrate": "bun run src/lib/scripts/migrate.ts"
     },
