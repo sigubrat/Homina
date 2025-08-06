@@ -146,10 +146,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setTitle(`Damage dealt in season ${season}`)
             .setDescription(
                 "The graph shows the damage dealt to individual guild bosses\n" +
-                    "- Blue bars (left y-axis): Total damage dealt to boss, including primes\n" +
+                    "- Blue bars (left y-axis): Total damage dealt to boss\n" +
                     "- Red line (leftmost y-axis): Avg damage per token\n" +
                     "- Orange line (right y-axis): Total tokens used\n" +
-                    "- Purple bars (left y-axis): Portion of damage dealt to primes\n" +
+                    "- Purple bars (left y-axis): Damage dealt to primes\n" +
                     "- Yellow dotted line (left y-axis): Guild average damage"
             )
             .setImage("attachment://graph-0.png"); // Set the first chart as the main image

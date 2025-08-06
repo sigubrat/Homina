@@ -267,7 +267,7 @@ export class ChartService {
                                 size: 11,
                             },
                             formatter: function (value: number) {
-                                return shortenNumber(value);
+                                return value > 0 ? shortenNumber(value) : null;
                             },
                         },
                     },
@@ -303,7 +303,7 @@ export class ChartService {
                                 size: 11,
                             },
                             formatter: function (value: number) {
-                                return shortenNumber(value);
+                                return value > 0 ? shortenNumber(value) : null;
                             },
                         },
                     },

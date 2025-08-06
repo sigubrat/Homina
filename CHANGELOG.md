@@ -19,6 +19,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.31.1] - 2025-08-06
+
+Quick patch to clarify that the bars are stacked in `/season-by-rarity`, not overlays. The blue value is damage dealt to the boss and the purple bar is damage dealt to primes.
+
+### Changed
+
+-   Changed embed description of `season-by-rarity` to make it more clear that the bars are stacked.
+-   Removed datalabels in `season-by-rarity` when they're 0
+
 ## [0.31.0] - 2025-08-05
 
 The server is now back up and running, stronger than ever, and with it comes a new update focused on improving the details provided in graphs. I can only thank you for your patience these last couple of days. The Machine spirit should now be satisfied and stable for the foreseeable future.
