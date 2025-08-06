@@ -273,7 +273,7 @@ export class ChartService {
                     },
                     {
                         backgroundColor: CHART_COLORS.purple,
-                        label: "Prime damage portion",
+                        label: "Prime damage",
                         data: primeDamage,
                         borderWidth: 1,
                         datalabels: {
