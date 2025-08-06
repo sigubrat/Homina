@@ -267,13 +267,13 @@ export class ChartService {
                                 size: 11,
                             },
                             formatter: function (value: number) {
-                                return shortenNumber(value);
+                                return value > 0 ? shortenNumber(value) : null;
                             },
                         },
                     },
                     {
                         backgroundColor: CHART_COLORS.purple,
-                        label: "Prime damage portion",
+                        label: "Prime damage",
                         data: primeDamage,
                         borderWidth: 1,
                         datalabels: {
@@ -303,7 +303,7 @@ export class ChartService {
                                 size: 11,
                             },
                             formatter: function (value: number) {
-                                return shortenNumber(value);
+                                return value > 0 ? shortenNumber(value) : null;
                             },
                         },
                     },
