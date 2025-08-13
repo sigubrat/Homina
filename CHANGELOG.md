@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.31.2] - 2025-08-13
+
+This is just a small patch to update the current season config now that we're all fightin' the Riptide battlesuit. Note that changes to the guild raid configs means that the `/season-same` will be misleading for a while since the bosses have changed over the seasons. 
+
 ## [0.31.1] - 2025-08-06
 
 Quick patch to clarify that the bars are stacked in `/season-by-rarity`, not overlays. The blue value is damage dealt to the boss and the purple bar is damage dealt to primes.
