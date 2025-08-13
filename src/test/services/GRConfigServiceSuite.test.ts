@@ -40,8 +40,8 @@ describe("GRConfigServiceSuite", () => {
         expect(config!.Rare.length).toEqual(4);
         expect(config!.Epic.length).toEqual(5);
         expect(config!.Legendary.length).toEqual(5);
-        expect(config!.Common[0]).toBe("C0 Tervigon (Leviathan)");
-        expect(config!.Uncommon[0]).toBe("U0 Hive Tyrant (Kronos)");
-        expect(config!.Legendary[3]).toBe("L3 Szarekh");
+        expect(config!.Common[0]).toBe("C1 Tervigon (Leviathan)");
+        expect(config!.Uncommon[0]).toBe("U1 Hive Tyrant (Kronos)");
+        expect(config!.Legendary[3]).toBe("L4 Szarekh");
     });
 });
