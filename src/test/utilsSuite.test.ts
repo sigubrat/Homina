@@ -224,6 +224,10 @@ describe("utilsSuite - Algebra", () => {
         expect(mapTierToRarity(1, 1)).toBe("U1");
         expect(mapTierToRarity(2, 1)).toBe("R1");
         expect(mapTierToRarity(3, 1)).toBe("E1");
+        expect(mapTierToRarity(4, 1)).toBe("L1");
+        expect(mapTierToRarity(5, 1)).toBe("M1");
+        expect(mapTierToRarity(6, 1)).toBe("L1 :recycle:1");
+        expect(mapTierToRarity(7, 1)).toBe("M1 :recycle:1");
         expect(() => mapTierToRarity(-1, 1)).toThrow("Tier cannot be negative");
     });
 

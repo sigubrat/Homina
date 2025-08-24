@@ -354,13 +354,21 @@ export function mapTierToRarity(
         return `E${set}`;
     } else if (rarity === 4) {
         return `L${set}`;
+    } else if (rarity === 5) {
+        return `M${set}`;
     }
 
     if (!loops) {
-        return `L${set}`;
+        return `M${set}`;
     }
 
-    return `L${set} :recycle:${rarity - 4}`;
+    // For rarity 6+, alternate between L and M
+    // rarity 6 -> L, rarity 7 -> M, rarity 8 -> L, etc.
+    const recycleCount = Math.floor((rarity - 4) / 2);
+    const isEvenRecycle = (rarity - 6) % 2 === 0;
+    const rarityLetter = isEvenRecycle ? "L" : "M";
+
+    return `${rarityLetter}${set} :recycle:${recycleCount}`;
 }
 
 export function isValidUUIDv4(uuid: string): boolean {
