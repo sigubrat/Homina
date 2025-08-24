@@ -1,5 +1,6 @@
 import { logger } from "@/lib";
 import { GuildService } from "@/lib/services/GuildService";
+import { withinNextHour } from "@/lib/utils";
 import {
     ChatInputCommandInteraction,
     EmbedBuilder,
@@ -10,7 +11,13 @@ export const cooldown = 5;
 
 export const data = new SlashCommandBuilder()
     .setName("available-bombs")
-    .setDescription("See who has bombs available");
+    .setDescription("See who has bombs available")
+    .addBooleanOption((option) =>
+        option
+            .setName("soon")
+            .setDescription("Include players with bombs ready in an hour")
+            .setRequired(false)
+    );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
@@ -18,6 +25,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const service = new GuildService();
 
     logger.info(`${interaction.user.id} attempting to use /available-bombs`);
+
+    const soon = interaction.options.getBoolean("soon", false) ?? false;
 
     try {
         const result = await service.getAvailableBombs(interaction.user.id);
@@ -126,7 +135,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 inline: true,
             },
             {
-                name: "Copy-paste players with available bombs",
+                name: "Copy players with available bombs",
                 value:
                     "```" +
                     (Object.entries(result)
@@ -136,6 +145,24 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     "```",
             }
         );
+
+        if (soon) {
+            embed.addFields({
+                name: "Copy players with bombs available in less than an hour",
+                value:
+                    "```" +
+                    (Object.entries(result)
+                        .filter(
+                            ([, available]) =>
+                                available.bombs == 0 &&
+                                available.bombCooldown &&
+                                withinNextHour(available.bombCooldown)
+                        )
+                        .map(([username]) => `@${username}`)
+                        .join("\n") || "None") +
+                    "```",
+            });
+        }
 
         await interaction.editReply({ embeds: [embed] });
     } catch (error) {

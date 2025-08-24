@@ -335,6 +335,19 @@ export function SecondsToString(
     return `${daysPart}${hours}h ${minutes}m ${seconds}s`;
 }
 
+/**
+ * Checks if the cooldown is within the next hour.
+ * @param cooldown The cooldown string in a specific bot-related format (xxHyyM) (e.g., "01h30m").
+ * @returns True if the cooldown is within the next hour, false otherwise.
+ */
+export function withinNextHour(cooldown: string): boolean {
+    cooldown.slice(1);
+
+    const num = Number(cooldown.slice(0, 2));
+
+    return num < 1;
+}
+
 export function mapTierToRarity(
     rarity: number,
     set: number,

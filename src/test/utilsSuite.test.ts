@@ -21,6 +21,7 @@ import {
     rankToElement,
     rankToTier,
     shortenNumber,
+    withinNextHour,
 } from "@/lib/utils";
 import { MetaTeams } from "@/models/enums/MetaTeams";
 import type { GuildRaidResult } from "@/models/types";
@@ -413,5 +414,16 @@ describe("utilsSuite - Algebra", () => {
         expect(shortenNumber(2500000)).toBe("2.5M");
         expect(shortenNumber(1000000000)).toBe("1.0B");
         expect(shortenNumber(15000000000)).toBe("15.0B");
+    });
+
+    test("withinNextHour - Should return true for cooldowns within the next hour", () => {
+        expect(withinNextHour("00h30m")).toBe(true);
+        expect(withinNextHour("00h32m")).toBe(true);
+        expect(withinNextHour("00h00m")).toBe(true);
+    });
+
+    test("withinNextHour - Should return false for cooldowns outside the next hour", () => {
+        expect(withinNextHour("01h01m")).toBe(false);
+        expect(withinNextHour("02h00m")).toBe(false);
     });
 });
