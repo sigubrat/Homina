@@ -267,16 +267,30 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                         " " +
                         boss.split(/(?=[A-Z])/)[0]?.substring(0, 4);
 
-                    userStatsPerBoss[bossName] = [userAvg, relativeDamage];
+                    const maxDmg = (userData.maxDmg || 0).toLocaleString(
+                        undefined,
+                        {
+                            maximumFractionDigits: 0,
+                        }
+                    );
+
+                    userStatsPerBoss[bossName] = [
+                        userAvg,
+                        relativeDamage,
+                        maxDmg,
+                    ];
                 }
 
                 const bossRelativeStrings = Object.entries(userStatsPerBoss)
                     .map(([bossname, user]) => {
                         const userAvgStr = user[0];
                         const userRelativeTotal = user[1];
+                        const userMaxDmg = user[2];
                         return `${bossname.padEnd(8)} ${userAvgStr!.padStart(
                             10
-                        )} ${userRelativeTotal!.padStart(8)}`;
+                        )} ${userRelativeTotal!.padStart(
+                            8
+                        )} ${userMaxDmg!.padStart(10)}`;
                     })
                     .join("\n");
 
@@ -295,8 +309,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                         { maximumFractionDigits: 1 }
                     )}\` — User tokens: \`${userTokens}\` — Relative Tokens: \`${relativeTokens}\`
                     \`\`\`${"Boss".padEnd(6)} ${"User Avg".padEnd(
-                        12
-                    )} Rel. total\n${bossRelativeStrings}\`\`\``,
+                        10
+                    )} ${"Rel. total".padEnd(12)} ${"Max Dmg".padEnd(
+                        8
+                    )}\n${bossRelativeStrings}\`\`\``,
                 });
             }
         }
