@@ -1242,6 +1242,90 @@ export class GuildService {
         }
     }
 
+    async getAvailableBombs(userId: string) {
+        const BOMBCOOLDOWNINSECONDS = 18 * 60 * 60;
+        const BOMBCOOLDOWNHOURS = 18;
+        const now = new Date();
+
+        try {
+            const apiKey = await dbController.getUserToken(userId);
+            if (!apiKey) {
+                return null;
+            }
+
+            const resp = await this.client.getGuildRaidByCurrentSeason(apiKey);
+            if (!resp || !resp.entries) {
+                return null;
+            }
+
+            const entries = resp.entries.filter(
+                (raid) => raid.damageType === DamageType.BOMB
+            );
+
+            const userBombs: Record<string, Raid[]> = {};
+
+            for (const entry of entries) {
+                userBombs[entry.userId] = userBombs[entry.userId] || [];
+                userBombs[entry.userId]?.push(entry);
+            }
+
+            const allUsernames = await dbController.getPlayerNames(
+                Object.keys(userBombs)
+            );
+
+            const unknownUserMap = new Map<string, string>();
+            let unknownCounter = 1;
+
+            const result: Record<string, GuildRaidAvailable> = {};
+
+            for (const [userId, bombs] of Object.entries(userBombs)) {
+                const temp: GuildRaidAvailable = {
+                    tokens: 3,
+                    bombs: 1,
+                };
+
+                let username = allUsernames[userId];
+
+                if (!username) {
+                    // Check if we already assigned a number to this unknown user
+                    if (!unknownUserMap.has(userId)) {
+                        unknownUserMap.set(userId, `Unknown ${unknownCounter}`);
+                        unknownCounter++;
+                    }
+                    username = unknownUserMap.get(userId)!;
+                }
+
+                const mostRecentBomb = bombs
+                    .sort((a, b) => b.startedOn - a.startedOn)
+                    .find(() => true);
+
+                if (mostRecentBomb) {
+                    const diff =
+                        getUnixTimestamp(now) - mostRecentBomb.startedOn;
+                    const diffHours = Math.floor(diff / 3600);
+                    if (diffHours < BOMBCOOLDOWNHOURS) {
+                        temp.bombs = 0;
+                        temp.bombCooldown = SecondsToString(
+                            BOMBCOOLDOWNINSECONDS - diff
+                        );
+                    } else {
+                        temp.bombCooldown = SecondsToString(
+                            diff - BOMBCOOLDOWNINSECONDS,
+                            true
+                        );
+                    }
+                }
+
+                result[username] = temp;
+            }
+
+            return result;
+        } catch (error) {
+            logger.error(error, "Error fetching user bombs: ");
+            return null;
+        }
+    }
+
     /**
      * Fetches the guild raid entries for a given user ID and season.
      * @param userId The ID of the user to fetch guild raid entries for.
