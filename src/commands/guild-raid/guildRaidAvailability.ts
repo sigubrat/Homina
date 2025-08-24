@@ -87,7 +87,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             0
         );
 
-        const formattedTotalBombs = `Total bombs: \`${totalBombs}/${players.length}\``;
+        let maxBombs = Object.keys(result).length;
+        maxBombs = maxBombs > 30 ? 30 : maxBombs;
+
+        const formattedTotalBombs = `Total bombs: \`${totalBombs}/${maxBombs}\``;
 
         const table = Object.entries(result)
             .map(([userId, available]) => {
