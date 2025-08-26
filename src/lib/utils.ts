@@ -371,17 +371,17 @@ export function mapTierToRarity(
         return `M${set}`;
     }
 
-    if (!loops) {
-        return `M${set}`;
-    }
-
     // For rarity 6+, alternate between L and M
     // rarity 6 -> L, rarity 7 -> M, rarity 8 -> L, etc.
     const recycleCount = Math.floor((rarity - 4) / 2);
     const isEvenRecycle = (rarity - 6) % 2 === 0;
     const rarityLetter = isEvenRecycle ? "L" : "M";
 
-    return `${rarityLetter}${set} :recycle:${recycleCount}`;
+    if (loops) {
+        return `${rarityLetter}${set} :recycle:${recycleCount}`;
+    } else {
+        return `${rarityLetter}${set}`;
+    }
 }
 
 export function isValidUUIDv4(uuid: string): boolean {
