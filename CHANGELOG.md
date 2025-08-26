@@ -42,6 +42,7 @@ Summer vacation is over (boo) but that means time for a new update (yayy). The r
 ### Special note
 
 -   The next guild raid season changes fundamentally how the game loops over guild raid bosses. This update aims to support that, but that also means that how looping is calculated is now incompatible with prior seasons. Using the `/gr-time-used` commands on past seasons will give some funky results for looping numbers, but the data itself will still be correct.
+-   I've had to make some assumptions regarding how the API will be affected by the upcoming changes to guild raids, which will only be confirmed correct or false when the new season gets going. If you run into any issues please notify me on the support server, but do look in case someone else have already reported it.
 
 ## [0.31.2] - 2025-08-13
 
