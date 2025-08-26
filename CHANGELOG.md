@@ -19,6 +19,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.32.1] - 2025-08-26
+
+### Changed
+
+-   Added info about guild vs player token in `/help`
+
+### Fixed
+
+-   Fixed a small bug in the naming of legendary and mythic bosses
+-   Fixed missing sorting of highscores 
+
 ## [0.32.0] - 2025-08-26
 
 Summer vacation is over (boo) but that means time for a new update (yayy). The recent mythic update has brought some pretty big changes to the guild raid situation and the goal of this update is for the bot to be ready for the upcoming mythic guild raid boss.
