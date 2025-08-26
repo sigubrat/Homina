@@ -38,7 +38,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         if (!teams || Object.keys(teams).length === 0) {
             await interaction.editReply({
-                content: "No meta comps found for your guild.",
+                content:
+                    "No meta comps found for your guild.\n\n" +
+                    "Please make sure you have registered any player-scope keys using the optional parameter in the /add-player command.\n" +
+                    "See /help or the discord server if you have any questions.",
             });
             return;
         }

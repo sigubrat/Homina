@@ -37,7 +37,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     value:
                         "1. Register your account using `/register`. You will need an API created by a (co-)leader in your guild with Guild and Raid scope checked off.\n" +
                         "2. Use `/member-ids` to get a list of members in the guild.\n" +
-                        "3. Use the list and `/update-members` command to register usernames.\n",
+                        "3. Use the list and `/update-members` command to register usernames into what we call the 'memberlist'.\n",
                 },
                 {
                     name: "Register additional users",
@@ -49,19 +49,24 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 {
                     name: "Updating members",
                     value:
-                        "Members come and go, but that means you will need to update the member IDs stored in the bot. You have two options:\n" +
+                        "Members come and go, but that means you will need to update the member IDs stored in the bot. You have three options:\n" +
                         "1. Use `/member-ids`and add the username of the new member before using `/update-members`.\n" +
-                        "2. Use `/add-member`or /remove-member` to add or remove a single member.\n",
+                        "2. Use `/add-member`or /remove-member` to add or remove a single member.\n" +
+                        "3. Use `/add-username` to add a username for the most recently joined member with a placeholder name.",
+                },
+                {
+                    name: "Registering player-scope API keys",
+                    value:
+                        "The bot stores two types of API keys: \n" +
+                        "1. The mandatory guild- and raid-scope keys that you provide when you register. This is used to fetch all guild-related data.\n" +
+                        "2. The optional player-scope keys that belong to individual players in your memberlist. This provides optional features and can be added using the optional parameter 'player-api-token' in the /add-member command.",
                 },
                 {
                     name: "__Commands:__",
                     value: "",
                 }
             )
-            .setTimestamp()
-            .setFooter({
-                text: "Bot Help",
-            });
+            .setTimestamp();
 
         for (const command of commands) {
             pagination.addFields({
