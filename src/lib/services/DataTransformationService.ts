@@ -197,6 +197,11 @@ export class DataTransformationService {
             }
         }
 
+        // Sort each highscore array by value in descending order
+        for (const key in result) {
+            result[key]?.sort((a, b) => b.value - a.value);
+        }
+
         return result;
     }
 }

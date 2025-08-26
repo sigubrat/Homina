@@ -173,13 +173,13 @@ describe("DataTransformationServiceSuite - Algebra", () => {
         expect(transformedData).toEqual({
             "L1 AdmecManipulus": [
                 {
-                    username: "test1",
-                    value: 200,
+                    username: "test2",
+                    value: 300,
                     team: "Other",
                 },
                 {
-                    username: "test2",
-                    value: 300,
+                    username: "test1",
+                    value: 200,
                     team: "Other",
                 },
             ],
