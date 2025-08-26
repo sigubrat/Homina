@@ -472,17 +472,19 @@ export function rankToElement(rank: number) {
         return "Gold";
     } else if (rank >= 15 && rank < 18) {
         return "Diamond";
+    } else if (rank >= 18 && rank < 21) {
+        return "Adamantium";
     } else {
         throw new Error(
-            `Rank (${rank}) cannot be negative or greater than or equal to 18`
+            `Rank (${rank}) cannot be negative or greater than or equal to 21`
         );
     }
 }
 
 export function rankToTier(rank: number) {
-    if (rank < 0 || rank >= 18) {
+    if (rank < 0 || rank >= 21) {
         throw new Error(
-            `Rank (${rank}) cannot be negative or greater than or equal to 18`
+            `Rank (${rank}) cannot be negative or greater than or equal to 21`
         );
     }
 
