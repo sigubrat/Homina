@@ -21,6 +21,7 @@ import {
     rankToElement,
     rankToTier,
     shortenNumber,
+    withinNextHour,
 } from "@/lib/utils";
 import { MetaTeams } from "@/models/enums/MetaTeams";
 import type { GuildRaidResult } from "@/models/types";
@@ -224,6 +225,10 @@ describe("utilsSuite - Algebra", () => {
         expect(mapTierToRarity(1, 1)).toBe("U1");
         expect(mapTierToRarity(2, 1)).toBe("R1");
         expect(mapTierToRarity(3, 1)).toBe("E1");
+        expect(mapTierToRarity(4, 1)).toBe("L1");
+        expect(mapTierToRarity(5, 1)).toBe("M1");
+        expect(mapTierToRarity(6, 1)).toBe("L1 :recycle:1");
+        expect(mapTierToRarity(7, 1)).toBe("M1 :recycle:1");
         expect(() => mapTierToRarity(-1, 1)).toThrow("Tier cannot be negative");
     });
 
@@ -383,8 +388,9 @@ describe("utilsSuite - Algebra", () => {
         expect(rankToElement(9)).toBe("Silver");
         expect(rankToElement(12)).toBe("Gold");
         expect(rankToElement(15)).toBe("Diamond");
+        expect(rankToElement(18)).toBe("Adamantium");
         expect(() => rankToElement(-1)).toThrow();
-        expect(() => rankToElement(18)).toThrow();
+        expect(() => rankToElement(21)).toThrow();
     });
 
     test("rankToTier - Should convert rank to tier correctly", () => {
@@ -397,8 +403,20 @@ describe("utilsSuite - Algebra", () => {
         expect(rankToTier(6)).toBe("Bronze 1");
         expect(rankToTier(7)).toBe("Bronze 2");
         expect(rankToTier(8)).toBe("Bronze 3");
+        expect(rankToTier(9)).toBe("Silver 1");
+        expect(rankToTier(10)).toBe("Silver 2");
+        expect(rankToTier(11)).toBe("Silver 3");
+        expect(rankToTier(12)).toBe("Gold 1");
+        expect(rankToTier(13)).toBe("Gold 2");
+        expect(rankToTier(14)).toBe("Gold 3");
+        expect(rankToTier(15)).toBe("Diamond 1");
+        expect(rankToTier(16)).toBe("Diamond 2");
+        expect(rankToTier(17)).toBe("Diamond 3");
+        expect(rankToTier(18)).toBe("Adamantium 1");
+        expect(rankToTier(19)).toBe("Adamantium 2");
+        expect(rankToTier(20)).toBe("Adamantium 3");
         expect(() => rankToTier(-1)).toThrow();
-        expect(() => rankToTier(18)).toThrow();
+        expect(() => rankToTier(21)).toThrow();
     });
 
     test("shortenNumber - Should shorten numbers correctly", () => {
@@ -409,5 +427,16 @@ describe("utilsSuite - Algebra", () => {
         expect(shortenNumber(2500000)).toBe("2.5M");
         expect(shortenNumber(1000000000)).toBe("1.0B");
         expect(shortenNumber(15000000000)).toBe("15.0B");
+    });
+
+    test("withinNextHour - Should return true for cooldowns within the next hour", () => {
+        expect(withinNextHour("00h30m")).toBe(true);
+        expect(withinNextHour("00h32m")).toBe(true);
+        expect(withinNextHour("00h00m")).toBe(true);
+    });
+
+    test("withinNextHour - Should return false for cooldowns outside the next hour", () => {
+        expect(withinNextHour("01h01m")).toBe(false);
+        expect(withinNextHour("02h00m")).toBe(false);
     });
 });

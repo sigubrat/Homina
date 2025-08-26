@@ -19,9 +19,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.32.0] - 2025-08-26
+
+Summer vacation is over (boo) but that means time for a new update (yayy). The recent mythic update has brought some pretty big changes to the guild raid situation and the goal of this update is for the bot to be ready for the upcoming mythic guild raid boss.
+
+### Added
+
+-   **New command!** - `/available-bombs` is a simpler version of `/gr-availability` that only cares about bombs. It gives you an overview of available bombs and then lets you copy-paste the usernames of those with an available bomb, and optionally, you can get those who have a bomb available within an hour.
+    -   Optional parameter: `soon` - Display members who have a bomb available within the hour
+-   All commands with rarity options now include the Mythic option
+-   Adamantium rank added to the options in `/meta-comps`
+-   `/track-member` now also includes maximum damage dealt to each boss when a rarity filter is selected.
+
+### Changed
+
+-   Changed how 'unknown' usernames are handled. Each userID that has no registered username in the memberlist now get its own number (Unknown 1, Unknown 2, etc.)
+
+### Fixed
+
+-   Fixed a small bug where the displayed number of total bombs available in `/gr-availability` and `/available-bombs` is based only on the memberlist. It now includes players who have participated and is capped at 30.
+
+### Special note
+
+-   The next guild raid season changes fundamentally how the game loops over guild raid bosses. This update aims to support that, but that also means that how looping is calculated is now incompatible with prior seasons. Using the `/gr-time-used` commands on past seasons will give some funky results for looping numbers, but the data itself will still be correct.
+-   I've had to make some assumptions regarding how the API will be affected by the upcoming changes to guild raids, which will only be confirmed correct or false when the new season gets going. If you run into any issues please notify me on the support server, but do look in case someone else have already reported it.
+
 ## [0.31.2] - 2025-08-13
 
-This is just a small patch to update the current season config now that we're all fightin' the Riptide battlesuit. Note that changes to the guild raid configs means that the `/season-same` will be misleading for a while since the bosses have changed over the seasons. 
+This is just a small patch to update the current season config now that we're all fightin' the Riptide battlesuit. Note that changes to the guild raid configs means that the `/season-same` will be misleading for a while since the bosses have changed over the seasons.
 
 ## [0.31.1] - 2025-08-06
 

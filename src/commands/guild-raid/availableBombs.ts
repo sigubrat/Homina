@@ -1,5 +1,6 @@
 import { logger } from "@/lib";
 import { GuildService } from "@/lib/services/GuildService";
+import { withinNextHour } from "@/lib/utils";
 import {
     ChatInputCommandInteraction,
     EmbedBuilder,
@@ -9,9 +10,13 @@ import {
 export const cooldown = 5;
 
 export const data = new SlashCommandBuilder()
-    .setName("gr-availability")
-    .setDescription(
-        "Get an overview of how many guild raid tokens and bombs each member has available"
+    .setName("available-bombs")
+    .setDescription("See who has bombs available")
+    .addBooleanOption((option) =>
+        option
+            .setName("soon")
+            .setDescription("Include players with bombs ready in an hour")
+            .setRequired(false)
     );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
@@ -19,14 +24,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     const service = new GuildService();
 
-    logger.info(
-        `${interaction.user.username} attempting to use /available-tokens-bombs`
-    );
+    logger.info(`${interaction.user.id} attempting to use /available-bombs`);
+
+    const soon = interaction.options.getBoolean("soon", false) ?? false;
 
     try {
-        const result = await service.getAvailableTokensAndBombs(
-            interaction.user.id
-        );
+        const result = await service.getAvailableBombs(interaction.user.id);
 
         if (
             !result ||
@@ -73,15 +76,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             };
         });
 
-        const totalTokens = Object.values(result).reduce(
-            (acc, available) => acc + available.tokens,
-            0
-        );
-
-        const formattedTotalTokens = `Total tokens: \`${totalTokens}/${
-            players.length * 3
-        }\``;
-
         const totalBombs = Object.values(result).reduce(
             (acc, available) => acc + available.bombs,
             0
@@ -94,40 +88,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const table = Object.entries(result)
             .map(([userId, available]) => {
-                let tokenIcon: string;
-                if (available.tokens === 0) {
-                    tokenIcon = "❌";
-                } else if (available.tokens === 3) {
-                    tokenIcon = "⚠️";
-                } else {
-                    tokenIcon = "✅";
-                }
-                let nToken: string;
-                switch (available.tokens) {
-                    case 0:
-                        nToken = "0";
-                        break;
-                    case 1:
-                        nToken = "⅓";
-                        break;
-                    case 2:
-                        nToken = "⅔";
-                        break;
-                    default:
-                        nToken = "3⁄3";
-                        break;
-                }
-
-                if (!available.tokenCooldown)
-                    available.tokenCooldown = "NONE..";
-                else {
-                    available.tokenCooldown = available.tokenCooldown
-                        .slice(0, -4)
-                        .replace(" ", "");
-                }
-
-                const tokenStatus = `${tokenIcon} ${nToken} \`${available.tokenCooldown}\``;
-
                 const bombIcon = available.bombs > 0 ? "✅" : `❌`;
 
                 let bombStatus: string;
@@ -140,32 +100,25 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 }
 
                 return {
-                    text: `${tokenStatus} - ${bombStatus} - ${userId}`,
-                    tokens: available.tokens,
+                    text: `${bombStatus} - ${userId}`,
+                    bombs: available.bombs,
                 };
             })
-            .sort((a, b) => b.tokens - a.tokens) // Sort by tokens descending
+            .sort((a, b) => b.bombs - a.bombs)
             .map((item) => item.text);
 
         if (table.length === 0) {
             await interaction.editReply({
-                content: "No members have available tokens or bombs right now.",
+                content: "No members have available bombs right now.",
             });
             return;
         }
 
         const embed = new EmbedBuilder()
             .setColor("#0099ff")
-            .setTitle("Available Tokens and Bombs")
-            .setDescription(
-                "Here is the list of members with available tokens and bombs.\n\n" +
-                    "Note that the token cooldowns have an inherit uncertainty due to the nature of the available data for the calculation.\nIn certain cases the cooldown might not be accurate.\n\n" +
-                    "First values are tokens, second values are bombs, then usernames."
-            )
-            .setTimestamp()
-            .setFooter({
-                text: "Data fetched from the guild raid API.\n(NB! Inaccuracies may occur for users who have joined mid-season)",
-            });
+            .setTitle("Available Bombs")
+            .setDescription("Here is the list of members with available bombs.")
+            .setTimestamp();
 
         for (let i = 0; i < table.length; i += 10) {
             embed.addFields({
@@ -177,27 +130,48 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         embed.addFields(
             {
-                name: "Total tokens",
-                value: formattedTotalTokens,
-                inline: true,
-            },
-            {
                 name: "Total bombs",
                 value: formattedTotalBombs,
                 inline: true,
+            },
+            {
+                name: "Copy players with available bombs",
+                value:
+                    "```" +
+                    (Object.entries(result)
+                        .filter(([, available]) => available.bombs > 0)
+                        .map(([username]) => `@${username}`)
+                        .join("\n") || "None") +
+                    "```",
             }
         );
+
+        if (soon) {
+            embed.addFields({
+                name: "Copy players with bombs available in less than an hour",
+                value:
+                    "```" +
+                    (Object.entries(result)
+                        .filter(
+                            ([, available]) =>
+                                available.bombs == 0 &&
+                                available.bombCooldown &&
+                                withinNextHour(available.bombCooldown)
+                        )
+                        .map(([username]) => `@${username}`)
+                        .join("\n") || "None") +
+                    "```",
+            });
+        }
 
         await interaction.editReply({ embeds: [embed] });
     } catch (error) {
         logger.error(
             error,
-            `Error occured in available-tokens-bombs by ${interaction.user.username}`
+            `${interaction.user.id} failed to use /available-bombs`
         );
-        await interaction.editReply({
-            content:
-                "An error occurred while fetching the data. Please try again later or contact the Bot developer if the problem persists.",
-        });
-        return;
+        await interaction.editReply(
+            "There was an error while fetching available bombs."
+        );
     }
 }

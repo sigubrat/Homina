@@ -30,6 +30,7 @@ export const data = new SlashCommandBuilder()
             .setDescription("The rarity of the boss")
             .setRequired(true)
             .addChoices(
+                { name: "Mythic", value: Rarity.MYTHIC },
                 { name: "Legendary", value: Rarity.LEGENDARY },
                 { name: "Epic", value: Rarity.EPIC },
                 { name: "Rare", value: Rarity.RARE },

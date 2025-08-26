@@ -416,6 +416,9 @@ export class GuildService {
             Array.from(allUserIds)
         );
 
+        const unknownUserMap = new Map<string, string>();
+        let unknownCounter = 1;
+
         for (const entry of entries) {
             // Bombs don't count as damage
             if (!entry.userId) {
@@ -429,7 +432,19 @@ export class GuildService {
                 continue;
             }
 
-            const username = usernames[entry.userId] || "Unknown";
+            let username = usernames[entry.userId];
+            if (!username) {
+                // Check if we already assigned a number to this unknown user
+                if (!unknownUserMap.has(entry.userId)) {
+                    unknownUserMap.set(
+                        entry.userId,
+                        `Unknown ${unknownCounter}`
+                    );
+                    unknownCounter++;
+                }
+                username = unknownUserMap.get(entry.userId)!;
+            }
+
             const existingEntry = damagePeruser.find(
                 (e) => e.username === username
             );
@@ -523,6 +538,9 @@ export class GuildService {
             Array.from(allUserIds)
         );
 
+        const unknownUserMap = new Map<string, string>();
+        let unknownCounter = 1;
+
         const groupedResults: Record<string, GuildRaidResult[]> = {};
 
         for (const entry of entries) {
@@ -536,9 +554,20 @@ export class GuildService {
                 groupedResults[boss] = [];
             }
 
-            let username: string | null = null;
+            let username: string | undefined = undefined;
             if (useUsernames) {
-                username = usernames[entry.userId] || "Unknown";
+                username = usernames[entry.userId];
+                if (!username) {
+                    // Check if we already assigned a number to this unknown user
+                    if (!unknownUserMap.has(entry.userId)) {
+                        unknownUserMap.set(
+                            entry.userId,
+                            `Unknown ${unknownCounter}`
+                        );
+                        unknownCounter++;
+                    }
+                    username = unknownUserMap.get(entry.userId)!;
+                }
             } else {
                 username = entry.userId;
             }
@@ -646,9 +675,24 @@ export class GuildService {
             Array.from(allUserIds)
         );
 
+        const unknownUserMap = new Map<string, string>();
+        let unknownCounter = 1;
+
         const bombsPerUser: Record<string, number> = {};
         for (const bomb of bombs) {
-            const username = usernames[bomb.userId] || "Unknown";
+            let username = usernames[bomb.userId];
+
+            if (!username) {
+                // Check if we already assigned a number to this unknown user
+                if (!unknownUserMap.has(bomb.userId)) {
+                    unknownUserMap.set(
+                        bomb.userId,
+                        `Unknown ${unknownCounter}`
+                    );
+                    unknownCounter++;
+                }
+                username = unknownUserMap.get(bomb.userId)!;
+            }
 
             bombsPerUser[username] = (bombsPerUser[username] ?? 0) + 1;
         }
@@ -838,12 +882,25 @@ export class GuildService {
             const allUserIds = Object.keys(groupedResults);
             const allUsernames = await dbController.getPlayerNames(allUserIds);
 
+            const unknownUserMap = new Map<string, string>();
+            let unknownCounter = 1;
+
             const result: Record<string, TeamDistribution> = {};
             for (const key in groupedResults) {
                 // Replace ID with username
                 const entries = groupedResults[key];
-                const username = allUsernames[key] || "Unknown";
-                if (!username || !entries) {
+                let username = allUsernames[key];
+
+                if (!username) {
+                    // Check if we already assigned a number to this unknown user
+                    if (!unknownUserMap.has(key)) {
+                        unknownUserMap.set(key, `Unknown ${unknownCounter}`);
+                        unknownCounter++;
+                    }
+                    username = unknownUserMap.get(key)!;
+                }
+
+                if (!entries) {
                     continue;
                 }
 
@@ -1181,6 +1238,90 @@ export class GuildService {
             return resultWithNames;
         } catch (error) {
             logger.error(error, "Error fetching available tokens and bombs: ");
+            return null;
+        }
+    }
+
+    async getAvailableBombs(userId: string) {
+        const BOMBCOOLDOWNINSECONDS = 18 * 60 * 60;
+        const BOMBCOOLDOWNHOURS = 18;
+        const now = new Date();
+
+        try {
+            const apiKey = await dbController.getUserToken(userId);
+            if (!apiKey) {
+                return null;
+            }
+
+            const resp = await this.client.getGuildRaidByCurrentSeason(apiKey);
+            if (!resp || !resp.entries) {
+                return null;
+            }
+
+            const entries = resp.entries.filter(
+                (raid) => raid.damageType === DamageType.BOMB
+            );
+
+            const userBombs: Record<string, Raid[]> = {};
+
+            for (const entry of entries) {
+                userBombs[entry.userId] = userBombs[entry.userId] || [];
+                userBombs[entry.userId]?.push(entry);
+            }
+
+            const allUsernames = await dbController.getPlayerNames(
+                Object.keys(userBombs)
+            );
+
+            const unknownUserMap = new Map<string, string>();
+            let unknownCounter = 1;
+
+            const result: Record<string, GuildRaidAvailable> = {};
+
+            for (const [userId, bombs] of Object.entries(userBombs)) {
+                const temp: GuildRaidAvailable = {
+                    tokens: 3,
+                    bombs: 1,
+                };
+
+                let username = allUsernames[userId];
+
+                if (!username) {
+                    // Check if we already assigned a number to this unknown user
+                    if (!unknownUserMap.has(userId)) {
+                        unknownUserMap.set(userId, `Unknown ${unknownCounter}`);
+                        unknownCounter++;
+                    }
+                    username = unknownUserMap.get(userId)!;
+                }
+
+                const mostRecentBomb = bombs
+                    .sort((a, b) => b.startedOn - a.startedOn)
+                    .find(() => true);
+
+                if (mostRecentBomb) {
+                    const diff =
+                        getUnixTimestamp(now) - mostRecentBomb.startedOn;
+                    const diffHours = Math.floor(diff / 3600);
+                    if (diffHours < BOMBCOOLDOWNHOURS) {
+                        temp.bombs = 0;
+                        temp.bombCooldown = SecondsToString(
+                            BOMBCOOLDOWNINSECONDS - diff
+                        );
+                    } else {
+                        temp.bombCooldown = SecondsToString(
+                            diff - BOMBCOOLDOWNINSECONDS,
+                            true
+                        );
+                    }
+                }
+
+                result[username] = temp;
+            }
+
+            return result;
+        } catch (error) {
+            logger.error(error, "Error fetching user bombs: ");
             return null;
         }
     }

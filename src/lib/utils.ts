@@ -335,6 +335,19 @@ export function SecondsToString(
     return `${daysPart}${hours}h ${minutes}m ${seconds}s`;
 }
 
+/**
+ * Checks if the cooldown is within the next hour.
+ * @param cooldown The cooldown string in a specific bot-related format (xxHyyM) (e.g., "01h30m").
+ * @returns True if the cooldown is within the next hour, false otherwise.
+ */
+export function withinNextHour(cooldown: string): boolean {
+    cooldown.slice(1);
+
+    const num = Number(cooldown.slice(0, 2));
+
+    return num < 1;
+}
+
 export function mapTierToRarity(
     rarity: number,
     set: number,
@@ -354,13 +367,21 @@ export function mapTierToRarity(
         return `E${set}`;
     } else if (rarity === 4) {
         return `L${set}`;
+    } else if (rarity === 5) {
+        return `M${set}`;
     }
 
     if (!loops) {
-        return `L${set}`;
+        return `M${set}`;
     }
 
-    return `L${set} :recycle:${rarity - 4}`;
+    // For rarity 6+, alternate between L and M
+    // rarity 6 -> L, rarity 7 -> M, rarity 8 -> L, etc.
+    const recycleCount = Math.floor((rarity - 4) / 2);
+    const isEvenRecycle = (rarity - 6) % 2 === 0;
+    const rarityLetter = isEvenRecycle ? "L" : "M";
+
+    return `${rarityLetter}${set} :recycle:${recycleCount}`;
 }
 
 export function isValidUUIDv4(uuid: string): boolean {
@@ -451,17 +472,19 @@ export function rankToElement(rank: number) {
         return "Gold";
     } else if (rank >= 15 && rank < 18) {
         return "Diamond";
+    } else if (rank >= 18 && rank < 21) {
+        return "Adamantium";
     } else {
         throw new Error(
-            `Rank (${rank}) cannot be negative or greater than or equal to 18`
+            `Rank (${rank}) cannot be negative or greater than or equal to 21`
         );
     }
 }
 
 export function rankToTier(rank: number) {
-    if (rank < 0 || rank >= 18) {
+    if (rank < 0 || rank >= 21) {
         throw new Error(
-            `Rank (${rank}) cannot be negative or greater than or equal to 18`
+            `Rank (${rank}) cannot be negative or greater than or equal to 21`
         );
     }
 

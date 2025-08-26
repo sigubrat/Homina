@@ -19,7 +19,8 @@ export const data = new SlashCommandBuilder()
                 { name: "Bronze", value: 6 },
                 { name: "Silver", value: 9 },
                 { name: "Gold", value: 12 },
-                { name: "Diamond", value: 15 }
+                { name: "Diamond", value: 15 },
+                { name: "Adamantium", value: 18 }
             )
             .setRequired(false)
     );
