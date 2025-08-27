@@ -14,4 +14,5 @@ export const BOSS_EMOJIS: Record<string, string> = {
     Belisarius: "<:Cawl:1385339595578806312>",
     RogalDornTank: "<:RogalDornTank:1385342727037784174>",
     Screamer: "<:ScreamerKiller:1385342920302788608>",
+    Riptide: "<:Riptide:1410163322531217419>",
 };

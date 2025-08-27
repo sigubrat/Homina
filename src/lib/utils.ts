@@ -454,6 +454,8 @@ export function getBossEmoji(boss: string) {
         return BOSS_EMOJIS.RogalDornTank || "❓";
     } else if (identifier === "Screamer-") {
         return BOSS_EMOJIS.Screamer || "❓";
+    } else if (identifier === "Riptide") {
+        return BOSS_EMOJIS.Riptide || "❓";
     } else {
         return "❓";
     }

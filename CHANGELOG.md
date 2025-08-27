@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 -   Updated guild raiss boss config 3 to match the new config in season 82.
+-   Add Riptide emoji
 
 ## [0.32.1] - 2025-08-26
 
