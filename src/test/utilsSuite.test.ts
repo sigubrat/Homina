@@ -330,6 +330,9 @@ describe("utilsSuite - Algebra", () => {
         expect(getBossEmoji("xxScreamer-Killer")).toBe(
             "<:ScreamerKiller:1385342920302788608>"
         );
+        expect(getBossEmoji("xxRiptide")).toBe(
+            "<:Riptide:1410163322531217419>"
+        );
     });
 
     test("getBossEmoji - Should return fallback emoji for unknown or malformed input", () => {
