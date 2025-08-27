@@ -78,28 +78,29 @@
             "U1 Hive Tyrant (Kronos)",
             "U2 Tervigon (Leviathan)",
             "U3 Hive Tyrant (Gorgon)",
-            "U4 Ghazghkull"
+            "U4 Tervigon (Kronos)"
         ],
         "Rare": [
-            "R1 Screamer-Killer",
-            "R2 Belisarius",
-            "R3 Ghazghkull",
-            "R4 Avatar Of Khaine"
+            "R1 Hive Tyrant (Kronos)",
+            "R2 Rogal Dorn",
+            "R3 Riptide",
+            "R4 Screamer-Killer"
         ],
         "Epic": [
-            "E1 Rogal Dorn",
-            "E2 Belisarius",
-            "E3 Avatar Of Khaine",
-            "E4 Ghazghkull",
-            "E5 Szarekh"
+            "E1 Screamer-Killer",
+            "E2 Tervigon (Kronos)",
+            "E3 Rogal Dorn",
+            "E4 Hive Tyrant (Leviathan)",
+            "E5 Riptide"
         ],
         "Legendary": [
-            "L1 Belisarius",
-            "L2 Ghazghkull",
-            "L3 Mortarion",
-            "L4 Magnus",
-            "L5 Szarekh"
-        ]
+            "L1 Tervigon (Gorgon)",
+            "L2 Hive Tyrant (Kronos)",
+            "L3 Screamer-Killer",
+            "L4 Rogal Dorn",
+            "L5 Riptide"
+        ],
+        "Mythic": ["M1 Tervigon (Gorgon)"]
     },
     "guild_boss_season_config_4": {
         "Common": [

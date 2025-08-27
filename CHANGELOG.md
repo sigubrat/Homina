@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.32.2] - 2025-08-26
+
+### Changed
+
+-   Updated guild raiss boss config 3 to match the new config in season 82.
+
 ## [0.32.1] - 2025-08-26
 
 ### Changed
@@ -28,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 -   Fixed a small bug in the naming of legendary and mythic bosses
--   Fixed missing sorting of highscores 
+-   Fixed missing sorting of highscores
 
 ## [0.32.0] - 2025-08-26
 
