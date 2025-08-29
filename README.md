@@ -215,6 +215,8 @@ Contributions are welcome! To contribute:
 
 This project is licensed under the Apache License. See the `LICENSE` file for details.
 
+Attribution is not required if you use of the code in this repository, but it is appreciated. 
+
 ---
 
 ## Common Issues
