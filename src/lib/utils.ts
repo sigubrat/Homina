@@ -349,32 +349,32 @@ export function withinNextHour(cooldown: string): boolean {
 }
 
 export function mapTierToRarity(
-    rarity: number,
+    tier: number,
     set: number,
     loops: boolean = true
 ): string {
-    if (rarity < 0) {
+    if (tier < 0) {
         throw new Error("Tier cannot be negative");
     }
 
-    if (rarity === 0) {
+    if (tier === 0) {
         return `C${set}`;
-    } else if (rarity === 1) {
+    } else if (tier === 1) {
         return `U${set}`;
-    } else if (rarity === 2) {
+    } else if (tier === 2) {
         return `R${set}`;
-    } else if (rarity === 3) {
+    } else if (tier === 3) {
         return `E${set}`;
-    } else if (rarity === 4) {
+    } else if (tier === 4) {
         return `L${set}`;
-    } else if (rarity === 5) {
+    } else if (tier === 5) {
         return `M${set}`;
     }
 
     // For rarity 6+, alternate between L and M
     // rarity 6 -> L, rarity 7 -> M, rarity 8 -> L, etc.
-    const recycleCount = Math.floor((rarity - 4) / 2);
-    const isEvenRecycle = (rarity - 6) % 2 === 0;
+    const recycleCount = Math.floor((tier - 4) / 2);
+    const isEvenRecycle = (tier - 6) % 2 === 0;
     const rarityLetter = isEvenRecycle ? "L" : "M";
 
     if (loops) {
