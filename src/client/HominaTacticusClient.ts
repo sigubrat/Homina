@@ -1,4 +1,6 @@
-import type { Player } from "@/models/types";
+import { mapTierToRarity } from "@/lib/utils";
+import { Rarity } from "@/models/enums";
+import type { Player, Raid } from "@/models/types";
 import type { Guild } from "@/models/types/Guild";
 import type { GuildRaidResponse } from "@/models/types/GuildRaidResponse";
 
@@ -16,6 +18,73 @@ export interface PlayerApiResponse {
 
 class HominaTacticusClient {
     private baseUrl: string = "https://api.tacticusgame.com/api/v1";
+
+    preProcessData(raids: Raid[]): Raid[] {
+        let currentTier = 5;
+        let currentSet = 0;
+        let currentType = "";
+        let previousMythic = false;
+        for (const raid of raids) {
+            if (raid.tier < 5) {
+                continue;
+            }
+
+            console.log(
+                `${raid.type} - ${raid.maxHp} - ${raid.tier} - ${raid.set}`
+            );
+
+            // Find the mythic boss
+            if (
+                raid.maxHp > 20e6 ||
+                (raid.encounterIndex > 0 && raid.maxHp > 1.9e6)
+            ) {
+                if (!previousMythic) console.log("Mythic found");
+                raid.rarity = Rarity.MYTHIC;
+                previousMythic = true;
+                currentSet = 0;
+                if (raid.tier >= 6) {
+                    currentTier = raid.tier + 1;
+                }
+            }
+
+            // Find the first legendary boss after a mythic boss
+            else if (
+                previousMythic &&
+                (raid.maxHp < 20e6 ||
+                    (raid.encounterIndex > 0 && raid.maxHp < 1.9e6))
+            ) {
+                console.log("First legendary found");
+                previousMythic = false;
+                currentTier++;
+                currentSet = 0;
+            }
+
+            // Find other legendary bosses in the same tier
+            else if (
+                raid.type !== currentType &&
+                (raid.maxHp < 20e6 ||
+                    (raid.encounterIndex > 0 && raid.maxHp < 1.9e6))
+            ) {
+                console.log("Other legendary found");
+                currentSet = raid.set;
+            }
+
+            const prevType = currentType;
+            currentType = raid.type;
+            raid.tier = currentTier;
+            raid.set = currentSet;
+
+            if (prevType !== currentType) {
+                console.log(
+                    `New: ${mapTierToRarity(raid.tier, raid.set, true)} ${
+                        raid.type
+                    } - ${raid.maxHp} - ${raid.tier} - ${raid.set}`
+                );
+            }
+        }
+
+        return raids;
+    }
 
     async getGuild(apiKey: string): Promise<GuildApiResponse> {
         const response = await fetch(`${this.baseUrl}/guild`, {
@@ -105,6 +174,8 @@ class HominaTacticusClient {
 
         const body = (await response.json()) as GuildRaidResponse;
 
+        body.entries = this.preProcessData(body.entries);
+
         return body;
     }
 
@@ -125,6 +196,8 @@ class HominaTacticusClient {
             }
 
             const body = (await response.json()) as GuildRaidResponse;
+
+            body.entries = this.preProcessData(body.entries);
 
             return body;
         } catch (error) {
