@@ -24,6 +24,13 @@ class HominaTacticusClient {
         let currentSet = 0;
         let currentType = "";
         let previousMythic = false;
+
+        // No need to process if the guild has not reached tier 5 raids yet
+        const lastTier = raids.at(-1)?.tier;
+        if (!lastTier || lastTier < 5) {
+            return raids;
+        }
+
         for (const raid of raids) {
             if (raid.tier < 5) {
                 continue;
@@ -40,11 +47,11 @@ class HominaTacticusClient {
             ) {
                 if (!previousMythic) console.log("Mythic found");
                 raid.rarity = Rarity.MYTHIC;
+                if (!previousMythic && raid.tier >= 6) {
+                    currentTier++;
+                }
                 previousMythic = true;
                 currentSet = 0;
-                if (raid.tier >= 6) {
-                    currentTier = raid.tier + 1;
-                }
             }
 
             // Find the first legendary boss after a mythic boss
