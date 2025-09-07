@@ -19,6 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.33.0] - 2025-09-07
+
+The mythic update brought tons of cool stuff to the game, but also upset the machine spirit of the API slightly that affected data at, and after, the mythic tier. This update brings a workaround to these issues until Snowprint has time to fix the issue on their side. Special thanks to Tani for testing the workaround during development.
+
+### Added
+
+-   Data from the API is now pre-processed if the guild has reached the first mythic boss of the season. The preprocessing corrects the tier, set, and rarity of the bosses so that it shows up correctly, with the right looping values, in all commands.
+
 ## [0.32.2] - 2025-08-26
 
 ### Changed
