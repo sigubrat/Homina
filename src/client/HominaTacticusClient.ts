@@ -35,10 +35,6 @@ class HominaTacticusClient {
                 continue;
             }
 
-            console.log(
-                `${raid.type} - ${raid.maxHp} - ${raid.tier} - ${raid.set}`
-            );
-
             // Find the mythic boss
             if (
                 raid.maxHp > 20e6 ||
