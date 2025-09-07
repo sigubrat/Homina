@@ -1,4 +1,3 @@
-import { mapTierToRarity } from "@/lib/utils";
 import { Rarity } from "@/models/enums";
 import type { Player, Raid } from "@/models/types";
 import type { Guild } from "@/models/types/Guild";
@@ -20,10 +19,10 @@ class HominaTacticusClient {
     private baseUrl: string = "https://api.tacticusgame.com/api/v1";
 
     preProcessData(raids: Raid[]): Raid[] {
-        let currentTier = 5;
-        let currentSet = 0;
-        let currentType = "";
-        let previousMythic = false;
+        let currentTier: number = 5;
+        let currentSet: number = 0;
+        let currentType: string = "";
+        let previousMythic: boolean = false;
 
         // No need to process if the guild has not reached tier 5 raids yet
         const lastTier = raids.at(-1)?.tier;
@@ -45,7 +44,6 @@ class HominaTacticusClient {
                 raid.maxHp > 20e6 ||
                 (raid.encounterIndex > 0 && raid.maxHp > 1.9e6)
             ) {
-                if (!previousMythic) console.log("Mythic found");
                 raid.rarity = Rarity.MYTHIC;
                 if (!previousMythic && raid.tier >= 6) {
                     currentTier++;
@@ -60,7 +58,6 @@ class HominaTacticusClient {
                 (raid.maxHp < 20e6 ||
                     (raid.encounterIndex > 0 && raid.maxHp < 1.9e6))
             ) {
-                console.log("First legendary found");
                 previousMythic = false;
                 currentTier++;
                 currentSet = 0;
@@ -72,22 +69,12 @@ class HominaTacticusClient {
                 (raid.maxHp < 20e6 ||
                     (raid.encounterIndex > 0 && raid.maxHp < 1.9e6))
             ) {
-                console.log("Other legendary found");
                 currentSet = raid.set;
             }
 
-            const prevType = currentType;
             currentType = raid.type;
             raid.tier = currentTier;
             raid.set = currentSet;
-
-            if (prevType !== currentType) {
-                console.log(
-                    `New: ${mapTierToRarity(raid.tier, raid.set, true)} ${
-                        raid.type
-                    } - ${raid.maxHp} - ${raid.tier} - ${raid.set}`
-                );
-            }
         }
 
         return raids;
