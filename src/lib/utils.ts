@@ -423,38 +423,38 @@ export function getBossEmoji(boss: string) {
     // Remove first two chracters
     const bossname = boss.slice(2).trim().replace(/[()]/g, "");
     const words = splitByCapital(bossname);
-    const identifier = words.at(0);
+    const identifier = words.at(0)?.toLowerCase();
     if (!identifier) {
         return "❓";
     }
 
-    if (identifier === "Szarekh") {
+    if (identifier === "szarekh") {
         return BOSS_EMOJIS.Szarekh || "❓";
-    } else if (identifier === "Tervigon") {
-        const version = words.at(1);
-        if (version === "Leviathan") return BOSS_EMOJIS.TyrantLeviathan || "❓";
-        if (version === "Gorgon") return BOSS_EMOJIS.TyrantGorgon || "❓";
-        if (version === "Kronos") return BOSS_EMOJIS.TyrantKronos || "❓";
-    } else if (identifier === "Hive") {
-        const version = words.at(2);
-        if (version === "Leviathan") return BOSS_EMOJIS.TyrantLeviathan || "❓";
-        if (version === "Gorgon") return BOSS_EMOJIS.TyrantGorgon || "❓";
-        if (version === "Kronos") return BOSS_EMOJIS.TyrantKronos || "❓";
-    } else if (identifier === "Ghazghkull") {
+    } else if (identifier === "tervigon") {
+        const version = words.at(1)?.toLowerCase();
+        if (version === "leviathan") return BOSS_EMOJIS.TyrantLeviathan || "❓";
+        if (version === "gorgon") return BOSS_EMOJIS.TyrantGorgon || "❓";
+        if (version === "kronos") return BOSS_EMOJIS.TyrantKronos || "❓";
+    } else if (identifier === "hive") {
+        const version = words.at(2)?.toLowerCase();
+        if (version === "leviathan") return BOSS_EMOJIS.TyrantLeviathan || "❓";
+        if (version === "gorgon") return BOSS_EMOJIS.TyrantGorgon || "❓";
+        if (version === "kronos") return BOSS_EMOJIS.TyrantKronos || "❓";
+    } else if (identifier === "ghazghkull") {
         return BOSS_EMOJIS.Ghazghkull || "❓";
-    } else if (identifier === "Avatar") {
+    } else if (identifier === "avatar") {
         return BOSS_EMOJIS.Avatar || "❓";
-    } else if (identifier === "Magnus") {
+    } else if (identifier === "magnus") {
         return BOSS_EMOJIS.Magnus || "❓";
-    } else if (identifier === "Mortarion") {
+    } else if (identifier === "mortarion") {
         return BOSS_EMOJIS.Mortarion || "❓";
-    } else if (identifier === "Belisarius") {
+    } else if (identifier === "belisarius") {
         return BOSS_EMOJIS.Belisarius || "❓";
-    } else if (identifier === "Rogal") {
+    } else if (identifier === "rogal") {
         return BOSS_EMOJIS.RogalDornTank || "❓";
-    } else if (identifier === "Screamer-") {
+    } else if (identifier === "screamer-") {
         return BOSS_EMOJIS.Screamer || "❓";
-    } else if (identifier === "Riptide") {
+    } else if (identifier === "riptide") {
         return BOSS_EMOJIS.Riptide || "❓";
     } else {
         return "❓";
