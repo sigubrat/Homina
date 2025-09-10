@@ -130,11 +130,12 @@
         ],
         "Legendary": [
             "L1 Ghazghkull",
-            "L2 Avatar Of Khaine",
-            "L3 Szarekh",
+            "L2 Belisarius",
+            "L3 Avatar of Khaine",
             "L4 Mortarion",
             "L5 Magnus"
-        ]
+        ],
+        "Mythic": ["M1 Szarekh"]
     },
     "guild_boss_season_config_5": {
         "Common": [
