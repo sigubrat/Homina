@@ -388,12 +388,16 @@ export class DatabaseController {
         }
     }
 
-    public async getPlayerName(userId: string): Promise<string | null> {
+    public async getPlayerName(
+        userId: string,
+        guildId: string
+    ): Promise<string | null> {
         try {
             const result = await this.sequelize.models["GuildMembers"]?.findOne(
                 {
                     where: {
                         userId: userId,
+                        guildId: guildId,
                     },
                 }
             );

@@ -108,9 +108,12 @@ export class GuildService {
      * @param userId The ID of the user to fetch the username for.
      * @returns The username of the user or null if not found.
      */
-    async getUsernameById(userId: string): Promise<string | null> {
+    async getUsernameById(
+        userId: string,
+        guildId: string
+    ): Promise<string | null> {
         try {
-            const username = await dbController.getPlayerName(userId);
+            const username = await dbController.getPlayerName(userId, guildId);
             if (!username) {
                 return null;
             }
