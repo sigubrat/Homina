@@ -372,6 +372,7 @@ export class DatabaseController {
                 return {
                     userId: member.getDataValue("userId") as string,
                     username: member.getDataValue("username") as string,
+                    hasPlayerToken: !!member.getDataValue("playerToken"),
                 } as GuildMemberMapping;
             });
 
