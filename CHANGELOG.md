@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.33.2] - 2025-09-16
+
+### Fixed
+
+-   Fixed a bug in the pre-processing of API-data which led to incorrect processing of pre-legendary bosses.
+
 ## [0.33.1] - 2025-09-10
 
 ### Changed
