@@ -419,7 +419,8 @@ export class DatabaseController {
     }
 
     public async getPlayerNames(
-        userIds: string[]
+        userIds: string[],
+        guildId: string
     ): Promise<Record<string, string>> {
         try {
             const result = await this.sequelize.models["GuildMembers"]?.findAll(
@@ -428,6 +429,7 @@ export class DatabaseController {
                         userId: {
                             [Op.in]: userIds,
                         },
+                        guildId: guildId,
                     },
                 }
             );
