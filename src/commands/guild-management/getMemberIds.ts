@@ -36,9 +36,18 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
+        const guildId = await service.getGuildId(interaction.user.id);
+        if (!guildId) {
+            await interaction.editReply({
+                content:
+                    "No guild found. Ensure you are registered and have the correct permissions.",
+            });
+            return;
+        }
+
         // Construct the JSON object
         const memberDataPromises = members.map(async (member) => {
-            const username = await service.getUsernameById(member);
+            const username = await service.getUsernameById(member, guildId);
             return { [member]: username ?? "replace-with-username" };
         });
         const memberDataArray = await Promise.all(memberDataPromises);

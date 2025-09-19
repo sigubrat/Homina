@@ -19,7 +19,7 @@ import {
     testApiToken,
 } from "../utils";
 import type { GuildMemberMapping } from "@/models/types/GuildMemberMapping";
-import { MINIMUM_SEASON_THRESHOLD } from "../constants";
+import { MINIMUM_SEASON_THRESHOLD } from "../configs/constants";
 import type { MetaComps } from "@/models/types/MetaComps";
 
 /**
@@ -80,20 +80,20 @@ export class GuildService {
 
     /**
      * Fetches the members of a guild for a given user ID.
-     * @param userId The ID of the user to fetch guild members for.
+     * @param discordId The ID of the user to fetch guild members for.
      * @returns A list of user IDs of the guild members or null if an error occurred.
      */
-    async getGuildMembers(userId: string): Promise<string[] | null> {
+    async getGuildMembers(discordId: string): Promise<string[] | null> {
         try {
-            const apiKey = await dbController.getUserToken(userId);
+            const apiKey = await dbController.getUserToken(discordId);
             if (!apiKey) {
-                throw new Error("API key not found for user: " + userId);
+                throw new Error("API key not found for user: " + discordId);
             }
 
             const resp = await this.client.getGuild(apiKey);
 
             if (!resp.success || !resp.guild) {
-                throw new Error("Failed to fetch guild for user: " + userId);
+                throw new Error("Failed to fetch guild for user: " + discordId);
             }
 
             return resp.guild.members.map((member) => member.userId);
@@ -108,9 +108,12 @@ export class GuildService {
      * @param userId The ID of the user to fetch the username for.
      * @returns The username of the user or null if not found.
      */
-    async getUsernameById(userId: string): Promise<string | null> {
+    async getUsernameById(
+        userId: string,
+        guildId: string
+    ): Promise<string | null> {
         try {
-            const username = await dbController.getPlayerName(userId);
+            const username = await dbController.getPlayerName(userId, guildId);
             if (!username) {
                 return null;
             }
@@ -375,19 +378,19 @@ export class GuildService {
 
     /**
      * Fetches the guild raid results for a given user ID and season.
-     * @param userId The ID of the user to fetch guild raid results for.
+     * @param discordId The ID of the user to fetch guild raid results for.
      * @param season The season to fetch results for.
      * @param rarity Optional rarity filter for the raid results.
      * @param includePrimes Whether to include prime encounters in the results.
      * @returns A list of GuildRaidResult objects or null if an error occurred.
      */
     async getGuildRaidResultBySeason(
-        userId: string,
+        discordId: string,
         season: number,
         rarity?: Rarity,
         includePrimes: boolean = true
     ): Promise<GuildRaidResult[] | null> {
-        const apiKey = await dbController.getUserToken(userId);
+        const apiKey = await dbController.getUserToken(discordId);
         if (!apiKey) {
             return null;
         }
@@ -412,8 +415,14 @@ export class GuildService {
             }
         }
 
+        const guildId = await this.getGuildId(discordId);
+        if (!guildId) {
+            return null;
+        }
+
         const usernames = await dbController.getPlayerNames(
-            Array.from(allUserIds)
+            Array.from(allUserIds),
+            guildId
         );
 
         const unknownUserMap = new Map<string, string>();
@@ -534,8 +543,14 @@ export class GuildService {
             }
         }
 
+        const guildId = await this.getGuildId(userId);
+        if (!guildId) {
+            return null;
+        }
+
         const usernames = await dbController.getPlayerNames(
-            Array.from(allUserIds)
+            Array.from(allUserIds),
+            guildId
         );
 
         const unknownUserMap = new Map<string, string>();
@@ -640,11 +655,11 @@ export class GuildService {
     }
 
     async getGuildRaidBombsBySeason(
-        userId: string,
+        discordId: string,
         season: number,
         rarity?: Rarity
     ): Promise<Record<string, number> | null> {
-        const apiKey = await dbController.getUserToken(userId);
+        const apiKey = await dbController.getUserToken(discordId);
         if (!apiKey) {
             return null;
         }
@@ -671,8 +686,14 @@ export class GuildService {
             }
         }
 
+        const guildId = await this.getGuildId(discordId);
+        if (!guildId) {
+            return null;
+        }
+
         const usernames = await dbController.getPlayerNames(
-            Array.from(allUserIds)
+            Array.from(allUserIds),
+            guildId
         );
 
         const unknownUserMap = new Map<string, string>();
@@ -832,18 +853,18 @@ export class GuildService {
 
     /**
      * Fetches the meta team distribution per player for a given user ID and season.
-     * @param userId The ID of the user to fetch meta team distribution for.
+     * @param discordId The ID of the user to fetch meta team distribution for.
      * @param season The season to fetch results for.
      * @param tier Optional rarity filter for the raid results.
      * @returns A record of usernames to their respective TeamDistribution objects or null if an error occurred.
      */
     async getMetaTeamDistributionPerPlayer(
-        userId: string,
+        discordId: string,
         season: number,
         tier?: Rarity
     ) {
         try {
-            const apiKey = await dbController.getUserToken(userId);
+            const apiKey = await dbController.getUserToken(discordId);
             if (!apiKey) {
                 return null;
             }
@@ -880,7 +901,16 @@ export class GuildService {
             }
 
             const allUserIds = Object.keys(groupedResults);
-            const allUsernames = await dbController.getPlayerNames(allUserIds);
+
+            const guildId = await this.getGuildId(discordId);
+            if (!guildId) {
+                return null;
+            }
+
+            const allUsernames = await dbController.getPlayerNames(
+                allUserIds,
+                guildId
+            );
 
             const unknownUserMap = new Map<string, string>();
             let unknownCounter = 1;
@@ -1049,10 +1079,10 @@ export class GuildService {
 
     /**
      * Fetches the available tokens and bombs for a given user ID.
-     * @param userId The ID of the user to fetch available tokens and bombs for.
+     * @param discordId The ID of the user to fetch available tokens and bombs for.
      * @returns A record of usernames to their respective GuildRaidAvailable objects or null if an error occurred.
      */
-    async getAvailableTokensAndBombs(userId: string) {
+    async getAvailableTokensAndBombs(discordId: string) {
         const TOKENCOOLDOWNINSECONDS = 12 * 60 * 60;
         const BOMBCOOLDOWNINSECONDS = 18 * 60 * 60;
         const BOMBCOOLDOWNHOURS = 18;
@@ -1060,7 +1090,7 @@ export class GuildService {
         const now = new Date();
 
         try {
-            const apiKey = await dbController.getUserToken(userId);
+            const apiKey = await dbController.getUserToken(discordId);
             if (!apiKey) {
                 return null;
             }
@@ -1094,12 +1124,12 @@ export class GuildService {
                 prevUsers.add(prevEntry.userId);
             }
 
-            const guildId = await this.getGuildId(userId);
+            const guildId = await this.getGuildId(discordId);
             if (!guildId) {
                 return null;
             }
 
-            const currentMembersArr = await this.getGuildMembers(userId);
+            const currentMembersArr = await this.getGuildMembers(discordId);
             if (!currentMembersArr || currentMembersArr.length === 0) {
                 return null;
             }
@@ -1225,7 +1255,10 @@ export class GuildService {
 
             // Replace user IDs with usernames
             const allUserIds = Object.keys(result);
-            const usernames = await dbController.getPlayerNames(allUserIds);
+            const usernames = await dbController.getPlayerNames(
+                allUserIds,
+                guildId
+            );
 
             const resultWithNames: Record<string, GuildRaidAvailable> = {};
             for (const [userId, available] of Object.entries(result)) {
@@ -1242,13 +1275,13 @@ export class GuildService {
         }
     }
 
-    async getAvailableBombs(userId: string) {
+    async getAvailableBombs(discordId: string) {
         const BOMBCOOLDOWNINSECONDS = 18 * 60 * 60;
         const BOMBCOOLDOWNHOURS = 18;
         const now = new Date();
 
         try {
-            const apiKey = await dbController.getUserToken(userId);
+            const apiKey = await dbController.getUserToken(discordId);
             if (!apiKey) {
                 return null;
             }
@@ -1269,8 +1302,14 @@ export class GuildService {
                 userBombs[entry.userId]?.push(entry);
             }
 
+            const guildId = await this.getGuildId(discordId);
+            if (!guildId) {
+                return null;
+            }
+
             const allUsernames = await dbController.getPlayerNames(
-                Object.keys(userBombs)
+                Object.keys(userBombs),
+                guildId
             );
 
             const unknownUserMap = new Map<string, string>();

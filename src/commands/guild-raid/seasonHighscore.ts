@@ -1,5 +1,8 @@
 import { logger } from "@/lib";
-import { MINIMUM_SEASON_THRESHOLD } from "@/lib/constants";
+import {
+    CURRENT_SEASON,
+    MINIMUM_SEASON_THRESHOLD,
+} from "@/lib/configs/constants";
 import { ChartService } from "@/lib/services/ChartService";
 import { CsvService } from "@/lib/services/CsvService";
 import { DataTransformationService } from "@/lib/services/DataTransformationService";
@@ -23,6 +26,7 @@ export const data = new SlashCommandBuilder()
             .setDescription("The season number")
             .setRequired(true)
             .setMinValue(MINIMUM_SEASON_THRESHOLD)
+            .setMaxValue(CURRENT_SEASON)
     )
     .addStringOption((option) => {
         return option

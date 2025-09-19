@@ -18,7 +18,7 @@
     "scripts": {
         "lint": "eslint . --ext .ts",
         "lint:fix": "eslint . --ext .ts --fix",
-        "dev": "bun run index.ts | pino-pretty -i pid,hostname -t 'yyyy-mm-dd HH:MM:ss'",
+        "dev": "bun run index.ts",
         "deployCommands": "bun src/lib/scripts/deploy_commands.ts",
         "testDb": "bun run src/lib/scripts/test_db.ts",
         "prod": "pm2 start --interpreter bun index.ts --name Homina",

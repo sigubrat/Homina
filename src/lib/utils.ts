@@ -5,7 +5,7 @@ import { HominaTacticusClient } from "@/client";
 import type { GuildRaidResult } from "@/models/types";
 import type { TokensUsed } from "@/models/types/TokensUsed";
 import type { TokenStatus } from "@/models/types/TokenStatus";
-import { BOSS_EMOJIS } from "./constants";
+import { BOSS_EMOJIS } from "./configs/constants";
 import { MetaTeams } from "@/models/enums/MetaTeams";
 import type { MetaComps } from "@/models/types/MetaComps";
 

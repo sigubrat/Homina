@@ -372,6 +372,7 @@ export class DatabaseController {
                 return {
                     userId: member.getDataValue("userId") as string,
                     username: member.getDataValue("username") as string,
+                    hasPlayerToken: !!member.getDataValue("playerToken"),
                 } as GuildMemberMapping;
             });
 
@@ -388,12 +389,16 @@ export class DatabaseController {
         }
     }
 
-    public async getPlayerName(userId: string): Promise<string | null> {
+    public async getPlayerName(
+        userId: string,
+        guildId: string
+    ): Promise<string | null> {
         try {
             const result = await this.sequelize.models["GuildMembers"]?.findOne(
                 {
                     where: {
                         userId: userId,
+                        guildId: guildId,
                     },
                 }
             );
@@ -414,7 +419,8 @@ export class DatabaseController {
     }
 
     public async getPlayerNames(
-        userIds: string[]
+        userIds: string[],
+        guildId: string
     ): Promise<Record<string, string>> {
         try {
             const result = await this.sequelize.models["GuildMembers"]?.findAll(
@@ -423,6 +429,7 @@ export class DatabaseController {
                         userId: {
                             [Op.in]: userIds,
                         },
+                        guildId: guildId,
                     },
                 }
             );

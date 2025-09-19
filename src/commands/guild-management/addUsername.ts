@@ -38,6 +38,15 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const service = new GuildService();
 
+        const guildId = await service.getGuildId(interaction.user.id);
+        if (!guildId) {
+            await interaction.editReply({
+                content:
+                    "No guild found. Ensure you are registered and have the correct permissions.",
+            });
+            return;
+        }
+
         // First get all active members of the guild
         const members = await service.getGuildMembers(interaction.user.id);
         if (!members || members.length === 0) {
@@ -51,7 +60,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         const memberDataPromises = members.map(async (member) => {
-            const username = await service.getUsernameById(member);
+            const username = await service.getUsernameById(member, guildId);
             return { [member]: username ?? "replace-with-username" };
         });
         const memberDataArray = await Promise.all(memberDataPromises);
@@ -75,17 +84,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         if (!recentMemberId) {
             await interaction.editReply({
                 content: "No recent member found without a user ID",
-                options: {
-                    flags: MessageFlags.Ephemeral,
-                },
-            });
-            return;
-        }
-
-        const guildId = await service.getGuildId(interaction.user.id);
-        if (!guildId) {
-            await interaction.editReply({
-                content: "Did not find a guild for your user ID.",
                 options: {
                     flags: MessageFlags.Ephemeral,
                 },
