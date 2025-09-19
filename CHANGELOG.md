@@ -19,6 +19,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.34.0] - 2025-09-19
+
+### Added
+
+-   **New command!** - `/player-token-status` lets you see what players in your guild has the optional player-scope API key registered that is required for a couple of features. Drop by the support server if you're unsure of what this means.
+
+### Changed
+
+-   All commands with a season number parameter now has the current season number set as an upper limit. You can no longer try to fetch data for the wrong season.
+
+### Fixed
+
+-   Fixed a bug where someone could read the username of a user who had left the guild and had been deleted from said guild's memberlist, but had been added by their new guild.
+
 ## [0.33.2] - 2025-09-16
 
 ### Fixed
