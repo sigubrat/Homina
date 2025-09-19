@@ -13,7 +13,10 @@ import {
     sortGuildRaidResultDesc,
 } from "@/lib/utils";
 import { logger } from "@/lib";
-import { MINIMUM_SEASON_THRESHOLD } from "@/lib/constants";
+import {
+    CURRENT_SEASON,
+    MINIMUM_SEASON_THRESHOLD,
+} from "@/lib/configs/constants";
 import { Rarity } from "@/models/enums";
 
 export const cooldown = 5;
@@ -26,6 +29,7 @@ export const data = new SlashCommandBuilder()
             .setDescription("The season number")
             .setRequired(true)
             .setMinValue(MINIMUM_SEASON_THRESHOLD)
+            .setMaxValue(CURRENT_SEASON)
     )
     .addStringOption((option) => {
         return option

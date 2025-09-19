@@ -1,5 +1,8 @@
 import { logger } from "@/lib";
-import { MINIMUM_SEASON_THRESHOLD } from "@/lib/constants";
+import {
+    CURRENT_SEASON,
+    MINIMUM_SEASON_THRESHOLD,
+} from "@/lib/configs/constants";
 import { ChartService } from "@/lib/services/ChartService";
 import { GuildService } from "@/lib/services/GuildService.ts";
 import { numericAverage, numericMedian, standardDeviation } from "@/lib/utils";
@@ -23,7 +26,8 @@ export const data = new SlashCommandBuilder()
             .setName("season")
             .setDescription("The season to check")
             .setRequired(true)
-            .setMinValue(MINIMUM_SEASON_THRESHOLD);
+            .setMinValue(MINIMUM_SEASON_THRESHOLD)
+            .setMaxValue(CURRENT_SEASON);
     })
     .addStringOption((option) => {
         return option

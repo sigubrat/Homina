@@ -2,7 +2,7 @@ import { logger } from "@/lib";
 import {
     MAXIMUM_GUILD_MEMBERS,
     MAXIMUM_TOKENS_PER_SEASON,
-} from "@/lib/constants";
+} from "@/lib/configs/constants";
 import { GuildService } from "@/lib/services/GuildService";
 import { numericAverage, numericMedian } from "@/lib/utils";
 import { Rarity } from "@/models/enums";

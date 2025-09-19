@@ -19,7 +19,7 @@ import {
     testApiToken,
 } from "../utils";
 import type { GuildMemberMapping } from "@/models/types/GuildMemberMapping";
-import { MINIMUM_SEASON_THRESHOLD } from "../constants";
+import { MINIMUM_SEASON_THRESHOLD } from "../configs/constants";
 import type { MetaComps } from "@/models/types/MetaComps";
 
 /**
