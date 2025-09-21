@@ -27,7 +27,10 @@ export class CsvService {
         return buffer;
     }
 
-    async createHighscores(highscores: Record<string, Highscore[]>) {
+    async createHighscores(
+        highscores: Record<string, Highscore[]>,
+        guildId: string
+    ) {
         let output = "";
 
         const allUsernames = new Set<string>();
@@ -38,7 +41,7 @@ export class CsvService {
         }
 
         const userIds = Array.from(allUsernames);
-        const usernames = await dbController.getPlayerNames(userIds);
+        const usernames = await dbController.getPlayerNames(userIds, guildId);
 
         for (const [boss, scores] of Object.entries(highscores)) {
             output += `Boss: ${boss}\n`;

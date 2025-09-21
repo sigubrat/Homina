@@ -752,6 +752,7 @@ export class ChartService {
 
     async createHighscoreChart(
         data: Record<string, Highscore[]>,
+        guildId: string,
         title: string
     ) {
         const allUsernames = new Set<string>();
@@ -765,7 +766,7 @@ export class ChartService {
 
         const userIds = Array.from(allUsernames);
 
-        const usernames = await dbController.getPlayerNames(userIds);
+        const usernames = await dbController.getPlayerNames(userIds, guildId);
         const labels = userIds.map((id) => usernames[id] || "Unknown");
         const datasets = Object.entries(data).map(
             ([boss, highscores], colorIndex) => {
