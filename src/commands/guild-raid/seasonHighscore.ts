@@ -81,12 +81,24 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const csvService = new CsvService();
 
-        const csvBuffer = await csvService.createHighscores(highscores);
+        const guildId = await service.getGuildId(discordId);
+        if (!guildId) {
+            await interaction.editReply({
+                content: "Could not find the guild ID for your account",
+            });
+            return;
+        }
+
+        const csvBuffer = await csvService.createHighscores(
+            highscores,
+            guildId
+        );
 
         const chartService = new ChartService();
 
         const chartBuffer = await chartService.createHighscoreChart(
             highscores,
+            guildId,
             `Season ${season} Highscores (${rarity})`
         );
 

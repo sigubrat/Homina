@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.34.1] - 2025-09-21
+
+### Fixed
+
+-   `/season-highscore` no longer displays all names as 'unknown'.
+
 ## [0.34.0] - 2025-09-19
 
 ### Added
