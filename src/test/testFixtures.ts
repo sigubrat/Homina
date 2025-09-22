@@ -251,6 +251,49 @@ export const RaidResultFixture: Raid[] = [
         },
         globalConfigHash: "34e9c937e23efbb6e4a3eca6f45f7c4d",
     },
+    {
+        userId: "55aefce2-e186-44ab-8532-82732e36f232",
+        tier: 4,
+        set: 0,
+        encounterIndex: 0,
+        remainingHp: 4238881,
+        maxHp: 5000000,
+        encounterType: EncounterType.BOSS,
+        unitId: "GuildBoss10Boss1AdmecBelisarius",
+        type: "Belisarius",
+        rarity: Rarity.LEGENDARY,
+        damageDealt: 900000,
+        damageType: DamageType.BATTLE,
+        startedOn: 1750316881,
+        completedOn: 1750318958,
+        heroDetails: [
+            {
+                unitId: "spaceBlackmane",
+                power: 511288,
+            },
+            {
+                unitId: "eldarFarseer",
+                power: 421678,
+            },
+            {
+                unitId: "worldKharn",
+                power: 534662,
+            },
+            {
+                unitId: "orksWarboss",
+                power: 354190,
+            },
+            {
+                unitId: "orksRuntherd",
+                power: 390248,
+            },
+        ],
+        machineOfWarDetails: {
+            unitId: "astraOrdnanceBattery",
+            power: 218211,
+        },
+        globalConfigHash: "34e9c937e23efbb6e4a3eca6f45f7c4d",
+    },
 ];
 
 export const GuildRaidResultFixture: GuildRaidResult[] = [

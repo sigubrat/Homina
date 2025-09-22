@@ -1,7 +1,12 @@
 import type { Raid } from "@/models/types";
 import type { TimeUsed } from "@/models/types/TimeUsed";
 import { logger } from "../HominaLogger";
-import { getMetaTeam, mapTierToRarity, SecondsToString } from "../utils";
+import {
+    getMetaTeam,
+    mapTierToRarity,
+    SecondsToString,
+    splitByCapital,
+} from "../utils";
 import { DamageType, EncounterType } from "@/models/enums";
 import type { Highscore } from "@/models/types/Highscore";
 
@@ -203,5 +208,23 @@ export class DataTransformationService {
         }
 
         return result;
+    }
+
+    async highestDmgComps(seasonData: Raid[]) {
+        const maxPerBoss: Record<string, Raid> = {};
+
+        for (const raid of seasonData) {
+            const key =
+                splitByCapital(raid.unitId).at(-2)! +
+                splitByCapital(raid.unitId).at(-1)!;
+            if (
+                !maxPerBoss[key] ||
+                raid.damageDealt > maxPerBoss[key].damageDealt
+            ) {
+                maxPerBoss[key] = raid;
+            }
+        }
+
+        return maxPerBoss;
     }
 }

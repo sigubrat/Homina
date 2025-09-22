@@ -17,7 +17,7 @@ describe("DataTransformationServiceSuite - Algebra", () => {
             {
                 "L1 Belisarius": {
                     time: 2727,
-                    tokens: 4,
+                    tokens: 5,
                     bombs: 4,
                     sideboss: [true, "L1 Belisarius"],
                 },
@@ -48,7 +48,7 @@ describe("DataTransformationServiceSuite - Algebra", () => {
                 },
                 "L1 Belisarius": {
                     time: 17,
-                    tokens: 1,
+                    tokens: 2,
                     bombs: 0,
                     sideboss: [false, "L1 Belisarius"],
                 },
@@ -214,6 +214,144 @@ describe("DataTransformationServiceSuite - Algebra", () => {
                     team: "Other",
                 },
             ],
+        });
+    });
+
+    test("highestDmgComps - Should properly transform guild raid data to highest damage comps", async () => {
+        const transformedData = await dtsService.highestDmgComps(
+            testGuildRaidData
+        );
+
+        expect(transformedData).toEqual({
+            AdmecBelisarius: {
+                completedOn: 1750318958,
+                damageDealt: 900000,
+                damageType: DamageType.BATTLE,
+                encounterIndex: 0,
+                encounterType: EncounterType.BOSS,
+                globalConfigHash: "34e9c937e23efbb6e4a3eca6f45f7c4d",
+                heroDetails: [
+                    {
+                        power: 511288,
+                        unitId: "spaceBlackmane",
+                    },
+                    {
+                        power: 421678,
+                        unitId: "eldarFarseer",
+                    },
+                    {
+                        power: 534662,
+                        unitId: "worldKharn",
+                    },
+                    {
+                        power: 354190,
+                        unitId: "orksWarboss",
+                    },
+                    {
+                        power: 390248,
+                        unitId: "orksRuntherd",
+                    },
+                ],
+                machineOfWarDetails: {
+                    power: 218211,
+                    unitId: "astraOrdnanceBattery",
+                },
+                maxHp: 5000000,
+                rarity: Rarity.LEGENDARY,
+                remainingHp: 4238881,
+                set: 0,
+                startedOn: 1750316881,
+                tier: 4,
+                type: "Belisarius",
+                unitId: "GuildBoss10Boss1AdmecBelisarius",
+                userId: "55aefce2-e186-44ab-8532-82732e36f232",
+            },
+            AdmecManipulus: {
+                completedOn: 1750314243,
+                damageDealt: 195387,
+                damageType: DamageType.BATTLE,
+                encounterIndex: 2,
+                encounterType: EncounterType.SIDE_BOSS,
+                globalConfigHash: "34e9c937e23efbb6e4a3eca6f45f7c4d",
+                heroDetails: [
+                    {
+                        power: 131325,
+                        unitId: "astraCreed",
+                    },
+                    {
+                        power: 326572,
+                        unitId: "astraYarrick",
+                    },
+                    {
+                        power: 194393,
+                        unitId: "blackPossession",
+                    },
+                    {
+                        power: 206215,
+                        unitId: "tauMarksman",
+                    },
+                    {
+                        power: 159721,
+                        unitId: "adeptCelestine",
+                    },
+                ],
+                machineOfWarDetails: {
+                    power: 5572,
+                    unitId: "tyranBiovore",
+                },
+                maxHp: 350000,
+                rarity: Rarity.LEGENDARY,
+                remainingHp: 154613,
+                set: 0,
+                startedOn: 1750314154,
+                tier: 4,
+                type: "Belisarius",
+                unitId: "GuildBoss10MiniBoss2AdmecManipulus",
+                userId: "735d8c45-bac6-4770-a7e8-7f0adb0358c1",
+            },
+            AdmecMarshall: {
+                completedOn: 1750315296,
+                damageDealt: 196687,
+                damageType: DamageType.BATTLE,
+                encounterIndex: 1,
+                encounterType: EncounterType.SIDE_BOSS,
+                globalConfigHash: "34e9c937e23efbb6e4a3eca6f45f7c4d",
+                heroDetails: [
+                    {
+                        power: 140946,
+                        unitId: "orksRuntherd",
+                    },
+                    {
+                        power: 158652,
+                        unitId: "spaceBlackmane",
+                    },
+                    {
+                        power: 120965,
+                        unitId: "orksWarboss",
+                    },
+                    {
+                        power: 214604,
+                        unitId: "eldarFarseer",
+                    },
+                    {
+                        power: 96892,
+                        unitId: "eldarAutarch",
+                    },
+                ],
+                machineOfWarDetails: {
+                    power: 794,
+                    unitId: "tyranBiovore",
+                },
+                maxHp: 300000,
+                rarity: Rarity.LEGENDARY,
+                remainingHp: 45095,
+                set: 0,
+                startedOn: 1750315090,
+                tier: 4,
+                type: "Belisarius",
+                unitId: "GuildBoss10MiniBoss1AdmecMarshall",
+                userId: "7a3cf298-b39e-49fd-849a-7553bdbe58c7",
+            },
         });
     });
 });

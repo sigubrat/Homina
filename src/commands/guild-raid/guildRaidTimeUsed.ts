@@ -57,7 +57,7 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 
-    const userID = interaction.user.id;
+    const discordID = interaction.user.id;
     const showDelta = interaction.options.getBoolean("show-delta") ?? false;
 
     const season = interaction.options.getNumber("season");
@@ -83,7 +83,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     try {
         const seasonData = await service.getGuildRaidBySeason(
-            userID,
+            discordID,
             season,
             rarity
         );
@@ -278,7 +278,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     } catch (error) {
         logger.error(
             error,
-            `Error while executing /gr-time-used command for user ${userID}`
+            `Error while executing /gr-time-used command for user ${discordID}`
         );
         await interaction.editReply({
             content:

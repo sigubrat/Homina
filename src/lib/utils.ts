@@ -421,44 +421,193 @@ export function standardDeviation(arr: number[]): number {
 
 export function getBossEmoji(boss: string) {
     // Remove first two chracters
-    const bossname = boss.slice(2).trim().replace(/[()]/g, "");
-    const words = splitByCapital(bossname);
+    const words = splitByCapital(boss);
     const identifier = words.at(0)?.toLowerCase();
     if (!identifier) {
         return "❓";
     }
 
-    if (identifier === "szarekh") {
+    boss = boss.toLowerCase();
+
+    if (boss.includes("szarekh")) {
         return BOSS_EMOJIS.Szarekh || "❓";
-    } else if (identifier === "tervigon") {
+    } else if (boss.includes("tervigon")) {
         const version = words.at(1)?.toLowerCase();
         if (version === "leviathan") return BOSS_EMOJIS.TyrantLeviathan || "❓";
         if (version === "gorgon") return BOSS_EMOJIS.TyrantGorgon || "❓";
         if (version === "kronos") return BOSS_EMOJIS.TyrantKronos || "❓";
-    } else if (identifier === "hive") {
+    } else if (boss.includes("hive")) {
         const version = words.at(2)?.toLowerCase();
         if (version === "leviathan") return BOSS_EMOJIS.TyrantLeviathan || "❓";
         if (version === "gorgon") return BOSS_EMOJIS.TyrantGorgon || "❓";
         if (version === "kronos") return BOSS_EMOJIS.TyrantKronos || "❓";
-    } else if (identifier === "ghazghkull") {
+    } else if (boss.includes("ghazghkull")) {
         return BOSS_EMOJIS.Ghazghkull || "❓";
-    } else if (identifier === "avatar") {
+    } else if (boss.includes("avatar")) {
         return BOSS_EMOJIS.Avatar || "❓";
-    } else if (identifier === "magnus") {
+    } else if (boss.includes("magnus")) {
         return BOSS_EMOJIS.Magnus || "❓";
-    } else if (identifier === "mortarion") {
+    } else if (boss.includes("mortarion")) {
         return BOSS_EMOJIS.Mortarion || "❓";
-    } else if (identifier === "belisarius") {
+    } else if (boss.includes("belisarius")) {
         return BOSS_EMOJIS.Belisarius || "❓";
-    } else if (identifier === "rogal") {
+    } else if (boss.includes("rogal")) {
         return BOSS_EMOJIS.RogalDornTank || "❓";
-    } else if (identifier === "screamer-") {
+    } else if (boss.includes("screamer-")) {
         return BOSS_EMOJIS.Screamer || "❓";
-    } else if (identifier === "riptide") {
+    } else if (boss.includes("riptide")) {
         return BOSS_EMOJIS.Riptide || "❓";
     } else {
         return "❓";
     }
+}
+
+export const UnitIdNameMapping: Record<string, string> = {
+    // Ultramarines
+    ultraTigurius: "Tigurius",
+    ultraInceptorSgt: "Bellator",
+    ultraEliminatorSgt: "Certus",
+    ultraApothecary: "Incisus",
+    ultraTitus: "Titus",
+    ultraCalgar: "Calgar",
+
+    // Sisters of Battle
+    adeptRetributor: "Vindicta",
+    adeptHospitaller: "Isabella",
+    adeptCanoness: "Roswitha",
+    adeptCelestian: "Celestine",
+
+    // Necrons
+    necroWarden: "Makhotep",
+    necroDestroyer: "Imospekh",
+    necroSpyder: "Aleph-Null",
+    necroPlasmancer: "Thutmose",
+    necroOverlord: "Anuphet",
+
+    // Death guard
+    deathBlightlord: "Maladus",
+    deathBlightbringer: "Corrodius",
+    deathRotbone: "Rotbone",
+    deathPutrifier: "Pestillian",
+
+    // Aeldari
+    eldarRanger: "Calandis",
+    eldarFarseer: "Eldryon",
+    eldarAutarch: "Aethana",
+
+    // Orks
+    orksBigMek: "Gibbascrapz",
+    orksRuntherd: "Snotflogga",
+    orksWarboss: "Gulgortz",
+    orksKillaKan: "Snappawrecka",
+    orksNob: "Tanksmasha",
+
+    // Black Legion
+    blackTerminator: "Angrax",
+    blackHaarken: "Haarken",
+    blackPossession: "Archimatos",
+    blackObliterator: "Volk",
+
+    // Tyranids
+    tyranTyrantGuard: "Tyrant Guard",
+    tyranNeurothrope: "Neurothrope",
+    tyranWingedPrime: "Winged Prime",
+    tyranDeathleaper: "Deathleaper",
+    tyranParasite: "Parasite of Mortrex",
+
+    // Astra Militarum
+    astraYarrick: "Yarrick",
+    astraPrimarisPsy: "Sibyll",
+    astraBullgryn: "Kut",
+    astraOrdnance: "Thaddeus",
+
+    // Blood angels
+    bloodSanguinaryPriest: "Nicodemus",
+    bloodMephiston: "Mephiston",
+    bloodDante: "Dante",
+    bloodIntercessor: "Mataneo",
+    bloodDeathCompany: "Lucien",
+
+    // Space wolves
+    spaceHound: "Tjark",
+    spaceBlackmane: "Ragnar",
+    spaceWulfen: "Ulf",
+    spaceStormcaller: "Njal",
+    spaceRockfist: "Arjac",
+
+    // Thousand sons
+    thousTzaangor: "Yazaghor",
+    thousAhriman: "Ahriman",
+    thousInfernalMaster: "Abraxas",
+    thousTerminator: "Toth",
+
+    // Adeptus Mechanicus
+    admecRuststalker: "Exitor-Rho",
+    admecManipulus: "Actus",
+    admecMarshall: "Tan Gi'da",
+    admecDominus: "Vitruvius",
+    admecDestroyer: "Sy-gex",
+
+    // World Eaters
+    worldKharn: "Kharn",
+    worldTerminator: "Wrask",
+    worldJakhal: "Jakhal",
+    worldEightbound: "Azkor",
+    worldExecutions: "Tarvakh",
+
+    // Black Templars
+    templSwordBrother: "Godswyl",
+    templHelbrecht: "Helbrecht",
+    templAggressor: "Burchard",
+    templAncient: "Thoread",
+    templChampion: "Jaeger",
+
+    // Dark Angels
+    darkaAsmodai: "Asmodai",
+    darkaCompanion: "Forcas",
+    darkaTerminator: "Baraqiel",
+    darkaAzrael: "Azrael",
+    darkaHellblaster: "Sarquael",
+
+    // Custodes
+    custoVexilusPraetor: "Aesoth",
+    custoAtlacoya: "Atlacoya",
+    custoTrajann: "Trajann",
+    custoBladeChampion: "Kariyan",
+    custoAllarus: "Allarus",
+
+    // Tau
+    tauMarksman: "Sho'syl",
+    tauCrisis: "Re'vas",
+    tauAunShi: "Aun'shi",
+    tauDarkstrider: "Darkstrider",
+
+    // Genestealers
+    genesMagus: "Xybia",
+    genesBiophagus: "Hollan",
+    genesPrimus: "Isaak",
+    genesPatriarch: "Patermine",
+    genesKelermorph: "Judh",
+
+    // Machines of War
+    astraOrdnanceBattery: "Malleus",
+    blackForgefiend: "Forgefiend",
+    ultraDreadnought: "Galatian",
+    tyranBiovore: "Biovore",
+    deathCrawler: "Plagueburst",
+    adeptExorcist: "Exorcist",
+
+    // Emperor's Children
+    emperNoiseMarine: "Shiron",
+    emperLucius: "Lucius",
+};
+
+export function mapUnitIdToName(unitTid: string): string {
+    if (UnitIdNameMapping[unitTid]) {
+        return UnitIdNameMapping[unitTid];
+    }
+
+    return unitTid;
 }
 
 export function rankToElement(rank: number) {
