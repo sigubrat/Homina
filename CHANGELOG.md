@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.35.2] - 2025-09-24
+
+### Changed
+
+- Changed current season constant 83->84
+
 ## [0.34.1] - 2025-09-21
 
 ### Fixed
