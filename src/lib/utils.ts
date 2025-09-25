@@ -552,7 +552,7 @@ export const UnitIdNameMapping: Record<string, string> = {
     // World Eaters
     worldKharn: "Kharn",
     worldTerminator: "Wrask",
-    worldJakhal: "Jakhal",
+    worldJakhal: "Macer",
     worldEightbound: "Azkor",
     worldExecutions: "Tarvakh",
 
@@ -575,7 +575,6 @@ export const UnitIdNameMapping: Record<string, string> = {
     custoAtlacoya: "Atlacoya",
     custoTrajann: "Trajann",
     custoBladeChampion: "Kariyan",
-    custoAllarus: "Allarus",
 
     // Tau
     tauMarksman: "Sho'syl",
