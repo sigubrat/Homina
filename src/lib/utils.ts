@@ -127,7 +127,7 @@ export const multiHitTeam = [
     "templHelbrecht", // Helbrecht
     "bloodDante", // Dante
     "ultraCalgar", // Calgar
-    "tauAunShi", // Aun'shi
+    "tauAunshi", // Aun'shi
     "darkaAsmodai", // Asmodai
     "darkaCompanion", // Forcas
     "custoTrajann", // Trajann
@@ -420,45 +420,354 @@ export function standardDeviation(arr: number[]): number {
 }
 
 export function getBossEmoji(boss: string) {
-    // Remove first two chracters
-    const bossname = boss.slice(2).trim().replace(/[()]/g, "");
-    const words = splitByCapital(bossname);
-    const identifier = words.at(0)?.toLowerCase();
-    if (!identifier) {
-        return "❓";
-    }
+    boss = boss.toLowerCase();
 
-    if (identifier === "szarekh") {
+    if (boss.includes("szarekh")) {
         return BOSS_EMOJIS.Szarekh || "❓";
-    } else if (identifier === "tervigon") {
-        const version = words.at(1)?.toLowerCase();
-        if (version === "leviathan") return BOSS_EMOJIS.TyrantLeviathan || "❓";
-        if (version === "gorgon") return BOSS_EMOJIS.TyrantGorgon || "❓";
-        if (version === "kronos") return BOSS_EMOJIS.TyrantKronos || "❓";
-    } else if (identifier === "hive") {
-        const version = words.at(2)?.toLowerCase();
-        if (version === "leviathan") return BOSS_EMOJIS.TyrantLeviathan || "❓";
-        if (version === "gorgon") return BOSS_EMOJIS.TyrantGorgon || "❓";
-        if (version === "kronos") return BOSS_EMOJIS.TyrantKronos || "❓";
-    } else if (identifier === "ghazghkull") {
+    } else if (boss.includes("tervigon")) {
+        if (boss.includes("leviathan"))
+            return BOSS_EMOJIS.TyrantLeviathan || "❓";
+        if (boss.includes("gorgon")) return BOSS_EMOJIS.TyrantGorgon || "❓";
+        if (boss.includes("kronos")) return BOSS_EMOJIS.TyrantKronos || "❓";
+    } else if (boss.includes("hive")) {
+        if (boss.includes("leviathan"))
+            return BOSS_EMOJIS.TyrantLeviathan || "❓";
+        if (boss.includes("gorgon")) return BOSS_EMOJIS.TyrantGorgon || "❓";
+        if (boss.includes("kronos")) return BOSS_EMOJIS.TyrantKronos || "❓";
+    } else if (boss.includes("ghazghkull")) {
         return BOSS_EMOJIS.Ghazghkull || "❓";
-    } else if (identifier === "avatar") {
+    } else if (boss.includes("avatar")) {
         return BOSS_EMOJIS.Avatar || "❓";
-    } else if (identifier === "magnus") {
+    } else if (boss.includes("magnus")) {
         return BOSS_EMOJIS.Magnus || "❓";
-    } else if (identifier === "mortarion") {
+    } else if (boss.includes("mortarion")) {
         return BOSS_EMOJIS.Mortarion || "❓";
-    } else if (identifier === "belisarius") {
+    } else if (boss.includes("belisarius")) {
         return BOSS_EMOJIS.Belisarius || "❓";
-    } else if (identifier === "rogal") {
+    } else if (boss.includes("rogal")) {
         return BOSS_EMOJIS.RogalDornTank || "❓";
-    } else if (identifier === "screamer-") {
+    } else if (boss.includes("screamer-")) {
         return BOSS_EMOJIS.Screamer || "❓";
-    } else if (identifier === "riptide") {
+    } else if (boss.includes("riptide")) {
         return BOSS_EMOJIS.Riptide || "❓";
     } else {
         return "❓";
     }
+}
+
+export const UnitIdNameMapping: Record<string, string> = {
+    // Ultramarines
+    ultraTigurius: "Tigurius",
+    ultraInceptorSgt: "Bellator",
+    ultraEliminatorSgt: "Certus",
+    ultraApothecary: "Incisus",
+    ultraTitus: "Titus",
+    ultraCalgar: "Calgar",
+
+    // Sisters of Battle
+    adeptRetributor: "Vindicta",
+    adeptHospitaller: "Isabella",
+    adeptCanoness: "Roswitha",
+    adeptCelestian: "Celestine",
+
+    // Necrons
+    necroWarden: "Makhotep",
+    necroDestroyer: "Imospekh",
+    necroSpyder: "Aleph-Null",
+    necroPlasmancer: "Thutmose",
+    necroOverlord: "Anuphet",
+
+    // Death guard
+    deathBlightlord: "Maladus",
+    deathBlightbringer: "Corrodius",
+    deathRotbone: "Rotbone",
+    deathPutrifier: "Pestillian",
+    deathTyphus: "Typhus",
+
+    // Aeldari
+    eldarRanger: "Calandis",
+    eldarFarseer: "Eldryon",
+    eldarAutarch: "Aethana",
+
+    // Orks
+    orksBigMek: "Gibbascrapz",
+    orksRuntherd: "Snotflogga",
+    orksWarboss: "Gulgortz",
+    orksKillaKan: "Snappawrecka",
+    orksNob: "Tanksmasha",
+
+    // Black Legion
+    blackTerminator: "Angrax",
+    blackHaarken: "Haarken",
+    blackPossession: "Archimatos",
+    blackObliterator: "Volk",
+
+    // Tyranids
+    tyranTyrantGuard: "Tyrant Guard",
+    tyranNeurothrope: "Neurothrope",
+    tyranWingedPrime: "Winged Prime",
+    tyranDeathleaper: "Deathleaper",
+    tyranParasite: "Parasite of Mortrex",
+
+    // Astra Militarum
+    astraYarrick: "Yarrick",
+    astraPrimarisPsy: "Sibyll",
+    astraBullgryn: "Kut",
+    astraOrdnance: "Thaddeus",
+
+    // Blood angels
+    bloodSanguinaryPriest: "Nicodemus",
+    bloodMephiston: "Mephiston",
+    bloodDante: "Dante",
+    bloodIntercessor: "Mataneo",
+    bloodDeathCompany: "Lucien",
+
+    // Space wolves
+    spaceHound: "Tjark",
+    spaceBlackmane: "Ragnar",
+    spaceWulfen: "Ulf",
+    spaceStormcaller: "Njal",
+    spaceRockfist: "Arjac",
+
+    // Thousand sons
+    thousTzaangor: "Yazaghor",
+    thousAhriman: "Ahriman",
+    thousInfernalMaster: "Abraxas",
+    thousTerminator: "Toth",
+    thousSorcerer: "Thaumachus",
+
+    // Adeptus Mechanicus
+    admecRuststalker: "Exitor-Rho",
+    admecManipulus: "Actus",
+    admecMarshall: "Tan Gi'da",
+    admecDominus: "Vitruvius",
+    admecDestroyer: "Sy-gex",
+
+    // World Eaters
+    worldKharn: "Kharn",
+    worldTerminator: "Wrask",
+    worldJakhal: "Macer",
+    worldEightbound: "Azkor",
+    worldExecutions: "Tarvakh",
+
+    // Black Templars
+    templSwordBrother: "Godswyl",
+    templHelbrecht: "Helbrecht",
+    templAggressor: "Burchard",
+    templAncient: "Thoread",
+    templChampion: "Jaeger",
+
+    // Dark Angels
+    darkaAsmodai: "Asmodai",
+    darkaCompanion: "Forcas",
+    darkaTerminator: "Baraqiel",
+    darkaAzrael: "Azrael",
+    darkaHellblaster: "Sarquael",
+
+    // Custodes
+    custoVexilusPraetor: "Aesoth",
+    custoAtlacoya: "Atlacoya",
+    custoTrajann: "Trajann",
+    custoBladeChampion: "Kariyan",
+
+    // Tau
+    tauMarksman: "Sho'syl",
+    tauCrisis: "Re'vas",
+    tauAunshi: "Aun'shi",
+    tauDarkstrider: "Darkstrider",
+    tauShadowsun: "Shadowsun",
+
+    // Genestealers
+    genesMagus: "Xybia",
+    genesBiophagus: "Hollan",
+    genesPrimus: "Isaak",
+    genesPatriarch: "Patermine",
+    genesKelermorph: "Judh",
+
+    // Machines of War
+    astraOrdnanceBattery: "Malleus",
+    blackForgefiend: "Forgefiend",
+    ultraDreadnought: "Galatian",
+    tyranBiovore: "Biovore",
+    deathCrawler: "Plagueburst",
+    adeptExorcist: "Exorcist",
+
+    // Emperor's Children
+    emperNoiseMarine: "Shiron",
+    emperLucius: "Lucius",
+};
+
+export const UnitIdEmojiMapping: Record<string, string> = {
+    // Ultramarines
+    Tigurius: "<:tigerius:1420706517723910265>",
+    ultraInceptorSgt: "<:bellator:1420707580644294828>",
+    ultraEliminatorSgt: "<:certus:1420707452235546724>",
+    ultraApothecary: "<:incisus:1420707279958970368>",
+    ultraTitus: "<:titus:1420706587995144192>",
+    ultraCalgar: "<:calgar:1420706942971809822>",
+
+    // Sisters of Battle
+    adeptRetributor: "<:vindicta:1420706507045077063>",
+    adeptHospitaller: "<:isabella:1420707248795156500>",
+    adeptCanoness: "<:roswitha:1420706739828949065>",
+    adeptCelestian: "<:celestine:1420707484422639717>",
+    adeptMorvenn: "<:morvenn:1420706836935479297>",
+
+    // Necrons
+    necroWarden: "<:makhotep:1420717281897611364>",
+    necroDestroyer: "<:imospekh:1420717361324883988>",
+    necroSpyder: "<:aleph:1420717562886361099>",
+    necroPlasmancer: "<:thutmose:1420717069007327253>",
+    necroOverlord: "<:anuphet:1420717546767781969>",
+
+    // Death guard
+    deathBlightlord: "<:maladus:1420700178528079953>",
+    deathBlightbringer: "<:corrodius:1420700267346792518>",
+    deathRotbone: "<:rotbone:1420700144222867487>",
+    deathPutrifier: "<:pestillian:1420700131719778334>",
+    deathTyphus: "<:typhon:1420700069358997646>",
+
+    // Aeldari
+    eldarRanger: "<:calandis:1420717493374292049>",
+    eldarFarseer: "<:eldryon:1420717437522808872>",
+    eldarAutarch: "<:aethana:1420717581106544641>",
+    eldarMauganRa: "<:mauganra:1420717263753052160>",
+    eldarJainZar: "<:jainzar:1420717321189851217>",
+
+    // Orks
+    orksBigMek: "<:gibbascrapz:1420717418912682035>",
+    orksRuntherd: "<:snotflogga:1420717142294397018>",
+    orksWarboss: "<:gulgortz:1420717515125821501>",
+    orksKillaKan: "Snappawrecka",
+    orksNob: "<:tanksmasha:1420717094160564224>",
+
+    // Black Legion
+    blackTerminator: "<:angrax:1420700348808695818>",
+    blackHaarken: "<:haarken:1420700253073702932>",
+    blackPossession: "<:archimatos:1420700324859215873>",
+    blackObliterator: "<:volk:1420700055932764181>",
+    blackAbaddon: "<:abaddon:1420699864651661353>",
+
+    // Tyranids
+    tyranTyrantGuard: "<:tyrantguard:1420717053832335391>",
+    tyranNeurothrope: "<:neurothrope:1420717243968393308>",
+    tyranWingedPrime: "<:wingedprime:1420717041265938523>",
+    tyranDeathleaper: "<:deathleaper:1420717455726350379>",
+    tyranParasite: "<:parasite:1420717230303346729>",
+
+    // Astra Militarum
+    astraYarrick: "<:yarrick:1420707399622328391>",
+    astraPrimarisPsy: "<:sibyll:1420706704336748605>",
+    astraBullgryn: "<:kut:1420707016078393354>",
+    astraOrdnance: "<:thaddeus:1420706604361191445>",
+    astraCreed: "<:creed:1420707509546782730>",
+
+    // Blood angels
+    bloodSanguinaryPriest: "<:nicodemus:1420706813153906688>",
+    bloodMephiston: "<:mephiston:1420706874105270282>",
+    bloodDante: "<:dante:1420707370085908542>",
+    bloodIntercessor: "<:mataneo:1420706889351827496>",
+    bloodDeathCompany: "<:lucien:1420706999615881266>",
+
+    // Space wolves
+    spaceHound: "<:tjark:1420706575106048050>",
+    spaceBlackmane: "<:ragnar:1420706754152497244>",
+    spaceWulfen: "<:ulf:1420706531862777866>",
+    spaceStormcaller: "<:njal:1420706791729270845>",
+    spaceRockfist: "<:arjac:1420707668603179078>",
+
+    // Thousand sons
+    thousTzaangor: "<:yazaghor:1420700003286122496>",
+    thousAhriman: "<:ahriman:1420700380966293515>",
+    thousInfernalMaster: "<:abraxas:1420700424041795704>",
+    thousTerminator: "<:toth:1420700082814062694>",
+    thousSorcerer: "<:thaumachus:1420700095053041756>",
+
+    // Adeptus Mechanicus
+    admecRuststalker: "<:rho:1420707351165538395>",
+    admecManipulus: "<:actus:1420707727176634389>",
+    admecMarshall: "<:tangida:1420706618026233878>",
+    admecDominus: "<:vitruvius:1420706493774434406>",
+    admecDestroyer: "<:sygex:1420706631187955752>",
+
+    // World Eaters
+    worldKharn: "<:kharn:1420700235801559100>",
+    worldTerminator: "<:wrask:1420700016527413288>",
+    worldJakhal: "<:macer:1420700192373604404>",
+    worldEightbound: "<:azkor:1420700306211209279>",
+    worldExecutions: "<:tarvakh:1420700106545434654>",
+
+    // Black Templars
+    templSwordBrother: "<:godswyl:1420706646858006579>",
+    templHelbrecht: "<:helbrecht:1420707304537460797>",
+    templAggressor: "<:burchard:1420707556871114776>",
+    templAncient: "<:thoread:1420707688224133243>",
+    templChampion: "<:jaeger:1420707533781340201>",
+
+    // Dark Angels
+    darkaAsmodai: "<:asmodai:1420707652618551316>",
+    darkaCompanion: "<:forcas:1420707322065326090>",
+    darkaTerminator: "<:baraqiel:1420707597018726441>",
+    darkaAzrael: "<:azrael:1420707617449316393>",
+    darkaHellblaster: "<:sarquael:1420706719050367056>",
+
+    // Custodes
+    custoVexilusPraetor: "<:aesoth:1420707709468016714>",
+    custoAtlacoya: "<:atlacoya:1420707634545164419>",
+    custoTrajann: "<:trajann:1420706545204727850>",
+    custoBladeChampion: "<:kariyan:1420707205518463149>",
+    custoAllarus: "Allarus",
+
+    // Tau
+    tauMarksman: "<:shosyl:1420717168013873222>",
+    tauCrisis: "<:revas:1420717217330368586>",
+    tauAunshi: "<:aunshi:1420717529659084892>",
+    tauDarkstrider: "<:darkstrider:1420717470641029211>",
+    tauShadowsun: "<:shadowsun:1420717182450536538>",
+
+    // Genestealers
+    genesMagus: "<:xybia:1420717029350178888>",
+    genesBiophagus: "<:hollan:1420717383017959529>",
+    genesPrimus: "<:isaak:1420717340902821971>",
+    genesPatriarch: "<:patermine:1420717080608768040>",
+    genesKelermorph: "<:judh:1420717302789312572>",
+
+    // Machines of War
+    astraOrdnanceBattery: "<:malleus:1420719891626856528>",
+    blackForgefiend: "<:forgefiend:1420719929791086653>",
+    ultraDreadnought: "<:galatian:1420719905430569000>",
+    tyranBiovore: "<:biovore:1420719956550615101>",
+    deathCrawler: "<:plagueburst:1420719879262175343>",
+    adeptExorcist: "<:exorcist:1420719944030486628>",
+
+    // Emperor's Children
+    emperNoiseMarine: "<:shiron:1420700118327365715>",
+    emperLucius: "<:lucius:1420700222241116201>",
+};
+
+export function mapUnitIdToName(unitTid: string): string {
+    if (UnitIdNameMapping[unitTid]) {
+        return UnitIdNameMapping[unitTid];
+    }
+
+    return unitTid;
+}
+
+export function mapUnitIdToEmoji(unitTid: string): string {
+    if (UnitIdEmojiMapping[unitTid]) {
+        return UnitIdEmojiMapping[unitTid];
+    }
+
+    for (const [key, emoji] of Object.entries(UnitIdEmojiMapping)) {
+        if (
+            key.toLowerCase().includes(unitTid.toLowerCase()) ||
+            unitTid.toLowerCase().includes(key.toLowerCase())
+        ) {
+            return emoji;
+        }
+    }
+
+    return unitTid;
 }
 
 export function rankToElement(rank: number) {
