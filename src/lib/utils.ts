@@ -468,7 +468,8 @@ export const UnitIdNameMapping: Record<string, string> = {
     adeptRetributor: "Vindicta",
     adeptHospitaller: "Isabella",
     adeptCanoness: "Roswitha",
-    adeptCelestian: "Celestine",
+    adeptCelestine: "Celestine",
+    adeptMorvenn: "Morvenn",
 
     // Necrons
     necroWarden: "Makhotep",
@@ -610,7 +611,7 @@ export const UnitIdEmojiMapping: Record<string, string> = {
     adeptRetributor: "<:vindicta:1420706507045077063>",
     adeptHospitaller: "<:isabella:1420707248795156500>",
     adeptCanoness: "<:roswitha:1420706739828949065>",
-    adeptCelestian: "<:celestine:1420707484422639717>",
+    adeptCelestine: "<:celestine:1420707484422639717>",
     adeptMorvenn: "<:morvenn:1420706836935479297>",
 
     // Necrons
