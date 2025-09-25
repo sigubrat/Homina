@@ -116,9 +116,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 )} ${splitByCapital(boss).at(-1)}`,
                 value: `${raid.heroDetails
                     .map((h) => mapUnitIdToEmoji(h.unitId))
-                    .join(
-                        "-"
-                    )} — **Damage:** ${raid.damageDealt.toLocaleString()}`,
+                    .join()} — **Damage:** ${raid.damageDealt.toLocaleString()}`,
             });
         }
 

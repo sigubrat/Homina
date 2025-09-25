@@ -420,27 +420,20 @@ export function standardDeviation(arr: number[]): number {
 }
 
 export function getBossEmoji(boss: string) {
-    // Remove first two chracters
-    const words = splitByCapital(boss);
-    const identifier = words.at(0)?.toLowerCase();
-    if (!identifier) {
-        return "❓";
-    }
-
     boss = boss.toLowerCase();
 
     if (boss.includes("szarekh")) {
         return BOSS_EMOJIS.Szarekh || "❓";
     } else if (boss.includes("tervigon")) {
-        const version = words.at(1)?.toLowerCase();
-        if (version === "leviathan") return BOSS_EMOJIS.TyrantLeviathan || "❓";
-        if (version === "gorgon") return BOSS_EMOJIS.TyrantGorgon || "❓";
-        if (version === "kronos") return BOSS_EMOJIS.TyrantKronos || "❓";
+        if (boss.includes("leviathan"))
+            return BOSS_EMOJIS.TyrantLeviathan || "❓";
+        if (boss.includes("gorgon")) return BOSS_EMOJIS.TyrantGorgon || "❓";
+        if (boss.includes("kronos")) return BOSS_EMOJIS.TyrantKronos || "❓";
     } else if (boss.includes("hive")) {
-        const version = words.at(2)?.toLowerCase();
-        if (version === "leviathan") return BOSS_EMOJIS.TyrantLeviathan || "❓";
-        if (version === "gorgon") return BOSS_EMOJIS.TyrantGorgon || "❓";
-        if (version === "kronos") return BOSS_EMOJIS.TyrantKronos || "❓";
+        if (boss.includes("leviathan"))
+            return BOSS_EMOJIS.TyrantLeviathan || "❓";
+        if (boss.includes("gorgon")) return BOSS_EMOJIS.TyrantGorgon || "❓";
+        if (boss.includes("kronos")) return BOSS_EMOJIS.TyrantKronos || "❓";
     } else if (boss.includes("ghazghkull")) {
         return BOSS_EMOJIS.Ghazghkull || "❓";
     } else if (boss.includes("avatar")) {
@@ -766,12 +759,10 @@ export function mapUnitIdToEmoji(unitTid: string): string {
     }
 
     for (const [key, emoji] of Object.entries(UnitIdEmojiMapping)) {
-        console.log(key, unitTid);
         if (
             key.toLowerCase().includes(unitTid.toLowerCase()) ||
             unitTid.toLowerCase().includes(key.toLowerCase())
         ) {
-            console.log("Matched:", key, unitTid);
             return emoji;
         }
     }

@@ -170,9 +170,7 @@ export class DataTransformationService {
 
         for (const raid of seasonData) {
             const unitWords = raid.unitId.split(/(?=[A-Z])/);
-            const unit = `${unitWords.at(-3)?.toLowerCase()}${unitWords.at(
-                -2
-            )}${unitWords.at(-1)}`;
+            const unit = `${unitWords.at(-2)}${unitWords.at(-1)}`;
             const key = `${mapTierToRarity(
                 raid.tier,
                 raid.set + 1,
@@ -216,9 +214,8 @@ export class DataTransformationService {
         const maxPerBoss: Record<string, Raid> = {};
 
         for (const raid of seasonData) {
-            const key =
-                splitByCapital(raid.unitId).at(-2)! +
-                splitByCapital(raid.unitId).at(-1)!;
+            const unitWords = splitByCapital(raid.unitId);
+            const key = unitWords.at(-2)! + unitWords.at(-1)!;
             if (
                 !maxPerBoss[key] ||
                 raid.damageDealt > maxPerBoss[key].damageDealt
