@@ -127,7 +127,7 @@ export const multiHitTeam = [
     "templHelbrecht", // Helbrecht
     "bloodDante", // Dante
     "ultraCalgar", // Calgar
-    "tauAunShi", // Aun'shi
+    "tauAunshi", // Aun'shi
     "darkaAsmodai", // Asmodai
     "darkaCompanion", // Forcas
     "custoTrajann", // Trajann
@@ -489,6 +489,7 @@ export const UnitIdNameMapping: Record<string, string> = {
     deathBlightbringer: "Corrodius",
     deathRotbone: "Rotbone",
     deathPutrifier: "Pestillian",
+    deathTyphus: "Typhus",
 
     // Aeldari
     eldarRanger: "Calandis",
@@ -579,7 +580,7 @@ export const UnitIdNameMapping: Record<string, string> = {
     // Tau
     tauMarksman: "Sho'syl",
     tauCrisis: "Re'vas",
-    tauAunShi: "Aun'shi",
+    tauAunshi: "Aun'shi",
     tauDarkstrider: "Darkstrider",
     tauShadowsun: "Shadowsun",
 
@@ -631,14 +632,14 @@ export const UnitIdEmojiMapping: Record<string, string> = {
     deathBlightbringer: "<:corrodius:1420700267346792518>",
     deathRotbone: "<:rotbone:1420700144222867487>",
     deathPutrifier: "<:pestillian:1420700131719778334>",
-    // typhus: "<:typhon:1420700069358997646>",
+    deathTyphus: "<:typhon:1420700069358997646>",
 
     // Aeldari
     eldarRanger: "<:calandis:1420717493374292049>",
     eldarFarseer: "<:eldryon:1420717437522808872>",
     eldarAutarch: "<:aethana:1420717581106544641>",
-    // Maugan ra: <:mauganra:1420717263753052160>
-    // Jainzar: "<:jainzar:1420717321189851217>"
+    eldarMauganRa: "<:mauganra:1420717263753052160>",
+    eldarJainZar: "<:jainzar:1420717321189851217>",
 
     // Orks
     orksBigMek: "<:gibbascrapz:1420717418912682035>",
@@ -727,7 +728,7 @@ export const UnitIdEmojiMapping: Record<string, string> = {
     // Tau
     tauMarksman: "<:shosyl:1420717168013873222>",
     tauCrisis: "<:revas:1420717217330368586>",
-    tauAunShi: "<:aunshi:1420717529659084892>",
+    tauAunshi: "<:aunshi:1420717529659084892>",
     tauDarkstrider: "<:darkstrider:1420717470641029211>",
     tauShadowsun: "<:shadowsun:1420717182450536538>",
 
