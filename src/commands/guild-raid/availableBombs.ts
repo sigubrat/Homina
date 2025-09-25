@@ -140,7 +140,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     "```" +
                     (Object.entries(result)
                         .filter(([, available]) => available.bombs > 0)
-                        .map(([username]) => `@${username}`)
+                        .map(([username]) => `@${username} `)
                         .join("\n") || "None") +
                     "```",
             }

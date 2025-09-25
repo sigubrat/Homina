@@ -5,7 +5,13 @@ import {
 } from "@/lib/configs/constants";
 import { DataTransformationService } from "@/lib/services/DataTransformationService";
 import { GuildService } from "@/lib/services/GuildService";
-import { getBossEmoji, mapTierToRarity, splitByCapital } from "@/lib/utils";
+import {
+    getBossEmoji,
+    mapTierToRarity,
+    mapUnitIdToEmoji,
+    splitByCapital,
+} from "@/lib/utils";
+import { EncounterType } from "@/models/enums";
 import { Rarity } from "@/models/enums/Rarity";
 import {
     ChatInputCommandInteraction,
@@ -97,13 +103,19 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         for (const [boss, raid] of Object.entries(bestCompsPerBoss)) {
             embed.addFields({
-                name: `${getBossEmoji(boss)} ${mapTierToRarity(
+                name: `${
+                    raid.encounterType === EncounterType.BOSS
+                        ? getBossEmoji(boss)
+                        : mapUnitIdToEmoji(
+                              boss.at(0)?.toLowerCase() + boss.slice(1)
+                          )
+                } ${mapTierToRarity(
                     raid.tier,
                     raid.set + 1,
                     false
                 )} ${splitByCapital(boss).at(-1)}`,
                 value: `${raid.heroDetails
-                    .map((h) => h.unitId)
+                    .map((h) => mapUnitIdToEmoji(h.unitId))
                     .join(
                         "-"
                     )} — **Damage:** ${raid.damageDealt.toLocaleString()}`,

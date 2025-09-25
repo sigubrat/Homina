@@ -19,11 +19,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
-## [0.35.2] - 2025-09-24
+## [0.35.0] - 2025-09-25
+
+This update brings you a new command to get more detailed insights into the highest performing team against guild raid bosses, the bot gets lots of tacticus heroes emojis for its own use, and a little gift for you: HOMINA35
+
+### Added
+
+-   **New command!** `/best-comps` This command shows you which heroes were part of the team that dealt the highest damage against each boss in a given season.
+-   Bot emojis for every unit in the game
+
+### Fixed
+
+-   Fixed `/available-bombs` requiring you to add a space after usernames to make it ping the user.
+
+## [0.34.2] - 2025-09-24
 
 ### Changed
 
-- Changed current season constant 83->84
+-   Changed current season constant 83->84
 
 ## [0.34.1] - 2025-09-21
 

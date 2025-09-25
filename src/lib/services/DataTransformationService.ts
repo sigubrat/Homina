@@ -170,7 +170,9 @@ export class DataTransformationService {
 
         for (const raid of seasonData) {
             const unitWords = raid.unitId.split(/(?=[A-Z])/);
-            const unit = `${unitWords.at(-2)}${unitWords.at(-1)}`;
+            const unit = `${unitWords.at(-3)?.toLowerCase()}${unitWords.at(
+                -2
+            )}${unitWords.at(-1)}`;
             const key = `${mapTierToRarity(
                 raid.tier,
                 raid.set + 1,
