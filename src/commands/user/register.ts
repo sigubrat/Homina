@@ -3,7 +3,8 @@ import {
     MessageFlags,
     SlashCommandBuilder,
 } from "discord.js";
-import { isValidUUIDv4, testApiToken } from "@/lib/utils";
+import { isValidUUIDv4 } from "@/lib/utils/mathUtilts";
+import { testApiToken } from "@/lib/utils/commandUtils";
 import { dbController, logger } from "@/lib";
 
 export const cooldown = 5; // Cooldown in seconds

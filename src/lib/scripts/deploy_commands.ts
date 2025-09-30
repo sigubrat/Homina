@@ -1,6 +1,6 @@
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord.js";
-import { getAllCommands } from "@/lib/utils";
+import { getAllCommands } from "@/lib/utils/utils";
 import readline from "readline";
 import { InfisicalClient } from "@/client/InfisicalClient";
 import { validateEnvVars } from "@/lib/db_utils";

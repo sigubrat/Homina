@@ -1,6 +1,6 @@
 import { logger } from "@/lib";
 import { GuildService } from "@/lib/services/GuildService";
-import { withinNextHour } from "@/lib/utils";
+import { withinNextHour } from "@/lib/utils/timeUtilts";
 import {
     ChatInputCommandInteraction,
     EmbedBuilder,

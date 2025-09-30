@@ -1,16 +1,13 @@
 import type { GuildRaidResult } from "@/models/types";
 import { ChartJSNodeCanvas } from "chartjs-node-canvas";
-import {
-    CHART_COLORS,
-    namedColor,
-    numericMedian,
-    shortenNumber,
-    standardDeviation,
-} from "@/lib/utils";
+import { shortenNumber } from "@/lib/utils/utils";
+import { numericMedian } from "../utils/mathUtilts";
+import { standardDeviation } from "../utils/mathUtilts";
 import type { TeamDistribution } from "@/models/types/TeamDistribution";
 import type { Highscore } from "@/models/types/Highscore";
 import { dbController } from "../DatabaseController";
 import ChartDataLabels from "chartjs-plugin-datalabels";
+import { CHART_COLORS, namedColor } from "../utils/colorUtils";
 
 const CHART_WIDTH = 1200;
 const CHART_HEIGHT = 800;

@@ -7,7 +7,7 @@ import {
 import * as path from "path";
 import * as fs from "fs";
 import { dbController, logger } from "@/lib";
-import { getAllCommands } from "@/lib/utils";
+import { getAllCommands } from "@/lib/utils/commandUtils";
 import { InfisicalClient } from "@/client/InfisicalClient";
 
 export class IClient extends Client {
