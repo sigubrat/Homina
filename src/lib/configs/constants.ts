@@ -2,6 +2,7 @@ export const MINIMUM_SEASON_THRESHOLD = 70;
 export const MAXIMUM_GUILD_MEMBERS = 30;
 export const MAXIMUM_TOKENS_PER_SEASON = 29;
 export const CURRENT_SEASON = 84;
+export const META_TEAM_THRESHOLD = 5;
 
 export const BOSS_EMOJIS: Record<string, string> = {
     Szarekh: "<:Szarekh:1385343132950069278>",

@@ -14,11 +14,11 @@ export class CsvService {
             },${member.totalTokens},${avg.toFixed(2)},${member.maxDmg},${
                 member.minDmg
             },${member.distribution.multihit},${member.distribution.mech},${
-                member.distribution.psyker
+                member.distribution.neuro
             },${member.distribution.other},${
                 member.distribution.multihitDamage
             },${member.distribution.mechDamage},${
-                member.distribution.psykerDamage
+                member.distribution.neuroDamage
             },${member.distribution.otherDamage}\n`;
         }
 

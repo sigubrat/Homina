@@ -5,9 +5,10 @@ import { HominaTacticusClient } from "@/client";
 import type { GuildRaidResult } from "@/models/types";
 import type { TokensUsed } from "@/models/types/TokensUsed";
 import type { TokenStatus } from "@/models/types/TokenStatus";
-import { BOSS_EMOJIS } from "./configs/constants";
+import { BOSS_EMOJIS, META_TEAM_THRESHOLD } from "./configs/constants";
 import { MetaTeams } from "@/models/enums/MetaTeams";
 import type { MetaComps } from "@/models/types/MetaComps";
+import { characters } from "./configs/characters";
 
 async function getCommands(
     commandsPath: string
@@ -117,69 +118,93 @@ export function namedColor(index: number) {
 // PublicHeroDetail ids
 
 export const multiHitTeam = [
-    "ultraInceptorSgt", // Bellator
-    "eldarAutarch", // Aethana
-    "orksRuntherd", // Snotflogga
-    "eldarFarseer", // Eldryon
-    "orksWarboss", // Gulgortz
-    "worldKharn", // Kharn
-    "spaceBlackmane", // Ragnar
-    "templHelbrecht", // Helbrecht
-    "bloodDante", // Dante
-    "ultraCalgar", // Calgar
-    "tauAunshi", // Aun'shi
-    "darkaAsmodai", // Asmodai
-    "darkaCompanion", // Forcas
-    "custoTrajann", // Trajann
+    characters.Bellator?.id,
+    characters.Aethana?.id,
+    characters.Snotflogga?.id,
+    characters.Eldryon?.id,
+    characters.Gulgortz?.id,
+    characters.Kharn?.id,
+    characters.Ragnar?.id,
+    characters.Helbrecht?.id,
+    characters.Dante?.id,
+    characters.Calgar?.id,
+    characters.AunShi?.id,
+    characters.Asmodai?.id,
+    characters.Forcas?.id,
+    characters.Trajann?.id,
 ];
 
 export const mechTeam = [
-    "necroSpyder", // Aleph-Null
-    "admecManipulus", // Actus
-    "admecMarshall", // Tan Gi'da
-    "admecRuststalker", // Exitor-Rho
-    "orksWarboss", // Gulgortz
-    "tauMarksman", // Sho'syl
-    "tauCrisis", // Re'vas
-    "admecDominus", // Vitruvius
-    "templHelbrecht", // Helbrecht
+    characters.AlephNull?.id,
+    characters.Actus?.id,
+    characters.TanGida?.id,
+    characters.ExitorRho?.id,
+    characters.Gulgortz?.id,
+    characters.Shosyl?.id,
+    characters.Revas?.id,
+    characters.Vitruvius?.id,
+    characters.Helbrecht?.id,
+    characters.Trajann?.id,
 ];
 
-export const psykerTeam = [
-    "eldarFarseer", // Eldryon
-    "thousTzaangor", // Yazaghor
-    "thousAhriman", // Ahriman
-    "tyranNeurothrope", // Neurothrope
-    "thousInfernalMaster", // Abraxas
-    "adeptCanoness", // Roswitha
-    "genesMagus", // Xybia
-    "bloodMephiston", // Mephiston
+export const neuroTeam = [
+    characters.Eldryon?.id,
+    characters.Yazaghor?.id,
+    characters.Ahriman?.id,
+    characters.Neurothrope?.id,
+    characters.Abraxas?.id,
+    characters.Roswitha?.id,
+    characters.Xybia?.id,
+    characters.Mephiston?.id,
+];
+
+export const custodesTeam = [
+    characters.Trajann.id,
+    characters.Kariyan.id,
+    characters.Ragnar.id,
+    characters.Kharn.id,
+    characters.Dante.id,
+    characters.Mephiston.id,
+    characters.Abaddon.id,
 ];
 
 export interface TeamCheck {
     inMulti: boolean;
     inMech: boolean;
-    inPsyker: boolean;
+    inNeuro: boolean;
+    inCustodes: boolean;
 }
 
 export function inTeamsCheck(hero: string): TeamCheck {
     const teamCheck: TeamCheck = {
         inMulti: false,
         inMech: false,
-        inPsyker: false,
+        inNeuro: false,
+        inCustodes: false,
     };
 
     teamCheck.inMulti = multiHitTeam.includes(hero);
     teamCheck.inMech = mechTeam.includes(hero);
-    teamCheck.inPsyker = psykerTeam.includes(hero);
+    teamCheck.inNeuro = neuroTeam.includes(hero);
+    teamCheck.inCustodes = custodesTeam.includes(hero);
 
     return teamCheck;
 }
 
 const lynchpinHeroes: Record<string, string[]> = {
-    multihit: ["spaceBlackmane"],
-    mech: ["admecRuststalker", "admecManipulus", "admecMarshall"],
-    psyker: ["tyranNeurothrope"],
+    Multihit: [characters.Ragnar.id],
+    Admech: [
+        characters.ExitorRho.id,
+        characters.Actus.id,
+        characters.TanGida.id,
+    ],
+    Neuro: [characters.Neurothrope.id],
+    Custodes: [
+        characters.Trajann.id,
+        characters.Kariyan.id,
+        characters.Dante.id,
+        characters.Kharn.id,
+    ],
 };
 
 export function hasLynchpinHeroes(heroes: string[], team: string): boolean {
@@ -187,6 +212,7 @@ export function hasLynchpinHeroes(heroes: string[], team: string): boolean {
     if (!requiredHeroes || requiredHeroes.length === 0) {
         return false;
     }
+
     return requiredHeroes.every((requiredHero) =>
         heroes.includes(requiredHero)
     );
@@ -198,24 +224,36 @@ export function getMetaTeam(heroes: string[]): MetaTeams {
         mh: 0,
         admech: 0,
         neuro: 0,
+        custodes: 0,
     };
 
     teamCheck.forEach((check) => {
         if (check.inMulti) distribution.mh++;
         if (check.inMech) distribution.admech++;
-        if (check.inPsyker) distribution.neuro++;
+        if (check.inNeuro) distribution.neuro++;
+        if (check.inCustodes) distribution.custodes++;
     });
 
-    if (distribution.mh >= 5 && hasLynchpinHeroes(heroes, "multihit")) {
+    if (
+        distribution.mh >= META_TEAM_THRESHOLD &&
+        hasLynchpinHeroes(heroes, MetaTeams.MH)
+    ) {
         return MetaTeams.MH;
-    }
-
-    if (distribution.admech >= 5 && hasLynchpinHeroes(heroes, "mech")) {
+    } else if (
+        distribution.admech >= META_TEAM_THRESHOLD &&
+        hasLynchpinHeroes(heroes, MetaTeams.ADMECH)
+    ) {
         return MetaTeams.ADMECH;
-    }
-
-    if (distribution.neuro >= 5 && hasLynchpinHeroes(heroes, "psyker")) {
+    } else if (
+        distribution.neuro >= META_TEAM_THRESHOLD &&
+        hasLynchpinHeroes(heroes, MetaTeams.NEURO)
+    ) {
         return MetaTeams.NEURO;
+    } else if (
+        distribution.custodes >= META_TEAM_THRESHOLD &&
+        hasLynchpinHeroes(heroes, MetaTeams.CUSTODES)
+    ) {
+        return MetaTeams.CUSTODES;
     }
 
     return MetaTeams.OTHER;
@@ -227,29 +265,39 @@ export function getMetaTeams(heroes: string[]): MetaComps {
         multihit: 0,
         admech: 0,
         neuro: 0,
+        custodes: 0,
     };
 
     const retval: MetaComps = {
         multihit: false,
         admech: false,
         neuro: false,
+        custodes: false,
     };
 
     teamCheck.forEach((check) => {
         if (check.inMulti) distribution.multihit++;
         if (check.inMech) distribution.admech++;
-        if (check.inPsyker) distribution.neuro++;
+        if (check.inNeuro) distribution.neuro++;
     });
 
-    if (distribution.multihit >= 5 && hasLynchpinHeroes(heroes, "multihit")) {
+    if (distribution.multihit >= 5 && hasLynchpinHeroes(heroes, MetaTeams.MH)) {
         retval.multihit = true;
-    }
-
-    if (distribution.admech >= 5 && hasLynchpinHeroes(heroes, "mech")) {
+    } else if (
+        distribution.admech >= 5 &&
+        hasLynchpinHeroes(heroes, MetaTeams.ADMECH)
+    ) {
         retval.admech = true;
-    }
-    if (distribution.neuro >= 5 && hasLynchpinHeroes(heroes, "psyker")) {
+    } else if (
+        distribution.neuro >= 5 &&
+        hasLynchpinHeroes(heroes, MetaTeams.NEURO)
+    ) {
         retval.neuro = true;
+    } else if (
+        distribution.custodes >= 5 &&
+        hasLynchpinHeroes(heroes, MetaTeams.CUSTODES)
+    ) {
+        retval.custodes = true;
     }
 
     return retval;

@@ -417,18 +417,21 @@ export class ChartService {
         if (showDamage) {
             data.mech = data.mechDamage ?? 0;
             data.multihit = data.multihitDamage ?? 0;
-            data.psyker = data.psykerDamage ?? 0;
+            data.neuro = data.neuroDamage ?? 0;
+            data.custodes = data.custodesDamage ?? 0;
             data.other = data.otherDamage ?? 0;
         }
 
-        const total = data.mech + data.multihit + data.psyker + data.other;
+        const total =
+            data.mech + data.multihit + data.neuro + data.custodes + data.other;
         if (total === 0) {
             throw new Error("No data to display in the chart.");
         }
 
         const mechPercentage = ((data.mech / total) * 100).toFixed(1);
         const multihitPercentage = ((data.multihit / total) * 100).toFixed(1);
-        const psykerPercentage = ((data.psyker / total) * 100).toFixed(1);
+        const psykerPercentage = ((data.neuro / total) * 100).toFixed(1);
+        const custodesPercentage = ((data.custodes / total) * 100).toFixed(1);
         const otherPercentage = ((data.other / total) * 100).toFixed(1);
 
         const chart = await canvas.renderToBuffer({
@@ -438,6 +441,7 @@ export class ChartService {
                     `Multi-hit (${multihitPercentage}%)`,
                     `Mech (${mechPercentage}%)`,
                     `Psyker (${psykerPercentage}%)`,
+                    `Custodes (${custodesPercentage}%)`,
                     `Other (${otherPercentage}%)`,
                 ],
                 datasets: [
@@ -446,14 +450,16 @@ export class ChartService {
                         data: [
                             data.multihit,
                             data.mech,
-                            data.psyker,
+                            data.neuro,
+                            data.custodes,
                             data.other,
                         ],
                         backgroundColor: [
                             CHART_COLORS.blue,
                             CHART_COLORS.red,
                             CHART_COLORS.purple,
-                            CHART_COLORS.yellow,
+                            CHART_COLORS.orange,
+                            CHART_COLORS.grey,
                         ],
                     },
                 ],
