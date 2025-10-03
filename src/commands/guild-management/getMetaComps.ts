@@ -49,8 +49,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         let msg: string =
             `**Below are the meta comps each member of your guild has**\n` +
             `Guild members are only displayed if they have registered a player scope API key\n` +
-            `Meta teams are currently defined as having at least Rho, Ragnar or Neuro for each team and having at least 5 characters that part of the meta team or a variation of it\n` +
-            `:crossed_swords: *Multihit*\n:robot: *Admech*\n:brain: *Neuro*\n\n` +
+            `Meta teams are currently defined as having at least Rho, Ragnar or Neuro for each team and having at least 5 characters that part of the meta team or a variation of it\n\n` +
+            `:crossed_swords: *Multihit*\n:robot: *Admech*\n:brain: *Neuro*\n:shield: *Custodes*\n\n` +
             `**Minimum Rank**: ${rankToElement(minRank)}\n\n`;
         for (const [username, team] of Object.entries(teams)) {
             if (!team) {
