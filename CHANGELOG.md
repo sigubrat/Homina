@@ -19,6 +19,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.36.0] - 2025-10-03
+
+The Custodes team is emerging as one of the strongest guild raid teams and is therefore now included in the meta-related commands. The update also brings some quality-of-life features that aims to make your life easier, thanks to suggestions from HZM and Devastator.
+
+### Added
+
+-   **Custodes** team is now part of all meta team calculations. For a team to qualify as the custodes team it must include: Trajann, Kariyan, Dante, Kharn and one of the following: Ragnar, Mephiston or Abaddon. (subject to change)
+-   **New command!** - `/memberlist-cleanup` removes members from your memberlist that are not currently in your guild in-game.
+
+### Changed
+
+-   `/available-bombs` now removes players no longer in your guild from the result.
+-   This won't impact you directly, but some significant refactoring has been done to make further development and testing easier.
+
 ## [0.35.0] - 2025-09-25
 
 This update brings you a new command to get more detailed insights into the highest performing team against guild raid bosses, the bot gets lots of tacticus heroes emojis for its own use, and a little gift for you: HOMINA35
