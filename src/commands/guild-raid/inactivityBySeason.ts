@@ -115,7 +115,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             });
             return;
         }
-        const players = await service.getPlayerList(guildId);
+        const players = await service.getMemberlist(guildId);
         if (!players || players.length === 0) {
             await interaction.editReply({
                 content:

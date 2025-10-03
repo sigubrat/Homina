@@ -203,7 +203,7 @@ export class GuildService {
      * @param guildId The ID of the guild to fetch members for.
      * @returns A list of GuildMemberMapping objects or null if an error occurred.
      */
-    async getPlayerList(guildId: string): Promise<GuildMemberMapping[] | null> {
+    async getMemberlist(guildId: string): Promise<GuildMemberMapping[] | null> {
         try {
             const members = await dbController.getGuildMembersByGuildId(
                 guildId
@@ -1317,8 +1317,16 @@ export class GuildService {
                 return null;
             }
 
+            const activePlayers = await this.getGuildMembers(discordId);
+            if (!activePlayers || activePlayers.length === 0) {
+                return null;
+            }
+
+            // Filter out entries that are not from users currently in the guild
             const entries = resp.entries.filter(
-                (raid) => raid.damageType === DamageType.BOMB
+                (raid) =>
+                    raid.damageType === DamageType.BOMB &&
+                    activePlayers.includes(raid.userId)
             );
 
             const userBombs: Record<string, Raid[]> = {};
