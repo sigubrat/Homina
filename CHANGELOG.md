@@ -19,6 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.36.1] - 2025-10-03
+
+A quick hotfix to `/member-stats` showing faulty values.
+
+### Fixed
+
+-   Fixed a bug where custodes damage was not being handled properly which led to erroneus values
+
 ## [0.36.0] - 2025-10-03
 
 The Custodes team is emerging as one of the strongest guild raid teams and is therefore now included in the meta-related commands. The update also brings some quality-of-life features that aims to make your life easier, thanks to suggestions from HZM and Devastator.

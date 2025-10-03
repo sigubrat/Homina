@@ -84,7 +84,8 @@ describe("metaTeamUtils - Algebra", () => {
         );
 
         const multiTeam = teams.reduce(
-            (acc, team) => acc + Number(hasLynchpinHeroes(team, MetaTeams.MH)),
+            (acc, team) =>
+                acc + Number(hasLynchpinHeroes(team, MetaTeams.MULTIHIT)),
             0
         );
 
@@ -115,7 +116,7 @@ describe("metaTeamUtils - Algebra", () => {
             characters.Ragnar.id,
         ];
         const metaTeam = getMetaTeam(multihitTeam);
-        expect(metaTeam).toEqual(MetaTeams.MH);
+        expect(metaTeam).toEqual(MetaTeams.MULTIHIT);
 
         const admechTeam = [
             "necroSpyder",

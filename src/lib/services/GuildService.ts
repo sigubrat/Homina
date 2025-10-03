@@ -4,6 +4,7 @@ import { SecondsToString } from "../utils/timeUtils";
 import { evaluateToken } from "../utils/timeUtils";
 import { getUnixTimestamp } from "../utils/timeUtils";
 import {
+    getMetaTeam,
     getMetaTeams,
     hasLynchpinHeroes,
     inTeamsCheck,
@@ -819,7 +820,7 @@ export class GuildService {
                 const maxIndex = values.indexOf(maxValue);
                 const teams = [
                     MetaTeams.ADMECH,
-                    MetaTeams.MH,
+                    MetaTeams.MULTIHIT,
                     MetaTeams.NEURO,
                     MetaTeams.CUSTODES,
                 ];
@@ -842,7 +843,7 @@ export class GuildService {
                     totalDistribution.mech = (totalDistribution.mech || 0) + 1;
                     totalDistribution.mechDamage =
                         (totalDistribution.mechDamage || 0) + entry.damageDealt;
-                } else if (team === MetaTeams.MH) {
+                } else if (team === MetaTeams.MULTIHIT) {
                     totalDistribution.multihit =
                         (totalDistribution.multihit || 0) + 1;
                     totalDistribution.multihitDamage =
@@ -957,12 +958,13 @@ export class GuildService {
                     mech: 0,
                     multihit: 0,
                     neuro: 0,
+                    custodes: 0,
                     mechDamage: 0,
                     multihitDamage: 0,
                     neuroDamage: 0,
                     other: 0,
                     otherDamage: 0,
-                    custodes: 0,
+                    custodesDamage: 0,
                 };
 
                 for (const entry of entries) {
@@ -977,78 +979,43 @@ export class GuildService {
 
                     const heroes = entry.heroDetails.map((hero) => hero.unitId);
 
-                    const distribution: TeamDistribution = {
-                        multihit: 0,
-                        mech: 0,
-                        neuro: 0,
-                        other: 0,
-                        custodes: 0,
-                    };
+                    const metaTeam = getMetaTeam(heroes);
 
-                    for (const hero of heroes) {
-                        const check = inTeamsCheck(hero);
-                        distribution.mech += check.inMech ? 1 : 0;
-                        distribution.multihit += check.inMulti ? 1 : 0;
-                        distribution.neuro += check.inNeuro ? 1 : 0;
-                        distribution.custodes += check.inCustodes ? 1 : 0;
-                    }
-
-                    // find which property of distrubution has the highest value
-                    const values = [
-                        distribution.mech,
-                        distribution.multihit,
-                        distribution.neuro,
-                    ];
-
-                    // Check that at least one of the values is 3 or more, or else we count it as non-meta (other)
-                    if (
-                        distribution.mech < META_TEAM_THRESHOLD &&
-                        distribution.multihit < META_TEAM_THRESHOLD &&
-                        distribution.neuro < META_TEAM_THRESHOLD
-                    ) {
-                        totalDistribution.other += 1;
-                        totalDistribution.otherDamage =
-                            (totalDistribution.otherDamage || 0) +
-                            entry.damageDealt;
-                        continue;
-                    }
-
-                    const maxValue = Math.max(...values);
-                    const maxIndex = values.indexOf(maxValue);
-                    const teams = ["mech", "multihit", "psyker"];
-                    const team = teams[maxIndex];
-
-                    if (!team) {
-                        throw new Error("teams[maxIndex] is somehow undefined");
-                    }
-
-                    if (!hasLynchpinHeroes(heroes, team)) {
-                        totalDistribution.other += 1;
-                        totalDistribution.otherDamage =
-                            (totalDistribution.otherDamage || 0) +
-                            entry.damageDealt;
-                        continue;
-                    }
-
-                    if (team === "mech") {
-                        // Check if the team has a lynchpin hero
-                        totalDistribution.mech =
-                            (totalDistribution.mech || 0) + 1;
-                        totalDistribution.mechDamage =
-                            (totalDistribution.mechDamage || 0) +
-                            entry.damageDealt;
-                    } else if (team === "multihit") {
-                        totalDistribution.multihit =
-                            (totalDistribution.multihit || 0) + 1;
-                        totalDistribution.multihitDamage =
-                            (totalDistribution.multihitDamage || 0) +
-                            entry.damageDealt;
-                    } else if (team === "psyker") {
-                        totalDistribution.neuro =
-                            (totalDistribution.neuro || 0) + 1;
-                        totalDistribution.neuroDamage =
-                            (totalDistribution.neuroDamage || 0) +
-                            entry.damageDealt;
+                    switch (metaTeam) {
+                        case MetaTeams.ADMECH:
+                            totalDistribution.mech =
+                                (totalDistribution.mech || 0) + 1;
+                            totalDistribution.mechDamage =
+                                (totalDistribution.mechDamage || 0) +
+                                entry.damageDealt;
+                            break;
+                        case MetaTeams.MULTIHIT:
+                            totalDistribution.multihit =
+                                (totalDistribution.multihit || 0) + 1;
+                            totalDistribution.multihitDamage =
+                                (totalDistribution.multihitDamage || 0) +
+                                entry.damageDealt;
+                            break;
+                        case MetaTeams.NEURO:
+                            totalDistribution.neuro =
+                                (totalDistribution.neuro || 0) + 1;
+                            totalDistribution.neuroDamage =
+                                (totalDistribution.neuroDamage || 0) +
+                                entry.damageDealt;
+                            break;
+                        case MetaTeams.CUSTODES:
+                            totalDistribution.custodes =
+                                (totalDistribution.custodes || 0) + 1;
+                            totalDistribution.custodesDamage =
+                                (totalDistribution.custodesDamage || 0) +
+                                entry.damageDealt;
+                            break;
+                        default:
+                            totalDistribution.other =
+                                (totalDistribution.other || 0) + 1;
+                            totalDistribution.otherDamage =
+                                (totalDistribution.otherDamage || 0) +
+                                entry.damageDealt;
                     }
                 }
 
@@ -1058,6 +1025,7 @@ export class GuildService {
                     totalDistribution.mechDamage! +
                     totalDistribution.multihitDamage! +
                     totalDistribution.neuroDamage! +
+                    totalDistribution.custodesDamage! +
                     totalDistribution.otherDamage!;
 
                 if (totalDamage === 0 || totalEntries === 0) {

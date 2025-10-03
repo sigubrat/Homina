@@ -1,5 +1,5 @@
 export enum MetaTeams {
-    MH = "Multihit",
+    MULTIHIT = "Multihit",
     ADMECH = "Admech",
     NEURO = "Neuro",
     CUSTODES = "Custodes",

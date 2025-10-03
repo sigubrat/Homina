@@ -210,6 +210,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 {
                     maximumFractionDigits: 1,
                 }
+            )}%\` Custodes: \`${stats.distribution.custodes.toLocaleString(
+                "default",
+                {
+                    maximumFractionDigits: 1,
+                }
             )}%\` Other: \`${stats.distribution.other.toLocaleString(
                 "default",
                 {
@@ -227,6 +232,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     maximumFractionDigits: 1,
                 }
             )}%\` Neuro: \`${stats.distribution.neuroDamage?.toLocaleString(
+                "default",
+                {
+                    maximumFractionDigits: 1,
+                }
+            )}%\` Custodes: \`${stats.distribution.custodesDamage?.toLocaleString(
                 "default",
                 {
                     maximumFractionDigits: 1,

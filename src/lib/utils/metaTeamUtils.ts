@@ -128,9 +128,9 @@ export function getMetaTeam(heroes: string[]): MetaTeams {
 
     if (
         distribution.mh >= META_TEAM_THRESHOLD &&
-        hasLynchpinHeroes(heroes, MetaTeams.MH)
+        hasLynchpinHeroes(heroes, MetaTeams.MULTIHIT)
     ) {
-        return MetaTeams.MH;
+        return MetaTeams.MULTIHIT;
     } else if (
         distribution.admech >= META_TEAM_THRESHOLD &&
         hasLynchpinHeroes(heroes, MetaTeams.ADMECH)
@@ -176,7 +176,7 @@ export function getMetaTeams(heroes: string[]): MetaComps {
 
     if (
         distribution.multihit >= META_TEAM_THRESHOLD &&
-        hasLynchpinHeroes(heroes, MetaTeams.MH)
+        hasLynchpinHeroes(heroes, MetaTeams.MULTIHIT)
     ) {
         retval.multihit = true;
     }
