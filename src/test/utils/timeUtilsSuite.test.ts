@@ -3,7 +3,7 @@ import {
     evaluateToken,
     SecondsToString,
     withinNextHour,
-} from "@/lib/utils/timeUtilts";
+} from "@/lib/utils/timeUtils";
 import { describe, expect, test } from "bun:test";
 
 describe("timeUtilsSuite - Algebra", () => {

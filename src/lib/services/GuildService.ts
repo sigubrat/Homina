@@ -1,8 +1,8 @@
 import { HominaTacticusClient } from "@/client";
 import { dbController, logger } from "@/lib";
-import { SecondsToString } from "../utils/timeUtilts";
-import { evaluateToken } from "../utils/timeUtilts";
-import { getUnixTimestamp } from "../utils/timeUtilts";
+import { SecondsToString } from "../utils/timeUtils";
+import { evaluateToken } from "../utils/timeUtils";
+import { getUnixTimestamp } from "../utils/timeUtils";
 import {
     getMetaTeams,
     hasLynchpinHeroes,

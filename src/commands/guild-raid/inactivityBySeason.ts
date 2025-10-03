@@ -4,7 +4,7 @@ import {
     MINIMUM_SEASON_THRESHOLD,
 } from "@/lib/configs/constants";
 import { GuildService } from "@/lib/services/GuildService.ts";
-import { sortTokensUsed } from "@/lib/utils/mathUtilts";
+import { sortTokensUsed } from "@/lib/utils/mathUtils";
 import { Rarity } from "@/models/enums";
 import type { TokensUsed } from "@/models/types/TokensUsed";
 import {

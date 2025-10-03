@@ -6,7 +6,7 @@ import {
     sortGuildRaidResultDesc,
     sortTokensUsed,
     standardDeviation,
-} from "@/lib/utils/mathUtilts";
+} from "@/lib/utils/mathUtils";
 import { shortenNumber } from "@/lib/utils/utils";
 import type { GuildRaidResult } from "@/models/types";
 import { describe, expect, test } from "bun:test";

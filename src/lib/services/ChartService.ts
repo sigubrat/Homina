@@ -1,8 +1,8 @@
 import type { GuildRaidResult } from "@/models/types";
 import { ChartJSNodeCanvas } from "chartjs-node-canvas";
 import { shortenNumber } from "@/lib/utils/utils";
-import { numericMedian } from "../utils/mathUtilts";
-import { standardDeviation } from "../utils/mathUtilts";
+import { numericMedian } from "../utils/mathUtils";
+import { standardDeviation } from "../utils/mathUtils";
 import type { TeamDistribution } from "@/models/types/TeamDistribution";
 import type { Highscore } from "@/models/types/Highscore";
 import { dbController } from "../DatabaseController";

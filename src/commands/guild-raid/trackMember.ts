@@ -4,8 +4,8 @@ import {
     MAXIMUM_TOKENS_PER_SEASON,
 } from "@/lib/configs/constants";
 import { GuildService } from "@/lib/services/GuildService";
-import { numericMedian } from "@/lib/utils/mathUtilts";
-import { numericAverage } from "@/lib/utils/mathUtilts";
+import { numericMedian } from "@/lib/utils/mathUtils";
+import { numericAverage } from "@/lib/utils/mathUtils";
 import { Rarity } from "@/models/enums";
 import {
     ChatInputCommandInteraction,

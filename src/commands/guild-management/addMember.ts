@@ -1,5 +1,5 @@
 import { GuildService } from "@/lib/services/GuildService";
-import { isValidUUIDv4 } from "@/lib/utils/mathUtilts";
+import { isValidUUIDv4 } from "@/lib/utils/mathUtils";
 import {
     ChatInputCommandInteraction,
     MessageFlags,

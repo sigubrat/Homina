@@ -6,10 +6,10 @@ import {
     EmbedBuilder,
     SlashCommandBuilder,
 } from "discord.js";
-import { numericMedian } from "@/lib/utils/mathUtilts";
-import { numericAverage } from "@/lib/utils/mathUtilts";
-import { sortGuildRaidResultDesc } from "@/lib/utils/mathUtilts";
-import { getTopNDamageDealers } from "@/lib/utils/mathUtilts";
+import { numericMedian } from "@/lib/utils/mathUtils";
+import { numericAverage } from "@/lib/utils/mathUtils";
+import { sortGuildRaidResultDesc } from "@/lib/utils/mathUtils";
+import { getTopNDamageDealers } from "@/lib/utils/mathUtils";
 import { logger } from "@/lib";
 import {
     CURRENT_SEASON,

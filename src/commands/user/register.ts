@@ -3,7 +3,7 @@ import {
     MessageFlags,
     SlashCommandBuilder,
 } from "discord.js";
-import { isValidUUIDv4 } from "@/lib/utils/mathUtilts";
+import { isValidUUIDv4 } from "@/lib/utils/mathUtils";
 import { testApiToken } from "@/lib/utils/commandUtils";
 import { dbController, logger } from "@/lib";
 
