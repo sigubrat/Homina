@@ -27,6 +27,7 @@ The Custodes team is emerging as one of the strongest guild raid teams and is th
 
 -   **Custodes** team is now part of all meta team calculations. For a team to qualify as the custodes team it must include: Trajann, Kariyan, Dante, Kharn and one of the following: Ragnar, Mephiston or Abaddon. (subject to change)
 -   **New command!** - `/memberlist-cleanup` removes members from your memberlist that are not currently in your guild in-game.
+-   `/bot-stats` now include the bot's version
 
 ### Changed
 
