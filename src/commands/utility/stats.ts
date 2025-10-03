@@ -2,6 +2,7 @@ import { dbController, logger } from "@/lib";
 import { SecondsToString } from "@/lib/utils/timeUtils";
 import { EmbedBuilder } from "@discordjs/builders";
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { getPackageVersion } from "@/lib/utils/utils";
 
 export const cooldown = 60;
 
@@ -21,6 +22,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const registeredUser = await dbController.getNumberOfUsers();
         const registeredMembers = await dbController.getMemberCount();
         const registeredGuilds = await dbController.getGuildCount();
+        const ver = await getPackageVersion();
 
         const statsEmbed = new EmbedBuilder()
             .setColor(0x0099ff)
@@ -29,7 +31,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .addFields([
                 {
                     name: "Version",
-                    value: process.env.npm_package_version || "N/A",
+                    value: ver ?? "N/A",
                     inline: false,
                 },
                 { name: "Uptime", value: formattedUptime, inline: false },

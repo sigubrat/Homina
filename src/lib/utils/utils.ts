@@ -1,4 +1,5 @@
 import { BOSS_EMOJIS, UnitIdEmojiMapping } from "../configs/constants";
+import { logger } from "../HominaLogger";
 
 export function splitByCapital(text: string): string[] {
     // Split the text by capital letters
@@ -132,4 +133,16 @@ export function shortenNumber(num: number): string {
     if (num < 1e6) return (num / 1e3).toFixed(1) + "K";
     if (num < 1e9) return (num / 1e6).toFixed(1) + "M";
     return (num / 1e9).toFixed(1) + "B";
+}
+
+export async function getPackageVersion(): Promise<string | null> {
+    const packageJsonPath = "package.json";
+    try {
+        const file = Bun.file(packageJsonPath);
+        const data = await file.json();
+        return data.version as string;
+    } catch (error) {
+        logger.error(error, "Error reading or parsing package.json:");
+        return null;
+    }
 }
