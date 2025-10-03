@@ -56,10 +56,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             if (!team) {
                 continue;
             }
-            const { admech, multihit, neuro } = team;
+            const { admech, multihit, neuro, custodes } = team;
             msg += `**${username}**: ${multihit ? ":crossed_swords:" : ":x:"}${
                 admech ? ":robot:" : ":x:"
-            }${neuro ? ":brain:" : ":x:"}\n`;
+            }${neuro ? ":brain:" : ":x:"}${custodes ? ":shield:" : ":x:"}\n`;
         }
 
         await interaction.editReply({

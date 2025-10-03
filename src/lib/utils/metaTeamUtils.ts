@@ -174,20 +174,26 @@ export function getMetaTeams(heroes: string[]): MetaComps {
         if (check.inCustodes) distribution.custodes++;
     });
 
-    if (distribution.multihit >= 5 && hasLynchpinHeroes(heroes, MetaTeams.MH)) {
+    if (
+        distribution.multihit >= META_TEAM_THRESHOLD &&
+        hasLynchpinHeroes(heroes, MetaTeams.MH)
+    ) {
         retval.multihit = true;
-    } else if (
-        distribution.admech >= 5 &&
+    }
+    if (
+        distribution.admech >= META_TEAM_THRESHOLD &&
         hasLynchpinHeroes(heroes, MetaTeams.ADMECH)
     ) {
         retval.admech = true;
-    } else if (
-        distribution.neuro >= 5 &&
+    }
+    if (
+        distribution.neuro >= META_TEAM_THRESHOLD &&
         hasLynchpinHeroes(heroes, MetaTeams.NEURO)
     ) {
         retval.neuro = true;
-    } else if (
-        distribution.custodes >= 5 &&
+    }
+    if (
+        distribution.custodes >= META_TEAM_THRESHOLD &&
         hasLynchpinHeroes(heroes, MetaTeams.CUSTODES)
     ) {
         retval.custodes = true;
