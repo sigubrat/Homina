@@ -27,7 +27,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setTitle("Bot Statistics")
             .setDescription("Here are the current statistics for the bot:")
             .addFields([
-                { name: "Uptime", value: formattedUptime, inline: true },
+                {
+                    name: "Version",
+                    value: process.env.npm_package_version || "N/A",
+                    inline: false,
+                },
+                { name: "Uptime", value: formattedUptime, inline: false },
                 {
                     name: "Server count",
                     value: guildCount.toString(),
