@@ -39,7 +39,7 @@ export const characters = {
     Corrodius: { id: "deathBlightbringer", name: "Corrodius" },
     Maladus: { id: "deathBlightlord", name: "Maladus" },
     Pestillian: { id: "deathPutrifier", name: "Pestillian" },
-    Nauseous: { id: "deathRotbone", name: "Nauseous" },
+    Rotbone: { id: "deathRotbone", name: "Nauseous" },
     Typhus: { id: "deathTyphus", name: "Typhus" },
     Aethana: { id: "eldarAutarch", name: "Aethana" },
     Eldryon: { id: "eldarFarseer", name: "Eldryon" },
