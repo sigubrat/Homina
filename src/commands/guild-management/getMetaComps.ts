@@ -1,6 +1,6 @@
 import { logger } from "@/lib";
 import { GuildService } from "@/lib/services/GuildService";
-import { rankToElement } from "@/lib/utils";
+import { rankToElement } from "@/lib/utils/utils";
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 
 export const cooldown = 5;

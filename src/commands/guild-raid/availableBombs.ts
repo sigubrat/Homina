@@ -1,6 +1,6 @@
 import { logger } from "@/lib";
 import { GuildService } from "@/lib/services/GuildService";
-import { withinNextHour } from "@/lib/utils";
+import { withinNextHour } from "@/lib/utils/timeUtils";
 import {
     ChatInputCommandInteraction,
     EmbedBuilder,
@@ -54,7 +54,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
-        const players = await service.getPlayerList(guildId);
+        const players = await service.getMemberlist(guildId);
         if (!players || players.length === 0) {
             await interaction.editReply({
                 content:

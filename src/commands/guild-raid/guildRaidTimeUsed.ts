@@ -5,7 +5,8 @@ import {
 } from "@/lib/configs/constants";
 import { DataTransformationService } from "@/lib/services/DataTransformationService";
 import { GuildService } from "@/lib/services/GuildService";
-import { SecondsToString, splitByCapital } from "@/lib/utils";
+import { splitByCapital } from "@/lib/utils/utils";
+import { SecondsToString } from "@/lib/utils/timeUtils";
 import { Rarity } from "@/models/enums";
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { Pagination } from "pagination.djs";

@@ -1,7 +1,7 @@
 import { logger } from "@/lib";
 import { GRConfigService } from "@/lib/services/GRConfigService";
 import { GuildService } from "@/lib/services/GuildService";
-import { getBossEmoji } from "@/lib/utils";
+import { getBossEmoji } from "@/lib/utils/utils";
 import { Rarity } from "@/models/enums";
 import {
     ChatInputCommandInteraction,

@@ -1,26 +1,30 @@
 import { HominaTacticusClient } from "@/client";
 import { dbController, logger } from "@/lib";
+import { SecondsToString } from "../utils/timeUtils";
+import { evaluateToken } from "../utils/timeUtils";
+import { getUnixTimestamp } from "../utils/timeUtils";
+import {
+    getMetaTeams,
+    hasLynchpinHeroes,
+    inTeamsCheck,
+} from "@/lib/utils/metaTeamUtils";
+import { DamageType, EncounterType, Rarity } from "@/models/enums";
+import { MetaTeams } from "@/models/enums/MetaTeams";
 import type {
     GuildRaidAvailable,
     GuildRaidResult,
     Raid,
-    TokenStatus,
     TokensAndBombs,
+    TokenStatus,
 } from "@/models/types";
-import { DamageType, EncounterType, Rarity } from "@/models/enums";
+import type { GuildMemberMapping } from "@/models/types/GuildMemberMapping";
+import type { MetaComps } from "@/models/types/MetaComps";
 import type { TeamDistribution } from "@/models/types/TeamDistribution";
 import {
-    evaluateToken,
-    getMetaTeams,
-    getUnixTimestamp,
-    hasLynchpinHeroes,
-    inTeamsCheck,
-    SecondsToString,
-    testApiToken,
-} from "../utils";
-import type { GuildMemberMapping } from "@/models/types/GuildMemberMapping";
-import { MINIMUM_SEASON_THRESHOLD } from "../configs/constants";
-import type { MetaComps } from "@/models/types/MetaComps";
+    META_TEAM_THRESHOLD,
+    MINIMUM_SEASON_THRESHOLD,
+} from "../configs/constants";
+import { testApiToken } from "../utils/commandUtils";
 
 /**
  * Service class for managing guild-related operations in the Homina Tacticus application.
@@ -47,7 +51,6 @@ import type { MetaComps } from "@/models/types/MetaComps";
  */
 export class GuildService {
     private client: HominaTacticusClient;
-    private metaTeamThreshold = 3; // Minimum number of meta heroes to be considered a meta team
 
     constructor() {
         this.client = new HominaTacticusClient();
@@ -200,7 +203,7 @@ export class GuildService {
      * @param guildId The ID of the guild to fetch members for.
      * @returns A list of GuildMemberMapping objects or null if an error occurred.
      */
-    async getPlayerList(guildId: string): Promise<GuildMemberMapping[] | null> {
+    async getMemberlist(guildId: string): Promise<GuildMemberMapping[] | null> {
         try {
             const members = await dbController.getGuildMembersByGuildId(
                 guildId
@@ -753,12 +756,13 @@ export class GuildService {
             const totalDistribution: TeamDistribution = {
                 mech: 0,
                 multihit: 0,
-                psyker: 0,
+                neuro: 0,
                 mechDamage: 0,
                 multihitDamage: 0,
-                psykerDamage: 0,
+                neuroDamage: 0,
                 other: 0,
                 otherDamage: 0,
+                custodes: 0,
             };
 
             for (const entry of entries) {
@@ -776,29 +780,33 @@ export class GuildService {
                 const distribution: TeamDistribution = {
                     multihit: 0,
                     mech: 0,
-                    psyker: 0,
+                    neuro: 0,
                     other: 0,
+                    custodes: 0,
                 };
 
                 for (const hero of heroes) {
                     const check = inTeamsCheck(hero);
                     distribution.mech += check.inMech ? 1 : 0;
                     distribution.multihit += check.inMulti ? 1 : 0;
-                    distribution.psyker += check.inPsyker ? 1 : 0;
+                    distribution.neuro += check.inNeuro ? 1 : 0;
+                    distribution.custodes += check.inCustodes ? 1 : 0;
                 }
 
                 // find which property of distrubution has the highest value
                 const values = [
                     distribution.mech,
                     distribution.multihit,
-                    distribution.psyker,
+                    distribution.neuro,
+                    distribution.custodes,
                 ];
 
                 // Check that at least one of the values is 3 or more, or else we count it as non-meta (other)
                 if (
-                    distribution.mech < this.metaTeamThreshold &&
-                    distribution.multihit < this.metaTeamThreshold &&
-                    distribution.psyker < this.metaTeamThreshold
+                    distribution.mech < META_TEAM_THRESHOLD &&
+                    distribution.multihit < META_TEAM_THRESHOLD &&
+                    distribution.neuro < META_TEAM_THRESHOLD &&
+                    distribution.custodes < META_TEAM_THRESHOLD
                 ) {
                     totalDistribution.other += 1;
                     totalDistribution.otherDamage =
@@ -809,7 +817,12 @@ export class GuildService {
 
                 const maxValue = Math.max(...values);
                 const maxIndex = values.indexOf(maxValue);
-                const teams = ["mech", "multihit", "psyker"];
+                const teams = [
+                    MetaTeams.ADMECH,
+                    MetaTeams.MH,
+                    MetaTeams.NEURO,
+                    MetaTeams.CUSTODES,
+                ];
                 const team = teams[maxIndex];
 
                 if (!team) {
@@ -824,22 +837,28 @@ export class GuildService {
                     continue;
                 }
 
-                if (team === "mech") {
+                if (team === MetaTeams.ADMECH) {
                     // Check if the team has a lynchpin hero
                     totalDistribution.mech = (totalDistribution.mech || 0) + 1;
                     totalDistribution.mechDamage =
                         (totalDistribution.mechDamage || 0) + entry.damageDealt;
-                } else if (team === "multihit") {
+                } else if (team === MetaTeams.MH) {
                     totalDistribution.multihit =
                         (totalDistribution.multihit || 0) + 1;
                     totalDistribution.multihitDamage =
                         (totalDistribution.multihitDamage || 0) +
                         entry.damageDealt;
-                } else if (team === "psyker") {
-                    totalDistribution.psyker =
-                        (totalDistribution.psyker || 0) + 1;
-                    totalDistribution.psykerDamage =
-                        (totalDistribution.psykerDamage || 0) +
+                } else if (team === MetaTeams.NEURO) {
+                    totalDistribution.neuro =
+                        (totalDistribution.neuro || 0) + 1;
+                    totalDistribution.neuroDamage =
+                        (totalDistribution.neuroDamage || 0) +
+                        entry.damageDealt;
+                } else if (team === MetaTeams.CUSTODES) {
+                    totalDistribution.custodes =
+                        (totalDistribution.custodes || 0) + 1;
+                    totalDistribution.custodesDamage =
+                        (totalDistribution.custodesDamage || 0) +
                         entry.damageDealt;
                 }
             }
@@ -937,12 +956,13 @@ export class GuildService {
                 const totalDistribution: TeamDistribution = {
                     mech: 0,
                     multihit: 0,
-                    psyker: 0,
+                    neuro: 0,
                     mechDamage: 0,
                     multihitDamage: 0,
-                    psykerDamage: 0,
+                    neuroDamage: 0,
                     other: 0,
                     otherDamage: 0,
+                    custodes: 0,
                 };
 
                 for (const entry of entries) {
@@ -960,29 +980,31 @@ export class GuildService {
                     const distribution: TeamDistribution = {
                         multihit: 0,
                         mech: 0,
-                        psyker: 0,
+                        neuro: 0,
                         other: 0,
+                        custodes: 0,
                     };
 
                     for (const hero of heroes) {
                         const check = inTeamsCheck(hero);
                         distribution.mech += check.inMech ? 1 : 0;
                         distribution.multihit += check.inMulti ? 1 : 0;
-                        distribution.psyker += check.inPsyker ? 1 : 0;
+                        distribution.neuro += check.inNeuro ? 1 : 0;
+                        distribution.custodes += check.inCustodes ? 1 : 0;
                     }
 
                     // find which property of distrubution has the highest value
                     const values = [
                         distribution.mech,
                         distribution.multihit,
-                        distribution.psyker,
+                        distribution.neuro,
                     ];
 
                     // Check that at least one of the values is 3 or more, or else we count it as non-meta (other)
                     if (
-                        distribution.mech < this.metaTeamThreshold &&
-                        distribution.multihit < this.metaTeamThreshold &&
-                        distribution.psyker < this.metaTeamThreshold
+                        distribution.mech < META_TEAM_THRESHOLD &&
+                        distribution.multihit < META_TEAM_THRESHOLD &&
+                        distribution.neuro < META_TEAM_THRESHOLD
                     ) {
                         totalDistribution.other += 1;
                         totalDistribution.otherDamage =
@@ -1022,10 +1044,10 @@ export class GuildService {
                             (totalDistribution.multihitDamage || 0) +
                             entry.damageDealt;
                     } else if (team === "psyker") {
-                        totalDistribution.psyker =
-                            (totalDistribution.psyker || 0) + 1;
-                        totalDistribution.psykerDamage =
-                            (totalDistribution.psykerDamage || 0) +
+                        totalDistribution.neuro =
+                            (totalDistribution.neuro || 0) + 1;
+                        totalDistribution.neuroDamage =
+                            (totalDistribution.neuroDamage || 0) +
                             entry.damageDealt;
                     }
                 }
@@ -1035,18 +1057,20 @@ export class GuildService {
                 const totalDamage =
                     totalDistribution.mechDamage! +
                     totalDistribution.multihitDamage! +
-                    totalDistribution.psykerDamage! +
+                    totalDistribution.neuroDamage! +
                     totalDistribution.otherDamage!;
 
                 if (totalDamage === 0 || totalEntries === 0) {
                     result[username] = {
                         mech: 0,
                         multihit: 0,
-                        psyker: 0,
+                        neuro: 0,
+                        custodes: 0,
                         other: 0,
                         mechDamage: 0,
                         multihitDamage: 0,
-                        psykerDamage: 0,
+                        neuroDamage: 0,
+                        custodesDamage: 0,
                         otherDamage: 0,
                     };
                     continue;
@@ -1055,16 +1079,19 @@ export class GuildService {
                 const percentages: TeamDistribution = {
                     mech: (totalDistribution.mech / totalEntries) * 100,
                     multihit: (totalDistribution.multihit / totalEntries) * 100,
-                    psyker: (totalDistribution.psyker / totalEntries) * 100,
+                    neuro: (totalDistribution.neuro / totalEntries) * 100,
+                    custodes: (totalDistribution.custodes / totalEntries) * 100,
                     other: (totalDistribution.other / totalEntries) * 100,
                     mechDamage:
                         (totalDistribution.mechDamage! / totalDamage) * 100,
                     multihitDamage:
                         (totalDistribution.multihitDamage! / totalDamage) * 100,
-                    psykerDamage:
-                        (totalDistribution.psykerDamage! / totalDamage) * 100,
+                    neuroDamage:
+                        (totalDistribution.neuroDamage! / totalDamage) * 100,
                     otherDamage:
                         (totalDistribution.otherDamage! / totalDamage) * 100,
+                    custodesDamage:
+                        (totalDistribution.custodesDamage! / totalDamage) * 100,
                 };
 
                 result[username] = percentages;
@@ -1291,8 +1318,16 @@ export class GuildService {
                 return null;
             }
 
+            const activePlayers = await this.getGuildMembers(discordId);
+            if (!activePlayers || activePlayers.length === 0) {
+                return null;
+            }
+
+            // Filter out entries that are not from users currently in the guild
             const entries = resp.entries.filter(
-                (raid) => raid.damageType === DamageType.BOMB
+                (raid) =>
+                    raid.damageType === DamageType.BOMB &&
+                    activePlayers.includes(raid.userId)
             );
 
             const userBombs: Record<string, Raid[]> = {};

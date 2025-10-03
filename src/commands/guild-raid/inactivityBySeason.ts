@@ -4,7 +4,7 @@ import {
     MINIMUM_SEASON_THRESHOLD,
 } from "@/lib/configs/constants";
 import { GuildService } from "@/lib/services/GuildService.ts";
-import { sortTokensUsed } from "@/lib/utils";
+import { sortTokensUsed } from "@/lib/utils/mathUtils";
 import { Rarity } from "@/models/enums";
 import type { TokensUsed } from "@/models/types/TokensUsed";
 import {
@@ -115,7 +115,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             });
             return;
         }
-        const players = await service.getPlayerList(guildId);
+        const players = await service.getMemberlist(guildId);
         if (!players || players.length === 0) {
             await interaction.editReply({
                 content:

@@ -5,7 +5,9 @@ import {
 } from "@/lib/configs/constants";
 import { ChartService } from "@/lib/services/ChartService";
 import { GuildService } from "@/lib/services/GuildService.ts";
-import { numericAverage, numericMedian, standardDeviation } from "@/lib/utils";
+import { numericMedian } from "@/lib/utils/mathUtils";
+import { numericAverage } from "@/lib/utils/mathUtils";
+import { standardDeviation } from "@/lib/utils/mathUtils";
 import { Rarity } from "@/models/enums";
 import {
     AttachmentBuilder,
@@ -119,7 +121,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             });
             return;
         }
-        const players = await service.getPlayerList(guildId);
+        const players = await service.getMemberlist(guildId);
         if (!players || players.length === 0) {
             await interaction.editReply({
                 content:

@@ -106,7 +106,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             });
             return;
         }
-        const players = await service.getPlayerList(guildId);
+        const players = await service.getMemberlist(guildId);
         if (!players || players.length === 0) {
             await interaction.editReply({
                 content:
@@ -205,7 +205,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 }
             )}%\` Mech: \`${stats.distribution.mech.toLocaleString("default", {
                 maximumFractionDigits: 1,
-            })}%\` Neuro: \`${stats.distribution.psyker.toLocaleString(
+            })}%\` Neuro: \`${stats.distribution.neuro.toLocaleString(
                 "default",
                 {
                     maximumFractionDigits: 1,
@@ -226,7 +226,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 {
                     maximumFractionDigits: 1,
                 }
-            )}%\` Neuro: \`${stats.distribution.psykerDamage?.toLocaleString(
+            )}%\` Neuro: \`${stats.distribution.neuroDamage?.toLocaleString(
                 "default",
                 {
                     maximumFractionDigits: 1,

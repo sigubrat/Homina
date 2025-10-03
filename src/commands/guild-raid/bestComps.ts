@@ -10,7 +10,7 @@ import {
     mapTierToRarity,
     mapUnitIdToEmoji,
     splitByCapital,
-} from "@/lib/utils";
+} from "@/lib/utils/utils";
 import { EncounterType } from "@/models/enums";
 import { Rarity } from "@/models/enums/Rarity";
 import {

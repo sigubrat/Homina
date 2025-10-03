@@ -3,8 +3,10 @@ export interface TeamDistribution {
     multihitDamage?: number;
     mech: number;
     mechDamage?: number;
-    psyker: number;
-    psykerDamage?: number;
+    neuro: number;
+    neuroDamage?: number;
+    custodes: number;
+    custodesDamage?: number;
     other: number;
     otherDamage?: number;
 }

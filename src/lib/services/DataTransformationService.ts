@@ -1,14 +1,11 @@
 import type { Raid } from "@/models/types";
 import type { TimeUsed } from "@/models/types/TimeUsed";
 import { logger } from "../HominaLogger";
-import {
-    getMetaTeam,
-    mapTierToRarity,
-    SecondsToString,
-    splitByCapital,
-} from "../utils";
+import { mapTierToRarity, splitByCapital } from "../utils/utils";
+import { SecondsToString } from "../utils/timeUtils";
 import { DamageType, EncounterType } from "@/models/enums";
 import type { Highscore } from "@/models/types/Highscore";
+import { getMetaTeam } from "@/lib/utils/metaTeamUtils";
 
 export class DataTransformationService {
     constructor() {}

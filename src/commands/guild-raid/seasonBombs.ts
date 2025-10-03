@@ -5,7 +5,9 @@ import {
 } from "@/lib/configs/constants";
 import { ChartService } from "@/lib/services/ChartService";
 import { GuildService } from "@/lib/services/GuildService";
-import { numericAverage, numericMedian, standardDeviation } from "@/lib/utils";
+import { numericMedian } from "@/lib/utils/mathUtils";
+import { numericAverage } from "@/lib/utils/mathUtils";
+import { standardDeviation } from "@/lib/utils/mathUtils";
 import {
     AttachmentBuilder,
     ChatInputCommandInteraction,

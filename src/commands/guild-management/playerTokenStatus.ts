@@ -41,7 +41,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
-        const playerList = await service.getPlayerList(guildId);
+        const playerList = await service.getMemberlist(guildId);
         if (!playerList || playerList.length === 0) {
             await interaction.editReply({
                 content:

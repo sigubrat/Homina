@@ -6,12 +6,10 @@ import {
     EmbedBuilder,
     SlashCommandBuilder,
 } from "discord.js";
-import {
-    getTopNDamageDealers,
-    numericAverage,
-    numericMedian,
-    sortGuildRaidResultDesc,
-} from "@/lib/utils";
+import { numericMedian } from "@/lib/utils/mathUtils";
+import { numericAverage } from "@/lib/utils/mathUtils";
+import { sortGuildRaidResultDesc } from "@/lib/utils/mathUtils";
+import { getTopNDamageDealers } from "@/lib/utils/mathUtils";
 import { logger } from "@/lib";
 import {
     CURRENT_SEASON,
@@ -134,7 +132,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             });
             return;
         }
-        const players = await service.getPlayerList(guildId);
+        const players = await service.getMemberlist(guildId);
         if (!players || players.length === 0) {
             await interaction.editReply({
                 content:

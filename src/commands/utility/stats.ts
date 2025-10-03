@@ -1,5 +1,5 @@
 import { dbController, logger } from "@/lib";
-import { SecondsToString } from "@/lib/utils";
+import { SecondsToString } from "@/lib/utils/timeUtils";
 import { EmbedBuilder } from "@discordjs/builders";
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 

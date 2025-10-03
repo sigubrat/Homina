@@ -5,11 +5,9 @@ import {
 } from "@/lib/configs/constants";
 import { ChartService } from "@/lib/services/ChartService";
 import { GuildService } from "@/lib/services/GuildService.ts";
-import {
-    numericAverage,
-    numericMedian,
-    sortGuildRaidResultDesc,
-} from "@/lib/utils";
+import { numericMedian } from "@/lib/utils/mathUtils";
+import { numericAverage } from "@/lib/utils/mathUtils";
+import { sortGuildRaidResultDesc } from "@/lib/utils/mathUtils";
 import { Rarity } from "@/models/enums";
 import {
     AttachmentBuilder,
