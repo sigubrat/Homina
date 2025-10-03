@@ -83,7 +83,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         logger.info(
-            `${interaction.user.username} cleanuped members: ${deletedCount} removed, ${failedDeletions.length} failed`
+            `${interaction.user.username} cleaned up members: ${deletedCount} removed, ${failedDeletions.length} failed`
         );
 
         // Build response message
@@ -99,10 +99,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             content: responseMessage,
         });
     } catch (error) {
-        logger.error(error, "Error cleanuping guild members");
+        logger.error(error, "Error cleaning up guild members");
         await interaction.editReply({
             content:
-                "An error occurred while cleanuping guild members. Please try again later.",
+                "An error occurred while cleaning up guild members. Please try again later.",
         });
     }
 }

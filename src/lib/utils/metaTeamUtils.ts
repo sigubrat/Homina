@@ -171,6 +171,7 @@ export function getMetaTeams(heroes: string[]): MetaComps {
         if (check.inMulti) distribution.multihit++;
         if (check.inMech) distribution.admech++;
         if (check.inNeuro) distribution.neuro++;
+        if (check.inCustodes) distribution.custodes++;
     });
 
     if (distribution.multihit >= 5 && hasLynchpinHeroes(heroes, MetaTeams.MH)) {

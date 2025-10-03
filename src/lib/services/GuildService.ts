@@ -990,6 +990,7 @@ export class GuildService {
                         distribution.mech += check.inMech ? 1 : 0;
                         distribution.multihit += check.inMulti ? 1 : 0;
                         distribution.neuro += check.inNeuro ? 1 : 0;
+                        distribution.custodes += check.inCustodes ? 1 : 0;
                     }
 
                     // find which property of distrubution has the highest value
