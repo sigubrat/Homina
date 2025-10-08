@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.36.2] - 2025-10-08
+
+### Changed
+
+-   Changed current season constant 84->85
+
 ## [0.36.1] - 2025-10-03
 
 A quick hotfix to `/member-stats` showing faulty values.
