@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.36.2] - 2025-10-12
+
+### Changed
+
+-   Helbrecht is now also included in the optional entries for the custodes meta team
+
 ## [0.36.1] - 2025-10-03
 
 A quick hotfix to `/member-stats` showing faulty values.

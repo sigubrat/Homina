@@ -58,6 +58,7 @@ export const custodesTeam = [
     characters.Dante.id,
     characters.Mephiston.id,
     characters.Abaddon.id,
+    characters.Helbrecht.id,
 ];
 
 export interface TeamCheck {
