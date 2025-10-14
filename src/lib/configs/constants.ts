@@ -1,4 +1,5 @@
 import { characters } from "./characters";
+import { MachinesOfWar } from "./mow";
 
 export const MINIMUM_SEASON_THRESHOLD = 70;
 export const MAXIMUM_GUILD_MEMBERS = 30;
@@ -156,12 +157,12 @@ export const UnitIdEmojiMapping: Record<string, string> = {
     [characters.Judh.id]: "<:judh:1420717302789312572>",
 
     // Machines of War
-    astraOrdnanceBattery: "<:malleus:1420719891626856528>",
-    blackForgefiend: "<:forgefiend:1420719929791086653>",
-    ultraDreadnought: "<:galatian:1420719905430569000>",
-    tyranBiovore: "<:biovore:1420719956550615101>",
-    deathCrawler: "<:plagueburst:1420719879262175343>",
-    adeptExorcist: "<:exorcist:1420719944030486628>",
+    [MachinesOfWar.Malleus.id]: "<:malleus:1420719891626856528>",
+    [MachinesOfWar.ForgeFiend.id]: "<:forgefiend:1420719929791086653>",
+    [MachinesOfWar.Galatian.id]: "<:galatian:1420719905430569000>",
+    [MachinesOfWar.Biovore.id]: "<:biovore:1420719956550615101>",
+    [MachinesOfWar.Plagueburst.id]: "<:plagueburst:1420719879262175343>",
+    [MachinesOfWar.Exorcist.id]: "<:exorcist:1420719944030486628>",
 
     // Emperor's Children
     [characters.Shiron.id]: "<:shiron:1420700118327365715>",
