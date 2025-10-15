@@ -24,6 +24,7 @@ export const multiHitTeam = [
     characters.Asmodai?.id,
     characters.Forcas?.id,
     characters.Trajann?.id,
+    characters.Isabella?.id,
 ];
 
 export const mechTeam = [
@@ -59,7 +60,19 @@ export const custodesTeam = [
     characters.Mephiston.id,
     characters.Abaddon.id,
     characters.Helbrecht.id,
+    characters.Isabella.id,
 ];
+
+const lynchpinHeroes: Record<string, string[]> = {
+    Multihit: [characters.Ragnar.id],
+    Admech: [
+        characters.ExitorRho.id,
+        characters.Actus.id,
+        characters.TanGida.id,
+    ],
+    Neuro: [characters.Neurothrope.id],
+    Custodes: [characters.Trajann.id, characters.Kariyan.id],
+};
 
 export interface TeamCheck {
     inMulti: boolean;
@@ -83,22 +96,6 @@ export function inTeamsCheck(hero: string): TeamCheck {
 
     return teamCheck;
 }
-
-const lynchpinHeroes: Record<string, string[]> = {
-    Multihit: [characters.Ragnar.id],
-    Admech: [
-        characters.ExitorRho.id,
-        characters.Actus.id,
-        characters.TanGida.id,
-    ],
-    Neuro: [characters.Neurothrope.id],
-    Custodes: [
-        characters.Trajann.id,
-        characters.Kariyan.id,
-        characters.Dante.id,
-        characters.Kharn.id,
-    ],
-};
 
 export function hasLynchpinHeroes(heroes: string[], team: string): boolean {
     const requiredHeroes = lynchpinHeroes[team];

@@ -163,8 +163,6 @@ class HominaTacticusClient {
 
         const body = (await response.json()) as GuildRaidResponse;
 
-        body.entries = this.preProcessData(body.entries);
-
         return body;
     }
 
@@ -185,8 +183,6 @@ class HominaTacticusClient {
             }
 
             const body = (await response.json()) as GuildRaidResponse;
-
-            body.entries = this.preProcessData(body.entries);
 
             return body;
         } catch (error) {
