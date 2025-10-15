@@ -1,9 +1,10 @@
 import { logger } from "@/lib";
 import {
-    CURRENT_SEASON,
+    getCurrentSeason,
     MINIMUM_SEASON_THRESHOLD,
 } from "@/lib/configs/constants";
 import { GuildService } from "@/lib/services/GuildService";
+import { isInvalidSeason } from "@/lib/utils/timeUtils";
 import {
     ChatInputCommandInteraction,
     EmbedBuilder,
@@ -21,7 +22,6 @@ export const data = new SlashCommandBuilder()
             .setDescription("The season number to check")
             .setRequired(true)
             .setMinValue(MINIMUM_SEASON_THRESHOLD)
-            .setMaxValue(CURRENT_SEASON)
     );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
@@ -29,6 +29,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     const discordId = interaction.user.id;
     const season = interaction.options.getNumber("season", true);
+
+    if (isInvalidSeason(season)) {
+        await interaction.editReply({
+            content: `Please provide a valid season number greater than or equal to ${MINIMUM_SEASON_THRESHOLD}. The current season is ${getCurrentSeason()}`,
+        });
+        return;
+    }
 
     const guildService = new GuildService();
 

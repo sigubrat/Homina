@@ -1,12 +1,12 @@
 import { logger } from "@/lib";
 import {
-    CURRENT_SEASON,
+    getCurrentSeason,
     MINIMUM_SEASON_THRESHOLD,
 } from "@/lib/configs/constants";
 import { DataTransformationService } from "@/lib/services/DataTransformationService";
 import { GuildService } from "@/lib/services/GuildService";
 import { splitByCapital } from "@/lib/utils/utils";
-import { SecondsToString } from "@/lib/utils/timeUtils";
+import { isInvalidSeason, SecondsToString } from "@/lib/utils/timeUtils";
 import { Rarity } from "@/models/enums";
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { Pagination } from "pagination.djs";
@@ -24,7 +24,6 @@ export const data = new SlashCommandBuilder()
             .setDescription("The season number")
             .setRequired(true)
             .setMinValue(MINIMUM_SEASON_THRESHOLD)
-            .setMaxValue(CURRENT_SEASON)
     )
     .addStringOption((option) => {
         return option
@@ -61,11 +60,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const discordID = interaction.user.id;
     const showDelta = interaction.options.getBoolean("show-delta") ?? false;
 
-    const season = interaction.options.getNumber("season");
-    if (!season || !Number.isInteger(season) || season <= 69) {
+    const season = interaction.options.getNumber("season", true);
+    if (isInvalidSeason(season)) {
         await interaction.editReply({
-            content:
-                "Invalid season number. Please provide a positive integer with the lowest available season being 69.",
+            content: `Please provide a valid season number greater than or equal to ${MINIMUM_SEASON_THRESHOLD}. The current season is ${getCurrentSeason()}`,
         });
         return;
     }

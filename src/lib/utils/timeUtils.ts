@@ -1,4 +1,8 @@
 import type { TokenStatus } from "@/models/types";
+import {
+    MINIMUM_SEASON_THRESHOLD,
+    SEASON_85_SEASON_START,
+} from "../configs/constants";
 
 export function getUnixTimestamp(date: Date) {
     return Math.floor(date.getTime() / 1000);
@@ -72,4 +76,21 @@ export function withinNextHour(cooldown: string): boolean {
     const num = Number(cooldown.slice(0, 2));
 
     return num < 1;
+}
+
+export function calculateCurrentSeason(currentDate: Date): number {
+    const daysPerSeason = 14;
+    const startDate = SEASON_85_SEASON_START;
+    const diffInTime = currentDate.getTime() - startDate.getTime();
+    const diffInDays = Math.floor(diffInTime / (1000 * 3600 * 24));
+    return Math.floor(diffInDays / daysPerSeason) + 85;
+}
+
+export function isInvalidSeason(season: number | null): boolean {
+    return (
+        season === null ||
+        !Number.isInteger(season) ||
+        season < MINIMUM_SEASON_THRESHOLD ||
+        season > calculateCurrentSeason(new Date())
+    );
 }

@@ -1,11 +1,15 @@
+import { calculateCurrentSeason } from "../utils/timeUtils";
 import { characters } from "./characters";
 import { MachinesOfWar } from "./mow";
 
 export const MINIMUM_SEASON_THRESHOLD = 70;
 export const MAXIMUM_GUILD_MEMBERS = 30;
 export const MAXIMUM_TOKENS_PER_SEASON = 29;
-export const CURRENT_SEASON = 85;
+export const getCurrentSeason = () => calculateCurrentSeason(new Date());
 export const META_TEAM_THRESHOLD = 5;
+
+// Season 85 starts on October 8, 2025, at 10:00 AM UTC
+export const SEASON_85_SEASON_START = new Date(2025, 9, 8, 10, 0, 0);
 
 export const BOSS_EMOJIS: Record<string, string> = {
     Szarekh: "<:Szarekh:1385343132950069278>",

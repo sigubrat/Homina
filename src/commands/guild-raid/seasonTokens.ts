@@ -1,6 +1,6 @@
 import { logger } from "@/lib";
 import {
-    CURRENT_SEASON,
+    getCurrentSeason,
     MINIMUM_SEASON_THRESHOLD,
 } from "@/lib/configs/constants";
 import { ChartService } from "@/lib/services/ChartService";
@@ -8,6 +8,7 @@ import { GuildService } from "@/lib/services/GuildService.ts";
 import { numericMedian } from "@/lib/utils/mathUtils";
 import { numericAverage } from "@/lib/utils/mathUtils";
 import { standardDeviation } from "@/lib/utils/mathUtils";
+import { isInvalidSeason } from "@/lib/utils/timeUtils";
 import { Rarity } from "@/models/enums";
 import {
     AttachmentBuilder,
@@ -28,8 +29,7 @@ export const data = new SlashCommandBuilder()
             .setName("season")
             .setDescription("The season to check")
             .setRequired(true)
-            .setMinValue(MINIMUM_SEASON_THRESHOLD)
-            .setMaxValue(CURRENT_SEASON);
+            .setMinValue(MINIMUM_SEASON_THRESHOLD);
     })
     .addStringOption((option) => {
         return option
@@ -67,15 +67,14 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 
-    const season = interaction.options.getNumber("season") as number;
+    const season = interaction.options.getNumber("season", true);
     const rarity = interaction.options.getString("rarity") as
         | Rarity
         | undefined;
 
-    if (!Number.isInteger(season) || season <= 0) {
+    if (isInvalidSeason(season)) {
         await interaction.editReply({
-            content:
-                "Invalid season number. Please provide a positive integer.",
+            content: `Please provide a valid season number greater than or equal to ${MINIMUM_SEASON_THRESHOLD}. The current season is ${getCurrentSeason()}`,
         });
         return;
     }

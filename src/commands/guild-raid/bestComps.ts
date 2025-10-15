@@ -1,10 +1,11 @@
 import { logger } from "@/lib";
 import {
+    getCurrentSeason,
     MINIMUM_SEASON_THRESHOLD,
-    CURRENT_SEASON,
 } from "@/lib/configs/constants";
 import { DataTransformationService } from "@/lib/services/DataTransformationService";
 import { GuildService } from "@/lib/services/GuildService";
+import { isInvalidSeason } from "@/lib/utils/timeUtils";
 import {
     getBossEmoji,
     mapTierToRarity,
@@ -46,7 +47,6 @@ export const data = new SlashCommandBuilder()
             .setDescription("The season number")
             .setRequired(true)
             .setMinValue(MINIMUM_SEASON_THRESHOLD)
-            .setMaxValue(CURRENT_SEASON)
     );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
@@ -55,6 +55,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const discordID = interaction.user.id;
     const rarity = interaction.options.getString("rarity", true) as Rarity;
     const season = interaction.options.getNumber("season", true);
+
+    if (isInvalidSeason(season)) {
+        await interaction.editReply({
+            content: `Please provide a valid season number greater than or equal to ${MINIMUM_SEASON_THRESHOLD}. The current season is ${getCurrentSeason()}`,
+        });
+        return;
+    }
 
     const guildService = new GuildService();
     const dtsService = new DataTransformationService();
