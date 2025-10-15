@@ -21,16 +21,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.37.0] - 2025-10-15
 
-This update comes after a new review of the current meta teams. After consulting some high-ranked aquaintances and looking into available data, I've made some adjustments to the meta team classification in the bot.
+This update comes after a new review of the current meta teams. After consulting some high-ranked aquaintances and looking into available data, I've made some adjustments to the meta team classification in the bot. The bot also now calculates what the current season is instead of a pesky constant that needs to be updated manually every season, if someone remembers...
 
 ### Changed
 
 -   Dante is no longer required for a team to be classified as Dante
 -   Isabella is now an optional character for the custodes and multihit teams, as part of a niche trick against mythic mortarion. That bitch hurts.
+-   All commands with a season option now calculates what the current season is based on the date. There are no maximum limit on your input, but it will let you know if it's an invalid value.
 
 ### Removed
 
 -   Removed the pre-processing of data after the bug in the API was fixed by Snowprint
+-   Removed a max value for season options
 
 ## [0.36.2] - 2025-10-12
 
