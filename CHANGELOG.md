@@ -19,6 +19,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.37.0] - 2025-10-15
+
+This update comes after a new review of the current meta teams. After consulting some high-ranked aquaintances and looking into available data, I've made some adjustments to the meta team classification in the bot.
+
+### Changed
+
+-   Dante is no longer required for a team to be classified as Dante
+-   Isabella is now an optional character for the custodes and multihit teams, as part of a niche trick against mythic mortarion. That bitch hurts.
+
+### Removed
+
+-   Removed the pre-processing of data after the bug in the API was fixed by Snowprint
+
 ## [0.36.2] - 2025-10-12
 
 ### Changed
