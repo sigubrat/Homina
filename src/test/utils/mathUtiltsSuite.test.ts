@@ -47,7 +47,10 @@ describe("mathUtilsSuite - Algebra", () => {
         ];
         const n = 2;
         const result = getTopNDamageDealers(sortedData, n);
-        expect(result).toEqual(["🥇 Player1: 1,000", "🥈 Player2: 800"]);
+        expect(result).toEqual([
+            `🥇 Player1: ${Number(1000).toLocaleString()}`,
+            "🥈 Player2: 800",
+        ]);
     });
 
     test("sortGuildRaidResultDesc - Should sort the guild raid result in descending order", () => {
