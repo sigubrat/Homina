@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.37.1]
+
+### Changed
+
+-   Updated guild raid boss config 2
+
 ## [0.37.0] - 2025-10-15
 
 This update comes after a new review of the current meta teams. After consulting some high-ranked aquaintances and looking into available data, I've made some adjustments to the meta team classification in the bot. The bot also now calculates what the current season is instead of a pesky constant that needs to be updated manually every season, if someone remembers...
