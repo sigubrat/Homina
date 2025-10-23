@@ -31,7 +31,7 @@ This update comes after a new review of the current meta teams. After consulting
 
 ### Changed
 
--   Dante is no longer required for a team to be classified as Dante
+-   Dante is no longer required for a team to be classified as Custodes
 -   Isabella is now an optional character for the custodes and multihit teams, as part of a niche trick against mythic mortarion. That bitch hurts.
 -   All commands with a season option now calculates what the current season is based on the date. There are no maximum limit on your input, but it will let you know if it's an invalid value.
 
