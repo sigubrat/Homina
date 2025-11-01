@@ -4,75 +4,14 @@
 
 import { MetaTeams } from "@/models/enums/MetaTeams";
 import type { MetaComps } from "@/models/types/MetaComps";
-import { characters } from "../configs/characters";
 import { META_TEAM_THRESHOLD } from "../configs/constants";
-
-// PublicHeroDetail ids
-
-export const multiHitTeam = [
-    characters.Bellator?.id,
-    characters.Aethana?.id,
-    characters.Snotflogga?.id,
-    characters.Eldryon?.id,
-    characters.Gulgortz?.id,
-    characters.Kharn?.id,
-    characters.Ragnar?.id,
-    characters.Helbrecht?.id,
-    characters.Dante?.id,
-    characters.Calgar?.id,
-    characters.AunShi?.id,
-    characters.Asmodai?.id,
-    characters.Forcas?.id,
-    characters.Trajann?.id,
-    characters.Isabella?.id,
-];
-
-export const mechTeam = [
-    characters.AlephNull?.id,
-    characters.Actus?.id,
-    characters.TanGida?.id,
-    characters.ExitorRho?.id,
-    characters.Gulgortz?.id,
-    characters.Shosyl?.id,
-    characters.Revas?.id,
-    characters.Vitruvius?.id,
-    characters.Helbrecht?.id,
-    characters.Trajann?.id,
-];
-
-export const neuroTeam = [
-    characters.Eldryon?.id,
-    characters.Yazaghor?.id,
-    characters.Ahriman?.id,
-    characters.Neurothrope?.id,
-    characters.Abraxas?.id,
-    characters.Roswitha?.id,
-    characters.Xybia?.id,
-    characters.Mephiston?.id,
-];
-
-export const custodesTeam = [
-    characters.Trajann.id,
-    characters.Kariyan.id,
-    characters.Ragnar.id,
-    characters.Kharn.id,
-    characters.Dante.id,
-    characters.Mephiston.id,
-    characters.Abaddon.id,
-    characters.Helbrecht.id,
-    characters.Isabella.id,
-];
-
-const lynchpinHeroes: Record<string, string[]> = {
-    Multihit: [characters.Ragnar.id],
-    Admech: [
-        characters.ExitorRho.id,
-        characters.Actus.id,
-        characters.TanGida.id,
-    ],
-    Neuro: [characters.Neurothrope.id],
-    Custodes: [characters.Trajann.id, characters.Kariyan.id],
-};
+import {
+    custodesTeam,
+    lynchpinHeroes,
+    mechTeam,
+    multiHitTeam,
+    neuroTeam,
+} from "../configs/metaTeamConfig";
 
 export interface TeamCheck {
     inMulti: boolean;
@@ -81,6 +20,12 @@ export interface TeamCheck {
     inCustodes: boolean;
 }
 
+/**
+ * Checks if a given hero belongs to any of the predefined teams and returns an object indicating membership.
+ *
+ * @param hero - The name of the hero to check for team membership.
+ * @returns An object of type `TeamCheck` with boolean flags for each team indicating if the hero is a member.
+ */
 export function inTeamsCheck(hero: string): TeamCheck {
     const teamCheck: TeamCheck = {
         inMulti: false,
@@ -97,6 +42,13 @@ export function inTeamsCheck(hero: string): TeamCheck {
     return teamCheck;
 }
 
+/**
+ * Determines whether the provided list of heroes contains all lynchpin heroes required for a given team.
+ *
+ * @param heroes - An array of hero names to check.
+ * @param team - The name of the team whose lynchpin heroes are required.
+ * @returns `true` if all lynchpin heroes for the specified team are present in the heroes array; otherwise, `false`.
+ */
 export function hasLynchpinHeroes(heroes: string[], team: string): boolean {
     const requiredHeroes = lynchpinHeroes[team];
     if (!requiredHeroes || requiredHeroes.length === 0) {
@@ -108,6 +60,17 @@ export function hasLynchpinHeroes(heroes: string[], team: string): boolean {
     );
 }
 
+/**
+ * Determines the meta team classification for a given list of hero names.
+ *
+ * The function analyzes the provided heroes to check their inclusion in various meta teams
+ * (MULTIHIT, ADMECH, NEURO, CUSTODES) based on predefined thresholds and the presence of lynchpin heroes.
+ * Returns the corresponding `MetaTeams` enum value representing the identified meta team,
+ * or `MetaTeams.OTHER` if no meta team criteria are met.
+ *
+ * @param heroes - An array of hero names to evaluate for meta team classification.
+ * @returns The `MetaTeams` enum value representing the meta team classification.
+ */
 export function getMetaTeam(heroes: string[]): MetaTeams {
     const teamCheck = heroes.map((hero) => inTeamsCheck(hero));
     const distribution = {
@@ -149,6 +112,16 @@ export function getMetaTeam(heroes: string[]): MetaTeams {
     return MetaTeams.OTHER;
 }
 
+/**
+ * Determines which meta teams are present in a given list of heroes.
+ *
+ * For each meta team (multihit, admech, neuro, custodes), the function checks if the number of heroes
+ * associated with that team meets or exceeds the `META_TEAM_THRESHOLD` and if the required lynchpin heroes
+ * for that team are present. If both conditions are met, the corresponding meta team flag is set to `true`.
+ *
+ * @param heroes - An array of hero names to evaluate for meta team composition.
+ * @returns An object indicating which meta teams are present in the provided hero list.
+ */
 export function getMetaTeams(heroes: string[]): MetaComps {
     const teamCheck = heroes.map((hero) => inTeamsCheck(hero));
     const distribution = {

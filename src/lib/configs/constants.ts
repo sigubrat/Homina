@@ -1,6 +1,6 @@
 import { calculateCurrentSeason } from "../utils/timeUtils";
-import { characters } from "./characters";
-import { MachinesOfWar } from "./mow";
+import { characters } from "./charactersConfig";
+import { MachinesOfWar } from "./mowConfig";
 
 export const MINIMUM_SEASON_THRESHOLD = 70;
 export const MAXIMUM_GUILD_MEMBERS = 30;
