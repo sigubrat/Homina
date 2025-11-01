@@ -166,6 +166,13 @@ export class DatabaseController {
         }
     }
 
+    /**
+     * Checks if the database connection is ready by attempting to authenticate with Sequelize.
+     *
+     * @returns {Promise<DbTestResult>} A promise that resolves to a `DbTestResult` indicating
+     * whether the connection was successful (`isSuccess: true`) or failed (`isSuccess: false`).
+     * If the connection fails, an error message is included in the result.
+     */
     public async isReady(): Promise<DbTestResult> {
         try {
             await this.sequelize.authenticate();
@@ -181,6 +188,13 @@ export class DatabaseController {
         return { isSuccess: true } as DbTestResult;
     }
 
+    /**
+     * Registers a user by storing their encrypted token in the database.
+     *
+     * @param userId - The unique identifier of the user.
+     * @param token - The token to be encrypted and stored.
+     * @returns A promise that resolves to `true` if the registration was successful, or `false` if an error occurred.
+     */
     public async registerUser(userId: string, token: string): Promise<boolean> {
         try {
             const encryptedToken = CryptoService.encrypt(token);
@@ -197,6 +211,16 @@ export class DatabaseController {
         }
     }
 
+    /**
+     * Deletes a user from the `discordApiTokenMappings` table in the database.
+     *
+     * @param userId - The unique identifier of the user to delete.
+     * @returns The number of rows deleted if successful, or `undefined` if an error occurred.
+     *
+     * @remarks
+     * This method uses Sequelize's `destroy` function to remove the user record.
+     * Any errors encountered during the operation are logged and result in an `undefined` return value.
+     */
     public async deleteUser(userId: string): Promise<number | undefined> {
         try {
             const res = await this.sequelize.models[
@@ -213,6 +237,11 @@ export class DatabaseController {
         }
     }
 
+    /**
+     * Retrieves the total number of users from the `discordApiTokenMappings` model in the database.
+     *
+     * @returns {Promise<number>} The number of users found in the database. Returns 0 if an error occurs or if no users are found.
+     */
     public async getNumberOfUsers(): Promise<number> {
         try {
             const res = await this.sequelize.models[
@@ -228,6 +257,14 @@ export class DatabaseController {
         }
     }
 
+    /**
+     * Retrieves the Discord API token for a user by their Discord ID.
+     * If the token is found, updates the `tokenLastUsed` field to the current date and time.
+     * Returns the token as a string, or `null` if no token is found or an error occurs.
+     *
+     * @param discordId - The Discord user ID to look up.
+     * @returns A promise that resolves to the user's token string, or `null` if not found or on error.
+     */
     public async getUserToken(discordId: string): Promise<string | null> {
         try {
             const model = this.sequelize.models["discordApiTokenMappings"];
@@ -253,6 +290,13 @@ export class DatabaseController {
         }
     }
 
+    /**
+     * Deletes old records from the database for Discord API token mappings and guild members
+     * that have not been used or accessed within the specified maximum age in days.
+     *
+     * @param maxAgeInDays - The maximum age in days for tokens and guild members to keep. Records older than this will be deleted. Defaults to 30 days.
+     * @returns The number of guild member records deleted from the database. Returns 0 if an error occurs.
+     */
     public async cleanupOldTokens(maxAgeInDays: number = 30): Promise<number> {
         try {
             const cutoffDate = new Date();
@@ -295,6 +339,19 @@ export class DatabaseController {
         }
     }
 
+    /**
+     * Updates the guild members for a given guild in a transactional manner.
+     *
+     * This method performs the following steps within a transaction:
+     * - Retrieves the current guild members for the specified guild.
+     * - Deletes members that are no longer present in the provided list.
+     * - Upserts (inserts or updates) the provided members.
+     * - Commits the transaction if all operations succeed, otherwise rolls back on error.
+     *
+     * @param guildId - The ID of the guild whose members are to be updated.
+     * @param members - An array of `GuildMemberMapping` objects representing the desired state of guild members.
+     * @returns A promise that resolves to the number of members updated, or -1 if an error occurs.
+     */
     public async updateGuildMembersTransactional(
         guildId: string,
         members: GuildMemberMapping[]
@@ -355,6 +412,17 @@ export class DatabaseController {
         }
     }
 
+    /**
+     * Retrieves all guild members associated with a given guild ID from the database.
+     *
+     * This method fetches the members from the "GuildMembers" model, maps the results to
+     * `GuildMemberMapping` objects, and updates the `lastAccessed` timestamp for all members
+     * in the specified guild.
+     *
+     * @param guildId - The unique identifier of the guild whose members are to be retrieved.
+     * @returns An array of `GuildMemberMapping` objects if members are found, or `null` if none are found or an error occurs.
+     * @throws Logs any errors encountered during the database operations.
+     */
     public async getGuildMembersByGuildId(guildId: string) {
         try {
             const result = await this.sequelize.models["GuildMembers"]?.findAll(
@@ -389,6 +457,15 @@ export class DatabaseController {
         }
     }
 
+    /**
+     * Retrieves the username of a player from the database based on the provided user ID and guild ID.
+     * If the player is found, updates their `lastAccessed` timestamp to the current date.
+     * Returns the username as a string, or `null` if the player is not found or an error occurs.
+     *
+     * @param userId - The unique identifier of the user.
+     * @param guildId - The unique identifier of the guild.
+     * @returns A promise that resolves to the player's username as a string, or `null` if not found.
+     */
     public async getPlayerName(
         userId: string,
         guildId: string
@@ -418,6 +495,15 @@ export class DatabaseController {
         }
     }
 
+    /**
+     * Retrieves the usernames of players based on their user IDs within a specific guild.
+     *
+     * @param userIds - An array of user IDs to look up.
+     * @param guildId - The ID of the guild to filter members by.
+     * @returns A promise that resolves to a record mapping user IDs to usernames.
+     *          If no matching members are found, returns an empty object.
+     * @throws Logs an error and returns an empty object if the database query fails.
+     */
     public async getPlayerNames(
         userIds: string[],
         guildId: string
@@ -450,6 +536,13 @@ export class DatabaseController {
         }
     }
 
+    /**
+     * Retrieves the total number of guild members from the database.
+     *
+     * @returns {Promise<number>} The count of guild members, or 0 if an error occurs.
+     *
+     * @throws Logs an error and returns 0 if the database query fails.
+     */
     public async getMemberCount() {
         try {
             const result = await this.sequelize.models["GuildMembers"]?.count();
@@ -461,6 +554,19 @@ export class DatabaseController {
         }
     }
 
+    /**
+     * Retrieves the player key status for all members of a specified guild.
+     *
+     * Queries the `GuildMembers` model for all members belonging to the given `guildId`.
+     * Returns an object mapping each member's username to a boolean indicating whether
+     * they have a non-empty player token. Also updates the `lastAccessed` timestamp
+     * for all members of the guild.
+     *
+     * @param guildId - The unique identifier of the guild whose members are being queried.
+     * @returns A promise that resolves to a record mapping usernames to a boolean indicating
+     *          the presence of a player token. Returns an empty object if no members are found
+     *          or if an error occurs.
+     */
     public async getGuildMembersPlayerKeyStatus(
         guildId: string
     ): Promise<Record<string, boolean>> {
@@ -500,6 +606,14 @@ export class DatabaseController {
         }
     }
 
+    /**
+     * Retrieves the total number of distinct guilds from the database.
+     *
+     * Counts the unique occurrences of `guildId` in the `GuildMembers` model.
+     * Returns `0` if an error occurs or if no guilds are found.
+     *
+     * @returns {Promise<number>} The count of distinct guilds.
+     */
     public async getGuildCount() {
         try {
             const result = await this.sequelize.models["GuildMembers"]?.count({
@@ -514,6 +628,15 @@ export class DatabaseController {
         }
     }
 
+    /**
+     * Retrieves the user ID of a guild member by their username and guild ID.
+     * If the member is found, updates their `lastAccessed` timestamp to the current date.
+     *
+     * @param username - The username of the guild member.
+     * @param guildId - The ID of the guild.
+     * @returns The user ID as a string if found, otherwise `null`.
+     * @throws Logs an error and returns `null` if retrieval fails.
+     */
     public async getGuildMemberIdByUsername(username: string, guildId: string) {
         try {
             const result = await this.sequelize.models["GuildMembers"]?.findOne(
@@ -544,6 +667,18 @@ export class DatabaseController {
         }
     }
 
+    /**
+     * Retrieves the player token for a specific user in a given guild.
+     *
+     * This method queries the `GuildMembers` model to find the record matching the provided
+     * `userId` and `guildId`. If found, it updates the `lastAccessed` timestamp for the user
+     * and returns the associated `playerToken`. If no record is found or an error occurs,
+     * it returns `null`.
+     *
+     * @param userId - The unique identifier of the user.
+     * @param guildId - The unique identifier of the guild.
+     * @returns A promise that resolves to the player's token as a string, or `null` if not found or on error.
+     */
     public async getPlayerToken(
         userId: string,
         guildId: string
@@ -573,6 +708,14 @@ export class DatabaseController {
         }
     }
 
+    /**
+     * Retrieves all player tokens associated with the specified guild ID.
+     * Also updates the `lastAccessed` timestamp for all members in the guild.
+     *
+     * @param guildId - The unique identifier of the guild.
+     * @returns A promise that resolves to an array of player token strings.
+     *          Returns an empty array if no tokens are found or if an error occurs.
+     */
     public async getPlayerTokens(guildId: string) {
         try {
             const guildMembersModel = this.sequelize.models["GuildMembers"];
@@ -611,6 +754,18 @@ export class DatabaseController {
         }
     }
 
+    /**
+     * Sets or updates the player's API token for a specific user and guild.
+     *
+     * Encrypts the provided API token before storing it in the database.
+     * Uses the `upsert` operation to insert or update the record in the `GuildMembers` model.
+     * Updates the `lastAccessed` timestamp to the current date.
+     *
+     * @param userId - The unique identifier of the user.
+     * @param guildId - The unique identifier of the guild.
+     * @param apiToken - The API token to be stored for the player.
+     * @returns A promise that resolves to `true` if the operation was successful, or `false` otherwise.
+     */
     public async setPlayerToken(
         userId: string,
         guildId: string,
@@ -651,6 +806,19 @@ export class DatabaseController {
         }
     }
 
+    /**
+     * Updates the player's name and optionally their API token in the database for a specific guild.
+     *
+     * If an `apiToken` is provided, it will be encrypted before being stored.
+     * The method uses an upsert operation to either update an existing record or insert a new one
+     * in the `GuildMembers` model. The `lastAccessed` field is updated to the current date and time.
+     *
+     * @param userId - The unique identifier of the user whose name is to be updated.
+     * @param name - The new name to assign to the player.
+     * @param guildId - The unique identifier of the guild to which the player belongs.
+     * @param apiToken - (Optional) The API token to associate with the player. If provided, it will be encrypted.
+     * @returns A promise that resolves to `true` if the update was successful, or `false` if an error occurred.
+     */
     public async updatePlayerName(
         userId: string,
         name: string,
@@ -691,6 +859,13 @@ export class DatabaseController {
         }
     }
 
+    /**
+     * Deletes a player's name from the GuildMembers table by user ID and guild ID.
+     *
+     * @param userId - The unique identifier of the user whose player name should be deleted.
+     * @param guildId - The unique identifier of the guild from which the player's name should be deleted.
+     * @returns A promise that resolves to the number of rows deleted, or -1 if an error occurs.
+     */
     public async deletePlayerNameById(
         userId: string,
         guildId: string
@@ -717,6 +892,13 @@ export class DatabaseController {
         }
     }
 
+    /**
+     * Deletes a player's name from the GuildMembers model based on the provided username and guild ID.
+     *
+     * @param username - The username of the player whose name should be deleted.
+     * @param guildId - The ID of the guild to which the player belongs.
+     * @returns A promise that resolves to the number of records deleted, or -1 if an error occurs.
+     */
     public async deletePlayerNameByUsername(
         username: string,
         guildId: string

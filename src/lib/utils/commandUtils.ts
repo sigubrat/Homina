@@ -3,6 +3,15 @@ import * as path from "path";
 import { Collection } from "discord.js";
 import { HominaTacticusClient } from "@/client";
 
+/**
+ * Asynchronously loads command modules from a specified directory and returns them in a collection.
+ *
+ * This function reads all files in the given `commandsPath` directory, imports each file ending with `.ts` or `.js`,
+ * and adds the command to a collection if it contains a `data` property with a `name`.
+ *
+ * @param commandsPath - The path to the directory containing command files.
+ * @returns A promise that resolves to a `Collection` mapping command names to their respective command modules.
+ */
 async function getCommands(
     commandsPath: string
 ): Promise<Collection<string, any>> {
@@ -21,6 +30,15 @@ async function getCommands(
     return commandsCollection;
 }
 
+/**
+ * Asynchronously retrieves all command modules from categorized directories and aggregates them into a single collection.
+ *
+ * This function scans the `commands` directory, iterates through each category subdirectory,
+ * loads the commands using `getCommands`, and combines them into a `Collection`.
+ *
+ * @returns {Promise<Collection<string, any>>} A promise that resolves to a collection containing all loaded commands, keyed by their identifiers.
+ * @throws Will throw an error if reading directories or loading commands fails.
+ */
 export async function getAllCommands(): Promise<Collection<string, any>> {
     try {
         const commandsRoot = path.join(__dirname, "../../commands");
@@ -42,6 +60,12 @@ export async function getAllCommands(): Promise<Collection<string, any>> {
     }
 }
 
+/**
+ * Tests the validity of an API token by attempting to retrieve guild information.
+ *
+ * @param token - The API token to be tested.
+ * @returns A promise that resolves to `true` if the token is valid, or `false` otherwise.
+ */
 export async function testApiToken(token: string): Promise<boolean> {
     try {
         const client = new HominaTacticusClient();
@@ -55,6 +79,12 @@ export async function testApiToken(token: string): Promise<boolean> {
     }
 }
 
+/**
+ * Tests the validity of a Player API token by attempting to retrieve player information.
+ *
+ * @param token - The Player API token to be tested.
+ * @returns A promise that resolves to `true` if the token is valid, or `false` otherwise.
+ */
 export async function testPlayerApiToken(token: string): Promise<boolean> {
     try {
         const client = new HominaTacticusClient();

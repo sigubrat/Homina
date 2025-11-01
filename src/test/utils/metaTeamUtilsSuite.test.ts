@@ -1,4 +1,4 @@
-import { characters } from "@/lib/configs/characters";
+import { characters } from "@/lib/configs/charactersConfig";
 import {
     inTeamsCheck,
     hasLynchpinHeroes,
