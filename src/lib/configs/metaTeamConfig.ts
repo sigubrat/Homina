@@ -54,6 +54,7 @@ export const custodesTeam = [
     characters.Abaddon.id,
     characters.Helbrecht.id,
     characters.Isabella.id,
+    characters.Vitruvius.id,
 ];
 
 export const lynchpinHeroes: Record<string, string[]> = {

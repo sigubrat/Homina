@@ -19,6 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.37.2] - 2025-11-02
+
+The new Mythic Avatar has led to some exciting discoveries in meta team variants. Vitruvius is now confirmed as a solid option against the Avatar of Khaine, especially in combination with a mythic galatian. The bot config has therefore been updated to include Vitruvius as one of the optional characters in the custodes team classification.
+
+### Added
+
+-   Vitruvius is now an optional character in the Custodes team
+
 ## [0.37.1] - 2025-10-23
 
 ### Changed
