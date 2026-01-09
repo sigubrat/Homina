@@ -42,6 +42,7 @@ export const characters = {
     Kariyan: { id: "custoBladeChampion", name: "Kariyan" },
     Trajann: { id: "custoTrajann", name: "Trajann" },
     Aesoth: { id: "custoVexilusPraetor", name: "Aesoth" },
+    Tyrith: { id: "custoKyrus", name: "Tyrith" },
 
     // Dark Angels
     Asmodai: { id: "darkaAsmodai", name: "Asmodai" },
@@ -68,6 +69,8 @@ export const characters = {
     Adamatar: { id: "emperKakophonist", name: "Adamatar" },
     Lucius: { id: "emperLucius", name: "Lucius" },
     Shiron: { id: "emperNoiseMarine", name: "Shiron" },
+    Hascule: { id: "emperFlawlessBlade", name: "Hascule" },
+    Laviscus: { id: "emperExultant", name: "Laviscus" },
 
     // Genestealer Cults
     Hollan: { id: "genesBiophagus", name: "Hollan" },
@@ -103,6 +106,7 @@ export const characters = {
     Darkstrider: { id: "tauDarkstrider", name: "Darkstrider" },
     Shosyl: { id: "tauMarksman", name: "Sho'syl" },
     Shadowsun: { id: "tauShadowsun", name: "Shadowsun" },
+    Farsight: { id: "tauFarsight", name: "Farsight" },
 
     // Black Templars
     Burchard: { id: "templAggressor", name: "Burchard" },
