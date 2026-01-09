@@ -41,30 +41,30 @@
             "C4 Screamer-Killer"
         ],
         "Uncommon": [
-            "U1 Hive Tyrant (Kronos)",
-            "U2 Tervigon (Leviathan)",
-            "U3 Hive Tyrant (Gorgon)",
-            "U4 Riptide"
+            "U1 Tervigon (Kronos)",
+            "U2 Hive Tyrant (Leviathan)",
+            "U3 Tervigon (Gorgon)",
+            "U4 Ghazghkull"
         ],
         "Rare": [
-            "R1 Tervigon (Kronos)",
-            "R2 Riptide",
-            "R3 Belisarius",
+            "R1 Riptide",
+            "R2 Rogal Dorn",
+            "R3 Screamer-Killer",
             "R4 Ghazghkull"
         ],
         "Epic": [
-            "E1 Rogal Dorn",
+            "E1 Hive Tyrant (Kronos)",
             "E2 Screamer-Killer",
-            "E3 Ghazghkull",
-            "E4 Avatar Of Khaine",
-            "E5 Belisarius"
+            "E3 Avatar Of Khaine",
+            "E4 Belisarius",
+            "E5 Ghazghkull"
         ],
         "Legendary": [
             "L1 Riptide",
             "L2 Screamer-Killer",
             "L3 Rogal Dorn",
-            "L4 Ghazghkull",
-            "L5 Belisarius"
+            "L4 Belisarius",
+            "L5 Ghazghkull"
         ],
         "Mythic": ["M1 Avatar Of Khaine"]
     },
