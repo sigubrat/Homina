@@ -1,11 +1,7 @@
 import { dbController, logger } from "@/lib";
 import { MessageService } from "@/lib/services/MessageService";
 import { isValidUUIDv4 } from "@/lib/utils/mathUtils";
-import {
-    ChatInputCommandInteraction,
-    MessageFlags,
-    SlashCommandBuilder,
-} from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 
 // 5 minutes cooldown
 export const cooldown = 5 * 60;
@@ -30,9 +26,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     if (invitedUser.id === commandCallerId) {
         await interaction.editReply({
             content: "You cannot invite yourself.",
-            options: {
-                flags: MessageFlags.Ephemeral,
-            },
         });
         return;
     }
@@ -44,9 +37,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             await interaction.editReply({
                 content:
                     "Could not find a valid token registered to your discord account. Please register first using /register or reach out to the support server if something is wrong.",
-                options: {
-                    flags: MessageFlags.Ephemeral,
-                },
             });
             return;
         }
@@ -72,9 +62,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         await interaction.editReply({
             content:
                 "An error occurred while trying to invite the user. Please try again later.",
-            options: {
-                flags: MessageFlags.Ephemeral,
-            },
         });
         logger.error(
             `Error while ${interaction.user.username} was trying to invite ${invitedUser.username}: ${error}`

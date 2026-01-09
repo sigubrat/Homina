@@ -170,7 +170,7 @@ export class MessageService {
             await interaction.followUp({
                 content:
                     "An error occurred while registering you. Please try again later or reach out to the support server.",
-                options: { flags: MessageFlags.Ephemeral },
+                flags: MessageFlags.Ephemeral,
             });
         }
     }
@@ -198,7 +198,7 @@ export class MessageService {
             await interaction.followUp({
                 content:
                     "An error occurred while processing your decline. Please try again later.",
-                options: { flags: MessageFlags.Ephemeral },
+                flags: MessageFlags.Ephemeral,
             });
         }
     }
