@@ -1,8 +1,47 @@
 import { logger } from "@/lib";
+import { MessageService } from "@/lib/services/MessageService";
 import { Collection, Events, MessageFlags } from "discord.js";
 
 export const name = Events.InteractionCreate;
 export async function execute(interaction: any) {
+    // Handle button interactions
+    if (interaction.isButton()) {
+        const customId = interaction.customId;
+
+        // Check if this is an invite button
+        if (
+            customId.startsWith("invite_confirm_") ||
+            customId.startsWith("invite_decline_")
+        ) {
+            const messageService = new MessageService(interaction.client);
+
+            // Extract userId from customId and verify it matches the user clicking
+            const userId = customId.split("_")[2];
+            if (userId !== interaction.user.id) {
+                await interaction.reply({
+                    content: "This invitation is not for you.",
+                    flags: MessageFlags.Ephemeral,
+                });
+                return;
+            }
+
+            if (customId.startsWith("invite_confirm_")) {
+                const apiToken = customId.split("_")[3];
+                if (!apiToken) {
+                    await interaction.reply({
+                        content: "Invalid invitation data.",
+                        flags: MessageFlags.Ephemeral,
+                    });
+                    return;
+                }
+                await messageService.handleInviteConfirm(interaction, apiToken);
+            } else if (customId.startsWith("invite_decline_")) {
+                await messageService.handleInviteDecline(interaction);
+            }
+        }
+        return;
+    }
+
     if (!interaction.isChatInputCommand()) return; // Ignore non-chat input commands
 
     const command = interaction.client.commands.get(interaction.commandName);
