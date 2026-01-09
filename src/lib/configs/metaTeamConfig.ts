@@ -57,12 +57,27 @@ export const custodesTeam = [
     characters.Vitruvius.id,
 ];
 
+export const battlesuitTeam = [
+    characters.Farsight.id,
+    characters.Actus.id,
+    characters.Darkstrider.id,
+    characters.Revas.id,
+    characters.Eldryon.id,
+];
+
 export const lynchpinHeroes: Record<string, string[]> = {
     Multihit: [characters.Ragnar.id],
     Admech: [
         characters.ExitorRho.id,
         characters.Actus.id,
         characters.TanGida.id,
+    ],
+    Battlesuit: [
+        characters.Farsight.id,
+        characters.Actus.id,
+        characters.Darkstrider.id,
+        characters.Revas.id,
+        characters.Eldryon.id,
     ],
     Neuro: [characters.Neurothrope.id],
     Custodes: [characters.Trajann.id, characters.Kariyan.id],

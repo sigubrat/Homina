@@ -7,6 +7,8 @@ export interface TeamDistribution {
     neuroDamage?: number;
     custodes: number;
     custodesDamage?: number;
+    battlesuit: number;
+    battlesuitDamage?: number;
     other: number;
     otherDamage?: number;
 }

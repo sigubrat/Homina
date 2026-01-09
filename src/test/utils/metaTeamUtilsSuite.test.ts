@@ -3,6 +3,7 @@ import {
     inTeamsCheck,
     hasLynchpinHeroes,
     getMetaTeam,
+    getMetaTeams,
 } from "@/lib/utils/metaTeamUtils";
 import { MetaTeams } from "@/models/enums/MetaTeams";
 import { describe, expect, test } from "bun:test";
@@ -14,6 +15,7 @@ describe("metaTeamUtils - Algebra", () => {
             characters.Gulgortz.id,
             characters.Eldryon.id,
             characters.Kariyan.id,
+            characters.Farsight.id,
         ];
 
         const result = {
@@ -21,6 +23,7 @@ describe("metaTeamUtils - Algebra", () => {
             mech: 0,
             neuro: 0,
             custodes: 0,
+            battlesuit: 0,
         };
         heroes.forEach((hero) => {
             const res = inTeamsCheck(hero);
@@ -28,12 +31,14 @@ describe("metaTeamUtils - Algebra", () => {
             result.mech += res.inMech ? 1 : 0;
             result.neuro += res.inNeuro ? 1 : 0;
             result.custodes += res.inCustodes ? 1 : 0;
+            result.battlesuit += res.inBattlesuit ? 1 : 0;
         });
         expect(result).toEqual({
             multi: 3,
             mech: 1,
             neuro: 1,
             custodes: 1,
+            battlesuit: 2,
         });
     });
 
@@ -75,6 +80,13 @@ describe("metaTeamUtils - Algebra", () => {
                 characters.Dante.id,
                 characters.Kharn.id,
             ],
+            [
+                characters.Farsight.id,
+                characters.Actus.id,
+                characters.Darkstrider.id,
+                characters.Revas.id,
+                characters.Eldryon.id,
+            ],
         ];
 
         const neuroTeam = teams.reduce(
@@ -101,10 +113,17 @@ describe("metaTeamUtils - Algebra", () => {
             0
         );
 
+        const battlesuitTeam = teams.reduce(
+            (acc, team) =>
+                acc + Number(hasLynchpinHeroes(team, MetaTeams.BATTLESUIT)),
+            0
+        );
+
         expect(neuroTeam).toBe(1);
         expect(multiTeam).toBe(1);
         expect(mechTeam).toBe(1);
         expect(custodesTeam).toBe(1);
+        expect(battlesuitTeam).toBe(1);
     });
 
     test("getMetaTeam - Should return the correct meta team", () => {
@@ -112,7 +131,7 @@ describe("metaTeamUtils - Algebra", () => {
             characters.Bellator.id,
             characters.Gulgortz.id,
             characters.Eldryon.id,
-            "templHelbrecht",
+            characters.Helbrecht.id,
             characters.Ragnar.id,
         ];
         const metaTeam = getMetaTeam(multihitTeam);
@@ -136,6 +155,24 @@ describe("metaTeamUtils - Algebra", () => {
             "bloodMephiston",
         ];
         expect(getMetaTeam(neuroTeam)).toEqual(MetaTeams.NEURO);
+
+        const custodesTeam = [
+            characters.Trajann.id,
+            characters.Kariyan.id,
+            characters.Ragnar.id,
+            characters.Kharn.id,
+            characters.Dante.id,
+        ];
+        expect(getMetaTeam(custodesTeam)).toEqual(MetaTeams.CUSTODES);
+
+        const battlesuitTeam = [
+            characters.Farsight.id,
+            characters.Actus.id,
+            characters.Darkstrider.id,
+            characters.Revas.id,
+            characters.Eldryon.id,
+        ];
+        expect(getMetaTeam(battlesuitTeam)).toEqual(MetaTeams.BATTLESUIT);
     });
 
     test("getMetaTeam - Should return OTHER for teams not matching any meta", () => {
@@ -148,5 +185,98 @@ describe("metaTeamUtils - Algebra", () => {
             "thousInfernalMaster",
         ];
         expect(getMetaTeam(otherTeam)).toEqual(MetaTeams.OTHER);
+    });
+
+    test("getMetaTeam - Should return Battlesuit for battlesuit meta team", () => {
+        const battlesuitTeam = [
+            characters.Farsight.id,
+            characters.Actus.id,
+            characters.Darkstrider.id,
+            characters.Revas.id,
+            characters.Eldryon.id,
+        ];
+        expect(getMetaTeam(battlesuitTeam)).toEqual(MetaTeams.BATTLESUIT);
+    });
+
+    test("getMetaTeams - Should return correct meta teams present in hero list", () => {
+        const admechTeam = [
+            characters.ExitorRho.id,
+            characters.Gulgortz.id,
+            characters.Actus.id,
+            characters.TanGida.id,
+            characters.Shosyl.id,
+        ];
+
+        const custodesTeam = [
+            characters.Trajann.id,
+            characters.Kariyan.id,
+            characters.Ragnar.id,
+            characters.Kharn.id,
+            characters.Dante.id,
+        ];
+
+        const multihitTeam = [
+            characters.Bellator.id,
+            characters.Asmodai.id,
+            characters.Eldryon.id,
+            characters.Helbrecht.id,
+            characters.Ragnar.id,
+        ];
+
+        const battleSuitTeam = [
+            characters.Farsight.id,
+            characters.Actus.id,
+            characters.Darkstrider.id,
+            characters.Revas.id,
+            characters.Eldryon.id,
+        ];
+
+        const nonsenseTeam = [
+            characters.Ahriman.id,
+            characters.Tjark.id,
+            characters.Gulgortz.id,
+            characters.Kariyan.id,
+            characters.TanGida.id,
+        ];
+
+        expect(getMetaTeams(admechTeam)).toEqual({
+            multihit: false,
+            admech: true,
+            neuro: false,
+            custodes: false,
+            battlesuit: false,
+        });
+
+        expect(getMetaTeams(custodesTeam)).toEqual({
+            multihit: false,
+            admech: false,
+            neuro: false,
+            custodes: true,
+            battlesuit: false,
+        });
+
+        expect(getMetaTeams(multihitTeam)).toEqual({
+            multihit: true,
+            admech: false,
+            neuro: false,
+            custodes: false,
+            battlesuit: false,
+        });
+
+        expect(getMetaTeams(battleSuitTeam)).toEqual({
+            multihit: false,
+            admech: false,
+            neuro: false,
+            custodes: false,
+            battlesuit: true,
+        });
+
+        expect(getMetaTeams(nonsenseTeam)).toEqual({
+            multihit: false,
+            admech: false,
+            neuro: false,
+            custodes: false,
+            battlesuit: false,
+        });
     });
 });
