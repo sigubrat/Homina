@@ -297,10 +297,29 @@ export class DatabaseController {
      * @param maxAgeInDays - The maximum age in days for tokens and guild members to keep. Records older than this will be deleted. Defaults to 30 days.
      * @returns The number of guild member records deleted from the database. Returns 0 if an error occurs.
      */
-    public async cleanupOldTokens(maxAgeInDays: number = 30): Promise<number> {
+    public async cleanupOldTokens(
+        maxAgeInDays: number = 30
+    ): Promise<string[]> {
         try {
             const cutoffDate = new Date();
             cutoffDate.setDate(cutoffDate.getDate() - maxAgeInDays);
+
+            const deletedUsers = await this.sequelize.models[
+                "discordApiTokenMappings"
+            ]?.findAll({
+                where: {
+                    tokenLastUsed: {
+                        [Op.lt]: cutoffDate,
+                    },
+                },
+            });
+
+            const deletedUserIds =
+                (deletedUsers?.map((user) =>
+                    user.getDataValue("userId")
+                ) as string[]) || [];
+
+            console.log("Deleted user IDs: ", deletedUserIds);
 
             let res = await this.sequelize.models[
                 "discordApiTokenMappings"
@@ -332,10 +351,10 @@ export class DatabaseController {
                 } guild members from the database older than ${maxAgeInDays} days.`
             );
 
-            return res || 0;
+            return deletedUserIds;
         } catch (error) {
             logger.error(error, "Error cleaning up old tokens in database");
-            return 0;
+            return [];
         }
     }
 
