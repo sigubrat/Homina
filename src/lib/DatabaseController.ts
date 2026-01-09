@@ -258,7 +258,7 @@ export class DatabaseController {
     }
 
     /**
-     * Retrieves the Discord API token for a user by their Discord ID.
+     * Retrieves the API token for a user by their Discord ID.
      * If the token is found, updates the `tokenLastUsed` field to the current date and time.
      * Returns the token as a string, or `null` if no token is found or an error occurs.
      *
@@ -295,7 +295,7 @@ export class DatabaseController {
      * that have not been used or accessed within the specified maximum age in days.
      *
      * @param maxAgeInDays - The maximum age in days for tokens and guild members to keep. Records older than this will be deleted. Defaults to 30 days.
-     * @returns The number of guild member records deleted from the database. Returns 0 if an error occurs.
+     * @returns A list of user IDs whose tokens were deleted.
      */
     public async cleanupOldTokens(
         maxAgeInDays: number = 30
@@ -318,8 +318,6 @@ export class DatabaseController {
                 (deletedUsers?.map((user) =>
                     user.getDataValue("userId")
                 ) as string[]) || [];
-
-            console.log("Deleted user IDs: ", deletedUserIds);
 
             let res = await this.sequelize.models[
                 "discordApiTokenMappings"
