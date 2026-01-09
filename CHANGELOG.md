@@ -30,7 +30,8 @@ This update introduces a new user invitation command to make it easier for other
     -   The invited user does not need to do any guild member mapping
     -   This is an alternative to giving the user your API token and asking them to register
 -   **Battlesuit team** is now part of all meta team calculations and charting.
-    -   Characters: Farsight, Revas, Darkstrider, Actus, Eldryon
+    -   Core: Farsight, Revas, Actus
+    -   Flex picks: Eldryon, Darkstrider, Adamatar, Calgar
 -   New characters added: Tyrith, Hascule, Laviscus, and Farsight with their emoji mappings.
 -   New Machines of War units added to the config: Tsonji and Zkar.
 
