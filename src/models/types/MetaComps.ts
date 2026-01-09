@@ -3,4 +3,5 @@ export interface MetaComps {
     admech: boolean;
     neuro: boolean;
     custodes: boolean;
+    battlesuit: boolean;
 }

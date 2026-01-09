@@ -6,4 +6,6 @@ export const MachinesOfWar = {
     Plagueburst: { id: "deathCrawler", name: "Plagueburst" },
     Exorcist: { id: "adeptExorcist", name: "Exorcist" },
     Rukkatrukk: { id: "orksRukkatrukk", name: "Rukkatrukk" },
+    Tsonji: { id: "tauBroadside", name: "Tsonji" },
+    Zkar: { id: "thousDaemonPrince", name: "Z'kar" },
 };
