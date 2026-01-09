@@ -19,6 +19,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.38.0] - 2026-01-09
+
+This update introduces a new user invitation command to make it easier for other members of your guild to register, implements the Battlesuit team to all meta-team-related commands, adds some missing heroes and machines of war and the bot now alerts you when it deletes your API token if you're inactive for 30 days.
+
+### Added
+
+-   **New command!** - `/invite-user` allows users to invite other Discord users to register with their API token. The invited user receives a DM and must confirm or decline via interactive buttons, ensuring explicit consent before registration.
+    -   Command has a 5 minute cooldown
+    -   The invited user does not need to do any guild member mapping
+    -   This is an alternative to giving the user your API token and asking them to register
+-   **Battlesuit team** is now part of all meta team calculations and charting.
+    -   Characters: Farsight, Revas, Darkstrider, Actus, Eldryon
+-   New characters added: Tyrith, Hascule, Laviscus, and Farsight with their emoji mappings.
+-   New Machines of War units added to the config: Tsonji and Zkar.
+
+### Changed
+
+-   Users now receive a DM from the bot to alert them if their API token was deleted due to 30 days of inactivity.
+-   Updated guild raid boss season config 2
+
 ## [0.37.2] - 2025-11-02
 
 The new Mythic Avatar has led to some exciting discoveries in meta team variants. Vitruvius is now confirmed as a solid option against the Avatar of Khaine, especially in combination with a mythic galatian. The bot config has therefore been updated to include Vitruvius as one of the optional characters in the custodes team classification.
