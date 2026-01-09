@@ -416,6 +416,7 @@ export class ChartService {
             data.multihit = data.multihitDamage ?? 0;
             data.neuro = data.neuroDamage ?? 0;
             data.custodes = data.custodesDamage ?? 0;
+            data.battlesuit = data.battlesuitDamage ?? 0;
             data.other = data.otherDamage ?? 0;
         }
 
@@ -429,6 +430,9 @@ export class ChartService {
         const multihitPercentage = ((data.multihit / total) * 100).toFixed(1);
         const psykerPercentage = ((data.neuro / total) * 100).toFixed(1);
         const custodesPercentage = ((data.custodes / total) * 100).toFixed(1);
+        const battlesuitPercentage = ((data.battlesuit / total) * 100).toFixed(
+            1
+        );
         const otherPercentage = ((data.other / total) * 100).toFixed(1);
 
         const chart = await canvas.renderToBuffer({
@@ -439,6 +443,7 @@ export class ChartService {
                     `Mech (${mechPercentage}%)`,
                     `Psyker (${psykerPercentage}%)`,
                     `Custodes (${custodesPercentage}%)`,
+                    `Battlesuit (${battlesuitPercentage}%)`,
                     `Other (${otherPercentage}%)`,
                 ],
                 datasets: [
@@ -449,6 +454,7 @@ export class ChartService {
                             data.mech,
                             data.neuro,
                             data.custodes,
+                            data.battlesuit,
                             data.other,
                         ],
                         backgroundColor: [
@@ -456,6 +462,7 @@ export class ChartService {
                             CHART_COLORS.red,
                             CHART_COLORS.purple,
                             CHART_COLORS.orange,
+                            CHART_COLORS.green,
                             CHART_COLORS.grey,
                         ],
                     },

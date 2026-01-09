@@ -764,6 +764,8 @@ export class GuildService {
                 other: 0,
                 otherDamage: 0,
                 custodes: 0,
+                battlesuit: 0,
+                battlesuitDamage: 0,
             };
 
             for (const entry of entries) {
@@ -784,6 +786,7 @@ export class GuildService {
                     neuro: 0,
                     other: 0,
                     custodes: 0,
+                    battlesuit: 0,
                 };
 
                 for (const hero of heroes) {
@@ -965,6 +968,8 @@ export class GuildService {
                     other: 0,
                     otherDamage: 0,
                     custodesDamage: 0,
+                    battlesuit: 0,
+                    battlesuitDamage: 0,
                 };
 
                 for (const entry of entries) {
@@ -1050,6 +1055,8 @@ export class GuildService {
                     neuro: (totalDistribution.neuro / totalEntries) * 100,
                     custodes: (totalDistribution.custodes / totalEntries) * 100,
                     other: (totalDistribution.other / totalEntries) * 100,
+                    battlesuit:
+                        (totalDistribution.battlesuit / totalEntries) * 100,
                     mechDamage:
                         (totalDistribution.mechDamage! / totalDamage) * 100,
                     multihitDamage:
@@ -1060,6 +1067,9 @@ export class GuildService {
                         (totalDistribution.otherDamage! / totalDamage) * 100,
                     custodesDamage:
                         (totalDistribution.custodesDamage! / totalDamage) * 100,
+                    battlesuitDamage:
+                        (totalDistribution.battlesuitDamage! / totalDamage) *
+                        100,
                 };
 
                 result[username] = percentages;

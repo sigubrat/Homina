@@ -145,6 +145,7 @@ export const UnitIdEmojiMapping: Record<string, string> = {
     [characters.Atlacoya.id]: "<:atlacoya:1420707634545164419>",
     [characters.Trajann.id]: "<:trajann:1420706545204727850>",
     [characters.Kariyan.id]: "<:kariyan:1420707205518463149>",
+    [characters.Tyrith.id]: "<:tyrith:1459088469585297429>",
 
     // Tau
     [characters.Shosyl.id]: "<:shosyl:1420717168013873222>",
@@ -152,6 +153,7 @@ export const UnitIdEmojiMapping: Record<string, string> = {
     [characters.AunShi.id]: "<:aunshi:1420717529659084892>",
     [characters.Darkstrider.id]: "<:darkstrider:1420717470641029211>",
     [characters.Shadowsun.id]: "<:shadowsun:1420717182450536538>",
+    [characters.Farsight.id]: "<:farsight:1459088136645771375>",
 
     // Genestealers
     [characters.Xybia.id]: "<:xybia:1420717029350178888>",
@@ -160,6 +162,13 @@ export const UnitIdEmojiMapping: Record<string, string> = {
     [characters.Patermine.id]: "<:patermine:1420717080608768040>",
     [characters.Judh.id]: "<:judh:1420717302789312572>",
 
+    // Emperor's Children
+    [characters.Shiron.id]: "<:shiron:1420700118327365715>",
+    [characters.Lucius.id]: "<:lucius:1420700222241116201>",
+    [characters.Adamatar.id]: "<:adamatar:1423622264498290869>",
+    [characters.Hascule.id]: "<:hascule:1459086771160748165>",
+    [characters.Laviscus.id]: "<:laviscus:1459087285860438163>",
+
     // Machines of War
     [MachinesOfWar.Malleus.id]: "<:malleus:1420719891626856528>",
     [MachinesOfWar.ForgeFiend.id]: "<:forgefiend:1420719929791086653>",
@@ -167,9 +176,7 @@ export const UnitIdEmojiMapping: Record<string, string> = {
     [MachinesOfWar.Biovore.id]: "<:biovore:1420719956550615101>",
     [MachinesOfWar.Plagueburst.id]: "<:plagueburst:1420719879262175343>",
     [MachinesOfWar.Exorcist.id]: "<:exorcist:1420719944030486628>",
-
-    // Emperor's Children
-    [characters.Shiron.id]: "<:shiron:1420700118327365715>",
-    [characters.Lucius.id]: "<:lucius:1420700222241116201>",
-    [characters.Adamatar.id]: "<:adamatar:1423622264498290869>",
+    [MachinesOfWar.Rukkatrukk.id]: "<:rukkatrukk:1420719867375648839>",
+    [MachinesOfWar.Tsonji.id]: "<:tsonji:1459087982299451445>",
+    [MachinesOfWar.Zkar.id]: "<:zkar:1459087797708132413>",
 };
