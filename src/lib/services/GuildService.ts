@@ -3,12 +3,7 @@ import { dbController, logger } from "@/lib";
 import { SecondsToString } from "../utils/timeUtils";
 import { evaluateToken } from "../utils/timeUtils";
 import { getUnixTimestamp } from "../utils/timeUtils";
-import {
-    getMetaTeam,
-    getMetaTeams,
-    hasLynchpinHeroes,
-    inTeamsCheck,
-} from "@/lib/utils/metaTeamUtils";
+import { getMetaTeam, getMetaTeams } from "@/lib/utils/metaTeamUtils";
 import { DamageType, EncounterType, Rarity } from "@/models/enums";
 import { MetaTeams } from "@/models/enums/MetaTeams";
 import type {
@@ -21,10 +16,7 @@ import type {
 import type { GuildMemberMapping } from "@/models/types/GuildMemberMapping";
 import type { MetaComps } from "@/models/types/MetaComps";
 import type { TeamDistribution } from "@/models/types/TeamDistribution";
-import {
-    META_TEAM_THRESHOLD,
-    MINIMUM_SEASON_THRESHOLD,
-} from "../configs/constants";
+import { MINIMUM_SEASON_THRESHOLD } from "../configs/constants";
 import { testApiToken } from "../utils/commandUtils";
 
 /**
@@ -780,66 +772,7 @@ export class GuildService {
 
                 const heroes = entry.heroDetails.map((hero) => hero.unitId);
 
-                const distribution: TeamDistribution = {
-                    multihit: 0,
-                    mech: 0,
-                    neuro: 0,
-                    other: 0,
-                    custodes: 0,
-                    battlesuit: 0,
-                };
-
-                for (const hero of heroes) {
-                    const check = inTeamsCheck(hero);
-                    distribution.mech += check.inMech ? 1 : 0;
-                    distribution.multihit += check.inMulti ? 1 : 0;
-                    distribution.neuro += check.inNeuro ? 1 : 0;
-                    distribution.custodes += check.inCustodes ? 1 : 0;
-                }
-
-                // find which property of distrubution has the highest value
-                const values = [
-                    distribution.mech,
-                    distribution.multihit,
-                    distribution.neuro,
-                    distribution.custodes,
-                ];
-
-                // Check that at least one of the values is 3 or more, or else we count it as non-meta (other)
-                if (
-                    distribution.mech < META_TEAM_THRESHOLD &&
-                    distribution.multihit < META_TEAM_THRESHOLD &&
-                    distribution.neuro < META_TEAM_THRESHOLD &&
-                    distribution.custodes < META_TEAM_THRESHOLD
-                ) {
-                    totalDistribution.other += 1;
-                    totalDistribution.otherDamage =
-                        (totalDistribution.otherDamage || 0) +
-                        entry.damageDealt;
-                    continue;
-                }
-
-                const maxValue = Math.max(...values);
-                const maxIndex = values.indexOf(maxValue);
-                const teams = [
-                    MetaTeams.ADMECH,
-                    MetaTeams.MULTIHIT,
-                    MetaTeams.NEURO,
-                    MetaTeams.CUSTODES,
-                ];
-                const team = teams[maxIndex];
-
-                if (!team) {
-                    throw new Error("teams[maxIndex] is somehow undefined");
-                }
-
-                if (!hasLynchpinHeroes(heroes, team)) {
-                    totalDistribution.other += 1;
-                    totalDistribution.otherDamage =
-                        (totalDistribution.otherDamage || 0) +
-                        entry.damageDealt;
-                    continue;
-                }
+                const team = getMetaTeam(heroes);
 
                 if (team === MetaTeams.ADMECH) {
                     // Check if the team has a lynchpin hero
@@ -863,6 +796,18 @@ export class GuildService {
                         (totalDistribution.custodes || 0) + 1;
                     totalDistribution.custodesDamage =
                         (totalDistribution.custodesDamage || 0) +
+                        entry.damageDealt;
+                } else if (team === MetaTeams.BATTLESUIT) {
+                    totalDistribution.battlesuit =
+                        (totalDistribution.battlesuit || 0) + 1;
+                    totalDistribution.battlesuitDamage =
+                        (totalDistribution.battlesuitDamage || 0) +
+                        entry.damageDealt;
+                } else {
+                    totalDistribution.other =
+                        (totalDistribution.other || 0) + 1;
+                    totalDistribution.otherDamage =
+                        (totalDistribution.otherDamage || 0) +
                         entry.damageDealt;
                 }
             }
@@ -1015,6 +960,13 @@ export class GuildService {
                                 (totalDistribution.custodesDamage || 0) +
                                 entry.damageDealt;
                             break;
+                        case MetaTeams.BATTLESUIT:
+                            totalDistribution.battlesuit =
+                                (totalDistribution.battlesuit || 0) + 1;
+                            totalDistribution.battlesuitDamage =
+                                (totalDistribution.battlesuitDamage || 0) +
+                                entry.damageDealt;
+                            break;
                         default:
                             totalDistribution.other =
                                 (totalDistribution.other || 0) + 1;
@@ -1031,6 +983,7 @@ export class GuildService {
                     totalDistribution.multihitDamage! +
                     totalDistribution.neuroDamage! +
                     totalDistribution.custodesDamage! +
+                    totalDistribution.battlesuitDamage! +
                     totalDistribution.otherDamage!;
 
                 if (totalDamage === 0 || totalEntries === 0) {
@@ -1044,6 +997,8 @@ export class GuildService {
                         multihitDamage: 0,
                         neuroDamage: 0,
                         custodesDamage: 0,
+                        battlesuit: 0,
+                        battlesuitDamage: 0,
                         otherDamage: 0,
                     };
                     continue;
