@@ -63,6 +63,8 @@ export const battlesuitTeam = [
     characters.Darkstrider.id,
     characters.Revas.id,
     characters.Eldryon.id,
+    characters.Adamatar.id,
+    characters.Calgar.id,
 ];
 
 export const lynchpinHeroes: Record<string, string[]> = {
@@ -75,9 +77,7 @@ export const lynchpinHeroes: Record<string, string[]> = {
     Battlesuit: [
         characters.Farsight.id,
         characters.Actus.id,
-        characters.Darkstrider.id,
         characters.Revas.id,
-        characters.Eldryon.id,
     ],
     Neuro: [characters.Neurothrope.id],
     Custodes: [characters.Trajann.id, characters.Kariyan.id],
