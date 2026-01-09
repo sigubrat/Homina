@@ -9,6 +9,7 @@ import * as fs from "fs";
 import { dbController, logger } from "@/lib";
 import { getAllCommands } from "@/lib/utils/commandUtils";
 import { InfisicalClient } from "@/client/InfisicalClient";
+import { MessageService } from "@/lib/services/MessageService";
 
 export class IClient extends Client {
     commands = new Collection<string, any>();
@@ -37,6 +38,7 @@ const startBot = async () => {
         const infisicalClient = new InfisicalClient();
         await infisicalClient.init();
         await infisicalClient.fetchSecrets();
+        const messageService = new MessageService(client);
 
         // Check database connection
         const res = await dbController.isReady();
@@ -78,7 +80,13 @@ const startBot = async () => {
         setInterval(async () => {
             logger.info("Running token cleanup...");
             try {
-                await dbController.cleanupOldTokens();
+                const deletedIds = await dbController.cleanupOldTokens();
+
+                if (deletedIds.length > 0) {
+                    for (const userId of deletedIds) {
+                        await messageService.alertDeletedUser(userId);
+                    }
+                }
                 logger.info("Token cleanup completed successfully.");
             } catch (error) {
                 logger.error(error, "Error during token cleanup:");
