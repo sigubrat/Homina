@@ -21,13 +21,6 @@ export const cooldown = 5;
 
 export const data = new SlashCommandBuilder()
     .setName("season-by-rarity")
-    .addNumberOption((option) =>
-        option
-            .setName("season")
-            .setDescription("The season number")
-            .setRequired(true)
-            .setMinValue(MINIMUM_SEASON_THRESHOLD)
-    )
     .addStringOption((option) => {
         return option
             .setName("rarity")
@@ -42,6 +35,13 @@ export const data = new SlashCommandBuilder()
                 { name: "Common", value: Rarity.COMMON }
             );
     })
+    .addNumberOption((option) =>
+        option
+            .setName("season")
+            .setDescription("The season number (defaults to current season)")
+            .setRequired(false)
+            .setMinValue(MINIMUM_SEASON_THRESHOLD)
+    )
     .addStringOption((option) =>
         option
             .setName("average-method")
@@ -67,10 +67,11 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 
-    const season = interaction.options.getNumber("season", true);
+    const providedSeason = interaction.options.getNumber("season");
+    const season = providedSeason ?? getCurrentSeason();
     const rarity = interaction.options.getString("rarity") as Rarity;
 
-    if (isInvalidSeason(season)) {
+    if (providedSeason !== null && isInvalidSeason(providedSeason)) {
         await interaction.editReply({
             content: `Please provide a valid season number greater than or equal to ${MINIMUM_SEASON_THRESHOLD}. The current season is ${getCurrentSeason()}`,
         });
@@ -115,6 +116,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 : "Median";
 
         const chartService = new ChartService();
+        const seasonDisplay =
+            providedSeason === null ? `Current (${season})` : `${season}`;
         const chartPromises = Object.entries(result).map(
             async ([bossName, data]) => {
                 const guildDamage = data.map((val) => val.totalDamage);
@@ -126,7 +129,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 const chartBuffer =
                     await chartService.createSeasonDamageChartAvg(
                         sortGuildRaidResultDesc(data),
-                        `Damage dealt in season ${season} - ${
+                        `Damage dealt in season ${seasonDisplay} - ${
                             rarity[0] ? rarity[0].toUpperCase() : " "
                         }${data[0] ? data[0].set : 0} ${bossName}`,
                         averageMethod,

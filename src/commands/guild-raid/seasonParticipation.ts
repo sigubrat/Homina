@@ -25,8 +25,8 @@ export const data = new SlashCommandBuilder()
     .addNumberOption((option) =>
         option
             .setName("season")
-            .setDescription("The season number")
-            .setRequired(true)
+            .setDescription("The season number (defaults to current season)")
+            .setRequired(false)
             .setMinValue(MINIMUM_SEASON_THRESHOLD)
     )
     .addStringOption((option) => {
@@ -74,9 +74,10 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 
-    const season = interaction.options.getNumber("season", true);
+    const providedSeason = interaction.options.getNumber("season");
+    const season = providedSeason ?? getCurrentSeason();
 
-    if (isInvalidSeason(season)) {
+    if (providedSeason !== null && isInvalidSeason(providedSeason)) {
         await interaction.editReply({
             content: `Please provide a valid season number greater than or equal to ${MINIMUM_SEASON_THRESHOLD}. The current season is ${getCurrentSeason()}`,
         });
@@ -181,7 +182,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const embed = new EmbedBuilder()
             .setColor(0x0099ff)
-            .setTitle(`Damage dealt in season ${season}`)
+            .setTitle(
+                `Damage dealt in season ${
+                    providedSeason === null ? `Current (${season})` : season
+                }`
+            )
             .setDescription(
                 "The graph shows the contribution of each member to a guild raid season:\n" +
                     "- **Bar chart**: Damage dealt (left y-axis)\n" +

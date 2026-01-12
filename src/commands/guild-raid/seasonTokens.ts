@@ -27,8 +27,8 @@ export const data = new SlashCommandBuilder()
     .addNumberOption((option) => {
         return option
             .setName("season")
-            .setDescription("The season to check")
-            .setRequired(true)
+            .setDescription("The season to check (defaults to current season)")
+            .setRequired(false)
             .setMinValue(MINIMUM_SEASON_THRESHOLD);
     })
     .addStringOption((option) => {
@@ -67,12 +67,13 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 
-    const season = interaction.options.getNumber("season", true);
+    const providedSeason = interaction.options.getNumber("season");
+    const season = providedSeason ?? getCurrentSeason();
     const rarity = interaction.options.getString("rarity") as
         | Rarity
         | undefined;
 
-    if (isInvalidSeason(season)) {
+    if (providedSeason !== null && isInvalidSeason(providedSeason)) {
         await interaction.editReply({
             content: `Please provide a valid season number greater than or equal to ${MINIMUM_SEASON_THRESHOLD}. The current season is ${getCurrentSeason()}`,
         });
@@ -165,7 +166,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const embed = new EmbedBuilder()
             .setColor("#0099ff")
             .setTitle(
-                `Tokens used in season ${season}${rarity ? ` (${rarity})` : ""}`
+                `Tokens used in season ${
+                    providedSeason === null ? `Current (${season})` : season
+                }${rarity ? ` (${rarity})` : ""}`
             )
             .setDescription(
                 `The graph shows the number of tokens used by each member in season ${season}.\n` +

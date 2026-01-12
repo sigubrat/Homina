@@ -21,13 +21,6 @@ export const cooldown = 5;
 export const data = new SlashCommandBuilder()
     .setName("season-highscore")
     .setDescription("Get each player's highscore per boss for a season")
-    .addNumberOption((option) =>
-        option
-            .setName("season")
-            .setDescription("The season number")
-            .setRequired(true)
-            .setMinValue(MINIMUM_SEASON_THRESHOLD)
-    )
     .addStringOption((option) => {
         return option
             .setName("rarity")
@@ -41,16 +34,24 @@ export const data = new SlashCommandBuilder()
                 { name: "Uncommon", value: Rarity.UNCOMMON },
                 { name: "Common", value: Rarity.COMMON }
             );
-    });
+    })
+    .addNumberOption((option) =>
+        option
+            .setName("season")
+            .setDescription("The season number (defaults to current season)")
+            .setRequired(false)
+            .setMinValue(MINIMUM_SEASON_THRESHOLD)
+    );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 
-    const season = interaction.options.getNumber("season", true);
+    const providedSeason = interaction.options.getNumber("season");
+    const season = providedSeason ?? getCurrentSeason();
     const rarity = interaction.options.getString("rarity", true) as Rarity;
     const discordId = interaction.user.id;
 
-    if (isInvalidSeason(season)) {
+    if (providedSeason !== null && isInvalidSeason(providedSeason)) {
         await interaction.editReply({
             content: `Please provide a valid season number greater than or equal to ${MINIMUM_SEASON_THRESHOLD}. The current season is ${getCurrentSeason()}`,
         });
@@ -117,11 +118,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             name: `season-${season}-highscores-${rarity}.csv`,
         });
 
+        const seasonDisplay =
+            providedSeason === null ? `Current (${season})` : `${season}`;
+
         const embed = new EmbedBuilder()
             .setColor("#0099ff")
-            .setTitle(`Season ${season} Highscores (${rarity})`)
+            .setTitle(`Season ${seasonDisplay} Highscores (${rarity})`)
             .setDescription(
-                `Highscores for each player in season ${season} with rarity ${rarity}.`
+                `Highscores for each player in season ${seasonDisplay} with rarity ${rarity}.`
             )
             .addFields({
                 name: "Graph",

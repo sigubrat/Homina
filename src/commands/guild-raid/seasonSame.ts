@@ -19,8 +19,10 @@ export const data = new SlashCommandBuilder()
     .addNumberOption((option) =>
         option
             .setName("season")
-            .setDescription("The season number to check")
-            .setRequired(true)
+            .setDescription(
+                "The season number to check (defaults to current season)"
+            )
+            .setRequired(false)
             .setMinValue(MINIMUM_SEASON_THRESHOLD)
     );
 
@@ -28,9 +30,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply({});
 
     const discordId = interaction.user.id;
-    const season = interaction.options.getNumber("season", true);
+    const providedSeason = interaction.options.getNumber("season");
+    const season = providedSeason ?? getCurrentSeason();
 
-    if (isInvalidSeason(season)) {
+    if (providedSeason !== null && isInvalidSeason(providedSeason)) {
         await interaction.editReply({
             content: `Please provide a valid season number greater than or equal to ${MINIMUM_SEASON_THRESHOLD}. The current season is ${getCurrentSeason()}`,
         });
@@ -66,7 +69,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setTitle(`Guild raid seasons with the same config`)
             .setTimestamp()
             .setFields(
-                { name: "Your selected season", value: `${season}` },
+                {
+                    name: "Your selected season",
+                    value:
+                        providedSeason === null
+                            ? `Current (${season})`
+                            : `${season}`,
+                },
                 {
                     name: `Seasons`,
                     value: matches.join(", "),

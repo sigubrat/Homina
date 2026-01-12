@@ -30,8 +30,8 @@ export const data = new SlashCommandBuilder()
     .addNumberOption((option) => {
         return option
             .setName("season")
-            .setDescription("The season to check")
-            .setRequired(true)
+            .setDescription("The season to check (defaults to current season)")
+            .setRequired(false)
             .setMinValue(MINIMUM_SEASON_THRESHOLD);
     })
     .addStringOption((option) => {
@@ -58,12 +58,13 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 
-    const season = interaction.options.getNumber("season", true);
+    const providedSeason = interaction.options.getNumber("season");
+    const season = providedSeason ?? getCurrentSeason();
     const rarity = interaction.options.getString("rarity") as
         | Rarity
         | undefined;
 
-    if (isInvalidSeason(season)) {
+    if (providedSeason !== null && isInvalidSeason(providedSeason)) {
         await interaction.editReply({
             content: `Please provide a valid season number greater than or equal to ${MINIMUM_SEASON_THRESHOLD}. The current season is ${getCurrentSeason()}`,
         });
@@ -163,11 +164,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             }
         });
 
+        const seasonDisplay =
+            providedSeason === null ? `Current (${season})` : `${season}`;
+
         const pagination = new Pagination(interaction, {
             limit: 6,
         })
             .setColor("#0099ff")
-            .setTitle("Member stats for season " + season)
+            .setTitle("Member stats for season " + seasonDisplay)
             .setDescription(
                 "See the detailed statistics for each member in the specified season.\n\n" +
                     ":family: - Team distribution used by the player\n" +
