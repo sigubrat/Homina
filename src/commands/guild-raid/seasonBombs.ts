@@ -102,7 +102,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const displayAverage = averageMethod === "mean" ? "Mean" : "Median";
         const seasonDisplay =
-            providedSeason === null ? `Current (${season})` : `${season}`;
+            providedSeason === null
+                ? `${season} (current season)`
+                : `${season}`;
 
         const embed = new EmbedBuilder()
             .setColor("#0099ff")

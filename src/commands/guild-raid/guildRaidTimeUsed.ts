@@ -101,25 +101,23 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             separatePrimes
         );
 
+        const seasonDisplay =
+            providedSeason === null
+                ? `${season} (current season)`
+                : `${season}`;
+
         const pagination = new Pagination(interaction, {
             limit: separatePrimes ? 10 : 25, // Adjust limit based on rarity
         })
             .setColor("#0099ff")
-            .setTitle(
-                `Time Used Per Boss in season ${
-                    providedSeason === null ? `Current (${season})` : season
-                }`
-            )
+            .setTitle(`Time Used Per Boss in season ${seasonDisplay}`)
             .setDescription(
                 `See how long it took your guild to defeat each boss`
             )
             .setFields(
                 {
                     name: "Season",
-                    value:
-                        providedSeason === null
-                            ? `Current (${season})`
-                            : `${season}`,
+                    value: seasonDisplay,
                     inline: true,
                 },
                 {

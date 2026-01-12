@@ -180,13 +180,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             name: "graph.png",
         });
 
+        const seasonDisplay =
+            providedSeason === null
+                ? `${season} (current season)`
+                : `${season}`;
+
         const embed = new EmbedBuilder()
             .setColor(0x0099ff)
-            .setTitle(
-                `Damage dealt in season ${
-                    providedSeason === null ? `Current (${season})` : season
-                }`
-            )
+            .setTitle(`Damage dealt in season ${seasonDisplay}`)
             .setDescription(
                 "The graph shows the contribution of each member to a guild raid season:\n" +
                     "- **Bar chart**: Damage dealt (left y-axis)\n" +

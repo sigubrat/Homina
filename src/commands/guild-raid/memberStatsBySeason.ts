@@ -165,7 +165,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         });
 
         const seasonDisplay =
-            providedSeason === null ? `Current (${season})` : `${season}`;
+            providedSeason === null
+                ? `${season} (current season)`
+                : `${season}`;
 
         const pagination = new Pagination(interaction, {
             limit: 6,

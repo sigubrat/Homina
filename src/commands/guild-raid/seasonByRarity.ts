@@ -117,7 +117,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const chartService = new ChartService();
         const seasonDisplay =
-            providedSeason === null ? `Current (${season})` : `${season}`;
+            providedSeason === null
+                ? `${season} (current season)`
+                : `${season}`;
         const chartPromises = Object.entries(result).map(
             async ([bossName, data]) => {
                 const guildDamage = data.map((val) => val.totalDamage);

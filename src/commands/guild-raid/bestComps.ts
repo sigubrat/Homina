@@ -100,7 +100,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     name: "Season",
                     value:
                         providedSeason === null
-                            ? `Current (${season})`
+                            ? `${season} (current season)`
                             : `${season}`,
                     inline: true,
                 },

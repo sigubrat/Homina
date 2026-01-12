@@ -163,12 +163,17 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             name: `tokens-used-season-${season}.png`,
         });
 
+        const seasonDisplay =
+            providedSeason === null
+                ? `${season} (current season)`
+                : `${season}`;
+
         const embed = new EmbedBuilder()
             .setColor("#0099ff")
             .setTitle(
-                `Tokens used in season ${
-                    providedSeason === null ? `Current (${season})` : season
-                }${rarity ? ` (${rarity})` : ""}`
+                `Tokens used in season ${seasonDisplay}${
+                    rarity ? ` (${rarity})` : ""
+                }`
             )
             .setDescription(
                 `The graph shows the number of tokens used by each member in season ${season}.\n` +

@@ -156,7 +156,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .join("\n");
 
         const seasonDisplay =
-            providedSeason === null ? `Current (${season})` : `${season}`;
+            providedSeason === null
+                ? `${season} (current season)`
+                : `${season}`;
 
         const embed = new EmbedBuilder()
             .setTitle(`Inactive users in season ${seasonDisplay}`)

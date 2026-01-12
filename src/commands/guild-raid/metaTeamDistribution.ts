@@ -84,7 +84,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const chartService = new ChartService();
         const seasonDisplay =
-            providedSeason === null ? `Current (${season})` : `${season}`;
+            providedSeason === null
+                ? `${season} (current season)`
+                : `${season}`;
 
         const chart = await chartService.createMetaTeamDistributionChart(
             result,
