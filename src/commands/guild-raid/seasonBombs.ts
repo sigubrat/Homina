@@ -23,8 +23,8 @@ export const data = new SlashCommandBuilder()
     .addNumberOption((option) =>
         option
             .setName("season")
-            .setDescription("The season number")
-            .setRequired(true)
+            .setDescription("The season number (defaults to current season)")
+            .setRequired(false)
             .setMinValue(MINIMUM_SEASON_THRESHOLD)
     )
     .addStringOption((option) =>
@@ -52,8 +52,10 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 
-    const season = interaction.options.getNumber("season", true);
-    if (isInvalidSeason(season)) {
+    const providedSeason = interaction.options.getNumber("season");
+    const season = providedSeason ?? getCurrentSeason();
+
+    if (providedSeason !== null && isInvalidSeason(providedSeason)) {
         await interaction.editReply({
             content: `Please provide a valid season number greater than or equal to ${MINIMUM_SEASON_THRESHOLD}. The current season is ${getCurrentSeason()}`,
         });
@@ -99,12 +101,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         });
 
         const displayAverage = averageMethod === "mean" ? "Mean" : "Median";
+        const seasonDisplay =
+            providedSeason === null ? `Current (${season})` : `${season}`;
 
         const embed = new EmbedBuilder()
             .setColor("#0099ff")
-            .setTitle(`Bombs used in season ${season}`)
+            .setTitle(`Bombs used in season ${seasonDisplay}`)
             .setDescription(
-                `The graph shows the number of bombs used by each member in season ${season}.\n` +
+                `The graph shows the number of bombs used by each member in season ${seasonDisplay}.\n` +
                     "- **Bar chart:** the number of bombs used by each member.\n" +
                     `- **Line chart:** represents the ${displayAverage.toLowerCase()} number of bombs used by the guild.`
             )

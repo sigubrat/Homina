@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.38.0] - 2026-01-09
 
-This update introduces a new user invitation command to make it easier for other members of your guild to register, implements the Battlesuit team to all meta-team-related commands, adds some missing heroes and machines of war and the bot now alerts you when it deletes your API token if you're inactive for 30 days.
+I'm back from vacation and we're therefore kicking off the new year with a patch bringing you some solid quality-of-life improvements and introduces the new Battlesuit meta team to all meta-team related commands.
 
 ### Added
 
@@ -32,11 +32,12 @@ This update introduces a new user invitation command to make it easier for other
 -   **Battlesuit team** is now part of all meta team calculations and charting.
     -   Core: Farsight, Revas, Actus
     -   Flex picks: Eldryon, Darkstrider, Adamatar, Calgar
--   New characters added: Tyrith, Hascule, Laviscus, and Farsight with their emoji mappings.
+-   New characters added: Tyrith, Hascule, Laviscus, and Farsight along with their emoji mappings.
 -   New Machines of War units added to the config: Tsonji and Zkar.
 
 ### Changed
 
+-   All commands that previously required you to provide which season you want data for now defaults to the current season if no season is provided.
 -   Users now receive a DM from the bot to alert them if their API token was deleted due to 30 days of inactivity.
 -   Updated guild raid boss season config 2
 

@@ -21,8 +21,8 @@ export const data = new SlashCommandBuilder()
     .addNumberOption((option) =>
         option
             .setName("season")
-            .setDescription("The season number")
-            .setRequired(true)
+            .setDescription("The season number (defaults to current season)")
+            .setRequired(false)
             .setMinValue(MINIMUM_SEASON_THRESHOLD)
     )
     .addStringOption((option) => {
@@ -60,8 +60,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const discordID = interaction.user.id;
     const showDelta = interaction.options.getBoolean("show-delta") ?? false;
 
-    const season = interaction.options.getNumber("season", true);
-    if (isInvalidSeason(season)) {
+    const providedSeason = interaction.options.getNumber("season");
+    const season = providedSeason ?? getCurrentSeason();
+
+    if (providedSeason !== null && isInvalidSeason(providedSeason)) {
         await interaction.editReply({
             content: `Please provide a valid season number greater than or equal to ${MINIMUM_SEASON_THRESHOLD}. The current season is ${getCurrentSeason()}`,
         });
@@ -103,14 +105,21 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             limit: separatePrimes ? 10 : 25, // Adjust limit based on rarity
         })
             .setColor("#0099ff")
-            .setTitle(`Time Used Per Boss in season ${season}`)
+            .setTitle(
+                `Time Used Per Boss in season ${
+                    providedSeason === null ? `Current (${season})` : season
+                }`
+            )
             .setDescription(
                 `See how long it took your guild to defeat each boss`
             )
             .setFields(
                 {
                     name: "Season",
-                    value: `${season}`,
+                    value:
+                        providedSeason === null
+                            ? `Current (${season})`
+                            : `${season}`,
                     inline: true,
                 },
                 {

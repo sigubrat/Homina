@@ -21,8 +21,8 @@ export const data = new SlashCommandBuilder()
     .addNumberOption((option) =>
         option
             .setName("season")
-            .setDescription("The season number")
-            .setRequired(true)
+            .setDescription("The season number (defaults to current season)")
+            .setRequired(false)
             .setMinValue(MINIMUM_SEASON_THRESHOLD)
     )
     .addStringOption((option) => {
@@ -48,12 +48,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         `${interaction.user.username} attempting to use /meta-team-distribution`
     );
 
-    const season = interaction.options.getNumber("season", true);
+    const providedSeason = interaction.options.getNumber("season");
+    const season = providedSeason ?? getCurrentSeason();
     const rarity = interaction.options.getString("rarity", false) as
         | Rarity
         | undefined;
 
-    if (isInvalidSeason(season)) {
+    if (providedSeason !== null && isInvalidSeason(providedSeason)) {
         await interaction.editReply({
             content: `Please provide a valid season number greater than or equal to ${MINIMUM_SEASON_THRESHOLD}. The current season is ${getCurrentSeason()}`,
         });
@@ -82,15 +83,17 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         const chartService = new ChartService();
+        const seasonDisplay =
+            providedSeason === null ? `Current (${season})` : `${season}`;
 
         const chart = await chartService.createMetaTeamDistributionChart(
             result,
-            `How much each team was used - Season ${season}`
+            `How much each team was used - Season ${seasonDisplay}`
         );
 
         const dmgChart = await chartService.createMetaTeamDistributionChart(
             result,
-            `How much damage each team dealt - Season ${season}`,
+            `How much damage each team dealt - Season ${seasonDisplay}`,
             true
         );
 
@@ -103,7 +106,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         });
 
         const embed = new EmbedBuilder()
-            .setTitle(`Meta Team Distribution for Season ${season}`)
+            .setTitle(`Meta Team Distribution for Season ${seasonDisplay}`)
             .setColor(0x0099ff)
             .setDescription(
                 "This command shows the distribution of meta teams in the specified season.\n\n" +
