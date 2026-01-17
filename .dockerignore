@@ -1,0 +1,59 @@
+# Dependencies
+
+node_modules
+bun.lockb
+
+# Logs
+
+logs
+\*.log
+
+# Git
+
+.git
+.gitignore
+
+# Environment files (secrets)
+
+.env
+.env.\*
+!.env.example
+
+# Documentation (not needed in container)
+
+docs
+\*.md
+!README.md
+
+# IDE/Editor
+
+.vscode
+.idea
+_.swp
+_.swo
+
+# OS files
+
+.DS_Store
+Thumbs.db
+
+# Test files
+
+src/test
+_.test.ts
+_.spec.ts
+
+# Backups
+
+backups
+
+# Temporary files
+
+tmp
+temp
+\*.tmp
+
+# Build artifacts
+
+dist
+build

@@ -1,0 +1,54 @@
+version: "3.8"
+
+services:
+    bot:
+        build:
+            context: .
+            target: deps
+        container_name: homina-bot-dev
+        environment:
+            - NODE_ENV=dev
+            - DB_NAME=${DB_NAME}
+            - DB_USER=${DB_USER}
+            - DB_PWD=${DB_PWD}
+            - DB_HOST=db
+            - INFISICAL_SECRET=${INFISICAL_SECRET}
+            - INFISICAL_ID=${INFISICAL_ID}
+            - INFISICAL_WORKSPACE=${INFISICAL_WORKSPACE}
+        volumes:
+            - .:/app
+            - /app/node_modules
+            - ./logs:/app/logs
+        depends_on:
+            db:
+                condition: service_healthy
+        command: bun run --watch index.ts
+        networks:
+            - homina-network
+
+    db:
+        image: postgres:16-alpine
+        container_name: homina-db-dev
+        environment:
+            - POSTGRES_DB=${DB_NAME}
+            - POSTGRES_USER=${DB_USER}
+            - POSTGRES_PASSWORD=${DB_PWD}
+        volumes:
+            - postgres_data_dev:/var/lib/postgresql/data
+        ports:
+            - "5432:5432"
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        networks:
+            - homina-network
+
+volumes:
+    postgres_data_dev:
+        name: homina-postgres-data-dev
+
+networks:
+    homina-network:
+        driver: bridge

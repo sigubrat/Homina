@@ -15,7 +15,7 @@ export class DatabaseController {
             process.env.DB_USER!,
             process.env.DB_PWD!,
             {
-                host: "localhost",
+                host: process.env.DB_HOST || "localhost",
                 dialect: "postgres",
                 logging: () => {
                     return true;
