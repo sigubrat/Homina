@@ -76,32 +76,32 @@
             "C4 Screamer-Killer"
         ],
         "Uncommon": [
-            "U1 Hive Tyrant (Kronos)",
-            "U2 Tervigon (Leviathan)",
-            "U3 Hive Tyrant (Gorgon)",
-            "U4 Tervigon (Kronos)"
+            "U1 Tervigon (Kronos)",
+            "U2 Hive Tyrant (Leviathan)",
+            "U3 Tervigon (Gorgon)",
+            "U4 Riptide"
         ],
         "Rare": [
-            "R1 Hive Tyrant (Kronos)",
-            "R2 Rogal Dorn",
-            "R3 Riptide",
-            "R4 Screamer-Killer"
+            "R1 Tervigon (Kronos)",
+            "R2 Screamer-Killer",
+            "R3 Rogal Dorn",
+            "R4 Riptide"
         ],
         "Epic": [
-            "E1 Screamer-Killer",
-            "E2 Tervigon (Kronos)",
-            "E3 Rogal Dorn",
-            "E4 Hive Tyrant (Leviathan)",
+            "E1 Tervigon (Gorgon)",
+            "E2 Hive Tyrant (Kronos)",
+            "E3 Screamer-Killer",
+            "E4 Rogal Dorn",
             "E5 Riptide"
         ],
         "Legendary": [
-            "L1 Tervigon (Gorgon)",
-            "L2 Hive Tyrant (Kronos)",
-            "L3 Screamer-Killer",
-            "L4 Rogal Dorn",
-            "L5 Riptide"
+            "L1 Hive Tyrant (Gorgon)",
+            "L2 Tervigon (Kronos)",
+            "L3 Hive Tyrant (Leviathan)",
+            "L4 Screamer-Killer",
+            "L5 Rogal Dorn"
         ],
-        "Mythic": ["M1 Tervigon (Gorgon)"]
+        "Mythic": ["M1 Riptide"]
     },
     "guild_boss_season_config_4": {
         "Common": [
