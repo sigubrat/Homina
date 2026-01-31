@@ -19,6 +19,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.38.2] - 2026-01-31
+
+### Changed
+
+- Updated the guild boss season config 4 to match the new rotation
+
+### Added
+
+- Added a gleam code to the footer of all guild-raid-related commands to use in the LoV Raffle as a creator code
+
 ## [0.38.1] - 2026-01-19
 
 ### Changed
