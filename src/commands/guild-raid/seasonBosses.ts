@@ -25,7 +25,7 @@ export const data = new SlashCommandBuilder()
                 { name: "Epic", value: Rarity.EPIC },
                 { name: "Rare", value: Rarity.RARE },
                 { name: "Uncommon", value: Rarity.UNCOMMON },
-                { name: "Common", value: Rarity.COMMON }
+                { name: "Common", value: Rarity.COMMON },
             );
     });
 
@@ -56,9 +56,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setDescription(
                 `Here are the bosses for the last ${configs?.length} seasons.
                 
-                (Tervigon and Hive Tyrant use the same emoji because who cares about them anyway?)`
+                (Tervigon and Hive Tyrant use the same emoji because who cares about them anyway?)`,
             )
-            .setTimestamp();
+            .setTimestamp()
+            .setFooter({ text: "Gleam code: LOVRAFFLE" });
 
         if (rarity) {
             embed.addFields({
@@ -114,7 +115,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     } catch (error) {
         logger.error(
             error,
-            `Error while executing /season-configs command for ${interaction.user.username}`
+            `Error while executing /season-configs command for ${interaction.user.username}`,
         );
     }
 }

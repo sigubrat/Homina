@@ -16,14 +16,14 @@ export const cooldown = 5;
 export const data = new SlashCommandBuilder()
     .setName("gr-time-used")
     .setDescription(
-        "See how long it takes to to complete each raid boss in a given season"
+        "See how long it takes to to complete each raid boss in a given season",
     )
     .addNumberOption((option) =>
         option
             .setName("season")
             .setDescription("The season number (defaults to current season)")
             .setRequired(false)
-            .setMinValue(MINIMUM_SEASON_THRESHOLD)
+            .setMinValue(MINIMUM_SEASON_THRESHOLD),
     )
     .addStringOption((option) => {
         return option
@@ -36,22 +36,22 @@ export const data = new SlashCommandBuilder()
                 { name: "Epic", value: Rarity.EPIC },
                 { name: "Rare", value: Rarity.RARE },
                 { name: "Uncommon", value: Rarity.UNCOMMON },
-                { name: "Common", value: Rarity.COMMON }
+                { name: "Common", value: Rarity.COMMON },
             );
     })
     .addBooleanOption((option) =>
         option
             .setName("separate-primes")
             .setDescription("Show primes separately (default: false)")
-            .setRequired(false)
+            .setRequired(false),
     )
     .addBooleanOption((option) =>
         option
             .setName("show-delta")
             .setDescription(
-                "Show the delta between times, tokens and bombs used each loop"
+                "Show the delta between times, tokens and bombs used each loop",
             )
-            .setRequired(false)
+            .setRequired(false),
     );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
@@ -79,14 +79,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const transformer = new DataTransformationService();
 
     logger.info(
-        `${interaction.user.username} attempting to use /gr-time-used ${season} ${rarity}`
+        `${interaction.user.username} attempting to use /gr-time-used ${season} ${rarity}`,
     );
 
     try {
         const seasonData = await service.getGuildRaidBySeason(
             discordID,
             season,
-            rarity
+            rarity,
         );
 
         if (!seasonData || seasonData.length === 0) {
@@ -98,7 +98,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
         const [transformedData, totalTime] = await transformer.timeUsedPerBoss(
             seasonData,
-            separatePrimes
+            separatePrimes,
         );
 
         const seasonDisplay =
@@ -112,7 +112,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setColor("#0099ff")
             .setTitle(`Time Used Per Boss in season ${seasonDisplay}`)
             .setDescription(
-                `See how long it took your guild to defeat each boss`
+                `See how long it took your guild to defeat each boss`,
             )
             .setFields(
                 {
@@ -135,7 +135,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     name: "Separate Primes",
                     value: separatePrimes ? "Yes" : "No",
                     inline: false,
-                }
+                },
             )
             .setTimestamp();
 
@@ -174,7 +174,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                         ) {
                             const baseKey = sbName.replace(
                                 /\s*:recycle:\d+\s*/,
-                                " "
+                                " ",
                             );
                             const base = transformedData[baseKey];
 
@@ -184,7 +184,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                                     td >= 0
                                         ? ` (+${SecondsToString(td)})`
                                         : ` (-${SecondsToString(
-                                              Math.abs(td)
+                                              Math.abs(td),
                                           )})`;
 
                                 const tD = sbData.tokens - base.tokens;
@@ -197,7 +197,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
                         return (
                             `   - Prime ${suffix} :hourglass: ${SecondsToString(
-                                sbData.time
+                                sbData.time,
                             )}${timeDelta} ` +
                             `- :tickets: ${sbData.tokens} ${tokensDelta} ` +
                             `:boom: ${sbData.bombs} ${bombsDelta}`
@@ -233,7 +233,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
                 value =
                     `- Boss: :hourglass: ${SecondsToString(
-                        data.time
+                        data.time,
                     )} ${mainTimeDelta}` +
                     `- :tickets: ${data.tokens} ${mainTokensDelta}` +
                     `:boom: ${data.bombs} ${mainBombsDelta}${extra}`;
@@ -266,7 +266,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     }
                 }
                 value = `:hourglass: ${SecondsToString(
-                    data.time
+                    data.time,
                 )} ${timeDelta} - :tickets: ${
                     data.tokens
                 } ${tokensDelta} :boom: ${data.bombs} ${bombsDelta}`;
@@ -275,16 +275,17 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             pagination.addFields({ name: boss, value });
         }
 
+        pagination.setFooter({ text: "Gleam code: LOVRAFFLE" });
         pagination.paginateFields(true);
         pagination.render();
 
         logger.info(
-            `${interaction.user.username} successfully executed /gr-time-used ${season} ${rarity}`
+            `${interaction.user.username} successfully executed /gr-time-used ${season} ${rarity}`,
         );
     } catch (error) {
         logger.error(
             error,
-            `Error while executing /gr-time-used command for user ${discordID}`
+            `Error while executing /gr-time-used command for user ${discordID}`,
         );
         await interaction.editReply({
             content:

@@ -12,7 +12,7 @@ export const cooldown = 5;
 export const data = new SlashCommandBuilder()
     .setName("activity-per-hour")
     .setDescription(
-        "See what time of day your guild uses their guild raid tokens"
+        "See what time of day your guild uses their guild raid tokens",
     );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
@@ -36,7 +36,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
         const total = Object.values(tokensUsedPerHour).reduce(
             (acc, value) => acc + value,
-            0
+            0,
         );
 
         // convert each total number to a percentage of the total
@@ -44,14 +44,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             Object.entries(tokensUsedPerHour).map(([hour, count]) => [
                 hour,
                 (count / total) * 100,
-            ])
+            ]),
         );
 
         const chartService = new ChartService();
 
         const chartBuffer = await chartService.createTimelineChart(
             percentages,
-            "Guild activity per UTC hour"
+            "Guild activity per UTC hour",
         );
 
         const attachment = new AttachmentBuilder(chartBuffer, {
@@ -62,10 +62,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setColor("#0099ff")
             .setTitle("Guild activity timeline")
             .setDescription(
-                "This chart shows the distribution of what hour of the day your guild used their guild raid tokens and bombs in the current and previous season. The highlighted area is the current time. All time is in UTC."
+                "This chart shows the distribution of what hour of the day your guild used their guild raid tokens and bombs in the current and previous season. The highlighted area is the current time. All time is in UTC.",
             )
             .setImage("attachment://activity-timeline.png")
-            .setTimestamp();
+            .setTimestamp()
+            .setFooter({ text: "Gleam code: LOVRAFFLE" });
 
         await interaction.editReply({
             embeds: [embed],

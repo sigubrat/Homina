@@ -16,7 +16,7 @@ export const data = new SlashCommandBuilder()
         option
             .setName("soon")
             .setDescription("Include players with bombs ready in an hour")
-            .setRequired(false)
+            .setRequired(false),
     );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
@@ -64,7 +64,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         const playersNotParticipated = players.filter(
-            (player) => !result[player.username]
+            (player) => !result[player.username],
         );
 
         playersNotParticipated.forEach((player) => {
@@ -78,7 +78,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const totalBombs = Object.values(result).reduce(
             (acc, available) => acc + available.bombs,
-            0
+            0,
         );
 
         let maxBombs = Object.keys(result).length;
@@ -118,7 +118,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setColor("#0099ff")
             .setTitle("Available Bombs")
             .setDescription("Here is the list of members with available bombs.")
-            .setTimestamp();
+            .setTimestamp()
+            .setFooter({ text: "Gleam code: LOVRAFFLE" });
 
         for (let i = 0; i < table.length; i += 10) {
             embed.addFields({
@@ -143,7 +144,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                         .map(([username]) => `@${username} `)
                         .join("\n") || "None") +
                     "```",
-            }
+            },
         );
 
         if (soon) {
@@ -156,7 +157,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                             ([, available]) =>
                                 available.bombs == 0 &&
                                 available.bombCooldown &&
-                                withinNextHour(available.bombCooldown)
+                                withinNextHour(available.bombCooldown),
                         )
                         .map(([username]) => `@${username}`)
                         .join("\n") || "None") +
@@ -168,10 +169,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     } catch (error) {
         logger.error(
             error,
-            `${interaction.user.id} failed to use /available-bombs`
+            `${interaction.user.id} failed to use /available-bombs`,
         );
         await interaction.editReply(
-            "There was an error while fetching available bombs."
+            "There was an error while fetching available bombs.",
         );
     }
 }

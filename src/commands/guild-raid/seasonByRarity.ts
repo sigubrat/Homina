@@ -32,7 +32,7 @@ export const data = new SlashCommandBuilder()
                 { name: "Epic", value: Rarity.EPIC },
                 { name: "Rare", value: Rarity.RARE },
                 { name: "Uncommon", value: Rarity.UNCOMMON },
-                { name: "Common", value: Rarity.COMMON }
+                { name: "Common", value: Rarity.COMMON },
             );
     })
     .addNumberOption((option) =>
@@ -40,7 +40,7 @@ export const data = new SlashCommandBuilder()
             .setName("season")
             .setDescription("The season number (defaults to current season)")
             .setRequired(false)
-            .setMinValue(MINIMUM_SEASON_THRESHOLD)
+            .setMinValue(MINIMUM_SEASON_THRESHOLD),
     )
     .addStringOption((option) =>
         option
@@ -53,15 +53,15 @@ export const data = new SlashCommandBuilder()
                 {
                     name: "Median",
                     value: "median",
-                }
+                },
             )
             .setDescription(
-                "Median is recommended if you have big variation in damage, mean otherwise"
+                "Median is recommended if you have big variation in damage, mean otherwise",
             )
-            .setRequired(false)
+            .setRequired(false),
     )
     .setDescription(
-        "Show guild raid stats for a specific boss rarity in a specific season"
+        "Show guild raid stats for a specific boss rarity in a specific season",
     );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
@@ -88,14 +88,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const service = new GuildService();
 
     logger.info(
-        `${interaction.user.username} attempting to use /season-by-rarity ${season} ${rarity}`
+        `${interaction.user.username} attempting to use /season-by-rarity ${season} ${rarity}`,
     );
 
     try {
         const result = await service.getGuildRaidResultByRaritySeasonPerBoss(
             interaction.user.id,
             season,
-            rarity
+            rarity,
         );
 
         if (
@@ -135,10 +135,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                             rarity[0] ? rarity[0].toUpperCase() : " "
                         }${data[0] ? data[0].set : 0} ${bossName}`,
                         averageMethod,
-                        avgDamage
+                        avgDamage,
                     );
                 return chartBuffer;
-            }
+            },
         );
 
         const charts = await Promise.all(chartPromises);
@@ -157,9 +157,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     "- Red line (leftmost y-axis): Avg damage per token\n" +
                     "- Orange line (right y-axis): Total tokens used\n" +
                     "- Purple bars (left y-axis): Damage dealt to primes\n" +
-                    "- Yellow dotted line (left y-axis): Guild average damage"
+                    "- Yellow dotted line (left y-axis): Guild average damage",
             )
-            .setImage("attachment://graph-0.png"); // Set the first chart as the main image
+            .setImage("attachment://graph-0.png") // Set the first chart as the main image
+            .setFooter({ text: "Gleam code: LOVRAFFLE" });
 
         await interaction.editReply({
             embeds: [embed],
@@ -167,7 +168,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         });
 
         logger.info(
-            `${interaction.user.username} succesfully used /season-by-rarity ${season} ${rarity}`
+            `${interaction.user.username} succesfully used /season-by-rarity ${season} ${rarity}`,
         );
     } catch (error) {
         logger.error(error, "Error fetching guild raid results");

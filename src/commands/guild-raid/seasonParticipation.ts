@@ -27,7 +27,7 @@ export const data = new SlashCommandBuilder()
             .setName("season")
             .setDescription("The season number (defaults to current season)")
             .setRequired(false)
-            .setMinValue(MINIMUM_SEASON_THRESHOLD)
+            .setMinValue(MINIMUM_SEASON_THRESHOLD),
     )
     .addStringOption((option) => {
         return option
@@ -40,14 +40,14 @@ export const data = new SlashCommandBuilder()
                 { name: "Epic", value: Rarity.EPIC },
                 { name: "Rare", value: Rarity.RARE },
                 { name: "Uncommon", value: Rarity.UNCOMMON },
-                { name: "Common", value: Rarity.COMMON }
+                { name: "Common", value: Rarity.COMMON },
             );
     })
     .addBooleanOption((option) =>
         option
             .setName("show-bombs")
             .setDescription("Show the number of bombs used by each member")
-            .setRequired(false)
+            .setRequired(false),
     )
     .addStringOption((option) =>
         option
@@ -60,15 +60,15 @@ export const data = new SlashCommandBuilder()
                 {
                     name: "Median",
                     value: "median",
-                }
+                },
             )
             .setDescription(
-                "Median is recommended if you have big variation in damage, mean otherwise"
+                "Median is recommended if you have big variation in damage, mean otherwise",
             )
-            .setRequired(false)
+            .setRequired(false),
     )
     .setDescription(
-        "Check how much each member has participated in a specific guild raid season"
+        "Check how much each member has participated in a specific guild raid season",
     );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
@@ -100,7 +100,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const service = new GuildService();
 
     logger.info(
-        `${interaction.user.username} attempting to use /season-participation`
+        `${interaction.user.username} attempting to use /season-participation`,
     );
 
     try {
@@ -108,7 +108,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             interaction.user.id,
             season,
             rarity,
-            true
+            true,
         );
 
         if (
@@ -142,7 +142,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
         const playersNotParticipated = players.filter(
             (player) =>
-                !result.some((entry) => entry.username === player.username)
+                !result.some((entry) => entry.username === player.username),
         );
 
         playersNotParticipated.forEach((player) => {
@@ -173,7 +173,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             `Damage dealt in season ${season}`,
             interaction.options.getBoolean("show-bombs") ?? false,
             averageMethod ? averageMethod : "mean",
-            average
+            average,
         );
 
         const attachment = new AttachmentBuilder(chartBuffer, {
@@ -192,7 +192,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 "The graph shows the contribution of each member to a guild raid season:\n" +
                     "- **Bar chart**: Damage dealt (left y-axis)\n" +
                     "- **Line chart**: Total tokens used (right y-axis)\n" +
-                    "- **Includes primes**: Yes"
+                    "- **Includes primes**: Yes",
             )
             .setFields(
                 {
@@ -207,20 +207,21 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                         undefined,
                         {
                             maximumFractionDigits: 2,
-                        }
+                        },
                     )}**`,
                 },
                 {
                     name: "Rarity filter",
                     value: rarity ? `**${rarity}**` : "None",
-                }
+                },
             )
-            .setImage("attachment://graph.png");
+            .setImage("attachment://graph.png")
+            .setFooter({ text: "Gleam code: LOVRAFFLE" });
 
         await interaction.editReply({ embeds: [embed], files: [attachment] });
 
         logger.info(
-            `${interaction.user.username} succesfully used /season-participation`
+            `${interaction.user.username} succesfully used /season-participation`,
         );
     } catch (error) {
         logger.error(error, "Error executing command");

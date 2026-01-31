@@ -25,7 +25,7 @@ export const cooldown = 5;
 export const data = new SlashCommandBuilder()
     .setName("best-comps")
     .setDescription(
-        "See the highest scoring raid team compositions for a season"
+        "See the highest scoring raid team compositions for a season",
     )
     .addStringOption((option) => {
         return option
@@ -38,7 +38,7 @@ export const data = new SlashCommandBuilder()
                 { name: "Epic", value: Rarity.EPIC },
                 { name: "Rare", value: Rarity.RARE },
                 { name: "Uncommon", value: Rarity.UNCOMMON },
-                { name: "Common", value: Rarity.COMMON }
+                { name: "Common", value: Rarity.COMMON },
             );
     })
     .addNumberOption((option) =>
@@ -46,7 +46,7 @@ export const data = new SlashCommandBuilder()
             .setName("season")
             .setDescription("The season number (defaults to current season)")
             .setRequired(false)
-            .setMinValue(MINIMUM_SEASON_THRESHOLD)
+            .setMinValue(MINIMUM_SEASON_THRESHOLD),
     );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
@@ -71,12 +71,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const seasonData = await guildService.getGuildRaidBySeason(
             discordID,
             season,
-            rarity
+            rarity,
         );
 
         if (!seasonData || seasonData.length === 0) {
             await interaction.editReply(
-                `No data found for season ${season} with rarity ${rarity}.`
+                `No data found for season ${season} with rarity ${rarity}.`,
             );
             return;
         }
@@ -84,7 +84,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const bestCompsPerBoss = await dtsService.highestDmgComps(seasonData);
         if (Object.keys(bestCompsPerBoss).length === 0) {
             await interaction.editReply(
-                `Something went wrong while processing your data. Please reach out in the support server.`
+                `Something went wrong while processing your data. Please reach out in the support server.`,
             );
             return;
         }
@@ -93,7 +93,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setTitle(`Highest scoring raid comps for season ${season}`)
             .setColor("#0099ff")
             .setDescription(
-                "An overview of which characters were used to deal the highest damage against a boss"
+                "An overview of which characters were used to deal the highest damage against a boss",
             )
             .setFields(
                 {
@@ -109,7 +109,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     value: rarity ? rarity : "All Rarities",
 
                     inline: true,
-                }
+                },
             );
 
         for (const [boss, raid] of Object.entries(bestCompsPerBoss)) {
@@ -118,18 +118,20 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     raid.encounterType === EncounterType.BOSS
                         ? getBossEmoji(boss)
                         : mapUnitIdToEmoji(
-                              boss.at(0)?.toLowerCase() + boss.slice(1)
+                              boss.at(0)?.toLowerCase() + boss.slice(1),
                           )
                 } ${mapTierToRarity(
                     raid.tier,
                     raid.set + 1,
-                    false
+                    false,
                 )} ${splitByCapital(boss).at(-1)}`,
                 value: `${raid.heroDetails
                     .map((h) => mapUnitIdToEmoji(h.unitId))
                     .join()} — **Damage:** ${raid.damageDealt.toLocaleString()}`,
             });
         }
+
+        embed.setFooter({ text: "Gleam code: LOVRAFFLE" });
 
         await interaction.editReply({ embeds: [embed] });
     } catch (error) {

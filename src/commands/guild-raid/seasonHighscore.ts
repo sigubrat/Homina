@@ -32,7 +32,7 @@ export const data = new SlashCommandBuilder()
                 { name: "Epic", value: Rarity.EPIC },
                 { name: "Rare", value: Rarity.RARE },
                 { name: "Uncommon", value: Rarity.UNCOMMON },
-                { name: "Common", value: Rarity.COMMON }
+                { name: "Common", value: Rarity.COMMON },
             );
     })
     .addNumberOption((option) =>
@@ -40,7 +40,7 @@ export const data = new SlashCommandBuilder()
             .setName("season")
             .setDescription("The season number (defaults to current season)")
             .setRequired(false)
-            .setMinValue(MINIMUM_SEASON_THRESHOLD)
+            .setMinValue(MINIMUM_SEASON_THRESHOLD),
     );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
@@ -63,7 +63,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const seasonResult = await service.getGuildRaidBySeason(
             discordId,
             season,
-            rarity
+            rarity,
         );
 
         seasonResult?.sort((a, b) => b.damageDealt - a.damageDealt);
@@ -78,14 +78,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const filteredData = seasonResult.filter(
             (raid) =>
                 raid.encounterType === EncounterType.BOSS &&
-                raid.damageType === DamageType.BATTLE
+                raid.damageType === DamageType.BATTLE,
         );
 
         const transformerService = new DataTransformationService();
 
-        const highscores = await transformerService.seasonHighscores(
-            filteredData
-        );
+        const highscores =
+            await transformerService.seasonHighscores(filteredData);
 
         const csvService = new CsvService();
 
@@ -99,7 +98,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const csvBuffer = await csvService.createHighscores(
             highscores,
-            guildId
+            guildId,
         );
 
         const chartService = new ChartService();
@@ -107,7 +106,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const chartBuffer = await chartService.createHighscoreChart(
             highscores,
             guildId,
-            `Season ${season} Highscores (${rarity})`
+            `Season ${season} Highscores (${rarity})`,
         );
 
         const attachment = new AttachmentBuilder(chartBuffer, {
@@ -127,13 +126,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setColor("#0099ff")
             .setTitle(`Season ${seasonDisplay} Highscores (${rarity})`)
             .setDescription(
-                `Highscores for each player in season ${seasonDisplay} with rarity ${rarity}.`
+                `Highscores for each player in season ${seasonDisplay} with rarity ${rarity}.`,
             )
             .addFields({
                 name: "Graph",
                 value: "The x axis contains the players and each line repsents the highest damage each user did against a specific boss (not primes)",
             })
-            .setImage(`attachment://season-${season}-highscores-${rarity}.png`);
+            .setImage(`attachment://season-${season}-highscores-${rarity}.png`)
+            .setFooter({ text: "Gleam code: LOVRAFFLE" });
 
         await interaction.editReply({
             embeds: [embed],

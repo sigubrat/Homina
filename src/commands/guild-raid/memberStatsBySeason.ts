@@ -25,7 +25,7 @@ export const cooldown = 5;
 export const data = new SlashCommandBuilder()
     .setName("member-stats-per-season")
     .setDescription(
-        "Display detailed statistics for each member in a specific season"
+        "Display detailed statistics for each member in a specific season",
     )
     .addNumberOption((option) => {
         return option
@@ -45,7 +45,7 @@ export const data = new SlashCommandBuilder()
                 { name: "Epic", value: Rarity.EPIC },
                 { name: "Rare", value: Rarity.RARE },
                 { name: "Uncommon", value: Rarity.UNCOMMON },
-                { name: "Common", value: Rarity.COMMON }
+                { name: "Common", value: Rarity.COMMON },
             );
     })
     .addBooleanOption((option) => {
@@ -74,7 +74,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const service = new GuildService();
 
     logger.info(
-        `${interaction.user.username} attempting to use /member-stats-per-season for season ${season}`
+        `${interaction.user.username} attempting to use /member-stats-per-season for season ${season}`,
     );
 
     try {
@@ -82,7 +82,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             interaction.user.id,
             season,
             rarity,
-            true
+            true,
         );
 
         if (
@@ -118,7 +118,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         // Add players that did not participate in the season
         const playersNotParticipated = players.filter(
             (player) =>
-                !result.some((entry) => entry.username === player.username)
+                !result.some((entry) => entry.username === player.username),
         );
 
         playersNotParticipated.forEach((player) => {
@@ -141,7 +141,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             await service.getMetaTeamDistributionPerPlayer(
                 interaction.user.id,
                 season,
-                rarity
+                rarity,
             );
 
         if (!teamDistributions) {
@@ -178,13 +178,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 "See the detailed statistics for each member in the specified season.\n\n" +
                     ":family: - Team distribution used by the player\n" +
                     ":bar_chart: - Percentage of total damage dealt by meta teams\n\n" +
-                    "**Includes primes:** Yes"
+                    "**Includes primes:** Yes",
             )
             .setFields({
                 name: "Rarity filter",
                 value: rarity ? `**${rarity}**.` : "None.",
             })
-            .setTimestamp();
+            .setTimestamp()
+            .setFooter({ text: "Gleam code: LOVRAFFLE" });
 
         for (const stats of mergedResults) {
             const formattedDamage = stats.totalDamage.toLocaleString();
@@ -207,50 +208,50 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 "default",
                 {
                     maximumFractionDigits: 1,
-                }
+                },
             )}%\` Mech: \`${stats.distribution.mech.toLocaleString("default", {
                 maximumFractionDigits: 1,
             })}%\` Neuro: \`${stats.distribution.neuro.toLocaleString(
                 "default",
                 {
                     maximumFractionDigits: 1,
-                }
+                },
             )}%\` Custodes: \`${stats.distribution.custodes.toLocaleString(
                 "default",
                 {
                     maximumFractionDigits: 1,
-                }
+                },
             )}%\` Other: \`${stats.distribution.other.toLocaleString(
                 "default",
                 {
                     maximumFractionDigits: 1,
-                }
+                },
             )}%\`
             :bar_chart: Multihit: \`${stats.distribution.multihitDamage?.toLocaleString(
                 "default",
                 {
                     maximumFractionDigits: 1,
-                }
+                },
             )}%\` Mech: \`${stats.distribution.mechDamage?.toLocaleString(
                 "default",
                 {
                     maximumFractionDigits: 1,
-                }
+                },
             )}%\` Neuro: \`${stats.distribution.neuroDamage?.toLocaleString(
                 "default",
                 {
                     maximumFractionDigits: 1,
-                }
+                },
             )}%\` Custodes: \`${stats.distribution.custodesDamage?.toLocaleString(
                 "default",
                 {
                     maximumFractionDigits: 1,
-                }
+                },
             )}%\` Other: \`${stats.distribution.otherDamage?.toLocaleString(
                 "default",
                 {
                     maximumFractionDigits: 1,
-                }
+                },
             )}%\``;
 
             pagination.addFields({
@@ -275,7 +276,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         pagination.render();
 
         logger.info(
-            `${interaction.user.username} successfully used /member-stats-per-season for season ${season}`
+            `${interaction.user.username} successfully used /member-stats-per-season for season ${season}`,
         );
     } catch (error) {
         logger.error(error, "Error fetching guild raid result: ");

@@ -11,7 +11,7 @@ export const cooldown = 5;
 export const data = new SlashCommandBuilder()
     .setName("gr-availability")
     .setDescription(
-        "Get an overview of how many guild raid tokens and bombs each member has available"
+        "Get an overview of how many guild raid tokens and bombs each member has available",
     );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
@@ -20,12 +20,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const service = new GuildService();
 
     logger.info(
-        `${interaction.user.username} attempting to use /available-tokens-bombs`
+        `${interaction.user.username} attempting to use /available-tokens-bombs`,
     );
 
     try {
         const result = await service.getAvailableTokensAndBombs(
-            interaction.user.id
+            interaction.user.id,
         );
 
         if (
@@ -61,7 +61,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         const playersNotParticipated = players.filter(
-            (player) => !result[player.username]
+            (player) => !result[player.username],
         );
 
         playersNotParticipated.forEach((player) => {
@@ -75,7 +75,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const totalTokens = Object.values(result).reduce(
             (acc, available) => acc + available.tokens,
-            0
+            0,
         );
 
         const formattedTotalTokens = `Total tokens: \`${totalTokens}/${
@@ -84,7 +84,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const totalBombs = Object.values(result).reduce(
             (acc, available) => acc + available.bombs,
-            0
+            0,
         );
 
         let maxBombs = Object.keys(result).length;
@@ -160,11 +160,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setDescription(
                 "Here is the list of members with available tokens and bombs.\n\n" +
                     "Note that the token cooldowns have an inherit uncertainty due to the nature of the available data for the calculation.\nIn certain cases the cooldown might not be accurate.\n\n" +
-                    "First values are tokens, second values are bombs, then usernames."
+                    "First values are tokens, second values are bombs, then usernames.",
             )
             .setTimestamp()
             .setFooter({
-                text: "Data fetched from the guild raid API.\n(NB! Inaccuracies may occur for users who have joined mid-season)",
+                text: "Data fetched from the guild raid API.\n(NB! Inaccuracies may occur for users who have joined mid-season)\nGleam code: LOVRAFFLE",
             });
 
         for (let i = 0; i < table.length; i += 10) {
@@ -185,14 +185,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 name: "Total bombs",
                 value: formattedTotalBombs,
                 inline: true,
-            }
+            },
         );
 
         await interaction.editReply({ embeds: [embed] });
     } catch (error) {
         logger.error(
             error,
-            `Error occured in available-tokens-bombs by ${interaction.user.username}`
+            `Error occured in available-tokens-bombs by ${interaction.user.username}`,
         );
         await interaction.editReply({
             content:

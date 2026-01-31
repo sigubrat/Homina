@@ -23,7 +23,7 @@ export const data = new SlashCommandBuilder()
             .setName("season")
             .setDescription("The season number (defaults to current season)")
             .setRequired(false)
-            .setMinValue(MINIMUM_SEASON_THRESHOLD)
+            .setMinValue(MINIMUM_SEASON_THRESHOLD),
     )
     .addStringOption((option) => {
         return option
@@ -36,7 +36,7 @@ export const data = new SlashCommandBuilder()
                 { name: "Epic", value: Rarity.EPIC },
                 { name: "Rare", value: Rarity.RARE },
                 { name: "Uncommon", value: Rarity.UNCOMMON },
-                { name: "Common", value: Rarity.COMMON }
+                { name: "Common", value: Rarity.COMMON },
             );
     })
     .setDescription("Show the distribution of meta teams in a specific season");
@@ -45,7 +45,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 
     logger.info(
-        `${interaction.user.username} attempting to use /meta-team-distribution`
+        `${interaction.user.username} attempting to use /meta-team-distribution`,
     );
 
     const providedSeason = interaction.options.getNumber("season");
@@ -67,7 +67,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const result = await service.getMetaTeamDistribution(
             interaction.user.id,
             season,
-            rarity ? (rarity as Rarity) : undefined
+            rarity ? (rarity as Rarity) : undefined,
         );
 
         if (
@@ -90,13 +90,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const chart = await chartService.createMetaTeamDistributionChart(
             result,
-            `How much each team was used - Season ${seasonDisplay}`
+            `How much each team was used - Season ${seasonDisplay}`,
         );
 
         const dmgChart = await chartService.createMetaTeamDistributionChart(
             result,
             `How much damage each team dealt - Season ${seasonDisplay}`,
-            true
+            true,
         );
 
         const attachment = new AttachmentBuilder(chart, {
@@ -114,13 +114,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 "This command shows the distribution of meta teams in the specified season.\n\n" +
                     "One chart shows the percentage of battles where each meta team was used. The other chart shows what percentage of the total damage each meta team dealt.\n" +
                     "The intent of these charts is to see how effective each team is by looking at their damage vs usage ratio.\n\n" +
-                    "Battles against sidebosses are not included in the calculation."
+                    "Battles against sidebosses are not included in the calculation.",
             )
             .setFields({
                 name: "Rarity filter",
                 value: rarity ? `${rarity}` : "No rarity filter applied",
             })
-            .setImage(`attachment://${attachment.name}`);
+            .setImage(`attachment://${attachment.name}`)
+            .setFooter({ text: "Gleam code: LOVRAFFLE" });
 
         await interaction.editReply({
             embeds: [embed],
@@ -128,7 +129,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         });
 
         logger.info(
-            `${interaction.user.username} succesfully used /meta-team-distribution for season ${season}`
+            `${interaction.user.username} succesfully used /meta-team-distribution for season ${season}`,
         );
     } catch (error) {
         logger.error(error, "Error fetching guild raid result");

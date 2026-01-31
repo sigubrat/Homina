@@ -22,7 +22,7 @@ export const cooldown = 5;
 export const data = new SlashCommandBuilder()
     .setName("season-tokens")
     .setDescription(
-        "Find out how many tokens each member has used in a specific season"
+        "Find out how many tokens each member has used in a specific season",
     )
     .addNumberOption((option) => {
         return option
@@ -42,7 +42,7 @@ export const data = new SlashCommandBuilder()
                 { name: "Epic", value: Rarity.EPIC },
                 { name: "Rare", value: Rarity.RARE },
                 { name: "Uncommon", value: Rarity.UNCOMMON },
-                { name: "Common", value: Rarity.COMMON }
+                { name: "Common", value: Rarity.COMMON },
             );
     })
     .addStringOption((option) =>
@@ -56,12 +56,12 @@ export const data = new SlashCommandBuilder()
                 {
                     name: "Median",
                     value: "median",
-                }
+                },
             )
             .setDescription(
-                "Median is recommended if you have big variation in damage, mean otherwise"
+                "Median is recommended if you have big variation in damage, mean otherwise",
             )
-            .setRequired(false)
+            .setRequired(false),
     );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
@@ -83,7 +83,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const service = new GuildService();
 
     logger.info(
-        `${interaction.user.username} attempting to use /tokens-by-season for season ${season}`
+        `${interaction.user.username} attempting to use /tokens-by-season for season ${season}`,
     );
 
     try {
@@ -91,7 +91,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             interaction.user.id,
             season,
             rarity,
-            true
+            true,
         );
 
         if (
@@ -132,7 +132,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const playersNotParticipated = players.filter(
             (player) =>
-                !result.some((entry) => entry.username === player.username)
+                !result.some((entry) => entry.username === player.username),
         );
 
         for (const player of playersNotParticipated) {
@@ -156,7 +156,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             `Tokens used in season ${season}${rarity ? ` (${rarity})` : ""}`,
             avg,
             averageMethod,
-            30
+            30,
         );
 
         const attachment = new AttachmentBuilder(chartBuffer, {
@@ -173,35 +173,36 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setTitle(
                 `Tokens used in season ${seasonDisplay}${
                     rarity ? ` (${rarity})` : ""
-                }`
+                }`,
             )
             .setDescription(
                 `The graph shows the number of tokens used by each member in season ${season}.\n` +
                     "- **Bar chart:** the number of tokens used by each member.\n" +
                     `- **Line chart:** represents the ${averageMethod.toLowerCase()} number of tokens used by the guild.\n` +
-                    "- **Includes primes:** Yes\n"
+                    "- **Includes primes:** Yes\n",
             )
             .addFields(
                 {
                     name: averageMethod,
                     value: `The ${averageMethod} number of tokens used: ${avg.toFixed(
-                        1
+                        1,
                     )}`,
                 },
                 {
                     name: "Standard deviation",
                     value: `The standard deviation of tokens used: ${standardDeviation(
-                        Object.values(tokensUsed)
+                        Object.values(tokensUsed),
                     ).toFixed(1)}`,
-                }
+                },
             )
             .setImage(`attachment://tokens-used-season-${season}.png`)
-            .setTimestamp();
+            .setTimestamp()
+            .setFooter({ text: "Gleam code: LOVRAFFLE" });
 
         await interaction.editReply({ embeds: [embed], files: [attachment] });
 
         logger.info(
-            `${interaction.user.username} succesfully used /tokens-by-season for season ${season}`
+            `${interaction.user.username} succesfully used /tokens-by-season for season ${season}`,
         );
     } catch (error) {
         logger.error(error, "Error occured in tokens-by-season: ");

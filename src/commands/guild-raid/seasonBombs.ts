@@ -25,7 +25,7 @@ export const data = new SlashCommandBuilder()
             .setName("season")
             .setDescription("The season number (defaults to current season)")
             .setRequired(false)
-            .setMinValue(MINIMUM_SEASON_THRESHOLD)
+            .setMinValue(MINIMUM_SEASON_THRESHOLD),
     )
     .addStringOption((option) =>
         option
@@ -38,15 +38,15 @@ export const data = new SlashCommandBuilder()
                 {
                     name: "Median",
                     value: "median",
-                }
+                },
             )
             .setDescription(
-                "Median is recommended if you have big variation in damage, mean otherwise"
+                "Median is recommended if you have big variation in damage, mean otherwise",
             )
-            .setRequired(false)
+            .setRequired(false),
     )
     .setDescription(
-        "Check how many bombs each member has used in a specific guild raid season"
+        "Check how many bombs each member has used in a specific guild raid season",
     );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
@@ -67,7 +67,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     try {
         const bombs = await service.getGuildRaidBombsBySeason(
             interaction.user.id,
-            season
+            season,
         );
 
         if (!bombs || Object.keys(bombs).length === 0) {
@@ -78,7 +78,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         const averageMethod = interaction.options.getString(
-            "average-method"
+            "average-method",
         ) as "mean" | "median" | null;
 
         const average =
@@ -93,7 +93,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             "Bombs used in season " + season,
             average,
             averageMethod === "mean" ? "Guild mean" : "Guild median",
-            20
+            20,
         );
 
         const attachment = new AttachmentBuilder(chartBuffer, {
@@ -112,23 +112,24 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setDescription(
                 `The graph shows the number of bombs used by each member in season ${seasonDisplay}.\n` +
                     "- **Bar chart:** the number of bombs used by each member.\n" +
-                    `- **Line chart:** represents the ${displayAverage.toLowerCase()} number of bombs used by the guild.`
+                    `- **Line chart:** represents the ${displayAverage.toLowerCase()} number of bombs used by the guild.`,
             )
             .addFields(
                 {
                     name: displayAverage,
                     value: `The ${displayAverage} number of bombs used:  ${average.toFixed(
-                        1
+                        1,
                     )}`,
                 },
                 {
                     name: "Standard deviation",
                     value: `The standard deviation of bombs used: ${standardDeviation(
-                        Object.values(bombs)
+                        Object.values(bombs),
                     ).toFixed(1)}`,
-                }
+                },
             )
-            .setImage("attachment://bombs-season-" + season + ".png");
+            .setImage("attachment://bombs-season-" + season + ".png")
+            .setFooter({ text: "Gleam code: LOVRAFFLE" });
 
         await interaction.editReply({
             embeds: [embed],
@@ -136,11 +137,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         });
 
         logger.info(
-            `Guild raid bombs for season ${season} requested by user ${interaction.user.id}`
+            `Guild raid bombs for season ${season} requested by user ${interaction.user.id}`,
         );
     } catch (error) {
         logger.error(
-            `Error fetching guild raid bombs for season ${season}: ${error}`
+            `Error fetching guild raid bombs for season ${season}: ${error}`,
         );
         await interaction.editReply({
             content: `An error occurred while fetching data for season ${season}. Please try again later.`,

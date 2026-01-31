@@ -20,10 +20,10 @@ export const data = new SlashCommandBuilder()
         option
             .setName("season")
             .setDescription(
-                "The season number to check (defaults to current season)"
+                "The season number to check (defaults to current season)",
             )
             .setRequired(false)
-            .setMinValue(MINIMUM_SEASON_THRESHOLD)
+            .setMinValue(MINIMUM_SEASON_THRESHOLD),
     );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
@@ -46,7 +46,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const matches = await guildService.getSeasonsWithSameConfig(
             discordId,
             5,
-            season
+            season,
         );
 
         if (!matches) {
@@ -68,6 +68,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setColor("#0099ff")
             .setTitle(`Guild raid seasons with the same config`)
             .setTimestamp()
+            .setFooter({ text: "Gleam code: LOVRAFFLE" })
             .setFields(
                 {
                     name: "Your selected season",
@@ -79,14 +80,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 {
                     name: `Seasons`,
                     value: matches.join(", "),
-                }
+                },
             );
 
         await interaction.editReply({ embeds: [embed] });
     } catch (error) {
         logger.error(
             error,
-            `Error while executing /season-configs command for ${interaction.user.username}`
+            `Error while executing /season-configs command for ${interaction.user.username}`,
         );
     }
 }

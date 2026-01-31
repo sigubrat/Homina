@@ -19,7 +19,7 @@ export const cooldown = 5;
 export const data = new SlashCommandBuilder()
     .setName("inactivity-by-season")
     .setDescription(
-        "Find out who did not use the required number of tokens in a season"
+        "Find out who did not use the required number of tokens in a season",
     )
     .addNumberOption((option) => {
         return option
@@ -32,7 +32,7 @@ export const data = new SlashCommandBuilder()
         return option
             .setName("threshold")
             .setDescription(
-                "The minimum number of tokens used to be considered active in your guild (Default: 1)."
+                "The minimum number of tokens used to be considered active in your guild (Default: 1).",
             )
             .setRequired(false)
             .setMinValue(1);
@@ -48,7 +48,7 @@ export const data = new SlashCommandBuilder()
                 { name: "Epic", value: Rarity.EPIC },
                 { name: "Rare", value: Rarity.RARE },
                 { name: "Uncommon", value: Rarity.UNCOMMON },
-                { name: "Common", value: Rarity.COMMON }
+                { name: "Common", value: Rarity.COMMON },
             );
     });
 
@@ -72,7 +72,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const service = new GuildService();
 
     logger.info(
-        `${interaction.user.username} attempting to use /inactivity-by-season for season ${season}`
+        `${interaction.user.username} attempting to use /inactivity-by-season for season ${season}`,
     );
 
     try {
@@ -80,7 +80,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             interaction.user.id,
             season,
             rarity,
-            true
+            true,
         );
 
         if (
@@ -126,7 +126,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const playersNotParticipated = players.filter(
             (player) =>
-                !result.some((entry) => entry.username === player.username)
+                !result.some((entry) => entry.username === player.username),
         );
 
         for (const player of playersNotParticipated) {
@@ -151,7 +151,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 (user) =>
                     `\`${user.username}\` - ${user.tokens} token${
                         user.tokens > 1 ? "s" : ""
-                    }`
+                    }`,
             )
             .join("\n");
 
@@ -167,19 +167,20 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 "The number of players who did not use the required number of tokens:\n" +
                     `- **Threshold**: ${threshold} token(s)\n` +
                     `- **Rarity:** ${rarity ?? "All Rarities"}\n` +
-                    "- **Includes primes:** Yes\n"
+                    "- **Includes primes:** Yes\n",
             )
             .setFields([
                 {
                     name: "Inactive Users",
                     value: table,
                 },
-            ]);
+            ])
+            .setFooter({ text: "Gleam code: LOVRAFFLE" });
 
         await interaction.editReply({ embeds: [embed] });
 
         logger.info(
-            `${interaction.user.username} succesfully used /inactivity-by-season for season ${season}`
+            `${interaction.user.username} succesfully used /inactivity-by-season for season ${season}`,
         );
     } catch (error) {
         logger.error(error, "Error fetching guild raid result: ");

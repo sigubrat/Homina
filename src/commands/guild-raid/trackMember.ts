@@ -23,7 +23,7 @@ export const data = new SlashCommandBuilder()
         option
             .setName("member")
             .setDescription("The member to track")
-            .setRequired(true)
+            .setRequired(true),
     )
     .addStringOption((option) => {
         return option
@@ -36,7 +36,7 @@ export const data = new SlashCommandBuilder()
                 { name: "Epic", value: Rarity.EPIC },
                 { name: "Rare", value: Rarity.RARE },
                 { name: "Uncommon", value: Rarity.UNCOMMON },
-                { name: "Common", value: Rarity.COMMON }
+                { name: "Common", value: Rarity.COMMON },
             );
     })
     .addStringOption((option) =>
@@ -50,15 +50,15 @@ export const data = new SlashCommandBuilder()
                 {
                     name: "Median",
                     value: "median",
-                }
+                },
             )
             .setDescription(
-                "Median is recommended if you have big variation in damage, mean otherwise"
+                "Median is recommended if you have big variation in damage, mean otherwise",
             )
-            .setRequired(false)
+            .setRequired(false),
     )
     .setDescription(
-        `Track a member's guild raid stats over the last ${N_SEASONS} seasons`
+        `Track a member's guild raid stats over the last ${N_SEASONS} seasons`,
     );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
@@ -102,7 +102,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const data = await service.getMemberStatsInLastSeasons(
             userId,
             N_SEASONS,
-            rarity
+            rarity,
         );
 
         if (!data || Object.keys(data).length === 0) {
@@ -121,7 +121,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setDescription(
                 `Here are the guild raid stats for **${member}** over the last ${N_SEASONS} seasons.\n` +
                     "*Nb! Does not include inactive members in a season as it can only know who participated in prior seasons. This affects the average value if you had inactive players.*\n\n" +
-                    "Data includes primes."
+                    "Data includes primes.",
             )
             .addFields(
                 {
@@ -133,10 +133,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     value: avgMethod
                         ? `Using ${avgMethod} to calculate averages`
                         : "No average method specified, using mean",
-                }
+                },
             )
             .setColor("#0099ff")
-            .setTimestamp();
+            .setTimestamp()
+            .setFooter({ text: "Gleam code: LOVRAFFLE" });
 
         if (rarity) {
             embed.addFields({
@@ -201,13 +202,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                         undefined,
                         {
                             maximumFractionDigits: 0,
-                        }
+                        },
                     )}\` — User dmg: \`${userDamage.toLocaleString(undefined, {
                         maximumFractionDigits: 0,
                     })}\` — Relative Damage: \`${relativeDamage}\`
                     Guild avg token: \`${guildAverageTokens.toLocaleString(
                         undefined,
-                        { maximumFractionDigits: 1 }
+                        { maximumFractionDigits: 1 },
                     )}\` — User tokens: \`${userTokens}\` — Relative Tokens: \`${relativeTokens}\``,
                 });
             } else {
@@ -219,14 +220,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     }
 
                     const userData = values.find(
-                        (v) => v.username === memberId
+                        (v) => v.username === memberId,
                     );
 
                     if (!userData) {
                         continue;
                     }
                     let nPlayers = new Set<string>(
-                        values.map((v) => v.username)
+                        values.map((v) => v.username),
                     ).size;
 
                     if (nPlayers > MAXIMUM_GUILD_MEMBERS) {
@@ -251,7 +252,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                         undefined,
                         {
                             maximumFractionDigits: 1,
-                        }
+                        },
                     );
 
                     const relativeDamage =
@@ -259,7 +260,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                             undefined,
                             {
                                 maximumFractionDigits: 1,
-                            }
+                            },
                         ) + "%";
 
                     const bossName =
@@ -272,7 +273,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                         undefined,
                         {
                             maximumFractionDigits: 0,
-                        }
+                        },
                     );
 
                     userStatsPerBoss[bossName] = [
@@ -288,9 +289,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                         const userRelativeTotal = user[1];
                         const userMaxDmg = user[2];
                         return `${bossname.padEnd(8)} ${userAvgStr!.padStart(
-                            10
+                            10,
                         )} ${userRelativeTotal!.padStart(
-                            8
+                            8,
                         )} ${userMaxDmg!.padStart(10)}`;
                     })
                     .join("\n");
@@ -301,18 +302,18 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                         undefined,
                         {
                             maximumFractionDigits: 0,
-                        }
+                        },
                     )}\` — User dmg: \`${userDamage.toLocaleString(undefined, {
                         maximumFractionDigits: 0,
                     })}\` — Relative Damage: \`${relativeDamage}\`
                     Guild avg token: \`${guildAverageTokens.toLocaleString(
                         undefined,
-                        { maximumFractionDigits: 1 }
+                        { maximumFractionDigits: 1 },
                     )}\` — User tokens: \`${userTokens}\` — Relative Tokens: \`${relativeTokens}\`
                     \`\`\`${"Boss".padEnd(6)} ${"User Avg".padEnd(
-                        10
+                        10,
                     )} ${"Rel. total".padEnd(12)} ${"Max Dmg".padEnd(
-                        8
+                        8,
                     )}\n${bossRelativeStrings}\`\`\``,
                 });
             }

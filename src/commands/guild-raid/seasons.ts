@@ -34,7 +34,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setColor("#0099ff")
             .setTitle("Available Guild Raid Seasons")
             .setDescription(
-                `Fetches the seasons your guild has available data for. The public API does not include data pre season 70.`
+                `Fetches the seasons your guild has available data for. The public API does not include data pre season 70.`,
             )
             .addFields([
                 {
@@ -50,7 +50,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 },
             ])
             .setFooter({
-                text: "Note: Snowprint may not return all seasons due to a known API bug.",
+                text: "Note: Snowprint may not return all seasons due to a known API bug.\nGleam code: LOVRAFFLE",
             });
 
         await interaction.editReply({
