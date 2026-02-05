@@ -55,6 +55,8 @@ export const custodesTeam = [
     characters.Helbrecht.id,
     characters.Isabella.id,
     characters.Vitruvius.id,
+    characters.Laviscus.id,
+    characters.Aesoth.id,
 ];
 
 export const battlesuitTeam = [
