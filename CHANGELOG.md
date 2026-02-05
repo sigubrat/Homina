@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.38.3] - 2026-02-05
+
+### Added
+
+- Added Laviscus and Aesoth to the custodes team definition. Both will remain optional until the meta has settled and players have Laviscus built further.
+
 ## [0.38.2] - 2026-01-31
 
 ### Changed
