@@ -27,7 +27,7 @@ export class ChartService {
         title: string,
         showBombs: boolean = false,
         average: "mean" | "median" = "median",
-        averageValue: number
+        averageValue: number,
     ) {
         const usernames = data.map((data) => data.username);
         const damage = data.map((data) => data.totalDamage);
@@ -186,13 +186,15 @@ export class ChartService {
         data: GuildRaidResult[],
         title: string,
         average: "Mean" | "Median" = "Median",
-        averageValue: number
+        averageValue: number,
+        showMaxDamage: boolean = false,
     ) {
         const usernames: string[] = [];
         const damage: number[] = [];
         const primeDamage: number[] = [];
         const totalTokens: number[] = [];
         const avgDamagePerToken: number[] = [];
+        const maxDamage: number[] = [];
 
         data.forEach((item) => {
             usernames.push(item.username);
@@ -200,8 +202,9 @@ export class ChartService {
             primeDamage.push(item.primeDamage ?? 0);
             totalTokens.push(item.totalTokens);
             avgDamagePerToken.push(
-                item.totalTokens > 0 ? item.totalDamage / item.totalTokens : 0
+                item.totalTokens > 0 ? item.totalDamage / item.totalTokens : 0,
             );
+            maxDamage.push(item.maxDmg ?? 0);
         });
 
         const chart = await canvas.renderToBuffer({
@@ -209,6 +212,30 @@ export class ChartService {
             data: {
                 labels: usernames,
                 datasets: [
+                    {
+                        type: "line",
+                        label: "Avg Damage per Token",
+                        data: avgDamagePerToken,
+                        borderColor: CHART_COLORS.grey,
+                        borderWidth: 3,
+                        fill: false,
+                        tension: 0,
+                        pointRadius: 3,
+                        yAxisID: "y3",
+                        borderDash: [5, 5],
+                        datalabels: {
+                            display: true,
+                            color: "white",
+                            anchor: "end",
+                            align: 300,
+                            font: {
+                                size: 11,
+                            },
+                            formatter: function (value: number) {
+                                return value > 0 ? shortenNumber(value) : null;
+                            },
+                        },
+                    },
                     {
                         type: "line",
                         label: "Total Tokens",
@@ -228,13 +255,13 @@ export class ChartService {
                                       undefined,
                                       {
                                           maximumFractionDigits: 0,
-                                      }
+                                      },
                                   )})`
                                 : `Guild median damage (${averageValue.toLocaleString(
                                       undefined,
                                       {
                                           maximumFractionDigits: 0,
-                                      }
+                                      },
                                   )})`,
                         data: Array(usernames.length).fill(averageValue),
                         borderColor: CHART_COLORS.yellow,
@@ -245,29 +272,24 @@ export class ChartService {
                         yAxisID: "y",
                         borderDash: [5, 5],
                     },
-                    {
-                        type: "line",
-                        label: "Avg Damage per Token",
-                        data: avgDamagePerToken,
-                        borderColor: CHART_COLORS.red,
-                        borderWidth: 3,
-                        fill: false,
-                        tension: 0,
-                        pointRadius: 3,
-                        yAxisID: "y3",
-                        datalabels: {
-                            display: true,
-                            color: "white",
-                            anchor: "end",
-                            align: 300,
-                            font: {
-                                size: 11,
-                            },
-                            formatter: function (value: number) {
-                                return value > 0 ? shortenNumber(value) : null;
-                            },
-                        },
-                    },
+                    ...(showMaxDamage
+                        ? [
+                              {
+                                  type: "line" as const,
+                                  label: "Max Damage per Token",
+                                  data: maxDamage,
+                                  borderColor: CHART_COLORS.red,
+                                  borderWidth: 3,
+                                  fill: false,
+                                  tension: 0,
+                                  pointRadius: 3,
+                                  yAxisID: "y3",
+                                  datalabels: {
+                                      display: false,
+                                  },
+                              },
+                          ]
+                        : []),
                     {
                         backgroundColor: CHART_COLORS.purple,
                         label: "Prime damage",
@@ -324,6 +346,7 @@ export class ChartService {
                             font: {
                                 size: 14,
                             },
+                            padding: 20,
                         },
                     },
                 },
@@ -360,7 +383,7 @@ export class ChartService {
                         type: "linear",
                         position: "right",
                         ticks: {
-                            color: "white",
+                            color: CHART_COLORS.orange,
                             font: {
                                 size: 14,
                             },
@@ -377,7 +400,7 @@ export class ChartService {
                         type: "linear",
                         position: "left",
                         ticks: {
-                            color: CHART_COLORS.red,
+                            color: CHART_COLORS.grey,
                             font: {
                                 size: 12,
                             },
@@ -394,8 +417,8 @@ export class ChartService {
                     padding: {
                         left: 20,
                         right: 20,
-                        bottom: 10,
-                        top: 10,
+                        bottom: 20,
+                        top: 20,
                     },
                 },
                 responsive: true,
@@ -409,7 +432,7 @@ export class ChartService {
     async createMetaTeamDistributionChart(
         data: TeamDistribution,
         title: string,
-        showDamage: boolean = false
+        showDamage: boolean = false,
     ) {
         if (showDamage) {
             data.mech = data.mechDamage ?? 0;
@@ -431,7 +454,7 @@ export class ChartService {
         const psykerPercentage = ((data.neuro / total) * 100).toFixed(1);
         const custodesPercentage = ((data.custodes / total) * 100).toFixed(1);
         const battlesuitPercentage = ((data.battlesuit / total) * 100).toFixed(
-            1
+            1,
         );
         const otherPercentage = ((data.other / total) * 100).toFixed(1);
 
@@ -510,7 +533,7 @@ export class ChartService {
         title: string,
         guildAvg: number,
         avgLabel: string,
-        maxValue: number
+        maxValue: number,
     ) {
         const entries = Object.entries(data);
         entries.sort((a, b) => b[1] - a[1]);
@@ -534,7 +557,7 @@ export class ChartService {
                             undefined,
                             {
                                 maximumFractionDigits: 1,
-                            }
+                            },
                         )})`,
                         data: Array(usernames.length).fill(guildAvg),
                         borderColor: CHART_COLORS.yellow,
@@ -679,7 +702,7 @@ export class ChartService {
                             const hour = parseInt(
                                 context.chart.data.labels[
                                     context.dataIndex
-                                ].split(":")[0]
+                                ].split(":")[0],
                             );
                             if (hour === now) {
                                 return CHART_COLORS.yellow;
@@ -763,14 +786,14 @@ export class ChartService {
     async createHighscoreChart(
         data: Record<string, Highscore[]>,
         guildId: string,
-        title: string
+        title: string,
     ) {
         const allUsernames = new Set<string>();
 
         // Collect all unique usernames across all bosses
         for (const highscores of Object.values(data)) {
             highscores.forEach((highscore) =>
-                allUsernames.add(highscore.username)
+                allUsernames.add(highscore.username),
             );
         }
 
@@ -782,7 +805,7 @@ export class ChartService {
             ([boss, highscores], colorIndex) => {
                 const scores = userIds.map((username) => {
                     const userScore = highscores.find(
-                        (highscore) => highscore.username === username
+                        (highscore) => highscore.username === username,
                     );
                     return userScore ? userScore.value : 0;
                 });
@@ -796,7 +819,7 @@ export class ChartService {
                     tension: 0,
                     pointRadius: 1.5,
                 };
-            }
+            },
         );
 
         const chart = await canvas.renderToBuffer({

@@ -60,8 +60,14 @@ export const data = new SlashCommandBuilder()
             )
             .setRequired(false),
     )
+    .addBooleanOption((option) =>
+        option
+            .setName("show-max")
+            .setDescription("Show max damage per token line on the graph")
+            .setRequired(false),
+    )
     .setDescription(
-        "Show guild raid stats for a specific boss rarity in a specific season",
+        "Show guild raid stats for each boss at a specific rarity in a given season",
     );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
@@ -115,11 +121,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 ? "Mean"
                 : "Median";
 
+        const showMax = interaction.options.getBoolean("show-max") ?? false;
+
         const chartService = new ChartService();
         const seasonDisplay =
             providedSeason === null
                 ? `${season} (current season)`
                 : `${season}`;
+
         const chartPromises = Object.entries(result).map(
             async ([bossName, data]) => {
                 const guildDamage = data.map((val) => val.totalDamage);
@@ -136,6 +145,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                         }${data[0] ? data[0].set : 0} ${bossName}`,
                         averageMethod,
                         avgDamage,
+                        showMax,
                     );
                 return chartBuffer;
             },
@@ -154,7 +164,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setDescription(
                 "The graph shows the damage dealt to individual guild bosses\n" +
                     "- Blue bars (left y-axis): Total damage dealt to boss\n" +
-                    "- Red line (leftmost y-axis): Avg damage per token\n" +
+                    "- Grey dotted line (leftmost y-axis): Avg damage per token\n" +
+                    "- Red line (leftmost y-axis): Max damage per token\n" +
                     "- Orange line (right y-axis): Total tokens used\n" +
                     "- Purple bars (left y-axis): Damage dealt to primes\n" +
                     "- Yellow dotted line (left y-axis): Guild average damage",
