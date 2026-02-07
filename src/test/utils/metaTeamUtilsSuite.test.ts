@@ -37,7 +37,7 @@ describe("metaTeamUtils - Algebra", () => {
             multi: 3,
             mech: 1,
             neuro: 1,
-            custodes: 1,
+            custodes: 2,
             battlesuit: 2,
         });
     });
@@ -92,31 +92,31 @@ describe("metaTeamUtils - Algebra", () => {
         const neuroTeam = teams.reduce(
             (acc, team) =>
                 acc + Number(hasLynchpinHeroes(team, MetaTeams.NEURO)),
-            0
+            0,
         );
 
         const multiTeam = teams.reduce(
             (acc, team) =>
                 acc + Number(hasLynchpinHeroes(team, MetaTeams.MULTIHIT)),
-            0
+            0,
         );
 
         const mechTeam = teams.reduce(
             (acc, team) =>
                 acc + Number(hasLynchpinHeroes(team, MetaTeams.ADMECH)),
-            0
+            0,
         );
 
         const custodesTeam = teams.reduce(
             (acc, team) =>
                 acc + Number(hasLynchpinHeroes(team, MetaTeams.CUSTODES)),
-            0
+            0,
         );
 
         const battlesuitTeam = teams.reduce(
             (acc, team) =>
                 acc + Number(hasLynchpinHeroes(team, MetaTeams.BATTLESUIT)),
-            0
+            0,
         );
 
         expect(neuroTeam).toBe(1);
