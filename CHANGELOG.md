@@ -19,6 +19,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [0.39.0] - 2026-02-07
+
+This new patch brings in a new datapoint in the `/season-by-rarity` command. The command currently shows the average damage per token, and to accompany it you now have the option to show the maximum damage dealt to the boss. The intention is to let you compare the average damage dealt against the boss with your best hit. Consistency is key in guild raid so if the two lies are too far apart then there might be time for some strategical changes. Of course, the chart was quite busy already as it is, so the max-damage line is only displayed by using the new optional parameter. The colors in the graph have also been slightly adjusted to fit in the newcomer.
+
+BossG is now also well confirmed as a solid pick in the custodes team alongside Laviscus, if one can still call it the custodes team. For now I'll just stick to that name and wait to see if the community decides on a new name or not.
+
+### Added
+
+- `/season-by-rarity` now has a new option `show-max` where you choose to display each player's best hits against a boss or not.
+    - Required: no
+    - Defaults: False
+    - Red line
+- Boss Gulgortz is now an optional character in the custodes team
+
+### Changed
+
+- `/season-by-rarity` graph colors have changed slightly
+    - Avg Damage is now a grey dotted line
+    - The y-axis for average- and max damage is now grey
+    - The y-axis for tokens used is yellow to match the line chart
+
 ## [0.38.3] - 2026-02-05
 
 ### Added
