@@ -131,11 +131,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const chartPromises = Object.entries(result).map(
             async ([bossName, data]) => {
-                const guildDamage = data.map((val) => val.totalDamage);
+                const damagePerRun = data.map((val) =>
+                    val.totalTokens > 0 ? val.totalDamage / val.totalTokens : 0,
+                );
                 const avgDamage =
                     averageMethod === "Mean"
-                        ? numericAverage(Object.values(guildDamage))
-                        : numericMedian(Object.values(guildDamage));
+                        ? numericAverage(damagePerRun)
+                        : numericMedian(damagePerRun);
 
                 const chartBuffer =
                     await chartService.createSeasonDamageChartAvg(

@@ -269,7 +269,7 @@ export class ChartService {
                         fill: false,
                         tension: 0,
                         pointRadius: 0,
-                        yAxisID: "y",
+                        yAxisID: "y3",
                         borderDash: [5, 5],
                     },
                     ...(showMaxDamage
