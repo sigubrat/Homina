@@ -1,6 +1,5 @@
 import type { MemberStatsPerSeason } from "@/commands/guild-raid/memberStatsBySeason";
 import type { Highscore } from "@/models/types/Highscore";
-import { dbController } from "../DatabaseController";
 
 export class CsvService {
     async createMemberStats(data: MemberStatsPerSeason[]) {
@@ -27,21 +26,8 @@ export class CsvService {
         return buffer;
     }
 
-    async createHighscores(
-        highscores: Record<string, Highscore[]>,
-        guildId: string
-    ) {
+    async createHighscores(highscores: Record<string, Highscore[]>) {
         let output = "";
-
-        const allUsernames = new Set<string>();
-
-        // Collect all unique usernames across all bosses
-        for (const hs of Object.values(highscores)) {
-            hs.forEach((highscore) => allUsernames.add(highscore.username));
-        }
-
-        const userIds = Array.from(allUsernames);
-        const usernames = await dbController.getPlayerNames(userIds, guildId);
 
         for (const [boss, scores] of Object.entries(highscores)) {
             output += `Boss: ${boss}\n`;
@@ -50,10 +36,7 @@ export class CsvService {
             const sortedScores = scores.sort((a, b) => b.value - a.value);
 
             for (const [index, score] of sortedScores.entries()) {
-                const username = usernames[score.username] || "Unknown";
-                output += `${index + 1},${username},${score.team},${
-                    score.value
-                }\n`;
+                output += `${index + 1},${score.username},${score.team},${score.value}\n`;
             }
 
             output += "\n";

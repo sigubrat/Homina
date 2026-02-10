@@ -27,9 +27,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     logger.info(`${interaction.user.id} attempting to use /available-bombs`);
 
     const soon = interaction.options.getBoolean("soon", false) ?? false;
+    const discordId = interaction.user.id;
 
     try {
-        const result = await service.getAvailableBombs(interaction.user.id);
+        const result = await service.getAvailableBombs(discordId);
 
         if (
             !result ||
@@ -44,31 +45,34 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
-        // Add players who have not used any tokens or bombs yet
-        const guildId = await service.getGuildId(interaction.user.id);
-        if (!guildId) {
+        const players = await service.fetchGuildMembers(discordId);
+        if (!players) {
             await interaction.editReply({
                 content:
-                    "Could not find your guild's ID. Please make sure you have registered your API-token",
+                    "Something went wrong while fetching guild members from the game. Please try again or contact the support server if the issue persists",
             });
             return;
         }
 
-        const players = await service.getMemberlist(guildId);
-        if (!players || players.length === 0) {
-            await interaction.editReply({
-                content:
-                    "No players found in the guild. Please make sure you have registered your API-token",
-            });
-            return;
+        // Replace User IDs with display names in the result
+        let unknownCounter = 1;
+        for (const userId in result) {
+            const player = players.find((p) => p.userId === userId);
+            if (player) {
+                result[player.displayName] = result[userId]!;
+            } else {
+                // User is no longer in the guild
+                result[`Unknown ${unknownCounter++}`] = result[userId]!;
+            }
+            delete result[userId];
         }
 
         const playersNotParticipated = players.filter(
-            (player) => !result[player.username],
+            (player) => !result[player.displayName],
         );
 
         playersNotParticipated.forEach((player) => {
-            result[player.username] = {
+            result[player.displayName] = {
                 tokens: 3,
                 bombs: 1,
                 tokenCooldown: undefined,
@@ -119,7 +123,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setTitle("Available Bombs")
             .setDescription("Here is the list of members with available bombs.")
             .setTimestamp()
-            .setFooter({ text: "Gleam code: LOVRAFFLE" });
+            .setFooter({
+                text: "Gleam code: LOVRAFFLE\nReferral code: HUG-44-CAN if you want to support me",
+            });
 
         for (let i = 0; i < table.length; i += 10) {
             embed.addFields({

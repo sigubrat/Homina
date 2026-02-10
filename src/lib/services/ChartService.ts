@@ -5,7 +5,6 @@ import { numericMedian } from "../utils/mathUtils";
 import { standardDeviation } from "../utils/mathUtils";
 import type { TeamDistribution } from "@/models/types/TeamDistribution";
 import type { Highscore } from "@/models/types/Highscore";
-import { dbController } from "../DatabaseController";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import { CHART_COLORS, namedColor } from "../utils/colorUtils";
 
@@ -785,7 +784,6 @@ export class ChartService {
 
     async createHighscoreChart(
         data: Record<string, Highscore[]>,
-        guildId: string,
         title: string,
     ) {
         const allUsernames = new Set<string>();
@@ -797,13 +795,11 @@ export class ChartService {
             );
         }
 
-        const userIds = Array.from(allUsernames);
+        const usernames = Array.from(allUsernames);
 
-        const usernames = await dbController.getPlayerNames(userIds, guildId);
-        const labels = userIds.map((id) => usernames[id] || "Unknown");
         const datasets = Object.entries(data).map(
             ([boss, highscores], colorIndex) => {
-                const scores = userIds.map((username) => {
+                const scores = usernames.map((username) => {
                     const userScore = highscores.find(
                         (highscore) => highscore.username === username,
                     );
@@ -825,7 +821,7 @@ export class ChartService {
         const chart = await canvas.renderToBuffer({
             type: "line",
             data: {
-                labels: labels,
+                labels: usernames,
                 datasets,
             },
             options: {

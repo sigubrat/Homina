@@ -6,6 +6,7 @@ import {
 import { isValidUUIDv4 } from "@/lib/utils/mathUtils";
 import { testApiToken } from "@/lib/utils/commandUtils";
 import { dbController, logger } from "@/lib";
+import { HominaTacticusClient } from "@/client";
 
 export const cooldown = 5; // Cooldown in seconds
 
@@ -15,11 +16,11 @@ export const data = new SlashCommandBuilder()
         option
             .setName("api-token")
             .setDescription(
-                "Your API token with guild scope and Leader/Co-Leader role"
+                "Your API token with guild scope and Leader/Co-Leader role",
             )
             .setRequired(true)
             .setMaxLength(36)
-            .setMinLength(36)
+            .setMinLength(36),
     )
     .setDescription("Register your account to use the bot");
 
@@ -38,7 +39,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     }
 
     logger.info(
-        `User ${interaction.user.username} attempting to register a token`
+        `User ${interaction.user.username} attempting to register a token`,
     );
 
     let result = await testApiToken(apiToken);
@@ -53,7 +54,26 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         return;
     }
 
-    result = await dbController.registerUser(interaction.user.id, apiToken);
+    // Fetch the guild ID from the API
+    const client = new HominaTacticusClient();
+    let guildId: string | null = null;
+    try {
+        const guildResponse = await client.getGuild(apiToken);
+        if (guildResponse.success && guildResponse.guild) {
+            guildId = guildResponse.guild.guildId;
+        }
+    } catch (error) {
+        logger.warn(
+            error,
+            "Failed to fetch guild ID during registration, continuing without it",
+        );
+    }
+
+    result = await dbController.registerUser(
+        interaction.user.id,
+        apiToken,
+        guildId,
+    );
     if (!result) {
         await interaction.editReply({
             content: "Something went wrong while registering your token",
@@ -65,12 +85,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     }
 
     logger.info(
-        `User ${interaction.user.username} succesfully registered a token`
+        `User ${interaction.user.username} succesfully registered a token`,
     );
 
     await interaction.editReply({
         content:
-            "Token successfully registered to your user. Next step is to use `/member-ids` to start registering usernames for your guild. Note! If someone else in your guild has already registered usernames, you will not need to update them and can skip that step.",
+            "Token successfully registered to your user. You're all set to use the bot commands!",
         options: {
             flags: MessageFlags.Ephemeral,
         },

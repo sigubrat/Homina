@@ -72,25 +72,15 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         return;
     }
 
-    const userId = interaction.user.id;
+    const discordId = interaction.user.id;
 
     const service = new GuildService();
 
     try {
-        const guildId = await service.getGuildId(userId);
-        if (!guildId) {
+        const players = await service.fetchGuildMembers(discordId);
+        if (!players || players.length === 0) {
             await interaction.editReply({
-                content:
-                    "Could not find your guild. Please make sure you have registered a guild API token to this discord user.",
-            });
-            return;
-        }
-
-        const memberId = await service.getPlayerIdByUsername(member, guildId);
-
-        if (!memberId) {
-            await interaction.editReply({
-                content: `Could not find the username ${member} in the guild. Please make sure the usernames are updated in the bot and that you provided a correct one.`,
+                content: "Could not fetch guild members.",
             });
             return;
         }
@@ -100,7 +90,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             | undefined;
 
         const data = await service.getMemberStatsInLastSeasons(
-            userId,
+            discordId,
             N_SEASONS,
             rarity,
         );
@@ -137,7 +127,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             )
             .setColor("#0099ff")
             .setTimestamp()
-            .setFooter({ text: "Gleam code: LOVRAFFLE" });
+            .setFooter({
+                text: "Gleam code: LOVRAFFLE\nReferral code: HUG-44-CAN if you want to support me",
+            });
 
         if (rarity) {
             embed.addFields({
@@ -182,8 +174,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 guildAverageTokens = MAXIMUM_TOKENS_PER_SEASON;
             }
 
-            const userDamage = damagePerMember[memberId] || 0;
-            const userTokens = tokensPerMember[memberId] || 0;
+            const userDamage = damagePerMember[member] || 0;
+            const userTokens = tokensPerMember[member] || 0;
 
             const relativeDamage =
                 guildAverageDamage > 0
@@ -219,9 +211,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                         continue;
                     }
 
-                    const userData = values.find(
-                        (v) => v.username === memberId,
-                    );
+                    const userData = values.find((v) => v.username === member);
 
                     if (!userData) {
                         continue;

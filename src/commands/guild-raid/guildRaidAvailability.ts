@@ -41,31 +41,35 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
+        // Fetch guild members from LOKI API
+        const players = await service.fetchGuildMembers(interaction.user.id);
+        if (!players) {
+            await interaction.editReply({
+                content:
+                    "Something went wrong while fetching guild members from the game. Please try again or contact the support server if the issue persists",
+            });
+            return;
+        }
+
+        // Replace User IDs with display names in the result
+        let unknownCounter = 1;
+        for (const userId in result) {
+            const player = players.find((p) => p.userId === userId);
+            if (player) {
+                result[player.displayName] = result[userId]!;
+            } else {
+                result[`Unknown#${unknownCounter++}`] = result[userId]!;
+            }
+            delete result[userId];
+        }
+
         // Add players who have not used any tokens or bombs yet
-        const guildId = await service.getGuildId(interaction.user.id);
-        if (!guildId) {
-            await interaction.editReply({
-                content:
-                    "Could not find your guild's ID. Please make sure you have registered your API-token",
-            });
-            return;
-        }
-
-        const players = await service.getMemberlist(guildId);
-        if (!players || players.length === 0) {
-            await interaction.editReply({
-                content:
-                    "No players found in the guild. Please make sure you have registered your API-token",
-            });
-            return;
-        }
-
         const playersNotParticipated = players.filter(
-            (player) => !result[player.username],
+            (player) => !result[player.displayName],
         );
 
         playersNotParticipated.forEach((player) => {
-            result[player.username] = {
+            result[player.displayName] = {
                 tokens: 3,
                 bombs: 1,
                 tokenCooldown: undefined,
@@ -164,7 +168,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             )
             .setTimestamp()
             .setFooter({
-                text: "Data fetched from the guild raid API.\n(NB! Inaccuracies may occur for users who have joined mid-season)\nGleam code: LOVRAFFLE",
+                text: "Data fetched from the guild raid API.\n(NB! Inaccuracies may occur for users who have joined mid-season)\nGleam code: LOVRAFFLE\nReferral code: HUG-44-CAN if you want to support me",
             });
 
         for (let i = 0; i < table.length; i += 10) {

@@ -68,7 +68,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setColor("#0099ff")
             .setTitle(`Guild raid seasons with the same config`)
             .setTimestamp()
-            .setFooter({ text: "Gleam code: LOVRAFFLE" })
+            .setFooter({
+                text: "Gleam code: LOVRAFFLE\nReferral code: HUG-44-CAN if you want to support me",
+            })
             .setFields(
                 {
                     name: "Your selected season",

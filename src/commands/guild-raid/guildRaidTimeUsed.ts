@@ -275,7 +275,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             pagination.addFields({ name: boss, value });
         }
 
-        pagination.setFooter({ text: "Gleam code: LOVRAFFLE" });
+        pagination.setFooter({
+            text: "Gleam code: LOVRAFFLE\nReferral code: HUG-44-CAN if you want to support me",
+        });
         pagination.paginateFields(true);
         pagination.render();
 
