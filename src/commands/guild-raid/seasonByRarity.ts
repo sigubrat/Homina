@@ -76,6 +76,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const providedSeason = interaction.options.getNumber("season");
     const season = providedSeason ?? getCurrentSeason();
     const rarity = interaction.options.getString("rarity") as Rarity;
+    const discordId = interaction.user.id;
 
     if (providedSeason !== null && isInvalidSeason(providedSeason)) {
         await interaction.editReply({
@@ -99,9 +100,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     try {
         const result = await service.getGuildRaidResultByRaritySeasonPerBoss(
-            interaction.user.id,
+            discordId,
             season,
             rarity,
+            true,
         );
 
         if (
@@ -173,7 +175,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     "- Yellow dotted line (left y-axis): Guild average damage",
             )
             .setImage("attachment://graph-0.png") // Set the first chart as the main image
-            .setFooter({ text: "Gleam code: LOVRAFFLE" });
+            .setFooter({
+                text: "Gleam code: LOVRAFFLE\nReferral code: HUG-44-CAN if you want to support me",
+            });
 
         await interaction.editReply({
             embeds: [embed],

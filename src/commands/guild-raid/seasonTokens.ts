@@ -72,6 +72,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const rarity = interaction.options.getString("rarity") as
         | Rarity
         | undefined;
+    const discordId = interaction.user.id;
 
     if (providedSeason !== null && isInvalidSeason(providedSeason)) {
         await interaction.editReply({
@@ -88,7 +89,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     try {
         const result = await service.getGuildRaidResultBySeason(
-            interaction.user.id,
+            discordId,
             season,
             rarity,
             true,
@@ -106,7 +107,26 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
-        // Find out who participated but did not use the required number of tokens
+        const players = await service.fetchGuildMembers(discordId);
+        if (!players) {
+            await interaction.editReply({
+                content:
+                    "No players found in the guild. Please make sure you have registered your API-token",
+            });
+            return;
+        }
+
+        let unknownCounter = 1;
+        for (const entry of result) {
+            const player = players.find((p) => p.userId === entry.username);
+            if (player) {
+                entry.username = player.displayName;
+            } else {
+                entry.username = `Unknown #${unknownCounter++}`;
+            }
+        }
+
+        // Find out who participated
         const tokensUsed: Record<string, number> = {};
         for (const entry of result) {
             tokensUsed[entry.username] = entry.totalTokens || 0;
@@ -121,22 +141,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             });
             return;
         }
-        const players = await service.getMemberlist(guildId);
-        if (!players || players.length === 0) {
-            await interaction.editReply({
-                content:
-                    "No players found in the guild. Please make sure you have registered your API-token",
-            });
-            return;
-        }
 
         const playersNotParticipated = players.filter(
             (player) =>
-                !result.some((entry) => entry.username === player.username),
+                !result.some((entry) => entry.username === player.displayName),
         );
 
         for (const player of playersNotParticipated) {
-            tokensUsed[player.username] = 0;
+            tokensUsed[player.displayName] = 0;
         }
 
         const chartService = new ChartService();
@@ -197,7 +209,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             )
             .setImage(`attachment://tokens-used-season-${season}.png`)
             .setTimestamp()
-            .setFooter({ text: "Gleam code: LOVRAFFLE" });
+            .setFooter({
+                text: "Gleam code: LOVRAFFLE\nReferral code: HUG-44-CAN if you want to support me",
+            });
 
         await interaction.editReply({ embeds: [embed], files: [attachment] });
 

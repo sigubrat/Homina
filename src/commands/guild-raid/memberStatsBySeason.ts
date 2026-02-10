@@ -63,6 +63,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const rarity = interaction.options.getString("rarity") as
         | Rarity
         | undefined;
+    const discordId = interaction.user.id;
 
     if (providedSeason !== null && isInvalidSeason(providedSeason)) {
         await interaction.editReply({
@@ -79,7 +80,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     try {
         const result = await service.getGuildRaidResultBySeason(
-            interaction.user.id,
+            discordId,
             season,
             rarity,
             true,
@@ -97,33 +98,32 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
-        // Get all guild members to include those who didn't participate
-        const guildId = await service.getGuildId(interaction.user.id);
-        if (!guildId) {
+        const players = await service.fetchGuildMembers(discordId);
+        if (!players) {
             await interaction.editReply({
                 content:
-                    "Could not find your guild's ID. Please make sure you have registered your API-token",
+                    "Something went wrong while fetching guild members from the game. Please try again or contact the support server if the issue persists",
             });
             return;
         }
-        const players = await service.getMemberlist(guildId);
-        if (!players || players.length === 0) {
-            await interaction.editReply({
-                content:
-                    "No players found in the guild. Please make sure you have registered your API-token",
-            });
-            return;
+
+        // Replace User IDs with display names in the result
+        for (const entry of result) {
+            const player = players.find((p) => p.userId === entry.username);
+            if (player) {
+                entry.username = player.displayName;
+            }
         }
 
         // Add players that did not participate in the season
         const playersNotParticipated = players.filter(
             (player) =>
-                !result.some((entry) => entry.username === player.username),
+                !result.some((entry) => entry.username === player.displayName),
         );
 
         playersNotParticipated.forEach((player) => {
             result.push({
-                username: player.username,
+                username: player.displayName,
                 totalDamage: 0,
                 totalTokens: 0,
                 boss: "None",
@@ -139,7 +139,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const teamDistributions =
             await service.getMetaTeamDistributionPerPlayer(
-                interaction.user.id,
+                discordId,
                 season,
                 rarity,
             );
@@ -150,6 +150,20 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     "No team distributions found for the specified season.",
             });
             return;
+        }
+
+        // replace userIds with display names in teamDistributions
+        let unknownCounter = 1;
+        for (const username in teamDistributions) {
+            const player = players.find((p) => p.userId === username);
+            if (player) {
+                teamDistributions[player.displayName] =
+                    teamDistributions[username]!;
+            } else {
+                teamDistributions[`Unknown#${unknownCounter++}`] =
+                    teamDistributions[username]!;
+            }
+            delete teamDistributions[username];
         }
 
         // Merge the team distributions with the raid results
@@ -185,7 +199,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 value: rarity ? `**${rarity}**.` : "None.",
             })
             .setTimestamp()
-            .setFooter({ text: "Gleam code: LOVRAFFLE" });
+            .setFooter({
+                text: "Gleam code: LOVRAFFLE\nReferral code: HUG-44-CAN if you want to support me",
+            });
 
         for (const stats of mergedResults) {
             const formattedDamage = stats.totalDamage.toLocaleString();

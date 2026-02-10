@@ -10,6 +10,7 @@ import {
     User,
 } from "discord.js";
 import { dbController, logger } from "@/lib";
+import { HominaTacticusClient } from "@/client";
 import { isValidUUIDv4 } from "../utils/mathUtils";
 import path from "path";
 
@@ -41,7 +42,7 @@ export class MessageService {
         } catch (error) {
             logger.error(
                 error,
-                `Failed to send deletion alert to user: ${userId}`
+                `Failed to send deletion alert to user: ${userId}`,
             );
         }
     }
@@ -49,14 +50,14 @@ export class MessageService {
     public async inviteUser(
         user: User,
         inviterName: string,
-        apiToken: string
+        apiToken: string,
     ): Promise<boolean> {
         const userId = user.id;
         try {
             // Create an embed with a confirm and decline button
             const imagePath = path.join(
                 __dirname,
-                "../../../docs/img/homina-logo.png"
+                "../../../docs/img/homina-logo.png",
             );
             const attachment = new AttachmentBuilder(imagePath, {
                 name: "homina-logo.png",
@@ -69,7 +70,7 @@ export class MessageService {
                     `${inviterName} has invited you to register with the Homina Discord bot using their API token.\n` +
                         `Registering allows you to access various features and functionalities provided by the bot.\n\n` +
                         `Press confirm to register with their token or decline the invitation.\n\n` +
-                        `Note: if you do not recognise this invitation, you can safely ignore this message.`
+                        `Note: if you do not recognise this invitation, you can safely ignore this message.`,
                 )
                 .setColor("#0099ff")
                 .setTimestamp();
@@ -86,7 +87,7 @@ export class MessageService {
 
             const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
                 confirmButton,
-                declineButton
+                declineButton,
             );
 
             await user.send({
@@ -104,7 +105,7 @@ export class MessageService {
 
     public async handleInviteConfirm(
         interaction: ButtonInteraction,
-        apiToken: string
+        apiToken: string,
     ): Promise<void> {
         await interaction.deferUpdate();
 
@@ -125,7 +126,7 @@ export class MessageService {
                 components: [
                     new ActionRowBuilder<ButtonBuilder>().addComponents(
                         clickedConfirmButton,
-                        disabledDeclineButton
+                        disabledDeclineButton,
                     ),
                 ],
             });
@@ -145,9 +146,25 @@ export class MessageService {
                 return;
             }
 
+            // Fetch the guild ID from the API
+            let guildId: string | null = null;
+            try {
+                const client = new HominaTacticusClient();
+                const guildResponse = await client.getGuild(apiToken);
+                if (guildResponse.success && guildResponse.guild) {
+                    guildId = guildResponse.guild.guildId;
+                }
+            } catch (error) {
+                logger.warn(
+                    error,
+                    "Failed to fetch guild ID during invite registration, continuing without it",
+                );
+            }
+
             const result = await dbController.registerUser(
                 interaction.user.id,
-                apiToken
+                apiToken,
+                guildId,
             );
             if (!result) {
                 await interaction.followUp({
@@ -165,7 +182,7 @@ export class MessageService {
             return;
         } catch (error) {
             logger.error(
-                `Error registering user ${interaction.user.id}: ${error}`
+                `Error registering user ${interaction.user.id}: ${error}`,
             );
             await interaction.followUp({
                 content:
@@ -176,7 +193,7 @@ export class MessageService {
     }
 
     public async handleInviteDecline(
-        interaction: ButtonInteraction
+        interaction: ButtonInteraction,
     ): Promise<void> {
         await interaction.deferUpdate();
 
@@ -193,7 +210,7 @@ export class MessageService {
             logger.info(`User ${interaction.user.id} declined invitation`);
         } catch (error) {
             logger.error(
-                `Error handling decline for user ${interaction.user.id}: ${error}`
+                `Error handling decline for user ${interaction.user.id}: ${error}`,
             );
             await interaction.followUp({
                 content:

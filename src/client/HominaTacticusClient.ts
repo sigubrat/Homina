@@ -1,7 +1,7 @@
-import { Rarity } from "@/models/enums";
 import type { Player, Raid } from "@/models/types";
 import type { Guild } from "@/models/types/Guild";
 import type { GuildRaidResponse } from "@/models/types/GuildRaidResponse";
+import { fetchGuildMembers } from "./MiddlewareClient";
 
 export interface GuildApiResponse {
     success: boolean;
@@ -18,61 +18,45 @@ export interface PlayerApiResponse {
 class HominaTacticusClient {
     private baseUrl: string = "https://api.tacticusgame.com/api/v1";
 
-    preProcessData(raids: Raid[]): Raid[] {
-        let currentTier: number = 5;
-        let currentSet: number = 0;
-        let currentType: string = "";
-        let previousMythic: boolean = false;
+    /**
+     * Replaces userIds in raid entries with display names from the Middleware API.
+     */
+    async replaceIdsWithUsernames(
+        raids: Raid[],
+        guildId: string,
+    ): Promise<Raid[]> {
+        const guildMembers = await fetchGuildMembers(guildId);
 
-        // No need to process if the guild has not reached tier 5 raids yet
-        const lastTier = raids.at(-1)?.tier;
-        if (!lastTier || lastTier < 5) {
+        if (!guildMembers || guildMembers.length === 0) {
             return raids;
         }
 
-        for (const raid of raids) {
-            if (raid.tier < 5) {
-                continue;
-            }
-            // Find the mythic boss
-            if (
-                raid.maxHp > 20e6 ||
-                (raid.encounterIndex > 0 && raid.maxHp > 1.9e6)
-            ) {
-                raid.rarity = Rarity.MYTHIC;
-                if (!previousMythic && raid.tier >= 6) {
-                    currentTier++;
-                }
-                previousMythic = true;
-                currentSet = 0;
-            }
-
-            // Find the first legendary boss after a mythic boss
-            else if (
-                previousMythic &&
-                (raid.maxHp < 20e6 ||
-                    (raid.encounterIndex > 0 && raid.maxHp < 1.9e6))
-            ) {
-                previousMythic = false;
-                currentTier++;
-                currentSet = 0;
-            }
-
-            // Find other legendary bosses in the same tier
-            else if (
-                raid.type !== currentType &&
-                (raid.maxHp < 20e6 ||
-                    (raid.encounterIndex > 0 && raid.maxHp < 1.9e6))
-            ) {
-                currentSet = raid.set;
-            }
-
-            currentType = raid.type;
-            raid.tier = currentTier;
-            raid.set = currentSet;
+        // Create a map of userId -> displayName for quick lookup
+        const idToDisplayName = new Map<string, string>();
+        for (const member of guildMembers) {
+            idToDisplayName.set(member.userId, member.displayName);
         }
 
-        return raids;
+        // Track unknown users to assign consistent labels
+        const unknownUserMap = new Map<string, string>();
+        let unknownCounter = 1;
+
+        // Replace userIds with displayNames
+        return raids.map((raid) => {
+            const displayName = idToDisplayName.get(raid.userId);
+            if (displayName) {
+                return { ...raid, userId: displayName };
+            } else {
+                // Assign a consistent label to each unique unknown userId
+                if (!unknownUserMap.has(raid.userId)) {
+                    unknownUserMap.set(
+                        raid.userId,
+                        `Unknown ${unknownCounter++}`,
+                    );
+                }
+                return { ...raid, userId: unknownUserMap.get(raid.userId)! };
+            }
+        });
     }
 
     async getGuild(apiKey: string): Promise<GuildApiResponse> {
@@ -147,7 +131,7 @@ class HominaTacticusClient {
 
     async getGuildRaidBySeason(
         apiKey: string,
-        season: number
+        season: number,
     ): Promise<GuildRaidResponse> {
         const response = await fetch(`${this.baseUrl}/guildRaid/${season}`, {
             method: "GET",
@@ -167,7 +151,7 @@ class HominaTacticusClient {
     }
 
     async getGuildRaidByCurrentSeason(
-        apiKey: string
+        apiKey: string,
     ): Promise<GuildRaidResponse> {
         try {
             const response = await fetch(`${this.baseUrl}/guildRaid`, {

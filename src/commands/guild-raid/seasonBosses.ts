@@ -59,7 +59,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 (Tervigon and Hive Tyrant use the same emoji because who cares about them anyway?)`,
             )
             .setTimestamp()
-            .setFooter({ text: "Gleam code: LOVRAFFLE" });
+            .setFooter({
+                text: "Gleam code: LOVRAFFLE\nReferral code: HUG-44-CAN if you want to support me",
+            });
 
         if (rarity) {
             embed.addFields({
