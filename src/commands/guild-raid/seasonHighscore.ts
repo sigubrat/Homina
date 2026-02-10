@@ -81,6 +81,33 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 raid.damageType === DamageType.BATTLE,
         );
 
+        const players = await service.fetchGuildMembers(discordId);
+        if (!players || players.length === 0) {
+            await interaction.editReply({
+                content: "Could not fetch guild members.",
+            });
+            return;
+        }
+
+        // Replace user IDs with display names in the result
+        let unknownCounter = 1;
+        const unknownUserMap = new Map<string, string>();
+
+        for (const entry of filteredData) {
+            const player = players.find((p) => p.userId === entry.userId);
+            if (player) {
+                entry.userId = player.displayName;
+            } else {
+                if (!unknownUserMap.has(entry.userId)) {
+                    unknownUserMap.set(
+                        entry.userId,
+                        `Unknown#${unknownCounter++}`,
+                    );
+                }
+                entry.userId = unknownUserMap.get(entry.userId)!;
+            }
+        }
+
         const transformerService = new DataTransformationService();
 
         const highscores =
@@ -96,16 +123,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
-        const csvBuffer = await csvService.createHighscores(
-            highscores,
-            guildId,
-        );
+        const csvBuffer = await csvService.createHighscores(highscores);
 
         const chartService = new ChartService();
 
         const chartBuffer = await chartService.createHighscoreChart(
             highscores,
-            guildId,
             `Season ${season} Highscores (${rarity})`,
         );
 
@@ -133,7 +156,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 value: "The x axis contains the players and each line repsents the highest damage each user did against a specific boss (not primes)",
             })
             .setImage(`attachment://season-${season}-highscores-${rarity}.png`)
-            .setFooter({ text: "Gleam code: LOVRAFFLE" });
+            .setFooter({
+                text: "Gleam code: LOVRAFFLE\nReferral code: HUG-44-CAN if you want to support me",
+            });
 
         await interaction.editReply({
             embeds: [embed],

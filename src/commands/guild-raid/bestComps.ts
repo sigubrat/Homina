@@ -131,7 +131,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             });
         }
 
-        embed.setFooter({ text: "Gleam code: LOVRAFFLE" });
+        embed.setFooter({
+            text: "Gleam code: LOVRAFFLE\nReferral code: HUG-44-CAN if you want to support me",
+        });
 
         await interaction.editReply({ embeds: [embed] });
     } catch (error) {

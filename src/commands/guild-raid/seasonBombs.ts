@@ -54,6 +54,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     const providedSeason = interaction.options.getNumber("season");
     const season = providedSeason ?? getCurrentSeason();
+    const discordId = interaction.user.id;
 
     if (providedSeason !== null && isInvalidSeason(providedSeason)) {
         await interaction.editReply({
@@ -66,7 +67,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     try {
         const bombs = await service.getGuildRaidBombsBySeason(
-            interaction.user.id,
+            discordId,
             season,
         );
 
@@ -75,6 +76,27 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 content: `No data found for season ${season}.`,
             });
             return;
+        }
+
+        // replace user IDs with display names
+        const players = await service.fetchGuildMembers(discordId);
+        if (!players) {
+            await interaction.editReply({
+                content:
+                    "Something went wrong while fetching guild members from the game. Please try again or contact the support server if the issue persists",
+            });
+            return;
+        }
+
+        let unknownCounter = 1;
+        for (const userId in bombs) {
+            const player = players.find((p) => p.userId === userId);
+            if (player) {
+                bombs[player.displayName] = bombs[userId]!;
+            } else {
+                bombs[`Unknown#${unknownCounter++}`] = bombs[userId]!;
+            }
+            delete bombs[userId];
         }
 
         const averageMethod = interaction.options.getString(
@@ -129,7 +151,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 },
             )
             .setImage("attachment://bombs-season-" + season + ".png")
-            .setFooter({ text: "Gleam code: LOVRAFFLE" });
+            .setFooter({
+                text: "Gleam code: LOVRAFFLE\nReferral code: HUG-44-CAN if you want to support me",
+            });
 
         await interaction.editReply({
             embeds: [embed],
