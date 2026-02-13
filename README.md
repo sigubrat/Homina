@@ -24,34 +24,32 @@ The discord support server can be found [here](https://discord.gg/FajYxuWY9b)
 
 <!-- TOC -->
 
--   [Features](#features)
--   [Stack](#stack)
--   [Prerequisites](#prerequisites)
--   [Environment Variables](#environment-variables)
--   [Player mapping](#player-mapping)
--   [Database Configuration](#database-configuration)
--   [Before running the bot](#before-running-the-bot)
--   [Usage](#usage)
--   [Contributing](#contributing)
--   [License](#license)
--   [Common Issues](#common-issues)
--   [Screenshots](#screenshots)
--   [Acknowledgments](#acknowledgments)
-<!-- /TOC -->
+- [Features](#features)
+- [Stack](#stack)
+- [Prerequisites](#prerequisites)
+- [Environment Variables](#environment-variables)
+- [Database Configuration](#database-configuration)
+- [Before running the bot](#before-running-the-bot)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
+- [Common Issues](#common-issues)
+- [Screenshots](#screenshots)
+- [Acknowledgments](#acknowledgments)
+      <!-- /TOC -->
 
 ## Features
 
--   Provides detailed guild member and raid information
--   Tracks and displays guild activity and participation
--   Generates visual charts for guild stats using Chart.js
--   Supports custom player mapping for accurate member names
--   Offers commands for exporting and updating member data
--   Integrates with PostgreSQL for persistent data storage
--   Easy setup with environment variables and secret management
--   Slash command support for modern Discord interaction
--   Regular updates as the Tacticus API evolves
--   Includes a help command and detailed usage instructions
--   Designed for extensibility and community contributions
+- Provides detailed guild member and raid information
+- Tracks and displays guild activity and participation
+- Generates visual charts for guild stats using Chart.js
+- Offers commands for exporting guild data
+- Integrates with PostgreSQL for persistent data storage
+- Easy setup with environment variables and secret management
+- Slash command support for modern Discord interaction
+- Regular updates as the Tacticus API evolves
+- Includes a help command and detailed usage instructions
+- Designed for extensibility and community contributions
 
 This should be all the information you need if you just want to invite the bot to your server. Further information will be for those who want technical information about the bot.
 
@@ -59,9 +57,9 @@ This should be all the information you need if you just want to invite the bot t
 
 ## Stack
 
--   Discord integration handled by [discord.js](https://discord.js.org/docs/packages/discord.js/14.18.0)
--   Built using [Bun](https://bun.sh/)
--   Data Visualization through [Chart.js](https://www.chartjs.org/) and [chartjs-node-canvas](https://github.com/SeanSobey/ChartjsNodeCanvas)
+- Discord integration handled by [discord.js](https://discord.js.org/docs/packages/discord.js/14.18.0)
+- Built using [Bun](https://bun.sh/)
+- Data Visualization through [Chart.js](https://www.chartjs.org/) and [chartjs-node-canvas](https://github.com/SeanSobey/ChartjsNodeCanvas)
 
 ---
 
@@ -69,12 +67,12 @@ This should be all the information you need if you just want to invite the bot t
 
 Before running the project, ensure you have the following installed:
 
--   [Node.js](https://nodejs.org/) and [Bun](https://bun.sh/) (latest version recommended)
--   [PostgreSQL](https://www.postgresql.org/) for database management
--   A Discord bot token (create one via the [Discord Developer Portal](https://discord.com/developers/applications))
--   Set your [environment variables](#environment-variables) and player mappings (see further down)
--   Set up a secret manager using Infisical
--   **Optional**: Nix (to use the provided flake for a reproducible dev shell/environment)
+- [Node.js](https://nodejs.org/) and [Bun](https://bun.sh/) (latest version recommended)
+- [PostgreSQL](https://www.postgresql.org/) for database management
+- A Discord bot token (create one via the [Discord Developer Portal](https://discord.com/developers/applications))
+- Set your [environment variables](#environment-variables) and player mappings (see further down)
+- Set up a secret manager using Infisical
+- **Optional**: Nix (to use the provided flake for a reproducible dev shell/environment)
 
 ### Nix flake
 
@@ -106,13 +104,14 @@ nix flake update
 
 Create a `.env` file in the root of the project and add the following variables:
 
--   DB_NAME - Name of your postgres database
--   DB_USER - Your postgres database username
--   DB_PWD - The password to your postgres database
--   INFISICAL_SECRET - Your Infisical secret key
--   INFISICAL_ID - Your Infisical project ID
--   INFISICAL_WORKSPACE - Your Infisical workspace ID
--   NODE_ENV - The environment (either `dev` for development or `prod` for production)
+- DB_NAME - Name of your postgres database
+- DB_USER - Your postgres database username
+- DB_PWD - The password to your postgres database
+- INFISICAL_SECRET - Your Infisical secret key
+- INFISICAL_ID - Your Infisical project ID
+- INFISICAL_WORKSPACE - Your Infisical workspace ID
+- NODE_ENV - The environment (either `dev` for development or `prod` for production)
+- MIDDLEWARE_URL - URL of the HominaMiddleware service (defaults to `http://localhost:3001`)
 
 ```plaintext
 DB_NAME=your-database-name
@@ -122,31 +121,7 @@ INFISICAL_SECRET=your-infisical-secret
 INFISICAL_ID=your-infisical-id
 INFISICAL_WORKSPACE=your-infisical-workspace-id
 NODE_ENV=dev|prod
-```
-
-## Player mapping
-
-The public Tacticus API provided by Snowprint does not, as of writing this, include the usernames of the user—only their id. Therefore we need to do some mapping on our own so that we can get pretty outputs for our guild data. Hopefully Snowprint change their mind and add usernames to the guild data on members.
-
-For now:
-
-1.  Use the `/member-ids` command and save the JSON file to your device
-
-This file contains the id of every member in your guild and a placeholder for their username. See the [example](#json-placeholder-example) below.
-
-2. Open the game, click to the GUILDS tab, press your guild and find the Members list.
-
-3. Replace the `replace-with-username` with the usernames of your guild members **in the order that they're displayed in the app** and save your changes. You can do this by simply opening the file you saved with any editor of your choice. NB! Make sure you don't have a comma after the last line.
-
-4. Use the `/update-members` command and attach the file you saved.
-
-### JSON Placeholder Example
-
-```json
-{
-    "user-id-example-1": "replace-with-username",
-    "user-id-example-2": "replace-with-username"
-}
+MIDDLEWARE_URL=http://localhost:3001
 ```
 
 ## Database Configuration
@@ -215,13 +190,14 @@ Contributions are welcome! To contribute:
 
 This project is licensed under the Apache License. See the `LICENSE` file for details.
 
-Attribution is not required if you use of the code in this repository, but it is appreciated. 
+Attribution is not required if you use of the code in this repository, but it is appreciated.
 
 ---
 
 ## Common Issues
 
--   Updating your guild member mappings - Make sure the JSON is valid and that the last line in the object does not have a trailing comma. There are websites that validate your JSON if you're unsure.
+- **Database connection errors** - Ensure PostgreSQL is running and your `.env` credentials are correct.
+- **Bot not responding to commands** - Make sure you've run `bun run deployCommands` after any command changes.
 
 ---
 
@@ -243,5 +219,5 @@ Here are some examples of the bot in action:
 
 ## Acknowledgments
 
--   Thanks to [Snowprint Studios](https://snowprintstudios.com/) for their public API.
--   Inspired by the community of Discord bot developers.
+- Thanks to [Snowprint Studios](https://snowprintstudios.com/) for their public API.
+- Inspired by the community of Discord bot developers.

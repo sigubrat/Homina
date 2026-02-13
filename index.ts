@@ -6,7 +6,7 @@ import {
 } from "discord.js";
 import * as path from "path";
 import * as fs from "fs";
-import { dbController, logger } from "@/lib";
+import { dbController, logger, validateEnvVars } from "@/lib";
 import { getAllCommands } from "@/lib/utils/commandUtils";
 import { InfisicalClient } from "@/client/InfisicalClient";
 import { MessageService } from "@/lib/services/MessageService";
@@ -77,7 +77,7 @@ const startBot = async () => {
         logger.info("Bot logged in successfully.");
 
         // Schedule token cleanup every 24 hours
-        setInterval(async () => {
+        const runCleanup = async () => {
             logger.info("Running token cleanup...");
             try {
                 const deletedIds = await dbController.cleanupOldTokens();
@@ -85,13 +85,19 @@ const startBot = async () => {
                 if (deletedIds.length > 0) {
                     for (const userId of deletedIds) {
                         await messageService.alertDeletedUser(userId);
+                        await new Promise((resolve) =>
+                            setTimeout(resolve, 1000),
+                        ); // 1 second delay
                     }
                 }
                 logger.info("Token cleanup completed successfully.");
             } catch (error) {
                 logger.error(error, "Error during token cleanup:");
             }
-        }, 24 * 60 * 60 * 1000); // 24 hours in ms
+        };
+
+        await runCleanup(); // Run once on startup
+        setInterval(runCleanup, 24 * 60 * 60 * 1000);
     } catch (error) {
         logger.error(error, "Error starting the bot:");
         process.exit(1); // Exit the process if there's a critical error

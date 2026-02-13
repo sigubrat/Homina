@@ -3,7 +3,7 @@ import { dbController, logger } from "@/lib";
 import { SecondsToString } from "../utils/timeUtils";
 import { evaluateToken } from "../utils/timeUtils";
 import { getUnixTimestamp } from "../utils/timeUtils";
-import { getMetaTeam, getMetaTeams } from "@/lib/utils/metaTeamUtils";
+import { getMetaTeam } from "@/lib/utils/metaTeamUtils";
 import { DamageType, EncounterType, Rarity } from "@/models/enums";
 import { MetaTeams } from "@/models/enums/MetaTeams";
 import type {
@@ -13,11 +13,10 @@ import type {
     TokensAndBombs,
     TokenStatus,
 } from "@/models/types";
-import type { GuildMemberMapping } from "@/models/types/GuildMemberMapping";
-import type { MetaComps } from "@/models/types/MetaComps";
 import type { TeamDistribution } from "@/models/types/TeamDistribution";
 import { MINIMUM_SEASON_THRESHOLD } from "../configs/constants";
 import { testApiToken } from "../utils/commandUtils";
+import { fetchGuildMembers } from "@/client/MiddlewareClient";
 
 /**
  * Service class for managing guild-related operations in the Homina Tacticus application.
@@ -51,11 +50,20 @@ export class GuildService {
 
     /**
      * Fetches the guild ID for a given user ID.
+     * Retrieves from database first (faster), falls back to API for older registrations.
      * @param discordId The ID of the user to fetch the guild ID for.
      * @returns The guild ID or null if not found or an error occurred.
      */
     async getGuildId(discordId: string): Promise<string | null> {
         try {
+            // First try to get from database (faster, no API call)
+            const cachedGuildId =
+                await dbController.getGuildIdByUserId(discordId);
+            if (cachedGuildId) {
+                return cachedGuildId;
+            }
+
+            // Fallback to API if not in database (for older registrations)
             const apiKey = await dbController.getUserToken(discordId);
             if (!apiKey) {
                 return null;
@@ -67,7 +75,11 @@ export class GuildService {
                 return null;
             }
 
-            return resp.guild.guildId;
+            // Cache the guildId for future use
+            const guildId = resp.guild.guildId;
+            await dbController.updateGuildId(discordId, guildId);
+
+            return guildId;
         } catch (error) {
             logger.error(error, "Error fetching guild ID");
             return null;
@@ -100,125 +112,12 @@ export class GuildService {
     }
 
     /**
-     * Fetches the username of a player by their user ID.
-     * @param userId The ID of the user to fetch the username for.
-     * @returns The username of the user or null if not found.
-     */
-    async getUsernameById(
-        userId: string,
-        guildId: string
-    ): Promise<string | null> {
-        try {
-            const username = await dbController.getPlayerName(userId, guildId);
-            if (!username) {
-                return null;
-            }
-
-            return username;
-        } catch (error) {
-            logger.error(error, "Error fetching username by ID");
-            return null;
-        }
-    }
-
-    async getPlayerIdByUsername(memberName: string, guildId: string) {
-        try {
-            const userId = await dbController.getGuildMemberIdByUsername(
-                memberName,
-                guildId
-            );
-
-            return userId;
-        } catch (error) {
-            logger.error(
-                error,
-                `Error fetching player ID by username: ${memberName}`
-            );
-            return null;
-        }
-    }
-
-    /**
-     * Sets the player token for a given user ID and guild ID.
-     * @param userId The ID of the user to set the token for.
-     * @param token The token to set for the user.
-     * @param guildId The ID of the guild to set the token for.
-     * @returns True if the token was set successfully, false otherwise.
-     */
-    async setPlayerToken(
-        userId: string,
-        token: string,
-        guildId: string
-    ): Promise<boolean> {
-        try {
-            const result = await dbController.setPlayerToken(
-                userId,
-                token,
-                guildId
-            );
-            return result;
-        } catch (error) {
-            logger.error(
-                error,
-                `Error setting player token for user: ${userId}`
-            );
-            return false;
-        }
-    }
-
-    /**
-     * Fetches the player token for a given user ID and guild ID.
-     * @param userId The ID of the user to fetch the token for.
-     * @param guildId The ID of the guild to fetch the token for.
-     * @returns The player token or null if not found or an error occurred.
-     */
-    async getPlayerToken(
-        userId: string,
-        guildId: string
-    ): Promise<string | null> {
-        try {
-            const token = await dbController.getPlayerToken(userId, guildId);
-            if (!token) {
-                return null;
-            }
-            return token;
-        } catch (error) {
-            logger.error(
-                error,
-                `Error fetching player token for user: ${userId}`
-            );
-            return null;
-        }
-    }
-
-    /**
-     * Fetches the player list for a given guild ID.
-     * @param guildId The ID of the guild to fetch members for.
-     * @returns A list of GuildMemberMapping objects or null if an error occurred.
-     */
-    async getMemberlist(guildId: string): Promise<GuildMemberMapping[] | null> {
-        try {
-            const members = await dbController.getGuildMembersByGuildId(
-                guildId
-            );
-            if (!members) {
-                return null;
-            }
-
-            return members;
-        } catch (error) {
-            logger.error(error, "Error fetching player list");
-            return null;
-        }
-    }
-
-    /**
      * Tests the registered guild API token for a given user ID.
      * @param userId The ID of the user to test the API token for.
      * @returns An object containing the status and message of the test.
      */
     async testRegisteredGuildApiToken(
-        userId: string
+        userId: string,
     ): Promise<{ status: boolean; message: string }> {
         try {
             const apiToken = await dbController.getUserToken(userId);
@@ -241,109 +140,6 @@ export class GuildService {
                 message:
                     "Something went horribly wrong while testing your token. Please register it again.",
             };
-        }
-    }
-
-    /**
-     * Updates the guild members in the database.
-     * If a member is no longer in the guild, they will be deleted.
-     * If a member is new or has changed their username, they will be updated.
-     * @param guildId The ID of the guild to update members for.
-     * @param members The list of members to update.
-     * @returns The number of updated members, or -1 if an error occurred.
-     */
-    async updateGuildMembers(
-        guildId: string,
-        members: GuildMemberMapping[]
-    ): Promise<number> {
-        // Now just call the transactional method in dbController
-        return dbController.updateGuildMembersTransactional(guildId, members);
-    }
-
-    async updateGuildMember(
-        tacticusId: string,
-        newUsername: string,
-        guildId: string,
-        apiToken?: string
-    ) {
-        try {
-            const result = await dbController.updatePlayerName(
-                tacticusId,
-                newUsername,
-                guildId,
-                apiToken
-            );
-
-            return result;
-        } catch (error) {
-            logger.error(error, `Error updating guild member: ${tacticusId}`);
-            return false;
-        }
-    }
-
-    /**
-     * Deletes a guild member by their Tacticus ID.
-     * @param tacticusId The Tacticus ID of the member to delete.
-     * @param guildId The ID of the guild to delete the member from.
-     * @returns True if the member was deleted, false otherwise.
-     */
-    async deleteGuildMemberById(
-        tacticusId: string,
-        guildId: string
-    ): Promise<boolean> {
-        try {
-            const result = await dbController.deletePlayerNameById(
-                tacticusId,
-                guildId
-            );
-            return result > 0;
-        } catch (error) {
-            logger.error(error, `Error deleting guild member: ${tacticusId}`);
-            return false;
-        }
-    }
-
-    async getGuildMembersWithPlayerKey(
-        guildId: string
-    ): Promise<Record<string, boolean>> {
-        try {
-            const members = await dbController.getGuildMembersPlayerKeyStatus(
-                guildId
-            );
-            if (!members || Object.values(members).length === 0) {
-                return {};
-            }
-
-            return members;
-        } catch (error) {
-            logger.error(
-                error,
-                `Error fetching guild members with player key: ${guildId}`
-            );
-            return {};
-        }
-    }
-
-    /**
-     * Deletes a guild member by their username.
-     * @param username The username of the member to delete.
-     * @param guildId The ID of the guild to delete the member from.
-     * @returns True if the member was deleted, false otherwise.
-     */
-    async deleteGuildMemberByUsername(
-        username: string,
-        guildId: string
-    ): Promise<boolean> {
-        try {
-            const result = await dbController.deletePlayerNameByUsername(
-                username,
-                guildId
-            );
-
-            return result > 0;
-        } catch (error) {
-            logger.error(error, `Error deleting guild member: ${username}`);
-            return false;
         }
     }
 
@@ -384,7 +180,7 @@ export class GuildService {
         discordId: string,
         season: number,
         rarity?: Rarity,
-        includePrimes: boolean = true
+        includePrimes: boolean = true,
     ): Promise<GuildRaidResult[] | null> {
         const apiKey = await dbController.getUserToken(discordId);
         if (!apiKey) {
@@ -404,28 +200,7 @@ export class GuildService {
 
         const damagePeruser: GuildRaidResult[] = [];
 
-        const allUserIds = new Set<string>();
         for (const entry of entries) {
-            if (entry.userId) {
-                allUserIds.add(entry.userId);
-            }
-        }
-
-        const guildId = await this.getGuildId(discordId);
-        if (!guildId) {
-            return null;
-        }
-
-        const usernames = await dbController.getPlayerNames(
-            Array.from(allUserIds),
-            guildId
-        );
-
-        const unknownUserMap = new Map<string, string>();
-        let unknownCounter = 1;
-
-        for (const entry of entries) {
-            // Bombs don't count as damage
             if (!entry.userId) {
                 continue;
             }
@@ -437,21 +212,11 @@ export class GuildService {
                 continue;
             }
 
-            let username = usernames[entry.userId];
-            if (!username) {
-                // Check if we already assigned a number to this unknown user
-                if (!unknownUserMap.has(entry.userId)) {
-                    unknownUserMap.set(
-                        entry.userId,
-                        `Unknown ${unknownCounter}`
-                    );
-                    unknownCounter++;
-                }
-                username = unknownUserMap.get(entry.userId)!;
-            }
+            // userId now contains displayName from LOKI API
+            const username = entry.userId;
 
             const existingEntry = damagePeruser.find(
-                (e) => e.username === username
+                (e) => e.username === username,
             );
 
             if (existingEntry) {
@@ -463,11 +228,11 @@ export class GuildService {
                 existingEntry.totalTokens += 1;
                 existingEntry.maxDmg = Math.max(
                     existingEntry.maxDmg ?? 0,
-                    entry.damageDealt
+                    entry.damageDealt,
                 );
                 existingEntry.minDmg = Math.min(
                     existingEntry.minDmg ?? entry.damageDealt,
-                    entry.damageDealt
+                    entry.damageDealt,
                 );
             } else {
                 if (entry.damageType === DamageType.BOMB) {
@@ -504,20 +269,24 @@ export class GuildService {
 
     /**
      * Fetches the guild raid results grouped by rarity and season for each boss.
-     * @param userId The ID of the user to fetch guild raid results for.
+     * @param discordId The ID of the user to fetch guild raid results for.
      * @param season The season to fetch results for.
      * @param rarity Optional rarity filter for the raid results.
-     * @param useUsernames Whether to use usernames instead of user IDs in the results.
      * @returns A record of boss names to their respective GuildRaidResult arrays or null if an error occurred.
      */
     async getGuildRaidResultByRaritySeasonPerBoss(
-        userId: string,
+        discordId: string,
         season: number,
         rarity?: Rarity,
-        useUsernames: boolean = true
+        filterBombs: boolean = false,
     ) {
-        const apiKey = await dbController.getUserToken(userId);
+        const apiKey = await dbController.getUserToken(discordId);
         if (!apiKey) {
+            return null;
+        }
+
+        const players = await this.fetchGuildMembers(discordId);
+        if (!players) {
             return null;
         }
 
@@ -532,25 +301,29 @@ export class GuildService {
             entries = entries.filter((entry) => entry.rarity === rarity);
         }
 
-        const allUserIds = new Set<string>();
+        if (filterBombs) {
+            entries = entries.filter(
+                (entry) => entry.damageType !== DamageType.BOMB,
+            );
+        }
+
+        let unknownCounter = 1;
+        const unknownUserMap = new Map<string, string>();
+
         for (const entry of entries) {
-            if (entry.userId) {
-                allUserIds.add(entry.userId);
+            const player = players.find((p) => p.userId === entry.userId);
+            if (player) {
+                entry.userId = player.displayName;
+            } else {
+                if (!unknownUserMap.has(entry.userId)) {
+                    unknownUserMap.set(
+                        entry.userId,
+                        `Unknown#${unknownCounter++}`,
+                    );
+                }
+                entry.userId = unknownUserMap.get(entry.userId)!;
             }
         }
-
-        const guildId = await this.getGuildId(userId);
-        if (!guildId) {
-            return null;
-        }
-
-        const usernames = await dbController.getPlayerNames(
-            Array.from(allUserIds),
-            guildId
-        );
-
-        const unknownUserMap = new Map<string, string>();
-        let unknownCounter = 1;
 
         const groupedResults: Record<string, GuildRaidResult[]> = {};
 
@@ -565,26 +338,11 @@ export class GuildService {
                 groupedResults[boss] = [];
             }
 
-            let username: string | undefined = undefined;
-            if (useUsernames) {
-                username = usernames[entry.userId];
-                if (!username) {
-                    // Check if we already assigned a number to this unknown user
-                    if (!unknownUserMap.has(entry.userId)) {
-                        unknownUserMap.set(
-                            entry.userId,
-                            `Unknown ${unknownCounter}`
-                        );
-                        unknownCounter++;
-                    }
-                    username = unknownUserMap.get(entry.userId)!;
-                }
-            } else {
-                username = entry.userId;
-            }
+            // userId now contains displayName from LOKI API
+            const username = entry.userId;
 
             const existingUserEntry = groupedResults[boss].find(
-                (e) => e.username === username
+                (e) => e.username === username,
             );
 
             if (existingUserEntry) {
@@ -604,12 +362,12 @@ export class GuildService {
 
                 existingUserEntry.maxDmg = Math.max(
                     existingUserEntry.maxDmg ?? 0,
-                    entry.damageDealt
+                    entry.damageDealt,
                 );
 
                 existingUserEntry.minDmg = Math.min(
                     existingUserEntry.minDmg ?? entry.damageDealt,
-                    entry.damageDealt
+                    entry.damageDealt,
                 );
             } else {
                 if (entry.damageType === DamageType.BOMB) {
@@ -653,10 +411,15 @@ export class GuildService {
     async getGuildRaidBombsBySeason(
         discordId: string,
         season: number,
-        rarity?: Rarity
+        rarity?: Rarity,
     ): Promise<Record<string, number> | null> {
         const apiKey = await dbController.getUserToken(discordId);
         if (!apiKey) {
+            return null;
+        }
+
+        const guildId = await this.getGuildId(discordId);
+        if (!guildId) {
             return null;
         }
 
@@ -672,45 +435,13 @@ export class GuildService {
         }
 
         const bombs: Raid[] = entries.filter(
-            (entry) => entry.damageType === DamageType.BOMB
+            (entry) => entry.damageType === DamageType.BOMB,
         );
-
-        const allUserIds = new Set<string>();
-        for (const entry of entries) {
-            if (entry.userId) {
-                allUserIds.add(entry.userId);
-            }
-        }
-
-        const guildId = await this.getGuildId(discordId);
-        if (!guildId) {
-            return null;
-        }
-
-        const usernames = await dbController.getPlayerNames(
-            Array.from(allUserIds),
-            guildId
-        );
-
-        const unknownUserMap = new Map<string, string>();
-        let unknownCounter = 1;
 
         const bombsPerUser: Record<string, number> = {};
         for (const bomb of bombs) {
-            let username = usernames[bomb.userId];
-
-            if (!username) {
-                // Check if we already assigned a number to this unknown user
-                if (!unknownUserMap.has(bomb.userId)) {
-                    unknownUserMap.set(
-                        bomb.userId,
-                        `Unknown ${unknownCounter}`
-                    );
-                    unknownCounter++;
-                }
-                username = unknownUserMap.get(bomb.userId)!;
-            }
-
+            // userId now contains displayName from LOKI API
+            const username = bomb.userId;
             bombsPerUser[username] = (bombsPerUser[username] ?? 0) + 1;
         }
 
@@ -719,18 +450,18 @@ export class GuildService {
 
     /**
      * Fetches the meta team distribution for a given user ID and season.
-     * @param userId The ID of the user to fetch meta team distribution for.
+     * @param discordId The ID of the user to fetch meta team distribution for.
      * @param season The season to fetch results for.
      * @param tier Optional rarity filter for the raid results.
      * @returns A TeamDistribution object or null if an error occurred.
      */
     async getMetaTeamDistribution(
-        userId: string,
+        discordId: string,
         season: number,
-        tier?: Rarity
+        tier?: Rarity,
     ) {
         try {
-            const apiKey = await dbController.getUserToken(userId);
+            const apiKey = await dbController.getUserToken(discordId);
             if (!apiKey) {
                 return null;
             }
@@ -829,11 +560,16 @@ export class GuildService {
     async getMetaTeamDistributionPerPlayer(
         discordId: string,
         season: number,
-        tier?: Rarity
+        tier?: Rarity,
     ) {
         try {
             const apiKey = await dbController.getUserToken(discordId);
             if (!apiKey) {
+                return null;
+            }
+
+            const guildId = await this.getGuildId(discordId);
+            if (!guildId) {
                 return null;
             }
 
@@ -850,7 +586,8 @@ export class GuildService {
 
             const groupedResults: Record<string, Raid[]> = {};
             for (const entry of entries) {
-                const userID = entry.userId;
+                // userId now contains displayName from LOKI API
+                const username = entry.userId;
                 // bombs and sideboss don't count as damage
                 if (
                     !entry.userId ||
@@ -861,42 +598,16 @@ export class GuildService {
                 }
 
                 // Ensure groupedResults[username] is initialized
-                if (!groupedResults[userID]) {
-                    groupedResults[userID] = [];
+                if (!groupedResults[username]) {
+                    groupedResults[username] = [];
                 }
 
-                groupedResults[userID].push(entry);
+                groupedResults[username].push(entry);
             }
-
-            const allUserIds = Object.keys(groupedResults);
-
-            const guildId = await this.getGuildId(discordId);
-            if (!guildId) {
-                return null;
-            }
-
-            const allUsernames = await dbController.getPlayerNames(
-                allUserIds,
-                guildId
-            );
-
-            const unknownUserMap = new Map<string, string>();
-            let unknownCounter = 1;
 
             const result: Record<string, TeamDistribution> = {};
-            for (const key in groupedResults) {
-                // Replace ID with username
-                const entries = groupedResults[key];
-                let username = allUsernames[key];
-
-                if (!username) {
-                    // Check if we already assigned a number to this unknown user
-                    if (!unknownUserMap.has(key)) {
-                        unknownUserMap.set(key, `Unknown ${unknownCounter}`);
-                        unknownCounter++;
-                    }
-                    username = unknownUserMap.get(key)!;
-                }
+            for (const username in groupedResults) {
+                const entries = groupedResults[username];
 
                 if (!entries) {
                     continue;
@@ -1062,7 +773,7 @@ export class GuildService {
 
             const prevSeason = await this.client.getGuildRaidBySeason(
                 apiKey,
-                resp.season - 1
+                resp.season - 1,
             );
 
             const sortedEntries = prevSeason.entries
@@ -1099,8 +810,8 @@ export class GuildService {
             // Find out who have left the guild and therefore should not be included in the results
             const formerMembers = new Set(
                 Array.from(prevUsers).filter(
-                    (prevId) => !currentMembers.has(prevId)
-                )
+                    (prevId) => !currentMembers.has(prevId),
+                ),
             );
 
             const entries = resp.entries;
@@ -1141,22 +852,6 @@ export class GuildService {
                         bombs: 1,
                     };
 
-                    const playerApiToken = await this.getPlayerToken(
-                        userId,
-                        guildId
-                    );
-
-                    // If there is a player API token, we can fetch the cooldowns and skip calculations
-                    if (playerApiToken) {
-                        const cd = await this.getPlayerCooldowns(
-                            playerApiToken
-                        );
-                        if (cd) {
-                            result[userId] = cd;
-                            return;
-                        }
-                    }
-
                     const mostRecentBomb = data.bombs
                         .sort((a, b) => b.startedOn - a.startedOn)
                         .find(() => true);
@@ -1168,18 +863,18 @@ export class GuildService {
                         if (diffHours < BOMBCOOLDOWNHOURS) {
                             temp.bombs = 0;
                             temp.bombCooldown = SecondsToString(
-                                BOMBCOOLDOWNINSECONDS - diff
+                                BOMBCOOLDOWNINSECONDS - diff,
                             );
                         } else {
                             temp.bombCooldown = SecondsToString(
                                 diff - BOMBCOOLDOWNINSECONDS,
-                                true
+                                true,
                             );
                         }
                     }
 
                     const sortedTokensAsc = data.tokens.sort(
-                        (a, b) => a.startedOn - b.startedOn
+                        (a, b) => a.startedOn - b.startedOn,
                     );
 
                     const initialTimestamp =
@@ -1205,30 +900,15 @@ export class GuildService {
                         const tokenDiff =
                             getUnixTimestamp(now) - token.refreshTime;
                         temp.tokenCooldown = SecondsToString(
-                            TOKENCOOLDOWNINSECONDS - tokenDiff
+                            TOKENCOOLDOWNINSECONDS - tokenDiff,
                         );
                     }
                     temp.tokens = token.count;
                     result[userId] = temp;
-                })
+                }),
             );
 
-            // Replace user IDs with usernames
-            const allUserIds = Object.keys(result);
-            const usernames = await dbController.getPlayerNames(
-                allUserIds,
-                guildId
-            );
-
-            const resultWithNames: Record<string, GuildRaidAvailable> = {};
-            for (const [userId, available] of Object.entries(result)) {
-                const username = usernames[userId];
-                if (username) {
-                    resultWithNames[username] = available;
-                }
-            }
-
-            return resultWithNames;
+            return result;
         } catch (error) {
             logger.error(error, "Error fetching available tokens and bombs: ");
             return null;
@@ -1247,41 +927,19 @@ export class GuildService {
             }
 
             const resp = await this.client.getGuildRaidByCurrentSeason(apiKey);
+
             if (!resp || !resp.entries) {
                 return null;
             }
 
-            const activePlayers = await this.getGuildMembers(discordId);
-            if (!activePlayers || activePlayers.length === 0) {
-                return null;
-            }
-
-            // Filter out entries that are not from users currently in the guild
-            const entries = resp.entries.filter(
-                (raid) =>
-                    raid.damageType === DamageType.BOMB &&
-                    activePlayers.includes(raid.userId)
-            );
-
             const userBombs: Record<string, Raid[]> = {};
 
-            for (const entry of entries) {
+            for (const entry of resp.entries) {
+                // Only include bombs
+                if (entry.damageType !== DamageType.BOMB) continue;
                 userBombs[entry.userId] = userBombs[entry.userId] || [];
                 userBombs[entry.userId]?.push(entry);
             }
-
-            const guildId = await this.getGuildId(discordId);
-            if (!guildId) {
-                return null;
-            }
-
-            const allUsernames = await dbController.getPlayerNames(
-                Object.keys(userBombs),
-                guildId
-            );
-
-            const unknownUserMap = new Map<string, string>();
-            let unknownCounter = 1;
 
             const result: Record<string, GuildRaidAvailable> = {};
 
@@ -1290,17 +948,6 @@ export class GuildService {
                     tokens: 3,
                     bombs: 1,
                 };
-
-                let username = allUsernames[userId];
-
-                if (!username) {
-                    // Check if we already assigned a number to this unknown user
-                    if (!unknownUserMap.has(userId)) {
-                        unknownUserMap.set(userId, `Unknown ${unknownCounter}`);
-                        unknownCounter++;
-                    }
-                    username = unknownUserMap.get(userId)!;
-                }
 
                 const mostRecentBomb = bombs
                     .sort((a, b) => b.startedOn - a.startedOn)
@@ -1313,17 +960,17 @@ export class GuildService {
                     if (diffHours < BOMBCOOLDOWNHOURS) {
                         temp.bombs = 0;
                         temp.bombCooldown = SecondsToString(
-                            BOMBCOOLDOWNINSECONDS - diff
+                            BOMBCOOLDOWNINSECONDS - diff,
                         );
                     } else {
                         temp.bombCooldown = SecondsToString(
                             diff - BOMBCOOLDOWNINSECONDS,
-                            true
+                            true,
                         );
                     }
                 }
 
-                result[username] = temp;
+                result[userId] = temp;
             }
 
             return result;
@@ -1335,17 +982,17 @@ export class GuildService {
 
     /**
      * Fetches the guild raid entries for a given user ID and season.
-     * @param userId The ID of the user to fetch guild raid entries for.
+     * @param discordId The ID of the user to fetch guild raid entries for.
      * @param season The season to fetch entries for.
      * @param rarity Optional rarity filter for the raid entries.
      * @returns A list of Raid objects or null if an error occurred.
      */
     async getGuildRaidBySeason(
-        userId: string,
+        discordId: string,
         season: number,
-        rarity?: Rarity
+        rarity?: Rarity,
     ) {
-        const apiKey = await dbController.getUserToken(userId);
+        const apiKey = await dbController.getUserToken(discordId);
         if (!apiKey) {
             return null;
         }
@@ -1357,7 +1004,7 @@ export class GuildService {
 
         if (rarity) {
             resp.entries = resp.entries.filter(
-                (entry) => entry.rarity === rarity
+                (entry) => entry.rarity === rarity,
             );
         }
 
@@ -1383,14 +1030,14 @@ export class GuildService {
                 tokenCooldown: player.progress.guildRaid?.tokens
                     .nextTokenInSeconds
                     ? SecondsToString(
-                          player.progress.guildRaid.tokens.nextTokenInSeconds
+                          player.progress.guildRaid.tokens.nextTokenInSeconds,
                       )
                     : undefined,
                 bombCooldown: player.progress.guildRaid?.bombTokens
                     .nextTokenInSeconds
                     ? SecondsToString(
                           player.progress.guildRaid.bombTokens
-                              .nextTokenInSeconds
+                              .nextTokenInSeconds,
                       )
                     : undefined,
             };
@@ -1405,7 +1052,7 @@ export class GuildService {
     /**
      * Retrieves a user's guild raid statistics for the last `nSeasons` seasons.
      *
-     * @param userId - The unique discord identifier of the user whose stats are being fetched.
+     * @param discordId - The unique discord identifier of the user whose stats are being fetched.
      * @param nSeasons - The number of past seasons to retrieve statistics for.
      * @param rarity - (Optional) The rarity filter to apply when fetching raid results.
      * @returns A promise that resolves to an object mapping each season number to the corresponding guild raid results per boss,
@@ -1418,22 +1065,21 @@ export class GuildService {
      * - Errors are logged and result in a `null` return value.
      */
     async getMemberStatsInLastSeasons(
-        userId: string,
+        discordId: string,
         nSeasons: number,
-        rarity?: Rarity
+        rarity?: Rarity,
     ) {
         try {
-            const apiKey = await dbController.getUserToken(userId);
+            const apiKey = await dbController.getUserToken(discordId);
             if (!apiKey) {
-                logger.error("No API key found for user:", userId);
+                logger.error("No API key found for user:", discordId);
                 return null;
             }
 
-            const currentSeason = await this.client.getGuildRaidByCurrentSeason(
-                apiKey
-            );
+            const currentSeason =
+                await this.client.getGuildRaidByCurrentSeason(apiKey);
             if (!currentSeason || !currentSeason.season) {
-                logger.error("No current season found for user:", userId);
+                logger.error("No current season found for user:", discordId);
                 return null;
             }
 
@@ -1449,11 +1095,10 @@ export class GuildService {
             const seasonPromises = seasons.map(
                 async (season) =>
                     await this.getGuildRaidResultByRaritySeasonPerBoss(
-                        userId,
+                        discordId,
                         season,
                         rarity,
-                        false
-                    )
+                    ),
             );
 
             const responses = await Promise.all(seasonPromises);
@@ -1474,7 +1119,7 @@ export class GuildService {
         } catch (error) {
             logger.error(
                 error,
-                "Error fetching member stats in last seasons: "
+                "Error fetching member stats in last seasons: ",
             );
             return null;
         }
@@ -1496,9 +1141,8 @@ export class GuildService {
             return null;
         }
 
-        const currentSeason = await this.client.getGuildRaidByCurrentSeason(
-            apikey
-        );
+        const currentSeason =
+            await this.client.getGuildRaidByCurrentSeason(apikey);
         if (!currentSeason || !currentSeason.season) {
             logger.error("No current season found for user:", discordId);
             return null;
@@ -1516,7 +1160,7 @@ export class GuildService {
 
         const seasonPromises = seasons.map(
             async (season) =>
-                await this.client.getGuildRaidBySeason(apikey, season)
+                await this.client.getGuildRaidBySeason(apikey, season),
         );
 
         const responses = await Promise.all(seasonPromises);
@@ -1549,7 +1193,7 @@ export class GuildService {
     async getSeasonsWithSameConfig(
         discordId: string,
         nSeasons: number,
-        season: number
+        season: number,
     ) {
         const apikey = await dbController.getUserToken(discordId);
         if (!apikey) {
@@ -1560,7 +1204,7 @@ export class GuildService {
         try {
             const desiredSeason = await this.client.getGuildRaidBySeason(
                 apikey,
-                season
+                season,
             );
 
             if (!desiredSeason || !desiredSeason.season) {
@@ -1573,7 +1217,7 @@ export class GuildService {
             if (!desiredConfig) {
                 logger.error(
                     `No season config found for season ${season} for user:`,
-                    discordId
+                    discordId,
                 );
                 return null;
             }
@@ -1591,7 +1235,7 @@ export class GuildService {
                 async (season) =>
                     await this.client
                         .getGuildRaidBySeason(apikey, season)
-                        .catch(() => null)
+                        .catch(() => null),
             );
 
             const responses = await Promise.all(seasonPromises);
@@ -1600,7 +1244,7 @@ export class GuildService {
                 .filter(
                     (resp) =>
                         resp &&
-                        resp.seasonConfigId.at(-1) === desiredConfig.at(-1)
+                        resp.seasonConfigId.at(-1) === desiredConfig.at(-1),
                 )
                 .map((resp) => resp!.season);
 
@@ -1609,7 +1253,7 @@ export class GuildService {
             logger.error(
                 error,
                 `Error fetching desired season ${season} for user:`,
-                discordId
+                discordId,
             );
         }
     }
@@ -1622,9 +1266,8 @@ export class GuildService {
                 return null;
             }
 
-            const currentSeason = await this.client.getGuildRaidByCurrentSeason(
-                apiKey
-            );
+            const currentSeason =
+                await this.client.getGuildRaidByCurrentSeason(apiKey);
 
             if (!currentSeason || !currentSeason.season) {
                 logger.error("No current season found for user:", discordId);
@@ -1633,13 +1276,13 @@ export class GuildService {
 
             const prevSeason = await this.client.getGuildRaidBySeason(
                 apiKey,
-                currentSeason.season - 1
+                currentSeason.season - 1,
             );
 
             if (!prevSeason || !prevSeason.entries) {
                 logger.error(
                     "No previous season entries found for user:",
-                    discordId
+                    discordId,
                 );
                 return null;
             }
@@ -1663,7 +1306,7 @@ export class GuildService {
                 const hour = date.getUTCHours();
                 if (!(hour in timeline)) {
                     throw new Error(
-                        `Hour ${hour} not found in timeline for user: ${discordId}`
+                        `Hour ${hour} not found in timeline for user: ${discordId}`,
                     );
                 }
                 timeline[hour]!++;
@@ -1676,7 +1319,7 @@ export class GuildService {
         }
     }
 
-    public async getGuildComps(discordId: string, minrank: number) {
+    async fetchGuildMembers(discordId: string) {
         try {
             const guildId = await this.getGuildId(discordId);
             if (!guildId) {
@@ -1684,42 +1327,15 @@ export class GuildService {
                 return null;
             }
 
-            const guildPlayerTokens = await dbController.getPlayerTokens(
-                guildId
-            );
-
-            if (guildPlayerTokens.length === 0) {
+            const members = await fetchGuildMembers(guildId);
+            if (!members) {
+                logger.error("No members found for guild ID:", guildId);
                 return null;
             }
 
-            const tokens = guildPlayerTokens.filter((token) => token !== null);
-
-            const playerApiPromises = tokens.map(async (token) => {
-                const playerResponse = await this.client.getPlayer(token);
-                if (!playerResponse || !playerResponse.player) {
-                    return null;
-                }
-
-                return playerResponse.player;
-            });
-
-            const res = await Promise.all(playerApiPromises);
-            const players = res.filter((player) => player !== null);
-
-            const retval: Record<string, MetaComps> = {};
-            for (const player of players) {
-                const heroes = player.units
-                    .filter(
-                        (hero) => hero.rank >= minrank && hero.id !== undefined
-                    )
-                    .map((unit) => unit.id);
-
-                retval[player.details.name] = getMetaTeams(heroes);
-            }
-
-            return retval;
+            return members;
         } catch (error) {
-            logger.error(error, "Error fetching guild comps: ");
+            logger.error(error, "Error fetching LOKI guild members: ");
             return null;
         }
     }

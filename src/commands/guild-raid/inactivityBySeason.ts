@@ -75,9 +75,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         `${interaction.user.username} attempting to use /inactivity-by-season for season ${season}`,
     );
 
+    const discordId = interaction.user.id;
+
     try {
         const result = await service.getGuildRaidResultBySeason(
-            interaction.user.id,
+            discordId,
             season,
             rarity,
             true,
@@ -95,6 +97,26 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
+        const players = await service.fetchGuildMembers(discordId);
+        if (!players) {
+            await interaction.editReply({
+                content:
+                    "Something went wrong while fetching guild members from the game. Please try again or contact the support server if the issue persists",
+            });
+            return;
+        }
+
+        // Replace User IDs with display names in the result
+        let unknownCounter = 1;
+        for (const entry of result) {
+            const player = players.find((p) => p.userId === entry.username);
+            if (player) {
+                entry.username = player.displayName;
+            } else {
+                entry.username = `Unknown#${unknownCounter++}`;
+            }
+        }
+
         // Find out who participated but did not use the required number of tokens
         let inactiveUsers: TokensUsed[] = [];
         for (const entry of result) {
@@ -106,32 +128,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             }
         }
 
-        // Then find out who did not participate at all
-        const guildId = await service.getGuildId(interaction.user.id);
-        if (!guildId) {
-            await interaction.editReply({
-                content:
-                    "Could not find your guild's ID. Please make sure you have registered your API-token",
-            });
-            return;
-        }
-        const players = await service.getMemberlist(guildId);
-        if (!players || players.length === 0) {
-            await interaction.editReply({
-                content:
-                    "No players found in the guild. Please make sure you have registered your API-token",
-            });
-            return;
-        }
-
         const playersNotParticipated = players.filter(
             (player) =>
-                !result.some((entry) => entry.username === player.username),
+                !result.some((entry) => entry.username === player.displayName),
         );
 
         for (const player of playersNotParticipated) {
             inactiveUsers.push({
-                username: player.username,
+                username: player.displayName,
                 tokens: 0,
             } as TokensUsed);
         }
@@ -146,7 +150,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         inactiveUsers = sortTokensUsed(inactiveUsers);
 
         // Create a nice embed table with the results
-        const table = inactiveUsers
+        let table = inactiveUsers
             .map(
                 (user) =>
                     `\`${user.username}\` - ${user.tokens} token${
@@ -154,6 +158,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     }`,
             )
             .join("\n");
+
+        // Discord field values must be 1-1024 characters
+        if (!table || table.length === 0) {
+            table = "No inactive users found.";
+        } else if (table.length > 1024) {
+            table = table.substring(0, 1021) + "...";
+        }
 
         const seasonDisplay =
             providedSeason === null
@@ -175,7 +186,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     value: table,
                 },
             ])
-            .setFooter({ text: "Gleam code: LOVRAFFLE" });
+            .setFooter({
+                text: "Gleam code: LOVRAFFLE\nReferral code: HUG-44-CAN if you want to support me",
+            });
 
         await interaction.editReply({ embeds: [embed] });
 

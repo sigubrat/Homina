@@ -53,6 +53,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const rarity = interaction.options.getString("rarity", false) as
         | Rarity
         | undefined;
+    const discordId = interaction.user.id;
 
     if (providedSeason !== null && isInvalidSeason(providedSeason)) {
         await interaction.editReply({
@@ -65,7 +66,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     try {
         const result = await service.getMetaTeamDistribution(
-            interaction.user.id,
+            discordId,
             season,
             rarity ? (rarity as Rarity) : undefined,
         );
@@ -121,7 +122,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 value: rarity ? `${rarity}` : "No rarity filter applied",
             })
             .setImage(`attachment://${attachment.name}`)
-            .setFooter({ text: "Gleam code: LOVRAFFLE" });
+            .setFooter({
+                text: "Gleam code: LOVRAFFLE\nReferral code: HUG-44-CAN if you want to support me",
+            });
 
         await interaction.editReply({
             embeds: [embed],

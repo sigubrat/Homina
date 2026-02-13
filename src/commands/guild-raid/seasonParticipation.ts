@@ -76,6 +76,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     const providedSeason = interaction.options.getNumber("season");
     const season = providedSeason ?? getCurrentSeason();
+    const discordId = interaction.user.id;
 
     if (providedSeason !== null && isInvalidSeason(providedSeason)) {
         await interaction.editReply({
@@ -105,7 +106,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     try {
         const result = await service.getGuildRaidResultBySeason(
-            interaction.user.id,
+            discordId,
             season,
             rarity,
             true,
@@ -123,40 +124,24 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
-        // Add users that did not participate in the season
-        const guildId = await service.getGuildId(interaction.user.id);
-        if (!guildId) {
+        const players = await service.fetchGuildMembers(discordId);
+        if (!players) {
             await interaction.editReply({
                 content:
-                    "Could not find your guild's ID. Please make sure you have registered your API-token",
+                    "Something went wrong while fetching guild members from the game. Please try again or contact the support server if the issue persists",
             });
             return;
         }
-        const players = await service.getMemberlist(guildId);
-        if (!players || players.length === 0) {
-            await interaction.editReply({
-                content:
-                    "No players found in the guild. Please make sure you have registered your API-token",
-            });
-            return;
-        }
-        const playersNotParticipated = players.filter(
-            (player) =>
-                !result.some((entry) => entry.username === player.username),
-        );
 
-        playersNotParticipated.forEach((player) => {
-            result.push({
-                username: player.username,
-                totalDamage: 0,
-                totalTokens: 0,
-                boss: "None",
-                set: 0,
-                tier: 0,
-                startedOn: 0,
-                bombCount: 0,
-            });
-        });
+        let unknownCounter = 1;
+        for (const entry of result) {
+            const player = players.find((p) => p.userId === entry.username);
+            if (player) {
+                entry.username = player.displayName;
+            } else {
+                entry.username = `Unknown#${unknownCounter++}`;
+            }
+        }
 
         const sortedResult = sortGuildRaidResultDesc(result);
 
@@ -216,7 +201,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 },
             )
             .setImage("attachment://graph.png")
-            .setFooter({ text: "Gleam code: LOVRAFFLE" });
+            .setFooter({
+                text: "Gleam code: LOVRAFFLE\nReferral code: HUG-44-CAN if you want to support me",
+            });
 
         await interaction.editReply({ embeds: [embed], files: [attachment] });
 

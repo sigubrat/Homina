@@ -20,8 +20,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const formattedUptime = SecondsToString(uptime);
         const guildCount = client.guilds.cache.size;
         const registeredUser = await dbController.getNumberOfUsers();
-        const registeredMembers = await dbController.getMemberCount();
         const registeredGuilds = await dbController.getGuildCount();
+        const registeredMembers = registeredGuilds * 30; // Assuming an average of 30 members per guild
         const ver = await getPackageVersion();
 
         const statsEmbed = new EmbedBuilder()
@@ -51,8 +51,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     inline: false,
                 },
                 {
-                    name: "Guild-members Count",
-                    value: registeredMembers.toString(),
+                    name: "Members Count",
+                    value: `Running stats for approximately ${registeredMembers.toString()} players`,
                     inline: false,
                 },
             ])
