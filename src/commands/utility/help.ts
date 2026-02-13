@@ -71,7 +71,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const BMaCBtn = new ButtonBuilder()
             .setLabel("BuyMeACoffee")
             .setStyle(ButtonStyle.Link)
-            .setEmoji("<:coffee:1396463514564414210>")
+            .setEmoji("☕")
             .setURL("https://www.buymeacoffee.com/homina");
 
         pagination.addActionRows([
