@@ -239,6 +239,50 @@ export class DatabaseController {
     }
 
     /**
+     * Retrieves the guild ID for a given Discord user ID.
+     *
+     * @param discordId - The Discord user ID to look up.
+     * @returns The guild ID if found, or `null` if not found or an error occurs.
+     */
+    public async getGuildIdByUserId(discordId: string): Promise<string | null> {
+        try {
+            const result = await this.sequelize.models[
+                "discordApiTokenMappings"
+            ]?.findOne({
+                where: { userId: discordId },
+                attributes: ["guildId"],
+            });
+            return (result?.get("guildId") as string) || null;
+        } catch (error) {
+            logger.error(error, "Error fetching guild ID for user");
+            return null;
+        }
+    }
+
+    /**
+     * Updates the guild ID for a given Discord user ID.
+     *
+     * @param discordId - The Discord user ID to update.
+     * @param guildId - The guild ID to set.
+     * @returns True if the update was successful, false otherwise.
+     */
+    public async updateGuildId(
+        discordId: string,
+        guildId: string,
+    ): Promise<boolean> {
+        try {
+            await this.sequelize.models["discordApiTokenMappings"]?.update(
+                { guildId },
+                { where: { userId: discordId } },
+            );
+            return true;
+        } catch (error) {
+            logger.error(error, "Error updating guild ID for user");
+            return false;
+        }
+    }
+
+    /**
      * Counts the number of distinct in-game guilds registered in the database.
      *
      * @returns {Promise<number>} The number of distinct guilds. Returns 0 if an error occurs.

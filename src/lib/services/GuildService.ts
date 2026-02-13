@@ -50,11 +50,20 @@ export class GuildService {
 
     /**
      * Fetches the guild ID for a given user ID.
+     * Retrieves from database first (faster), falls back to API for older registrations.
      * @param discordId The ID of the user to fetch the guild ID for.
      * @returns The guild ID or null if not found or an error occurred.
      */
     async getGuildId(discordId: string): Promise<string | null> {
         try {
+            // First try to get from database (faster, no API call)
+            const cachedGuildId =
+                await dbController.getGuildIdByUserId(discordId);
+            if (cachedGuildId) {
+                return cachedGuildId;
+            }
+
+            // Fallback to API if not in database (for older registrations)
             const apiKey = await dbController.getUserToken(discordId);
             if (!apiKey) {
                 return null;
@@ -66,7 +75,11 @@ export class GuildService {
                 return null;
             }
 
-            return resp.guild.guildId;
+            // Cache the guildId for future use
+            const guildId = resp.guild.guildId;
+            await dbController.updateGuildId(discordId, guildId);
+
+            return guildId;
         } catch (error) {
             logger.error(error, "Error fetching guild ID");
             return null;
