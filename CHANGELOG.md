@@ -19,6 +19,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [1.0.0] - 2026-02-14
+
+Homina is leaving early access with the 1.0.0 release. The biggest change: **username handling is now fully automatic**, so you no longer need to maintain a member list or manually manage usernames.
+
+Special thanks to TheTimmyMan (creator of TacticusAnalytics) for collaborating on this, and to all beta testers for verifying that everything works after the change.
+
+### What you need to do
+
+- **Existing users:** no action required (you do **not** need to run `/register` again).
+- **New users:** run **`/register`** (or **`/invite-user`** if you’re inviting someone else) and you’re good to go.
+
+### Added
+
+- Automatic username fetching (new middleware)
+
+### Changed
+
+- Commands that previously relied on a manually maintained member list now resolve members automatically.
+- If someone is no longer in the guild (or can’t be resolved), they will show up as **`Unknown #1`**, **`Unknown #2`**, etc.
+- **`/season-by-rarity`** no longer includes bombs to avoid showing members with negligible damage.
+
+### Removed
+
+- Player tokens are no longer used/required.
+- Manual guild member / username management commands:
+    - `/add-member`
+    - `/add-username`
+    - `/member-ids`
+    - `/meta-comps`
+    - `/guild-token-status`
+    - `/memberlist-cleanup`
+    - `/player-token-status`
+    - `/remove-member`
+    - `/update-members`
+- `/seasons` (the public API does not reliably return the correct number of seasons)
+
 ## [0.39.0] - 2026-02-07
 
 This new patch brings in a new datapoint in the `/season-by-rarity` command. The command currently shows the average damage per token, and to accompany it you now have the option to show the maximum damage dealt to the boss. The intention is to let you compare the average damage dealt against the boss with your best hit. Consistency is key in guild raid so if the two lies are too far apart then there might be time for some strategical changes. Of course, the chart was quite busy already as it is, so the max-damage line is only displayed by using the new optional parameter. The colors in the graph have also been slightly adjusted to fit in the newcomer.
