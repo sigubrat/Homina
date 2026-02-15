@@ -213,7 +213,6 @@ export class GuildService {
                 continue;
             }
 
-            // userId now contains displayName from LOKI API
             const username = entry.userId;
 
             const existingEntry = damagePeruser.find(
@@ -332,7 +331,6 @@ export class GuildService {
                 groupedResults[boss] = [];
             }
 
-            // userId now contains displayName from LOKI API
             const username = entry.userId;
 
             const existingUserEntry = groupedResults[boss].find(
@@ -434,7 +432,6 @@ export class GuildService {
 
         const bombsPerUser: Record<string, number> = {};
         for (const bomb of bombs) {
-            // userId now contains displayName from LOKI API
             const username = bomb.userId;
             bombsPerUser[username] = (bombsPerUser[username] ?? 0) + 1;
         }
@@ -580,7 +577,6 @@ export class GuildService {
 
             const groupedResults: Record<string, Raid[]> = {};
             for (const entry of entries) {
-                // userId now contains displayName from LOKI API
                 const username = entry.userId;
                 // bombs and sideboss don't count as damage
                 if (
