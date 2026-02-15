@@ -141,7 +141,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const playersNotParticipated = players.filter(
             (player) =>
-                !result.some((entry) => entry.username === player.displayName),
+                !transformedResult.some(
+                    (entry) => entry.username === player.displayName,
+                ),
         );
 
         for (const player of playersNotParticipated) {
