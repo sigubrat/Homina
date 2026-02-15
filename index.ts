@@ -34,6 +34,9 @@ const client = new IClient({
 // Load commands and start the bot
 const startBot = async () => {
     try {
+        // Validate middleware env variable
+        validateEnvVars(["MIDDLEWARE_URL"]);
+
         // Fetch secrets from Infisical
         const infisicalClient = new InfisicalClient();
         await infisicalClient.init();
