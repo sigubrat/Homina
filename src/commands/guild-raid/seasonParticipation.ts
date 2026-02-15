@@ -17,6 +17,7 @@ import {
 } from "@/lib/configs/constants";
 import { Rarity } from "@/models/enums";
 import { isInvalidSeason } from "@/lib/utils/timeUtils";
+import { replaceUserIdFieldWithDisplayNames } from "@/lib/utils/userUtils";
 
 export const cooldown = 5;
 
@@ -133,17 +134,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
-        let unknownCounter = 1;
-        for (const entry of result) {
-            const player = players.find((p) => p.userId === entry.username);
-            if (player) {
-                entry.username = player.displayName;
-            } else {
-                entry.username = `Unknown#${unknownCounter++}`;
-            }
-        }
+        const transformedResult = replaceUserIdFieldWithDisplayNames(
+            result,
+            "username",
+            players,
+        );
 
-        const sortedResult = sortGuildRaidResultDesc(result);
+        const sortedResult = sortGuildRaidResultDesc(transformedResult);
 
         const topDamageDealers = getTopNDamageDealers(sortedResult, 3);
         const average =

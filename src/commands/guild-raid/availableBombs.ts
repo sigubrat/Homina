@@ -1,5 +1,6 @@
 import { logger } from "@/lib";
 import { GuildService } from "@/lib/services/GuildService";
+import { replaceUserIdKeysWithDisplayNames } from "@/lib/utils/userUtils";
 import { withinNextHour } from "@/lib/utils/timeUtils";
 import {
     ChatInputCommandInteraction,
@@ -30,7 +31,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const discordId = interaction.user.id;
 
     try {
-        const result = await service.getAvailableBombs(discordId);
+        let result = await service.getAvailableBombs(discordId);
 
         if (
             !result ||
@@ -55,17 +56,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         // Replace User IDs with display names in the result
-        let unknownCounter = 1;
-        for (const userId in result) {
-            const player = players.find((p) => p.userId === userId);
-            if (player) {
-                result[player.displayName] = result[userId]!;
-            } else {
-                // User is no longer in the guild
-                result[`Unknown ${unknownCounter++}`] = result[userId]!;
-            }
-            delete result[userId];
-        }
+        result = replaceUserIdKeysWithDisplayNames(result, players);
 
         const playersNotParticipated = players.filter(
             (player) => !result[player.displayName],

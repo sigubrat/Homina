@@ -9,6 +9,7 @@ import { numericMedian } from "@/lib/utils/mathUtils";
 import { numericAverage } from "@/lib/utils/mathUtils";
 import { standardDeviation } from "@/lib/utils/mathUtils";
 import { isInvalidSeason } from "@/lib/utils/timeUtils";
+import { replaceUserIdKeysWithDisplayNames } from "@/lib/utils/userUtils";
 import {
     AttachmentBuilder,
     ChatInputCommandInteraction,
@@ -66,10 +67,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const service = new GuildService();
 
     try {
-        const bombs = await service.getGuildRaidBombsBySeason(
-            discordId,
-            season,
-        );
+        let bombs = await service.getGuildRaidBombsBySeason(discordId, season);
 
         if (!bombs || Object.keys(bombs).length === 0) {
             await interaction.editReply({
@@ -88,16 +86,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
-        let unknownCounter = 1;
-        for (const userId in bombs) {
-            const player = players.find((p) => p.userId === userId);
-            if (player) {
-                bombs[player.displayName] = bombs[userId]!;
-            } else {
-                bombs[`Unknown#${unknownCounter++}`] = bombs[userId]!;
-            }
-            delete bombs[userId];
-        }
+        bombs = replaceUserIdKeysWithDisplayNames(bombs, players);
 
         const averageMethod = interaction.options.getString(
             "average-method",

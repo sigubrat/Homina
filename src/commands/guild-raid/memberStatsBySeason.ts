@@ -6,6 +6,7 @@ import {
 import { CsvService } from "@/lib/services/CsvService";
 import { GuildService } from "@/lib/services/GuildService.ts";
 import { isInvalidSeason } from "@/lib/utils/timeUtils";
+import { replaceUserIdKeysWithDisplayNames } from "@/lib/utils/userUtils";
 import { Rarity } from "@/models/enums";
 import type { GuildRaidResult } from "@/models/types";
 import type { TeamDistribution } from "@/models/types/TeamDistribution";
@@ -137,12 +138,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         // Sort by total damage descending
         result.sort((a, b) => b.totalDamage - a.totalDamage);
 
-        const teamDistributions =
-            await service.getMetaTeamDistributionPerPlayer(
-                discordId,
-                season,
-                rarity,
-            );
+        let teamDistributions = await service.getMetaTeamDistributionPerPlayer(
+            discordId,
+            season,
+            rarity,
+        );
 
         if (!teamDistributions) {
             await interaction.editReply({
@@ -153,18 +153,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         // replace userIds with display names in teamDistributions
-        let unknownCounter = 1;
-        for (const username in teamDistributions) {
-            const player = players.find((p) => p.userId === username);
-            if (player) {
-                teamDistributions[player.displayName] =
-                    teamDistributions[username]!;
-            } else {
-                teamDistributions[`Unknown#${unknownCounter++}`] =
-                    teamDistributions[username]!;
-            }
-            delete teamDistributions[username];
-        }
+        teamDistributions = replaceUserIdKeysWithDisplayNames(
+            teamDistributions,
+            players,
+        );
 
         // Merge the team distributions with the raid results
         const mergedResults: MemberStatsPerSeason[] = [];

@@ -8,6 +8,7 @@ import { CsvService } from "@/lib/services/CsvService";
 import { DataTransformationService } from "@/lib/services/DataTransformationService";
 import { GuildService } from "@/lib/services/GuildService";
 import { isInvalidSeason } from "@/lib/utils/timeUtils";
+import { createUnknownUserTracker } from "@/lib/utils/userUtils";
 import { DamageType, EncounterType, Rarity } from "@/models/enums";
 import {
     AttachmentBuilder,
@@ -90,21 +91,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         // Replace user IDs with display names in the result
-        let unknownCounter = 1;
-        const unknownUserMap = new Map<string, string>();
+        const unknownTracker = createUnknownUserTracker();
 
         for (const entry of filteredData) {
             const player = players.find((p) => p.userId === entry.userId);
             if (player) {
                 entry.userId = player.displayName;
             } else {
-                if (!unknownUserMap.has(entry.userId)) {
-                    unknownUserMap.set(
-                        entry.userId,
-                        `Unknown#${unknownCounter++}`,
-                    );
-                }
-                entry.userId = unknownUserMap.get(entry.userId)!;
+                entry.userId = unknownTracker.getLabel(entry.userId);
             }
         }
 
