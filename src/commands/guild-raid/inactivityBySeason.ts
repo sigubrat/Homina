@@ -6,6 +6,7 @@ import {
 import { GuildService } from "@/lib/services/GuildService.ts";
 import { sortTokensUsed } from "@/lib/utils/mathUtils";
 import { isInvalidSeason } from "@/lib/utils/timeUtils";
+import { replaceUserIdFieldWithDisplayNames } from "@/lib/utils/userUtils";
 import { Rarity } from "@/models/enums";
 import type { TokensUsed } from "@/models/types/TokensUsed";
 import {
@@ -107,19 +108,15 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         // Replace User IDs with display names in the result
-        let unknownCounter = 1;
-        for (const entry of result) {
-            const player = players.find((p) => p.userId === entry.username);
-            if (player) {
-                entry.username = player.displayName;
-            } else {
-                entry.username = `Unknown#${unknownCounter++}`;
-            }
-        }
+        const transformedResult = replaceUserIdFieldWithDisplayNames(
+            result,
+            "username",
+            players,
+        );
 
         // Find out who participated but did not use the required number of tokens
         let inactiveUsers: TokensUsed[] = [];
-        for (const entry of result) {
+        for (const entry of transformedResult) {
             if (entry.totalTokens < threshold) {
                 inactiveUsers.push({
                     username: entry.username,
@@ -130,7 +127,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const playersNotParticipated = players.filter(
             (player) =>
-                !result.some((entry) => entry.username === player.displayName),
+                !transformedResult.some(
+                    (entry) => entry.username === player.displayName,
+                ),
         );
 
         for (const player of playersNotParticipated) {

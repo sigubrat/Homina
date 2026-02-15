@@ -4,6 +4,7 @@ import { SecondsToString } from "../utils/timeUtils";
 import { evaluateToken } from "../utils/timeUtils";
 import { getUnixTimestamp } from "../utils/timeUtils";
 import { getMetaTeam } from "@/lib/utils/metaTeamUtils";
+import { createUnknownUserTracker } from "@/lib/utils/userUtils";
 import { DamageType, EncounterType, Rarity } from "@/models/enums";
 import { MetaTeams } from "@/models/enums/MetaTeams";
 import type {
@@ -307,21 +308,14 @@ export class GuildService {
             );
         }
 
-        let unknownCounter = 1;
-        const unknownUserMap = new Map<string, string>();
+        const unknownTracker = createUnknownUserTracker();
 
         for (const entry of entries) {
             const player = players.find((p) => p.userId === entry.userId);
             if (player) {
                 entry.userId = player.displayName;
             } else {
-                if (!unknownUserMap.has(entry.userId)) {
-                    unknownUserMap.set(
-                        entry.userId,
-                        `Unknown#${unknownCounter++}`,
-                    );
-                }
-                entry.userId = unknownUserMap.get(entry.userId)!;
+                entry.userId = unknownTracker.getLabel(entry.userId);
             }
         }
 

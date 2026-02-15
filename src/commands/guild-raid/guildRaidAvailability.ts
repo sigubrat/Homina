@@ -1,5 +1,6 @@
 import { logger } from "@/lib";
 import { GuildService } from "@/lib/services/GuildService";
+import { replaceUserIdKeysWithDisplayNames } from "@/lib/utils/userUtils";
 import {
     ChatInputCommandInteraction,
     EmbedBuilder,
@@ -24,7 +25,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     );
 
     try {
-        const result = await service.getAvailableTokensAndBombs(
+        let result = await service.getAvailableTokensAndBombs(
             interaction.user.id,
         );
 
@@ -52,16 +53,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         // Replace User IDs with display names in the result
-        let unknownCounter = 1;
-        for (const userId in result) {
-            const player = players.find((p) => p.userId === userId);
-            if (player) {
-                result[player.displayName] = result[userId]!;
-            } else {
-                result[`Unknown#${unknownCounter++}`] = result[userId]!;
-            }
-            delete result[userId];
-        }
+        result = replaceUserIdKeysWithDisplayNames(result, players);
 
         // Add players who have not used any tokens or bombs yet
         const playersNotParticipated = players.filter(

@@ -9,6 +9,7 @@ import { numericMedian } from "@/lib/utils/mathUtils";
 import { numericAverage } from "@/lib/utils/mathUtils";
 import { standardDeviation } from "@/lib/utils/mathUtils";
 import { isInvalidSeason } from "@/lib/utils/timeUtils";
+import { replaceUserIdFieldWithDisplayNames } from "@/lib/utils/userUtils";
 import { Rarity } from "@/models/enums";
 import {
     AttachmentBuilder,
@@ -116,19 +117,15 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
-        let unknownCounter = 1;
-        for (const entry of result) {
-            const player = players.find((p) => p.userId === entry.username);
-            if (player) {
-                entry.username = player.displayName;
-            } else {
-                entry.username = `Unknown #${unknownCounter++}`;
-            }
-        }
+        const transformedResult = replaceUserIdFieldWithDisplayNames(
+            result,
+            "username",
+            players,
+        );
 
         // Find out who participated
         const tokensUsed: Record<string, number> = {};
-        for (const entry of result) {
+        for (const entry of transformedResult) {
             tokensUsed[entry.username] = entry.totalTokens || 0;
         }
 

@@ -1,3 +1,4 @@
+import { createUnknownUserTracker } from "@/lib/utils/userUtils";
 import type { Player, Raid } from "@/models/types";
 import type { Guild } from "@/models/types/Guild";
 import type { GuildRaidResponse } from "@/models/types/GuildRaidResponse";
@@ -38,8 +39,7 @@ class HominaTacticusClient {
         }
 
         // Track unknown users to assign consistent labels
-        const unknownUserMap = new Map<string, string>();
-        let unknownCounter = 1;
+        const unknownTracker = createUnknownUserTracker();
 
         // Replace userIds with displayNames
         return raids.map((raid) => {
@@ -47,14 +47,10 @@ class HominaTacticusClient {
             if (displayName) {
                 return { ...raid, userId: displayName };
             } else {
-                // Assign a consistent label to each unique unknown userId
-                if (!unknownUserMap.has(raid.userId)) {
-                    unknownUserMap.set(
-                        raid.userId,
-                        `Unknown ${unknownCounter++}`,
-                    );
-                }
-                return { ...raid, userId: unknownUserMap.get(raid.userId)! };
+                return {
+                    ...raid,
+                    userId: unknownTracker.getLabel(raid.userId),
+                };
             }
         });
     }
