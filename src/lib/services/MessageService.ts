@@ -146,20 +146,16 @@ export class MessageService {
                 return;
             }
 
-            // Fetch the guild ID from the API
-            let guildId: string | null = null;
-            try {
-                const client = new HominaTacticusClient();
-                const guildResponse = await client.getGuild(apiToken);
-                if (guildResponse.success && guildResponse.guild) {
-                    guildId = guildResponse.guild.guildId;
-                }
-            } catch (error) {
-                logger.warn(
-                    error,
-                    "Failed to fetch guild ID during invite registration, continuing without it",
-                );
+            const client = new HominaTacticusClient();
+            const guildResponse = await client.getGuild(apiToken);
+            if (!guildResponse.success || !guildResponse.guild) {
+                await interaction.followUp({
+                    content:
+                        "Failed to fetch guild information. Please try again later or reach out to the support server.",
+                });
+                return;
             }
+            const guildId = guildResponse.guild.guildId;
 
             const result = await dbController.registerUser(
                 interaction.user.id,
