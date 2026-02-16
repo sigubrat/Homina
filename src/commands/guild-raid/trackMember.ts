@@ -77,14 +77,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const service = new GuildService();
 
     try {
-        const players = await service.fetchGuildMembers(discordId);
-        if (!players || players.length === 0) {
-            await interaction.editReply({
-                content: "Could not fetch guild members.",
-            });
-            return;
-        }
-
         const rarity = interaction.options.getString("rarity") as
             | Rarity
             | undefined;
