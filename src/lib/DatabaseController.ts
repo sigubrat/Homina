@@ -142,7 +142,7 @@ export class DatabaseController {
     public async registerUser(
         userId: string,
         token: string,
-        guildId: string | null,
+        guildId: string,
     ): Promise<boolean> {
         try {
             const encryptedToken = CryptoService.encrypt(token);

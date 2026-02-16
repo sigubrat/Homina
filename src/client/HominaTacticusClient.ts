@@ -1,8 +1,6 @@
-import { createUnknownUserTracker } from "@/lib/utils/userUtils";
-import type { Player, Raid } from "@/models/types";
+import type { Player } from "@/models/types";
 import type { Guild } from "@/models/types/Guild";
 import type { GuildRaidResponse } from "@/models/types/GuildRaidResponse";
-import { fetchGuildMembers } from "./MiddlewareClient";
 
 export interface GuildApiResponse {
     success: boolean;
@@ -18,42 +16,6 @@ export interface PlayerApiResponse {
 
 class HominaTacticusClient {
     private baseUrl: string = "https://api.tacticusgame.com/api/v1";
-
-    /**
-     * Replaces userIds in raid entries with display names from the Middleware API.
-     */
-    async replaceIdsWithUsernames(
-        raids: Raid[],
-        guildId: string,
-    ): Promise<Raid[]> {
-        const guildMembers = await fetchGuildMembers(guildId);
-
-        if (!guildMembers || guildMembers.length === 0) {
-            return raids;
-        }
-
-        // Create a map of userId -> displayName for quick lookup
-        const idToDisplayName = new Map<string, string>();
-        for (const member of guildMembers) {
-            idToDisplayName.set(member.userId, member.displayName);
-        }
-
-        // Track unknown users to assign consistent labels
-        const unknownTracker = createUnknownUserTracker();
-
-        // Replace userIds with displayNames
-        return raids.map((raid) => {
-            const displayName = idToDisplayName.get(raid.userId);
-            if (displayName) {
-                return { ...raid, userId: displayName };
-            } else {
-                return {
-                    ...raid,
-                    userId: unknownTracker.getLabel(raid.userId),
-                };
-            }
-        });
-    }
 
     async getGuild(apiKey: string): Promise<GuildApiResponse> {
         const response = await fetch(`${this.baseUrl}/guild`, {
