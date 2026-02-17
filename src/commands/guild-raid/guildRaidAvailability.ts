@@ -42,7 +42,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
-        // Fetch guild members from LOKI API
         const players = await service.fetchGuildMembers(interaction.user.id);
         if (!players) {
             await interaction.editReply({

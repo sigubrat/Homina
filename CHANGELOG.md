@@ -19,6 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [1.1.0] - 2026-02-17
+
+Some wanted to keep the option to fetch member-IDs even though the memberlist is no longer being used, so the `/member-ids` command returns with some modifications.
+
+## Added
+
+- The `/member-ids` command is back already, but this time it fetches the data from the game instead of any memberlist in my database.
+
 ## [1.0.0] - 2026-02-14
 
 Homina is leaving early access with the 1.0.0 release. The biggest change: **username handling is now fully automatic**, so you no longer need to maintain a member list or manually manage usernames.

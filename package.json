@@ -1,7 +1,7 @@
 {
     "name": "homina",
     "main": "index.ts",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "module": "index.ts",
     "type": "module",
     "private": true,
