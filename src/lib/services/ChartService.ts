@@ -29,11 +29,17 @@ export class ChartService {
         averageValue: number,
     ) {
         const usernames = data.map((data) => data.username);
-        const damage = data.map((data) => data.totalDamage);
         const totalTokens = data.map((data) => data.totalTokens);
         const bombCount = data.map((data) => data.bombCount);
 
-        // Build datasets array conditionally
+        // Split into boss damage and prime damage for stacked bars
+        const primeDamage = data.map((data) => data.primeDamage ?? 0);
+        const bossDamage = data.map(
+            (data) => data.totalDamage - (data.primeDamage ?? 0),
+        );
+        const totalDamage = data.map((data) => data.totalDamage);
+
+        // Build datasets array
         const datasets: any[] = [
             {
                 type: "line",
@@ -61,25 +67,91 @@ export class ChartService {
                 yAxisID: "y",
                 borderDash: [5, 5],
             },
+            // Stacked bars: prime damage on top of boss damage
             {
-                backgroundColor: CHART_COLORS.blue,
-                label: title,
-                data: damage,
+                backgroundColor: CHART_COLORS.purple,
+                label: "Prime Damage",
+                data: primeDamage,
                 borderWidth: 1,
+                stack: "damage",
                 datalabels: {
                     display: true,
-                    color: CHART_COLORS.blue,
+                    color: "white",
+                    anchor: function (context: { dataIndex: number }) {
+                        // Position above bar if segment is too small (less than 10% of total)
+                        const total = totalDamage[context.dataIndex] ?? 1;
+                        const value = primeDamage[context.dataIndex] ?? 0;
+                        return value / total < 0.1 ? "end" : "center";
+                    },
+                    align: function (context: { dataIndex: number }) {
+                        const total = totalDamage[context.dataIndex] ?? 1;
+                        const value = primeDamage[context.dataIndex] ?? 0;
+                        return value / total < 0.1 ? "top" : "center";
+                    },
+                    rotation: -45,
+                    font: {
+                        size: 11,
+                    },
+                    formatter: function (value: number) {
+                        return value > 0 ? shortenNumber(value) : null;
+                    },
+                },
+            },
+            {
+                backgroundColor: CHART_COLORS.blue,
+                label: "Boss Damage",
+                data: bossDamage,
+                borderWidth: 1,
+                stack: "damage",
+                datalabels: {
+                    display: true,
+                    color: "white",
+                    anchor: "center",
+                    rotation: -45,
+                    font: {
+                        size: 11,
+                    },
+                    formatter: function (value: number) {
+                        return value > 0 ? shortenNumber(value) : null;
+                    },
+                },
+            },
+            // Transparent stacked bar to display total damage label on top
+            {
+                backgroundColor: "transparent",
+                label: "Total Damage",
+                data: totalDamage.map((total, i) => {
+                    // Calculate what's left after boss and prime to position label at top
+                    const boss = bossDamage[i] ?? 0;
+                    const prime = primeDamage[i] ?? 0;
+                    return total - boss - prime; // Should be 0, but keeps stack alignment
+                }),
+                borderWidth: 0,
+                stack: "damage",
+                // Hide from legend since this is just for labeling
+                hidden: false,
+                datalabels: {
+                    display: true,
+                    color: CHART_COLORS.green,
                     anchor: "end",
                     align: "top",
                     font: {
-                        size: "11",
+                        size: 11,
+                        weight: "bold",
                     },
-                    formatter: function (value: number) {
-                        return shortenNumber(value);
+                    formatter: function (
+                        _value: number,
+                        context: { dataIndex: number },
+                    ) {
+                        return shortenNumber(totalDamage[context.dataIndex]!);
                     },
                 },
             },
         ];
+
+        // Filter out "Total Damage" from legend
+        const legendFilter = (legendItem: { text: string }) =>
+            legendItem.text !== "Total Damage";
 
         if (showBombs) {
             datasets.splice(1, 0, {
@@ -116,6 +188,7 @@ export class ChartService {
                         display: true,
                         labels: {
                             color: "white",
+                            filter: legendFilter,
                         },
                     },
                 },
@@ -133,6 +206,7 @@ export class ChartService {
                         border: {
                             display: false,
                         },
+                        stacked: true,
                     },
                     y: {
                         ticks: {
@@ -147,6 +221,7 @@ export class ChartService {
                         border: {
                             display: false,
                         },
+                        stacked: true,
                     },
                     y2: {
                         type: "linear",

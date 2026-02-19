@@ -219,6 +219,8 @@ export class GuildService {
                 (e) => e.username === username,
             );
 
+            const isPrime = entry.encounterType === EncounterType.SIDE_BOSS;
+
             if (existingEntry) {
                 if (entry.damageType === DamageType.BOMB) {
                     existingEntry.bombCount++;
@@ -234,6 +236,11 @@ export class GuildService {
                     existingEntry.minDmg ?? entry.damageDealt,
                     entry.damageDealt,
                 );
+                // Track prime damage separately
+                if (isPrime) {
+                    existingEntry.primeDamage =
+                        (existingEntry.primeDamage ?? 0) + entry.damageDealt;
+                }
             } else {
                 if (entry.damageType === DamageType.BOMB) {
                     damagePeruser.push({
@@ -247,6 +254,7 @@ export class GuildService {
                         minDmg: undefined,
                         maxDmg: undefined,
                         bombCount: 1,
+                        primeDamage: 0,
                     });
                 } else {
                     damagePeruser.push({
@@ -260,6 +268,7 @@ export class GuildService {
                         minDmg: entry.damageDealt,
                         maxDmg: entry.damageDealt,
                         bombCount: 0,
+                        primeDamage: isPrime ? entry.damageDealt : 0,
                     });
                 }
             }

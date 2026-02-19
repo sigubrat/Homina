@@ -172,9 +172,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setTitle(`Damage dealt in season ${seasonDisplay}`)
             .setDescription(
                 "The graph shows the contribution of each member to a guild raid season:\n" +
-                    "- **Bar chart**: Damage dealt (left y-axis)\n" +
-                    "- **Line chart**: Total tokens used (right y-axis)\n" +
-                    "- **Includes primes**: Yes",
+                    "- **Stacked bars**: Blue = Boss damage, Purple = Prime damage\n" +
+                    "- **Labels**: Each bar shows boss/prime damage, total in green on top\n" +
+                    "- **Line chart**: Total tokens used (right y-axis)",
             )
             .setFields(
                 {

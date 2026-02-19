@@ -19,6 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [1.2.0] - 2026-02-19
+
+This update changes the chart of `/season-participation` to display more information.
+
+### Changed
+
+- `/season-participation` now displays prime damage and damage to main bosses as two stacked bars with the total damage displayed on top
+
 ## [1.1.0] - 2026-02-17
 
 Some wanted to keep the option to fetch member-IDs even though the memberlist is no longer being used, so the `/member-ids` command returns with some modifications.
