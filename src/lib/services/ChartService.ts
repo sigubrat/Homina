@@ -6,6 +6,7 @@ import { standardDeviation } from "../utils/mathUtils";
 import type { TeamDistribution } from "@/models/types/TeamDistribution";
 import type { Highscore } from "@/models/types/Highscore";
 import ChartDataLabels from "chartjs-plugin-datalabels";
+import type { Context } from "chartjs-plugin-datalabels";
 import { CHART_COLORS, namedColor } from "../utils/colorUtils";
 
 const CHART_WIDTH = 1200;
@@ -945,6 +946,168 @@ export class ChartService {
                     padding: {
                         left: 20,
                         right: 20,
+                        bottom: 10,
+                        top: 10,
+                    },
+                },
+                responsive: true,
+                maintainAspectRatio: false,
+            },
+        });
+
+        return chart;
+    }
+
+    /**
+     * Creates a horizontal bar chart showing relative performance per player.
+     * Bars are color-coded by performance tier and a dashed line marks 100% (guild average).
+     *
+     * @param data Record of player names to their relative performance percentage.
+     * @param title The chart title.
+     * @returns A Buffer containing the rendered chart PNG.
+     */
+    async createRelativePerformanceChart(
+        data: Record<string, number>,
+        title: string,
+    ) {
+        const sorted = Object.entries(data).sort(([, a], [, b]) => b - a);
+        const usernames = sorted.map(([name]) => name);
+        const values = sorted.map(([, value]) => value - 100);
+
+        // Padding
+        const maxVal = Math.max(...values);
+        const minVal = Math.min(...values);
+        const padding = 10;
+        const axisMax = Math.ceil((maxVal + padding) / 10) * 10;
+        const axisMin = Math.floor((minVal - padding) / 10) * 10;
+
+        const backgroundColors = values.map((value) => {
+            if (value >= 20) return CHART_COLORS.purple;
+            if (value >= 10) return CHART_COLORS.green;
+            if (value >= 0) return CHART_COLORS.blue;
+            if (value >= -10) return CHART_COLORS.yellow;
+            if (value >= -20) return CHART_COLORS.orange;
+            return CHART_COLORS.red;
+        });
+
+        const chart = await canvas.renderToBuffer({
+            type: "bar",
+            data: {
+                labels: usernames,
+                datasets: [
+                    {
+                        label: "Relative Performance",
+                        data: values,
+                        backgroundColor: backgroundColors,
+                        borderWidth: 1,
+                        datalabels: {
+                            display: true,
+                            color: "white",
+                            anchor: function (context: Context) {
+                                const rawValue =
+                                    context.dataset.data[context.dataIndex];
+                                const value =
+                                    typeof rawValue === "number" ? rawValue : 0;
+                                return value >= 0 ? "end" : "start";
+                            },
+                            align: function (context: Context) {
+                                const rawValue =
+                                    context.dataset.data[context.dataIndex];
+                                const value =
+                                    typeof rawValue === "number" ? rawValue : 0;
+                                return value >= 0 ? "right" : "left";
+                            },
+                            font: {
+                                size: 12,
+                                weight: "bold",
+                            },
+                            formatter: function (value: number) {
+                                const sign = value >= 0 ? "+" : "";
+                                return sign + value.toFixed(1) + "%";
+                            },
+                        },
+                    },
+                    {
+                        type: "line",
+                        label: "Guild Average (0%)",
+                        data: Array(usernames.length).fill(0),
+                        borderColor: CHART_COLORS.yellow,
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        pointRadius: 0,
+                        fill: false,
+                        datalabels: {
+                            display: false,
+                        },
+                    },
+                ],
+            },
+            options: {
+                indexAxis: "y",
+                plugins: {
+                    datalabels: { display: false },
+                    title: {
+                        display: true,
+                        text: title,
+                        font: {
+                            size: 18,
+                        },
+                        color: "white",
+                    },
+                    legend: {
+                        display: true,
+                        labels: {
+                            color: "white",
+                            font: {
+                                size: 12,
+                            },
+                        },
+                    },
+                },
+                scales: {
+                    x: {
+                        min: axisMin,
+                        max: axisMax,
+                        ticks: {
+                            color: "white",
+                            font: {
+                                size: 12,
+                            },
+                            callback: function (value: string | number) {
+                                const num =
+                                    typeof value === "string"
+                                        ? parseFloat(value)
+                                        : value;
+                                const sign = num >= 0 ? "+" : "";
+                                return sign + num + "%";
+                            },
+                        },
+                        grid: {
+                            color: "rgba(255, 255, 255, 0.1)",
+                        },
+                        border: {
+                            display: false,
+                        },
+                    },
+                    y: {
+                        ticks: {
+                            color: "white",
+                            font: {
+                                size: 14,
+                            },
+                        },
+                        grid: {
+                            display: false,
+                        },
+                        border: {
+                            display: false,
+                        },
+                    },
+                },
+                layout: {
+                    padding: {
+                        left: 20,
+                        right: 60,
                         bottom: 10,
                         top: 10,
                     },

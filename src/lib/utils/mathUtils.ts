@@ -107,3 +107,16 @@ export function numericMedian(arr: number[]): number {
         return sorted[middleIndex]!;
     }
 }
+
+/**
+ * Formats an absolute percentage (where 100% = average) as a signed delta string.
+ * For example, 102.3 becomes "+2.3%" and 95.0 becomes "-5.0%".
+ *
+ * @param value - The absolute percentage value (100 = guild average).
+ * @returns A formatted string with a sign prefix and one decimal place.
+ */
+export function formatDelta(value: number): string {
+    const delta = value - 100;
+    const sign = delta >= 0 ? "+" : "";
+    return `${sign}${delta.toFixed(1)}%`;
+}

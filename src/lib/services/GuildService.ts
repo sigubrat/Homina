@@ -1318,6 +1318,154 @@ export class GuildService {
         }
     }
 
+    /**
+     * Calculates weighted relative performance per player against all bosses at a given rarity.
+     * Excludes sweeps (remainingHp === 0) and bombs. Includes both bosses and sidebosses.
+     *
+     * For each boss, a player's average damage per token is compared to the guild average.
+     * These ratios are combined via a weighted average (weighted by tokens used per boss).
+     *
+     * @param discordId The Discord ID of the requesting user.
+     * @param season The season number.
+     * @param rarity The rarity (or array of rarities) to filter by.
+     * @returns A record of display names to their weighted relative performance percentage, or null.
+     */
+    async getWeightedRelativePerformance(
+        discordId: string,
+        season: number,
+        rarity: Rarity | Rarity[],
+    ): Promise<Record<string, number> | null> {
+        try {
+            const apiKey = await dbController.getUserToken(discordId);
+            if (!apiKey) {
+                return null;
+            }
+
+            const players = await this.fetchGuildMembers(discordId);
+            if (!players) {
+                return null;
+            }
+
+            const resp = await this.client.getGuildRaidBySeason(apiKey, season);
+            if (!resp || !resp.entries) {
+                return null;
+            }
+
+            // Filter to requested rarity/rarities, exclude bombs and sweeps
+            const rarities = Array.isArray(rarity) ? rarity : [rarity];
+            const entries = resp.entries.filter(
+                (entry) =>
+                    rarities.includes(entry.rarity) &&
+                    entry.damageType === DamageType.BATTLE &&
+                    entry.remainingHp > 0,
+            );
+
+            if (entries.length === 0) {
+                return null;
+            }
+
+            // Replace user IDs with display names
+            const unknownTracker = createUnknownUserTracker();
+            for (const entry of entries) {
+                const player = players.find((p) => p.userId === entry.userId);
+                if (player) {
+                    entry.userId = player.displayName;
+                } else {
+                    entry.userId = unknownTracker.getLabel(entry.userId);
+                }
+            }
+
+            // Group entries by boss
+            const entriesByBoss: Record<string, Raid[]> = {};
+            for (const entry of entries) {
+                if (!entry.userId) continue;
+                const bossKey = entry.unitId;
+                if (!entriesByBoss[bossKey]) {
+                    entriesByBoss[bossKey] = [];
+                }
+                entriesByBoss[bossKey].push(entry);
+            }
+
+            // Calculate guild avg damage per token and per-player stats for each boss
+            const guildAvgPerBoss: Record<string, number> = {};
+            const playerStatsPerBoss: Record<
+                string,
+                Record<string, { totalDamage: number; tokens: number }>
+            > = {};
+
+            for (const [boss, bossEntries] of Object.entries(entriesByBoss)) {
+                let totalDamage = 0;
+                let totalTokens = 0;
+                const perPlayer: Record<
+                    string,
+                    { totalDamage: number; tokens: number }
+                > = {};
+
+                for (const entry of bossEntries) {
+                    const username = entry.userId;
+                    totalDamage += entry.damageDealt;
+                    totalTokens += 1;
+
+                    if (!perPlayer[username]) {
+                        perPlayer[username] = { totalDamage: 0, tokens: 0 };
+                    }
+                    perPlayer[username].totalDamage += entry.damageDealt;
+                    perPlayer[username].tokens += 1;
+                }
+
+                guildAvgPerBoss[boss] =
+                    totalTokens > 0 ? totalDamage / totalTokens : 0;
+                playerStatsPerBoss[boss] = perPlayer;
+            }
+
+            // Collect all unique players
+            const allPlayers = new Set<string>();
+            for (const perPlayer of Object.values(playerStatsPerBoss)) {
+                for (const username of Object.keys(perPlayer)) {
+                    allPlayers.add(username);
+                }
+            }
+
+            // Calculate weighted relative performance per player
+            const result: Record<string, number> = {};
+
+            for (const username of allPlayers) {
+                let weightedSum = 0;
+                let totalWeight = 0;
+
+                for (const [boss, perPlayer] of Object.entries(
+                    playerStatsPerBoss,
+                )) {
+                    const playerStats = perPlayer[username];
+                    const guildAvg = guildAvgPerBoss[boss];
+
+                    if (!playerStats || !guildAvg || guildAvg === 0) {
+                        continue;
+                    }
+
+                    const playerAvg =
+                        playerStats.totalDamage / playerStats.tokens;
+                    const relativePerformance = playerAvg / guildAvg;
+                    const weight = playerStats.tokens;
+
+                    weightedSum += weight * relativePerformance;
+                    totalWeight += weight;
+                }
+
+                result[username] =
+                    totalWeight > 0 ? (weightedSum / totalWeight) * 100 : 0;
+            }
+
+            return result;
+        } catch (error) {
+            logger.error(
+                error,
+                "Error calculating weighted relative performance",
+            );
+            return null;
+        }
+    }
+
     async fetchGuildMembers(discordId: string) {
         try {
             const guildId = await this.getGuildId(discordId);

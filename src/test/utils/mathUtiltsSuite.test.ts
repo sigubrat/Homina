@@ -1,4 +1,5 @@
 import {
+    formatDelta,
     getTopNDamageDealers,
     isValidUUIDv4,
     numericAverage,
@@ -109,10 +110,10 @@ describe("mathUtilsSuite - Algebra", () => {
 
     test("isValidUUIDv4 - validates correct and incorrect UUIDs", () => {
         expect(isValidUUIDv4("123e4567-e89b-12d3-a456-426614174000")).toBe(
-            false
+            false,
         ); // not v4
         expect(isValidUUIDv4("123e4567-e89b-42d3-a456-426614174000")).toBe(
-            true
+            true,
         ); // valid v4
         expect(isValidUUIDv4("invalid-uuid")).toBe(false);
     });
@@ -150,5 +151,21 @@ describe("mathUtilsSuite - Algebra", () => {
         expect(shortenNumber(2500000)).toBe("2.5M");
         expect(shortenNumber(1000000000)).toBe("1.0B");
         expect(shortenNumber(15000000000)).toBe("15.0B");
+    });
+
+    test("formatDelta - Should format values above 100 with + prefix", () => {
+        expect(formatDelta(102.3)).toBe("+2.3%");
+        expect(formatDelta(120)).toBe("+20.0%");
+        expect(formatDelta(150.55)).toBe("+50.6%");
+    });
+
+    test("formatDelta - Should format values below 100 with - prefix", () => {
+        expect(formatDelta(95)).toBe("-5.0%");
+        expect(formatDelta(80.4)).toBe("-19.6%");
+        expect(formatDelta(0)).toBe("-100.0%");
+    });
+
+    test("formatDelta - Should format exactly 100 as +0.0%", () => {
+        expect(formatDelta(100)).toBe("+0.0%");
     });
 });
