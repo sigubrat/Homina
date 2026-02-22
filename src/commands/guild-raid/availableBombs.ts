@@ -56,7 +56,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         // Replace User IDs with display names in the result
-        result = replaceUserIdKeysWithDisplayNames(result, players);
+        result = replaceUserIdKeysWithDisplayNames(result, players, true);
 
         const playersNotParticipated = players.filter(
             (player) => !result[player.displayName],

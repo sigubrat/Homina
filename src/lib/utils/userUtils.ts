@@ -58,6 +58,7 @@ export function formatUnknownUser(counter: number): string {
  *
  * @param record - The record with userId keys to transform.
  * @param players - Array of players with userId and displayName properties.
+ * @param omitUnknown - If true, unknown players are excluded from the result.
  * @returns A new record with display names as keys.
  *
  * @example
@@ -66,17 +67,24 @@ export function formatUnknownUser(counter: number): string {
  * const players = [{ userId: "user-1", displayName: "Alice" }];
  * const result = replaceUserIdKeysWithDisplayNames(record, players);
  * // { "Alice": { score: 100 }, "Unknown #1": { score: 200 } }
+ *
+ * const filtered = replaceUserIdKeysWithDisplayNames(record, players, true);
+ * // { "Alice": { score: 100 } }
  * ```
  */
 export function replaceUserIdKeysWithDisplayNames<T>(
     record: Record<string, T>,
     players: { userId: string; displayName: string }[],
+    omitUnknown?: boolean,
 ): Record<string, T> {
     const unknownTracker = createUnknownUserTracker();
     const result: Record<string, T> = {};
 
     for (const userId of Object.keys(record)) {
         const player = players.find((p) => p.userId === userId);
+        if (!player && omitUnknown) {
+            continue;
+        }
         const key = player
             ? player.displayName
             : unknownTracker.getLabel(userId);
@@ -93,6 +101,7 @@ export function replaceUserIdKeysWithDisplayNames<T>(
  * @param items - Array of objects containing a userId field.
  * @param userIdField - The field name containing the userId to replace.
  * @param players - Array of players with userId and displayName properties.
+ * @param omitUnknown - If true, items with unknown players are excluded from the result.
  * @returns A new array with display names in place of userIds.
  *
  * @example
@@ -101,21 +110,29 @@ export function replaceUserIdKeysWithDisplayNames<T>(
  * const players = [{ userId: "user-1", displayName: "Alice" }];
  * const result = replaceUserIdFieldWithDisplayNames(items, "username", players);
  * // [{ username: "Alice", score: 100 }]
+ *
+ * const filtered = replaceUserIdFieldWithDisplayNames(items, "username", players, true);
+ * // Items with unknown userIds are removed
  * ```
  */
 export function replaceUserIdFieldWithDisplayNames<T, K extends keyof T>(
     items: T[],
     userIdField: K,
     players: { userId: string; displayName: string }[],
+    omitUnknown?: boolean,
 ): T[] {
     const unknownTracker = createUnknownUserTracker();
 
-    return items.map((item) => {
+    return items.reduce<T[]>((acc, item) => {
         const userId = item[userIdField] as string;
         const player = players.find((p) => p.userId === userId);
+        if (!player && omitUnknown) {
+            return acc;
+        }
         const displayName = player
             ? player.displayName
             : unknownTracker.getLabel(userId);
-        return { ...item, [userIdField]: displayName };
-    });
+        acc.push({ ...item, [userIdField]: displayName });
+        return acc;
+    }, []);
 }

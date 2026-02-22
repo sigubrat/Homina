@@ -52,7 +52,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         // Replace User IDs with display names in the result
-        result = replaceUserIdKeysWithDisplayNames(result, players);
+        result = replaceUserIdKeysWithDisplayNames(result, players, true);
 
         // Add players who have not used any tokens or bombs yet
         const playersNotParticipated = players.filter(

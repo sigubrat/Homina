@@ -116,6 +116,35 @@ describe("userUtils - replaceUserIdKeysWithDisplayNames", () => {
         const result = replaceUserIdKeysWithDisplayNames(record, players);
         expect(result.Alice).toEqual({ score: 100, nested: { value: "test" } });
     });
+
+    test("should omit unknown users when omitUnknown is true", () => {
+        const record = {
+            "user-1": { score: 100 },
+            "unknown-user": { score: 200 },
+            "user-2": { score: 300 },
+        };
+        const result = replaceUserIdKeysWithDisplayNames(record, players, true);
+        expect(result).toEqual({
+            Alice: { score: 100 },
+            Bob: { score: 300 },
+        });
+    });
+
+    test("should keep unknown users when omitUnknown is false", () => {
+        const record = {
+            "user-1": { score: 100 },
+            "unknown-user": { score: 200 },
+        };
+        const result = replaceUserIdKeysWithDisplayNames(
+            record,
+            players,
+            false,
+        );
+        expect(result).toEqual({
+            Alice: { score: 100 },
+            "Unknown #1": { score: 200 },
+        });
+    });
 });
 
 describe("userUtils - replaceUserIdFieldWithDisplayNames", () => {
@@ -224,5 +253,40 @@ describe("userUtils - replaceUserIdFieldWithDisplayNames", () => {
             players,
         );
         expect(result).toEqual([{ oddsPlayerId: "Alice", value: 42 }]);
+    });
+
+    test("should omit unknown users when omitUnknown is true", () => {
+        const items = [
+            { username: "user-1", score: 100 },
+            { username: "unknown-user", score: 200 },
+            { username: "user-2", score: 300 },
+        ];
+        const result = replaceUserIdFieldWithDisplayNames(
+            items,
+            "username",
+            players,
+            true,
+        );
+        expect(result).toEqual([
+            { username: "Alice", score: 100 },
+            { username: "Bob", score: 300 },
+        ]);
+    });
+
+    test("should keep unknown users when omitUnknown is false", () => {
+        const items = [
+            { username: "user-1", score: 100 },
+            { username: "unknown-user", score: 200 },
+        ];
+        const result = replaceUserIdFieldWithDisplayNames(
+            items,
+            "username",
+            players,
+            false,
+        );
+        expect(result).toEqual([
+            { username: "Alice", score: 100 },
+            { username: "Unknown #1", score: 200 },
+        ]);
     });
 });
