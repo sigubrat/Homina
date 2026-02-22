@@ -9,6 +9,7 @@ import { numericMedian } from "@/lib/utils/mathUtils";
 import { numericAverage } from "@/lib/utils/mathUtils";
 import { sortGuildRaidResultDesc } from "@/lib/utils/mathUtils";
 import { isInvalidSeason } from "@/lib/utils/timeUtils";
+import { mapTierToRarity } from "@/lib/utils/utils";
 import { Rarity } from "@/models/enums";
 import {
     AttachmentBuilder,
@@ -27,6 +28,7 @@ export const data = new SlashCommandBuilder()
             .setDescription("The rarity of the boss")
             .setRequired(true)
             .addChoices(
+                { name: "Legendary+", value: Rarity.LEGENDARY_PLUS },
                 { name: "Mythic", value: Rarity.MYTHIC },
                 { name: "Legendary", value: Rarity.LEGENDARY },
                 { name: "Epic", value: Rarity.EPIC },
@@ -145,8 +147,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     await chartService.createSeasonDamageChartAvg(
                         sortGuildRaidResultDesc(data),
                         `Damage dealt in season ${seasonDisplay} - ${
-                            rarity[0] ? rarity[0].toUpperCase() : " "
-                        }${data[0] ? data[0].set : 0} ${bossName}`,
+                            data[0]
+                                ? mapTierToRarity(
+                                      data[0].tier,
+                                      data[0].set,
+                                      false,
+                                  )
+                                : ""
+                        } ${bossName}`,
                         averageMethod,
                         avgDamage,
                         showMax,
