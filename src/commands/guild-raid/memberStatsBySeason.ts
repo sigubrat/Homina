@@ -185,6 +185,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 "See the detailed statistics for each member in the specified season.\n\n" +
                     ":family: - Team distribution used by the player\n" +
                     ":bar_chart: - Percentage of total damage dealt by meta teams\n\n" +
+                    "**Teams:** MH = Multihit, AM = Admech, NE = Neuro, CU = Custodes, BS = Battlesuit, OT = Other\n\n" +
                     "**Includes primes:** Yes",
             )
             .setFields({
@@ -213,55 +214,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             ).toLocaleString("default", {
                 maximumFractionDigits: 1,
             });
-            const formattedTeamDistribution = `:family:  Multihit: \`${stats.distribution.multihit.toLocaleString(
-                "default",
-                {
-                    maximumFractionDigits: 1,
-                },
-            )}%\` Mech: \`${stats.distribution.mech.toLocaleString("default", {
-                maximumFractionDigits: 1,
-            })}%\` Neuro: \`${stats.distribution.neuro.toLocaleString(
-                "default",
-                {
-                    maximumFractionDigits: 1,
-                },
-            )}%\` Custodes: \`${stats.distribution.custodes.toLocaleString(
-                "default",
-                {
-                    maximumFractionDigits: 1,
-                },
-            )}%\` Other: \`${stats.distribution.other.toLocaleString(
-                "default",
-                {
-                    maximumFractionDigits: 1,
-                },
-            )}%\`
-            :bar_chart: Multihit: \`${stats.distribution.multihitDamage?.toLocaleString(
-                "default",
-                {
-                    maximumFractionDigits: 1,
-                },
-            )}%\` Mech: \`${stats.distribution.mechDamage?.toLocaleString(
-                "default",
-                {
-                    maximumFractionDigits: 1,
-                },
-            )}%\` Neuro: \`${stats.distribution.neuroDamage?.toLocaleString(
-                "default",
-                {
-                    maximumFractionDigits: 1,
-                },
-            )}%\` Custodes: \`${stats.distribution.custodesDamage?.toLocaleString(
-                "default",
-                {
-                    maximumFractionDigits: 1,
-                },
-            )}%\` Other: \`${stats.distribution.otherDamage?.toLocaleString(
-                "default",
-                {
-                    maximumFractionDigits: 1,
-                },
-            )}%\``;
+            const fmt = (v: number | undefined) =>
+                `\`${(v ?? 0).toLocaleString("default", { maximumFractionDigits: 1 })}%\``;
+
+            const d = stats.distribution;
+            const formattedTeamDistribution =
+                `:family:  MH: ${fmt(d.multihit)} AM: ${fmt(d.mech)} NE: ${fmt(d.neuro)} CU: ${fmt(d.custodes)} BS: ${fmt(d.battlesuit)} OT: ${fmt(d.other)}\n` +
+                `:bar_chart: MH: ${fmt(d.multihitDamage)} AM: ${fmt(d.mechDamage)} NE: ${fmt(d.neuroDamage)} CU: ${fmt(d.custodesDamage)} BS: ${fmt(d.battlesuitDamage)} OT: ${fmt(d.otherDamage)}`;
 
             pagination.addFields({
                 name: `${stats.username}`,
