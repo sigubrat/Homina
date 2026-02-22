@@ -31,6 +31,7 @@ export const data = new SlashCommandBuilder()
             .setDescription("The rarity of the boss")
             .setRequired(false)
             .addChoices(
+                { name: "Legendary+", value: Rarity.LEGENDARY_PLUS },
                 { name: "Mythic", value: Rarity.MYTHIC },
                 { name: "Legendary", value: Rarity.LEGENDARY },
                 { name: "Epic", value: Rarity.EPIC },
@@ -68,7 +69,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const result = await service.getMetaTeamDistribution(
             discordId,
             season,
-            rarity ? (rarity as Rarity) : undefined,
+            rarity,
         );
 
         if (

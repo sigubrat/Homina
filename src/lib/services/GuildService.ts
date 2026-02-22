@@ -50,6 +50,17 @@ export class GuildService {
     }
 
     /**
+     * Expands a rarity value into an array of concrete rarities.
+     * Maps LEGENDARY_PLUS to [LEGENDARY, MYTHIC]; all others map to a single-element array.
+     */
+    private expandRarity(rarity: Rarity): Rarity[] {
+        if (rarity === Rarity.LEGENDARY_PLUS) {
+            return [Rarity.LEGENDARY, Rarity.MYTHIC];
+        }
+        return [rarity];
+    }
+
+    /**
      * Fetches the guild ID for a given user ID.
      * Retrieves from database first (faster), falls back to API for older registrations.
      * @param discordId The ID of the user to fetch the guild ID for.
@@ -196,7 +207,10 @@ export class GuildService {
         let entries: Raid[] = resp.entries;
 
         if (rarity) {
-            entries = entries.filter((entry) => entry.rarity === rarity);
+            const rarities = this.expandRarity(rarity);
+            entries = entries.filter((entry) =>
+                rarities.includes(entry.rarity),
+            );
         }
 
         const damagePeruser: GuildRaidResult[] = [];
@@ -307,7 +321,10 @@ export class GuildService {
         let entries: Raid[] = resp.entries;
 
         if (rarity) {
-            entries = entries.filter((entry) => entry.rarity === rarity);
+            const rarities = this.expandRarity(rarity);
+            entries = entries.filter((entry) =>
+                rarities.includes(entry.rarity),
+            );
         }
 
         if (filterBombs) {
@@ -432,7 +449,10 @@ export class GuildService {
         let entries: Raid[] = resp.entries;
 
         if (rarity) {
-            entries = entries.filter((entry) => entry.rarity === rarity);
+            const rarities = this.expandRarity(rarity);
+            entries = entries.filter((entry) =>
+                rarities.includes(entry.rarity),
+            );
         }
 
         const bombs: Raid[] = entries.filter(
@@ -474,7 +494,10 @@ export class GuildService {
             let entries: Raid[] = resp.entries;
 
             if (tier) {
-                entries = entries.filter((entry) => entry.rarity === tier);
+                const rarities = this.expandRarity(tier);
+                entries = entries.filter((entry) =>
+                    rarities.includes(entry.rarity),
+                );
             }
 
             const totalDistribution: TeamDistribution = {
@@ -581,7 +604,10 @@ export class GuildService {
             let entries: Raid[] = resp.entries;
 
             if (tier) {
-                entries = entries.filter((entry) => entry.rarity === tier);
+                const rarities = this.expandRarity(tier);
+                entries = entries.filter((entry) =>
+                    rarities.includes(entry.rarity),
+                );
             }
 
             const groupedResults: Record<string, Raid[]> = {};
@@ -1002,8 +1028,9 @@ export class GuildService {
         }
 
         if (rarity) {
-            resp.entries = resp.entries.filter(
-                (entry) => entry.rarity === rarity,
+            const rarities = this.expandRarity(rarity);
+            resp.entries = resp.entries.filter((entry) =>
+                rarities.includes(entry.rarity),
             );
         }
 
@@ -1333,7 +1360,7 @@ export class GuildService {
     async getWeightedRelativePerformance(
         discordId: string,
         season: number,
-        rarity: Rarity | Rarity[],
+        rarity: Rarity,
     ): Promise<Record<string, number> | null> {
         try {
             const apiKey = await dbController.getUserToken(discordId);
@@ -1352,7 +1379,7 @@ export class GuildService {
             }
 
             // Filter to requested rarity/rarities, exclude bombs and sweeps
-            const rarities = Array.isArray(rarity) ? rarity : [rarity];
+            const rarities = this.expandRarity(rarity);
             const entries = resp.entries.filter(
                 (entry) =>
                     rarities.includes(entry.rarity) &&

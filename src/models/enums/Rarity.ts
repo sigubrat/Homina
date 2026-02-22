@@ -5,4 +5,5 @@ export enum Rarity {
     EPIC = "Epic",
     LEGENDARY = "Legendary",
     MYTHIC = "Mythic",
+    LEGENDARY_PLUS = "Legendary+",
 }

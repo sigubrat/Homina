@@ -31,6 +31,7 @@ export const data = new SlashCommandBuilder()
             .setDescription("The rarity of the boss")
             .setRequired(false)
             .addChoices(
+                { name: "Legendary+", value: Rarity.LEGENDARY_PLUS },
                 { name: "Mythic", value: Rarity.MYTHIC },
                 { name: "Legendary", value: Rarity.LEGENDARY },
                 { name: "Epic", value: Rarity.EPIC },
@@ -70,7 +71,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         return;
     }
 
-    const rarity = interaction.options.getString("rarity") as Rarity;
+    const rarity = interaction.options.getString("rarity") as
+        | Rarity
+        | undefined;
 
     const separatePrimes =
         interaction.options.getBoolean("separate-primes") ?? false;

@@ -28,7 +28,7 @@ export const data = new SlashCommandBuilder()
             .setDescription("The rarity of the bosses to compare against")
             .setRequired(true)
             .addChoices(
-                { name: "Legendary+", value: "Legendary+" },
+                { name: "Legendary+", value: Rarity.LEGENDARY_PLUS },
                 { name: "Mythic", value: Rarity.MYTHIC },
                 { name: "Legendary", value: Rarity.LEGENDARY },
                 { name: "Epic", value: Rarity.EPIC },
@@ -48,19 +48,13 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 
-    const rarityInput = interaction.options.getString("rarity", true);
-    const rarity =
-        rarityInput === "Legendary+"
-            ? [Rarity.LEGENDARY, Rarity.MYTHIC]
-            : (rarityInput as Rarity);
+    const rarity = interaction.options.getString("rarity", true) as Rarity;
     const providedSeason = interaction.options.getNumber("season");
     const season = providedSeason ?? getCurrentSeason();
     const discordId = interaction.user.id;
-    const rarityDisplay =
-        rarityInput === "Legendary+" ? "Legendary+" : rarityInput;
 
     logger.info(
-        `${interaction.user.username} attempting to use /relative-performance ${season} ${rarityDisplay}`,
+        `${interaction.user.username} attempting to use /relative-performance ${season} ${rarity}`,
     );
 
     if (providedSeason !== null && isInvalidSeason(providedSeason)) {
@@ -99,11 +93,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const chartBuffer = await chartService.createRelativePerformanceChart(
             result,
-            `Relative Performance - Season ${seasonDisplay} (${rarityDisplay})`,
+            `Relative Performance - Season ${seasonDisplay} (${rarity})`,
         );
 
         const attachment = new AttachmentBuilder(chartBuffer, {
-            name: `relative-performance-${season}-${rarityDisplay}.png`,
+            name: `relative-performance-${season}-${rarity}.png`,
         });
 
         const sortedEntries = Object.entries(result).sort(
@@ -127,7 +121,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const embed = new EmbedBuilder()
             .setColor(0x0099ff)
             .setTitle(
-                `Relative Performance — Season ${seasonDisplay} (${rarityDisplay})`,
+                `Relative Performance — Season ${seasonDisplay} (${rarity})`,
             )
             .setDescription(
                 "This chart shows how each member performs relative to the guild average across all bosses at the specified rarity.\n\n" +
@@ -151,7 +145,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 },
             )
             .setImage(
-                `attachment://relative-performance-${season}-${rarityDisplay}.png`,
+                `attachment://relative-performance-${season}-${rarity}.png`,
             )
             .setFooter({
                 text: "Inspired by TheTimmyMan's TacticusAnalytics which I strongly recommend for detailed insights!\nReferral code: HUG-44-CAN if you want to support me",
@@ -163,7 +157,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         });
 
         logger.info(
-            `${interaction.user.username} successfully used /relative-performance ${season} ${rarityDisplay}`,
+            `${interaction.user.username} successfully used /relative-performance ${season} ${rarity}`,
         );
     } catch (error) {
         logger.error(

@@ -20,6 +20,7 @@ export const data = new SlashCommandBuilder()
             .setDescription("The rarity of the boss")
             .setRequired(false)
             .addChoices(
+                { name: "Legendary+", value: Rarity.LEGENDARY_PLUS },
                 { name: "Mythic", value: Rarity.MYTHIC },
                 { name: "Legendary", value: Rarity.LEGENDARY },
                 { name: "Epic", value: Rarity.EPIC },
@@ -93,7 +94,15 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 const rarities = Object.keys(season.config);
                 const bosses = rarities
                     .map((r) => {
-                        if (rarity && r !== rarity) {
+                        const matchRarities = rarity
+                            ? rarity === Rarity.LEGENDARY_PLUS
+                                ? [
+                                      Rarity.LEGENDARY as string,
+                                      Rarity.MYTHIC as string,
+                                  ]
+                                : [rarity as string]
+                            : null;
+                        if (matchRarities && !matchRarities.includes(r)) {
                             return;
                         }
                         const bossList =
