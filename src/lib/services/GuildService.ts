@@ -1360,7 +1360,7 @@ export class GuildService {
     async getWeightedRelativePerformance(
         discordId: string,
         season: number,
-        rarity: Rarity,
+        rarity?: Rarity,
     ): Promise<Record<string, number> | null> {
         try {
             const apiKey = await dbController.getUserToken(discordId);
@@ -1378,11 +1378,11 @@ export class GuildService {
                 return null;
             }
 
-            // Filter to requested rarity/rarities, exclude bombs and sweeps
-            const rarities = this.expandRarity(rarity);
+            // Filter to requested rarity/rarities (if provided), exclude bombs and sweeps
+            const rarities = rarity ? this.expandRarity(rarity) : null;
             const entries = resp.entries.filter(
                 (entry) =>
-                    rarities.includes(entry.rarity) &&
+                    (!rarities || rarities.includes(entry.rarity)) &&
                     entry.damageType === DamageType.BATTLE &&
                     entry.remainingHp > 0,
             );
