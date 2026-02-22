@@ -19,6 +19,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [1.3.0] - 2026-02-22
+
+Doing a lot of damage is great, but total damage dealt over a season doesn't mean much if a player is only attacking the easiest boss the entire season. This update introduces a new command that lets you see how well players use each token compared to their fellow guildmates.
+
+`/relative-performance` is a new command that displays a chart of each player's performance relative to their fellow guildmates. For each boss, a player's average damage per token is compared to the guild's average damage per token for that boss. These ratios are then combined using a weighted average (weighted by the number of tokens used per boss). This gives useful insights into two important questions: are you using your tokens efficiently and are you using them against the correct boss?
+
+The update also alleviates some of the feedback given after the 1.0.0 release and brings some other quality-of-life upgrades.
+
+### Added
+
+- **New command!** `/relative-performance` - Displays a horizontal bar chart displaying relative performance within a guild
+- A new rarity option for commands: Legendary+ - This rarity filter combines legendary bosses and mythic bosses, as those are usually the most important for intermediate- to advanced guilds.
+
+### Changed
+
+- `/available-bombs` and `/gr-availability` no longer displays users who have left your guild
+
+### Fixed
+
+- Fixed a missing field for the battlesuit team in `/member-stats-per-season`
+
 ## [1.2.0] - 2026-02-19
 
 This update changes the chart of `/season-participation` to display more information.
