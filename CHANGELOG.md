@@ -19,6 +19,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [1.4.0] - 2026-02-23 
+
+There have been some requests for the ability to revoke access to users you have invited using the `/invite-user` command. This update aims to allow that by tracking who you have invited and letting you revoke their access through the new `/revoke-access` command. 
+
+Do note that if you have given someone your API key directly you will have to delete this key at Snowprint's website to revoke their access effectively. 
+
+There is also the case regarding 'what if a user I have invited invites other users? Can I revoke their access?'. The answer is yes, but only if you've revoked access to the first user first. The bot only keeps track of who invited a user, and only that person can revoke their access. Imagine user A invites B, who then invites C. User A can revoke access to B, but not C. However, if user A revokes access to C, the bot will update user C to count as invited by user A and user A can now revoke their access as well. I hope that made sense...drop by the discord server if you're unsure. 
+
+### Added 
+
+- **New command!** `/revoke-access`- Pick a user from a list of users you have invited to use the bot with your API token and revoke their access. 
+- Tracking of who invited a user to the bot
+
+### Changed
+
+- `/invite-user` now registers who invited the invited user in a new database field. 
+
+
 ## [1.3.0] - 2026-02-22
 
 Doing a lot of damage is great, but total damage dealt over a season doesn't mean much if a player is only attacking the easiest boss the entire season. This update introduces a new command that lets you see how well players use each token compared to their fellow guildmates.
