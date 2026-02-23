@@ -26,15 +26,21 @@ export async function execute(interaction: any) {
             }
 
             if (customId.startsWith("invite_confirm_")) {
-                const apiToken = customId.split("_")[3];
-                if (!apiToken) {
+                const parts = customId.split("_");
+                const apiToken = parts[3];
+                const inviterId = parts[4];
+                if (!apiToken || !inviterId) {
                     await interaction.reply({
                         content: "Invalid invitation data.",
                         flags: MessageFlags.Ephemeral,
                     });
                     return;
                 }
-                await messageService.handleInviteConfirm(interaction, apiToken);
+                await messageService.handleInviteConfirm(
+                    interaction,
+                    apiToken,
+                    inviterId,
+                );
             } else if (customId.startsWith("invite_decline_")) {
                 await messageService.handleInviteDecline(interaction);
             }
@@ -75,7 +81,7 @@ export async function execute(interaction: any) {
 
     if (!command) {
         logger.error(
-            `No command matching ${interaction.commandName} was found.`
+            `No command matching ${interaction.commandName} was found.`,
         );
         return;
     }

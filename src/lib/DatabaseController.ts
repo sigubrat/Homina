@@ -63,6 +63,11 @@ export class DatabaseController {
                     allowNull: false,
                     defaultValue: DataTypes.NOW,
                 },
+                invitedBy: {
+                    type: DataTypes.STRING,
+                    allowNull: true,
+                    defaultValue: null,
+                },
             },
             {
                 hooks: {
@@ -137,12 +142,14 @@ export class DatabaseController {
      * @param userId - The unique identifier of the user.
      * @param token - The token to be encrypted and stored.
      * @param guildId - The in-game guild ID associated with the token.
+     * @param invitedBy - The Discord user ID of the person who invited this user (optional).
      * @returns A promise that resolves to `true` if the registration was successful, or `false` if an error occurred.
      */
     public async registerUser(
         userId: string,
         token: string,
         guildId: string,
+        invitedBy?: string,
     ): Promise<boolean> {
         try {
             const encryptedToken = CryptoService.encrypt(token);
@@ -151,6 +158,7 @@ export class DatabaseController {
                 token: encryptedToken,
                 guildId: guildId,
                 tokenLastUsed: new Date(),
+                invitedBy: invitedBy ?? null,
             });
 
             return true;
@@ -351,6 +359,64 @@ export class DatabaseController {
         } catch (error) {
             logger.error(error, "Error cleaning up old tokens in database");
             return [];
+        }
+    }
+    /**
+     * Retrieves all users invited by a given Discord user ID.
+     *
+     * @param discordId - The Discord user ID of the inviter.
+     * @returns An array of user IDs invited by this user, or an empty array on error.
+     */
+    public async getInvitedUsers(discordId: string): Promise<string[]> {
+        try {
+            const results = await this.sequelize.models[
+                "discordApiTokenMappings"
+            ]?.findAll({
+                where: { invitedBy: discordId },
+                attributes: ["userId"],
+            });
+            return (
+                results?.map((r) => r.getDataValue("userId") as string) || []
+            );
+        } catch (error) {
+            logger.error(error, "Error fetching invited users");
+            return [];
+        }
+    }
+
+    /**
+     * Revokes access for a user invited by the specified inviter.
+     * Any users that the revoked user had themselves invited are re-parented
+     * to the inviter, so the inviter inherits management of the chain.
+     *
+     * @param userId - The user ID to revoke access for.
+     * @param inviterId - The Discord user ID of the inviter.
+     * @returns True if the user was deleted, false otherwise.
+     */
+    public async revokeInvitedUser(
+        userId: string,
+        inviterId: string,
+    ): Promise<boolean> {
+        try {
+            const model = this.sequelize.models["discordApiTokenMappings"];
+
+            // Re-parent the revoked user's invitees to the inviter
+            await model?.update(
+                { invitedBy: inviterId },
+                { where: { invitedBy: userId } },
+            );
+
+            // Delete the revoked user
+            const res = await model?.destroy({
+                where: {
+                    userId: userId,
+                    invitedBy: inviterId,
+                },
+            });
+            return (res ?? 0) > 0;
+        } catch (error) {
+            logger.error(error, "Error revoking invited user");
+            return false;
         }
     }
 }

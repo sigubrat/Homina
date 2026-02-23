@@ -13,7 +13,7 @@ export const data = new SlashCommandBuilder()
         option
             .setName("user")
             .setDescription("The user to invite")
-            .setRequired(true)
+            .setRequired(true),
     );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
@@ -31,7 +31,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     }
 
     try {
-        // Fetch the command caller's API token
         const apiToken = await dbController.getUserToken(commandCallerId);
         if (!apiToken || !isValidUUIDv4(apiToken)) {
             await interaction.editReply({
@@ -41,12 +40,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
-        // Invite the user by sending them a DM for confirmation. No user should be registered without their consent.
         const messageService = new MessageService(interaction.client);
         const invitedSuccessfully = await messageService.inviteUser(
             invitedUser,
             commandCallerUsername,
-            apiToken
+            apiToken,
+            commandCallerId,
         );
 
         if (invitedSuccessfully) {
@@ -64,7 +63,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 "An error occurred while trying to invite the user. Please try again later.",
         });
         logger.error(
-            `Error while ${interaction.user.username} was trying to invite ${invitedUser.username}: ${error}`
+            `Error while ${interaction.user.username} was trying to invite ${invitedUser.username}: ${error}`,
         );
     }
 }

@@ -51,6 +51,7 @@ export class MessageService {
         user: User,
         inviterName: string,
         apiToken: string,
+        inviterId: string,
     ): Promise<boolean> {
         const userId = user.id;
         try {
@@ -76,7 +77,9 @@ export class MessageService {
                 .setTimestamp();
 
             const confirmButton = new ButtonBuilder()
-                .setCustomId(`invite_confirm_${userId}_${apiToken}`)
+                .setCustomId(
+                    `invite_confirm_${userId}_${apiToken}_${inviterId}`,
+                )
                 .setLabel("Confirm")
                 .setStyle(ButtonStyle.Success);
 
@@ -106,6 +109,7 @@ export class MessageService {
     public async handleInviteConfirm(
         interaction: ButtonInteraction,
         apiToken: string,
+        inviterId: string,
     ): Promise<void> {
         await interaction.deferUpdate();
 
@@ -161,6 +165,7 @@ export class MessageService {
                 interaction.user.id,
                 apiToken,
                 guildId,
+                inviterId,
             );
             if (!result) {
                 await interaction.followUp({
