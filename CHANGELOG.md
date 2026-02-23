@@ -27,6 +27,8 @@ Do note that if you have given someone your API key directly you will have to de
 
 There is also the case regarding 'what if a user I have invited invites other users? Can I revoke their access?'. The answer is yes, but only if you've revoked access to the first user first. The bot only keeps track of who invited a user, and only that person can revoke their access. Imagine user A invites B, who then invites C. User A can revoke access to B, but not C. However, if user A revokes access to C, the bot will update user C to count as invited by user A and user A can now revoke their access as well. I hope that made sense...drop by the discord server if you're unsure. 
 
+Final note: this does not apply retroactively. Only users invited after this update will be tracked as invited by you. If you reaaalllyyy want someone to lose access you'll have to clean up your distributed tokens. 
+
 ### Added 
 
 - **New command!** `/revoke-access`- Pick a user from a list of users you have invited to use the bot with your API token and revoke their access. 
