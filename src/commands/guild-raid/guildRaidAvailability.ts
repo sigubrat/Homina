@@ -159,7 +159,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             )
             .setTimestamp()
             .setFooter({
-                text: "Data fetched from the guild raid API.\n(NB! Inaccuracies may occur for users who have joined mid-season)\nGleam code: LOVRAFFLE\nReferral code: HUG-44-CAN if you want to support me",
+                text: "Data fetched from the guild raid API.\n(NB! Inaccuracies may occur for users who have joined mid-season)\nGleam code: LOVRAFFLE\nReferral code: HUG-44-CAN if you want to support the bot development",
             });
 
         for (let i = 0; i < table.length; i += 10) {

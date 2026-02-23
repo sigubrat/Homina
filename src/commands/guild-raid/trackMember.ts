@@ -121,7 +121,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setColor("#0099ff")
             .setTimestamp()
             .setFooter({
-                text: "Gleam code: LOVRAFFLE\nReferral code: HUG-44-CAN if you want to support me",
+                text: "Gleam code: LOVRAFFLE\nReferral code: HUG-44-CAN if you want to support the bot development",
             });
 
         if (rarity) {

@@ -69,7 +69,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setTitle(`Guild raid seasons with the same config`)
             .setTimestamp()
             .setFooter({
-                text: "Gleam code: LOVRAFFLE\nReferral code: HUG-44-CAN if you want to support me",
+                text: "Gleam code: LOVRAFFLE\nReferral code: HUG-44-CAN if you want to support the bot development",
             })
             .setFields(
                 {
