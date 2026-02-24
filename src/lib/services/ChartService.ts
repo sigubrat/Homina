@@ -982,9 +982,9 @@ export class ChartService {
         const axisMin = Math.floor((minVal - padding) / 10) * 10;
 
         const backgroundColors = values.map((value) => {
-            if (value >= 20) return CHART_COLORS.purple;
-            if (value >= 10) return CHART_COLORS.green;
-            if (value >= 0) return CHART_COLORS.blue;
+            if (value >= 10) return CHART_COLORS.purple;
+            if (value >= 5) return CHART_COLORS.green;
+            if (value >= -5) return CHART_COLORS.blue;
             if (value >= -10) return CHART_COLORS.yellow;
             if (value >= -20) return CHART_COLORS.orange;
             return CHART_COLORS.red;
@@ -1029,7 +1029,7 @@ export class ChartService {
                     },
                     {
                         type: "line",
-                        label: "Guild Average (0%)",
+                        label: "Guild Average",
                         data: Array(usernames.length).fill(0),
                         borderColor: CHART_COLORS.yellow,
                         borderWidth: 2,
