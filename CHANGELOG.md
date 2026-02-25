@@ -19,25 +19,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
-## [1.4.0] - 2026-02-23 
+## [1.5.0] - 2026-02-24
 
-There have been some requests for the ability to revoke access to users you have invited using the `/invite-user` command. This update aims to allow that by tracking who you have invited and letting you revoke their access through the new `/revoke-access` command. 
+This update brings a new command to help guild leaders identify members who are losing tokens by staying at the 3/3 cap for too long. Instead of just seeing who has used the most or fewest tokens, you can now see an estimate of how many tokens each member has wasted by not spending them before regeneration was paused. Note: this command must be viewed with full knowledge of its technical limitations.
 
-Do note that if you have given someone your API key directly you will have to delete this key at Snowprint's website to revoke their access effectively. 
+### Added
 
-There is also the case regarding 'what if a user I have invited invites other users? Can I revoke their access?'. The answer is yes, but only if you've revoked access to the first user first. The bot only keeps track of who invited a user, and only that person can revoke their access. Imagine user A invites B, who then invites C. User A can revoke access to B, but not C. However, if user A revokes access to C, the bot will update user C to count as invited by user A and user A can now revoke their access as well. I hope that made sense...drop by the discord server if you're unsure. 
+- **New command!** `/tokens-burnt` - Displays an overview of each guild member's currently available tokens, how many they've used this season, and how many they've burned (lost by staying capped at 3/3 too long).
+    - Burned tokens are calculated by comparing each player's `used + available` against the highest value in the guild, which represents the theoretical maximum for someone who never missed a regeneration.
+    - Members are sorted by burned tokens (descending), then available tokens, then usage.
+    - Includes status icons: 🔴 inactive & capped, ⚠️ capped but has played, 🔵 has some tokens, ✅ all tokens spent.
+    - The command also includes detailed explanations of assumptions and caveats (e.g. ±1 token uncertainty, hard cap at the configured maximum tokens per season).
 
-Final note: this does not apply retroactively. Only users invited after this update will be tracked as invited by you. If you reaaalllyyy want someone to lose access you'll have to clean up your distributed tokens. 
+## [1.4.0] - 2026-02-23
 
-### Added 
+There have been some requests for the ability to revoke access to users you have invited using the `/invite-user` command. This update aims to allow that by tracking who you have invited and letting you revoke their access through the new `/revoke-access` command.
 
-- **New command!** `/revoke-access`- Pick a user from a list of users you have invited to use the bot with your API token and revoke their access. 
+Do note that if you have given someone your API key directly you will have to delete this key at Snowprint's website to revoke their access effectively.
+
+There is also the case regarding 'what if a user I have invited invites other users? Can I revoke their access?'. The answer is yes, but only if you've revoked access to the first user first. The bot only keeps track of who invited a user, and only that person can revoke their access. Imagine user A invites B, who then invites C. User A can revoke access to B, but not C. However, if user A revokes access to C, the bot will update user C to count as invited by user A and user A can now revoke their access as well. I hope that made sense...drop by the discord server if you're unsure.
+
+Final note: this does not apply retroactively. Only users invited after this update will be tracked as invited by you. If you reaaalllyyy want someone to lose access you'll have to clean up your distributed tokens.
+
+### Added
+
+- **New command!** `/revoke-access`- Pick a user from a list of users you have invited to use the bot with your API token and revoke their access.
 - Tracking of who invited a user to the bot
 
 ### Changed
 
-- `/invite-user` now registers who invited the invited user in a new database field. 
-
+- `/invite-user` now registers who invited the invited user in a new database field.
 
 ## [1.3.0] - 2026-02-22
 

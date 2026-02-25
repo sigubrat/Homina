@@ -180,7 +180,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setColor("#0099ff")
             .setTitle(`Token Overview — Season ${season}`)
             .setDescription(
-                "Shows each member's **currently available** tokens, how many they've **used**, and how many they've **burned** this season.\n\n" +
+                "Shows each member's currently available tokens, how many they've used, and how many they've burnt this season.\n" +
+                    "**Nb!** This command should always be looked at with the knowledge that the token calculations contains a ±1 uncertainty.\n\n" +
                     "🔴 Capped & 0 used (inactive)\n" +
                     "⚠️ Capped (may be burning tokens)\n" +
                     "🔵 Has tokens available\n" +
