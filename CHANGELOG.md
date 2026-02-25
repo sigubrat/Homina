@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
-## [1.5.0] - 2026-02-24
+## [1.5.0] - 2026-02-25
 
 This update brings a new command to help guild leaders identify members who are losing tokens by staying at the 3/3 cap for too long. Instead of just seeing who has used the most or fewest tokens, you can now see an estimate of how many tokens each member has wasted by not spending them before regeneration was paused. Note: this command must be viewed with full knowledge of its technical limitations.
 
