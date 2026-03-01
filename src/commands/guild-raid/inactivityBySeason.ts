@@ -193,7 +193,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         await interaction.editReply({ embeds: [embed] });
 
         logger.info(
-            `${interaction.user.username} succesfully used /inactivity-by-season for season ${season}`,
+            `${interaction.user.username} successfully used /inactivity-by-season for season ${season}`,
         );
     } catch (error) {
         logger.error(error, "Error fetching guild raid result: ");

@@ -89,7 +89,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         });
 
         logger.info(
-            `User ${interaction.user.username} succesfully registered a token`,
+            `User ${interaction.user.username} successfully registered a token`,
         );
 
         await interaction.editReply({

@@ -26,7 +26,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         const response = result
-            ? "Succesfully deleted your account and api-token from the bot"
+            ? "successfully deleted your account and api-token from the bot"
             : "Could not delete your account. Either you are not registered or an error occurred. Contact the developer if you're sure you are registered";
 
         await interaction.editReply({
@@ -42,5 +42,5 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         return;
     }
 
-    logger.info(`${interaction.user.username} succesfully used /delete`);
+    logger.info(`${interaction.user.username} successfully used /delete`);
 }

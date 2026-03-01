@@ -133,7 +133,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         });
 
         logger.info(
-            `${interaction.user.username} succesfully used /meta-team-distribution for season ${season}`,
+            `${interaction.user.username} successfully used /meta-team-distribution for season ${season}`,
         );
     } catch (error) {
         logger.error(error, "Error fetching guild raid result");

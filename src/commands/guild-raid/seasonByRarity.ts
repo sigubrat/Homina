@@ -193,7 +193,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         });
 
         logger.info(
-            `${interaction.user.username} succesfully used /season-by-rarity ${season} ${rarity}`,
+            `${interaction.user.username} successfully used /season-by-rarity ${season} ${rarity}`,
         );
     } catch (error) {
         logger.error(error, "Error fetching guild raid results");
