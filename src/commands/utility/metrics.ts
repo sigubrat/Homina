@@ -56,31 +56,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         ] = await Promise.all([
             dbController.getCumulativeMetrics(),
             dbController.getCommandUsageCounts(since, 15),
-            dbController.getDailyEventCounts(
-                BotEventType.COMMAND_USE,
-                days ?? 9999,
-            ),
-            dbController.getDailyEventCounts(
-                BotEventType.COMMAND_ERROR,
-                days ?? 9999,
-            ),
-            dbController.getDailyEventCounts(
-                BotEventType.USER_REGISTER,
-                days ?? 9999,
-            ),
-            dbController.getDailyEventCounts(
-                BotEventType.USER_DELETE,
-                days ?? 9999,
-            ),
-            dbController.getDailyEventCounts(
-                BotEventType.USER_REVOKE,
-                days ?? 9999,
-            ),
-            dbController.getDailyEventCounts(
-                BotEventType.USER_CLEANUP,
-                days ?? 9999,
-            ),
-            dbController.getDailyCommandUsage(days ?? 9999, 10),
+            dbController.getDailyEventCounts(BotEventType.COMMAND_USE, days),
+            dbController.getDailyEventCounts(BotEventType.COMMAND_ERROR, days),
+            dbController.getDailyEventCounts(BotEventType.USER_REGISTER, days),
+            dbController.getDailyEventCounts(BotEventType.USER_DELETE, days),
+            dbController.getDailyEventCounts(BotEventType.USER_REVOKE, days),
+            dbController.getDailyEventCounts(BotEventType.USER_CLEANUP, days),
+            dbController.getDailyCommandUsage(days, 10),
         ]);
 
         // Build cumulative overview embed

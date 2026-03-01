@@ -113,25 +113,44 @@ export class DatabaseController {
         );
 
         // Bot analytics events table
-        this.sequelize.define("botEvents", {
-            id: {
-                type: DataTypes.INTEGER,
-                autoIncrement: true,
-                primaryKey: true,
+        this.sequelize.define(
+            "botEvents",
+            {
+                id: {
+                    type: DataTypes.INTEGER,
+                    autoIncrement: true,
+                    primaryKey: true,
+                },
+                eventType: {
+                    type: DataTypes.STRING,
+                    allowNull: false,
+                },
+                eventName: {
+                    type: DataTypes.STRING,
+                    allowNull: true,
+                },
+                metadata: {
+                    type: DataTypes.JSONB,
+                    allowNull: true,
+                },
             },
-            eventType: {
-                type: DataTypes.STRING,
-                allowNull: false,
+            {
+                indexes: [
+                    {
+                        name: "bot_events_event_type_created_at",
+                        fields: ["eventType", "createdAt"],
+                    },
+                    {
+                        name: "bot_events_event_type_event_name_created_at",
+                        fields: ["eventType", "eventName", "createdAt"],
+                    },
+                    {
+                        name: "bot_events_created_at",
+                        fields: ["createdAt"],
+                    },
+                ],
             },
-            eventName: {
-                type: DataTypes.STRING,
-                allowNull: true,
-            },
-            metadata: {
-                type: DataTypes.JSONB,
-                allowNull: true,
-            },
-        });
+        );
 
         //**
         // SCHEMA RELATIONSHIPS
@@ -423,8 +442,8 @@ export class DatabaseController {
      * Logs a bot analytics event to the database.
      * Silently catches errors to avoid disrupting bot operations.
      *
-     * @param eventType - The type of event (command_use, command_error, user_register, user_delete).
-     * @param eventName - An optional name for the event (e.g. the command name).
+     * @param eventType - The type of event, as defined by {@link BotEventType}.
+     * @param eventName - An optional name for the event (e.g. the command or source that triggered it).
      * @param metadata - Optional JSON metadata for extra context.
      */
     public async logEvent(
@@ -476,23 +495,27 @@ export class DatabaseController {
      * Useful for trend/time-series analysis.
      *
      * @param eventType - The event type to filter on.
-     * @param days - The number of days to look back (default: 30).
+     * @param days - The number of days to look back. If omitted, returns all-time data.
      * @returns An array of daily event counts.
      */
     public async getDailyEventCounts(
         eventType: BotEventType,
-        days: number = 30,
+        days?: number,
     ): Promise<DailyEventCount[]> {
         try {
+            const dateFilter =
+                days != null
+                    ? `AND "createdAt" >= NOW() - INTERVAL '1 day' * :days`
+                    : "";
             const results = await this.sequelize.query(
                 `SELECT DATE("createdAt") as date, COUNT(*)::int as count
                  FROM "botEvents"
                  WHERE "eventType" = :eventType
-                   AND "createdAt" >= NOW() - INTERVAL '1 day' * :days
+                   ${dateFilter}
                  GROUP BY DATE("createdAt")
                  ORDER BY date ASC`,
                 {
-                    replacements: { eventType, days },
+                    replacements: { eventType, ...(days != null && { days }) },
                     type: QueryTypes.SELECT,
                 },
             );
@@ -606,26 +629,30 @@ export class DatabaseController {
      * Gets daily command usage counts broken down by command name.
      * Returns data suitable for a multi-line time-series chart.
      *
-     * @param days - Number of days to look back (default: 30).
+     * @param days - Number of days to look back. If omitted, returns all-time data.
      * @param limit - Maximum number of commands to include (default: 10, by total usage).
      * @returns An object mapping command names to arrays of { date, count }.
      */
     public async getDailyCommandUsage(
-        days: number = 30,
+        days?: number,
         limit: number = 10,
     ): Promise<Record<string, { date: string; count: number }[]>> {
         try {
+            const dateFilter =
+                days != null
+                    ? `AND "createdAt" >= NOW() - INTERVAL '1 day' * :days`
+                    : "";
             const topCommands = (await this.sequelize.query(
                 `SELECT "eventName", COUNT(*)::int as total
                  FROM "botEvents"
                  WHERE "eventType" = '${BotEventType.COMMAND_USE}'
                    AND "eventName" IS NOT NULL
-                   AND "createdAt" >= NOW() - INTERVAL '1 day' * :days
+                   ${dateFilter}
                  GROUP BY "eventName"
                  ORDER BY total DESC
                  LIMIT :limit`,
                 {
-                    replacements: { days, limit },
+                    replacements: { ...(days != null && { days }), limit },
                     type: QueryTypes.SELECT,
                 },
             )) as { eventName: string; total: number }[];
@@ -639,11 +666,14 @@ export class DatabaseController {
                  FROM "botEvents"
                  WHERE "eventType" = '${BotEventType.COMMAND_USE}'
                    AND "eventName" IN (:commandNames)
-                   AND "createdAt" >= NOW() - INTERVAL '1 day' * :days
+                   ${dateFilter}
                  GROUP BY DATE("createdAt"), "eventName"
                  ORDER BY date ASC`,
                 {
-                    replacements: { commandNames, days },
+                    replacements: {
+                        commandNames,
+                        ...(days != null && { days }),
+                    },
                     type: QueryTypes.SELECT,
                 },
             )) as { date: string; eventName: string; count: number }[];

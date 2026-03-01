@@ -20,7 +20,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const result = await dbController.deleteUser(interaction.user.id);
 
         if (result) {
-            await dbController.logEvent(BotEventType.USER_DELETE, "delete", {
+            void dbController.logEvent(BotEventType.USER_DELETE, "delete", {
                 userId: interaction.user.id,
             });
         }

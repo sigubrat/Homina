@@ -89,12 +89,9 @@ export async function execute(interaction: any) {
 
     try {
         await command.execute(interaction);
-        await dbController.logEvent(
-            BotEventType.COMMAND_USE,
-            command.data.name,
-        );
+        void dbController.logEvent(BotEventType.COMMAND_USE, command.data.name);
     } catch (error) {
-        await dbController.logEvent(
+        void dbController.logEvent(
             BotEventType.COMMAND_ERROR,
             command.data.name,
             {

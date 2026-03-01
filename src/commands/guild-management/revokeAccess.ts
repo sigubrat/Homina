@@ -96,9 +96,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             );
 
             if (revoked) {
-                await dbController.logEvent(
+                void dbController.logEvent(
                     BotEventType.USER_REVOKE,
-                    "revoke",
+                    "revoke-access",
                     {
                         userId: selectedUserId,
                         revokedBy: inviterId,
