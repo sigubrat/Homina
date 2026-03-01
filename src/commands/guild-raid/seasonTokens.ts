@@ -216,7 +216,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         await interaction.editReply({ embeds: [embed], files: [attachment] });
 
         logger.info(
-            `${interaction.user.username} succesfully used /tokens-by-season for season ${season}`,
+            `${interaction.user.username} successfully used /tokens-by-season for season ${season}`,
         );
     } catch (error) {
         logger.error(error, "Error occured in tokens-by-season: ");

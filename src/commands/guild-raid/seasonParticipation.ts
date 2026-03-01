@@ -206,7 +206,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         await interaction.editReply({ embeds: [embed], files: [attachment] });
 
         logger.info(
-            `${interaction.user.username} succesfully used /season-participation`,
+            `${interaction.user.username} successfully used /season-participation`,
         );
     } catch (error) {
         logger.error(error, "Error executing command");
