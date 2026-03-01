@@ -2,6 +2,7 @@ import * as fs from "fs/promises";
 import * as path from "path";
 import { Collection } from "discord.js";
 import { HominaTacticusClient } from "@/client";
+import { logger } from "../HominaLogger";
 
 /**
  * Asynchronously loads command modules from a specified directory and returns them in a collection.
@@ -13,7 +14,7 @@ import { HominaTacticusClient } from "@/client";
  * @returns A promise that resolves to a `Collection` mapping command names to their respective command modules.
  */
 async function getCommands(
-    commandsPath: string
+    commandsPath: string,
 ): Promise<Collection<string, any>> {
     const commandsCollection = new Collection<string, any>();
     const commandFiles = await fs.readdir(commandsPath);
@@ -74,7 +75,7 @@ export async function testApiToken(token: string): Promise<boolean> {
 
         return resp.success;
     } catch (error) {
-        console.error("Error testing API token:", error);
+        logger.error(error, "Error testing API token:");
         return false;
     }
 }
@@ -93,7 +94,7 @@ export async function testPlayerApiToken(token: string): Promise<boolean> {
 
         return resp.success;
     } catch (error) {
-        console.error("Error testing Player API token:", error);
+        logger.error(error, "Error testing Player API token:");
         return false;
     }
 }

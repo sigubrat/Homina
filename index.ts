@@ -7,6 +7,7 @@ import {
 import * as path from "path";
 import * as fs from "fs";
 import { dbController, logger, validateEnvVars } from "@/lib";
+import { BotEventType } from "@/models/enums";
 import { getAllCommands } from "@/lib/utils/commandUtils";
 import { InfisicalClient } from "@/client/InfisicalClient";
 import { MessageService } from "@/lib/services/MessageService";
@@ -87,12 +88,23 @@ const startBot = async () => {
 
                 if (deletedIds.length > 0) {
                     for (const userId of deletedIds) {
+                        void dbController.logEvent(
+                            BotEventType.USER_CLEANUP,
+                            "token-cleanup",
+                            {
+                                userId,
+                            },
+                        );
                         await messageService.alertDeletedUser(userId);
                         await new Promise((resolve) =>
                             setTimeout(resolve, 1000),
                         ); // 1 second delay
                     }
                 }
+
+                // Clean up old bot events (keep 90 days)
+                await dbController.cleanupOldEvents(90);
+
                 logger.info("Token cleanup completed successfully.");
             } catch (error) {
                 logger.error(error, "Error during token cleanup:");

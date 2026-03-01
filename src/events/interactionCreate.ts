@@ -1,5 +1,6 @@
-import { logger } from "@/lib";
+import { dbController, logger } from "@/lib";
 import { MessageService } from "@/lib/services/MessageService";
+import { BotEventType } from "@/models/enums";
 import { Collection, Events, MessageFlags } from "discord.js";
 
 export const name = Events.InteractionCreate;
@@ -88,7 +89,15 @@ export async function execute(interaction: any) {
 
     try {
         await command.execute(interaction);
+        void dbController.logEvent(BotEventType.COMMAND_USE, command.data.name);
     } catch (error) {
+        void dbController.logEvent(
+            BotEventType.COMMAND_ERROR,
+            command.data.name,
+            {
+                error: error instanceof Error ? error.message : String(error),
+            },
+        );
         logger.error(error, "Failed to create interaction command");
         if (interaction.replied || interaction.deferred) {
             await interaction.followUp({

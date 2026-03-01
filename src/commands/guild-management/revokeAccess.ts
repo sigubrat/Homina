@@ -1,4 +1,5 @@
 import { dbController, logger } from "@/lib";
+import { BotEventType } from "@/models/enums";
 import {
     ActionRowBuilder,
     ChatInputCommandInteraction,
@@ -95,6 +96,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             );
 
             if (revoked) {
+                void dbController.logEvent(
+                    BotEventType.USER_REVOKE,
+                    "revoke-access",
+                    {
+                        userId: selectedUserId,
+                        revokedBy: inviterId,
+                    },
+                );
                 logger.info(
                     `${interaction.user.username} revoked access for user ${selectedUserId}`,
                 );

@@ -10,6 +10,7 @@ import {
     User,
 } from "discord.js";
 import { dbController, logger } from "@/lib";
+import { BotEventType } from "@/models/enums";
 import { HominaTacticusClient } from "@/client";
 import { isValidUUIDv4 } from "../utils/mathUtils";
 import path from "path";
@@ -174,6 +175,15 @@ export class MessageService {
                 });
                 return;
             }
+
+            void dbController.logEvent(
+                BotEventType.USER_REGISTER,
+                "invite-user",
+                {
+                    userId: interaction.user.id,
+                    inviterId,
+                },
+            );
 
             await interaction.followUp({
                 content:

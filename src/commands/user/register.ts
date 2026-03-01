@@ -7,6 +7,7 @@ import { isValidUUIDv4 } from "@/lib/utils/mathUtils";
 import { testApiToken } from "@/lib/utils/commandUtils";
 import { dbController, logger } from "@/lib";
 import { HominaTacticusClient } from "@/client";
+import { BotEventType } from "@/models/enums";
 
 export const cooldown = 5; // Cooldown in seconds
 
@@ -82,6 +83,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             });
             return;
         }
+
+        void dbController.logEvent(BotEventType.USER_REGISTER, "register", {
+            userId: interaction.user.id,
+        });
 
         logger.info(
             `User ${interaction.user.username} succesfully registered a token`,

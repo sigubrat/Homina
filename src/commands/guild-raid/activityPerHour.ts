@@ -1,3 +1,4 @@
+import { logger } from "@/lib";
 import { ChartService } from "@/lib/services/ChartService";
 import { GuildService } from "@/lib/services/GuildService";
 import {
@@ -77,7 +78,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         return;
     } catch (error) {
-        console.error("Error fetching token timeline:", error);
+        logger.error(error, "Error fetching token timeline:");
         await interaction.editReply({
             content: "An error occurred while fetching the token timeline.",
         });
