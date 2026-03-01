@@ -17,6 +17,7 @@ export interface DailyEventCount {
 
 export class DatabaseController {
     private sequelize: Sequelize;
+    private modelsReady: Promise<void>;
 
     constructor() {
         validateEnvVars(["DB_NAME", "DB_USER", "DB_PWD"]);
@@ -34,7 +35,7 @@ export class DatabaseController {
             },
         );
 
-        this.defineModels();
+        this.modelsReady = this.defineModels();
     }
 
     public getSequelizeInstance(): Sequelize {
@@ -175,7 +176,7 @@ export class DatabaseController {
      */
     public async isReady(): Promise<DbTestResult> {
         try {
-            await this.sequelize.authenticate();
+            await this.modelsReady;
             console.log("Database is ready for use");
         } catch (error) {
             logger.error(error, "Unable to connect to the database:");
