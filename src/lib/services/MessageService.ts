@@ -176,10 +176,14 @@ export class MessageService {
                 return;
             }
 
-            await dbController.logEvent(BotEventType.USER_REGISTER, "invite", {
-                userId: interaction.user.id,
-                inviterId,
-            });
+            void dbController.logEvent(
+                BotEventType.USER_REGISTER,
+                "invite-user",
+                {
+                    userId: interaction.user.id,
+                    inviterId,
+                },
+            );
 
             await interaction.followUp({
                 content:

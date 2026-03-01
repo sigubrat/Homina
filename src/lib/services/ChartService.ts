@@ -1126,12 +1126,12 @@ export class ChartService {
      *
      * @param data - Object mapping command names to arrays of { date, count }.
      * @param title - Chart title.
-     * @returns A Buffer containing the PNG chart image.
+     * @returns A Buffer containing the PNG chart image, or `null` if there is no data.
      */
     async createCommandUsageChart(
         data: Record<string, { date: string; count: number }[]>,
         title: string,
-    ) {
+    ): Promise<Buffer | null> {
         const commandNames = Object.keys(data);
         if (commandNames.length === 0) {
             return null;

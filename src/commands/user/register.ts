@@ -84,7 +84,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
-        await dbController.logEvent(BotEventType.USER_REGISTER, "register", {
+        void dbController.logEvent(BotEventType.USER_REGISTER, "register", {
             userId: interaction.user.id,
         });
 
