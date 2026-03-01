@@ -53,6 +53,13 @@ export async function execute(interaction: any) {
 
     const command = interaction.client.commands.get(interaction.commandName);
 
+    if (!command) {
+        logger.error(
+            `No command matching ${interaction.commandName} was found.`,
+        );
+        return;
+    }
+
     const { cooldowns } = interaction.client;
     if (!cooldowns.has(command.data.name)) {
         cooldowns.set(command.data.name, new Collection());
@@ -79,13 +86,6 @@ export async function execute(interaction: any) {
 
     timestamps.set(interaction.user.id, now);
     setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
-
-    if (!command) {
-        logger.error(
-            `No command matching ${interaction.commandName} was found.`,
-        );
-        return;
-    }
 
     try {
         await command.execute(interaction);
