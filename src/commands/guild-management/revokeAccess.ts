@@ -97,7 +97,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
             if (revoked) {
                 await dbController.logEvent(
-                    BotEventType.USER_DELETE,
+                    BotEventType.USER_REVOKE,
                     "revoke",
                     {
                         userId: selectedUserId,

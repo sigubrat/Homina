@@ -89,7 +89,7 @@ const startBot = async () => {
                 if (deletedIds.length > 0) {
                     for (const userId of deletedIds) {
                         await dbController.logEvent(
-                            BotEventType.USER_DELETE,
+                            BotEventType.USER_CLEANUP,
                             "cleanup",
                             {
                                 userId,

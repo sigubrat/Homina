@@ -513,6 +513,8 @@ export class DatabaseController {
         totalCommandErrors: number;
         totalRegistrations: number;
         totalDeletions: number;
+        totalRevocations: number;
+        totalCleanups: number;
         errorRate: number;
     }> {
         try {
@@ -540,6 +542,8 @@ export class DatabaseController {
                 totalCommandErrors,
                 totalRegistrations: counts[BotEventType.USER_REGISTER] ?? 0,
                 totalDeletions: counts[BotEventType.USER_DELETE] ?? 0,
+                totalRevocations: counts[BotEventType.USER_REVOKE] ?? 0,
+                totalCleanups: counts[BotEventType.USER_CLEANUP] ?? 0,
                 errorRate:
                     totalCommands > 0 ? totalCommandErrors / totalCommands : 0,
             };
@@ -550,6 +554,8 @@ export class DatabaseController {
                 totalCommandErrors: 0,
                 totalRegistrations: 0,
                 totalDeletions: 0,
+                totalRevocations: 0,
+                totalCleanups: 0,
                 errorRate: 0,
             };
         }

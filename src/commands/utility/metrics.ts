@@ -1,9 +1,9 @@
 import { dbController, logger } from "@/lib";
 import { BotEventType } from "@/models/enums";
 import { ChartService } from "@/lib/services/ChartService";
-import { EmbedBuilder } from "@discordjs/builders";
 import {
     AttachmentBuilder,
+    EmbedBuilder,
     ChatInputCommandInteraction,
     MessageFlags,
     SlashCommandBuilder,
@@ -33,7 +33,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     try {
         const periodValue = interaction.options.getString("period") ?? "30";
         const isAllTime = periodValue === "all";
-        const days = isAllTime ? undefined : parseInt(periodValue);
+        const days = isAllTime ? undefined : Number.parseInt(periodValue, 10);
         const since = days
             ? new Date(Date.now() - days * 24 * 60 * 60 * 1000)
             : undefined;
@@ -50,6 +50,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             dailyErrors,
             dailyRegistrations,
             dailyDeletions,
+            dailyRevocations,
+            dailyCleanups,
             dailyCommandUsage,
         ] = await Promise.all([
             dbController.getCumulativeMetrics(),
@@ -68,6 +70,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             ),
             dbController.getDailyEventCounts(
                 BotEventType.USER_DELETE,
+                days ?? 9999,
+            ),
+            dbController.getDailyEventCounts(
+                BotEventType.USER_REVOKE,
+                days ?? 9999,
+            ),
+            dbController.getDailyEventCounts(
+                BotEventType.USER_CLEANUP,
                 days ?? 9999,
             ),
             dbController.getDailyCommandUsage(days ?? 9999, 10),
@@ -105,10 +115,22 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     inline: true,
                 },
                 {
+                    name: "Total Revocations",
+                    value: cumulative.totalRevocations.toLocaleString(),
+                    inline: true,
+                },
+                {
+                    name: "Total Cleanups",
+                    value: cumulative.totalCleanups.toLocaleString(),
+                    inline: true,
+                },
+                {
                     name: "Net User Growth",
                     value: (
                         cumulative.totalRegistrations -
-                        cumulative.totalDeletions
+                        cumulative.totalDeletions -
+                        cumulative.totalRevocations -
+                        cumulative.totalCleanups
                     ).toLocaleString(),
                     inline: true,
                 },
@@ -149,6 +171,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             0,
         );
         const totalDelsInPeriod = dailyDeletions.reduce(
+            (sum, d) => sum + d.count,
+            0,
+        );
+        const totalRevokesInPeriod = dailyRevocations.reduce(
+            (sum, d) => sum + d.count,
+            0,
+        );
+        const totalCleanupsInPeriod = dailyCleanups.reduce(
             (sum, d) => sum + d.count,
             0,
         );
@@ -196,6 +226,16 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 {
                     name: "Deletions",
                     value: totalDelsInPeriod.toLocaleString(),
+                    inline: true,
+                },
+                {
+                    name: "Revocations",
+                    value: totalRevokesInPeriod.toLocaleString(),
+                    inline: true,
+                },
+                {
+                    name: "Inactivity Cleanups",
+                    value: totalCleanupsInPeriod.toLocaleString(),
                     inline: true,
                 },
             ])
