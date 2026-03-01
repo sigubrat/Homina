@@ -1,7 +1,19 @@
-import { DataTypes, Sequelize, Op } from "sequelize";
+import { DataTypes, Sequelize, Op, QueryTypes } from "sequelize";
 import { validateEnvVars, type DbTestResult } from "./db_utils";
 import { logger } from "./HominaLogger";
 import { CryptoService } from "./services/CryptoService";
+import { BotEventType } from "@/models/enums";
+
+export interface EventCount {
+    eventType: string;
+    eventName: string | null;
+    count: number;
+}
+
+export interface DailyEventCount {
+    date: string;
+    count: number;
+}
 
 export class DatabaseController {
     private sequelize: Sequelize;
@@ -99,6 +111,27 @@ export class DatabaseController {
                 },
             },
         );
+
+        // Bot analytics events table
+        this.sequelize.define("botEvents", {
+            id: {
+                type: DataTypes.INTEGER,
+                autoIncrement: true,
+                primaryKey: true,
+            },
+            eventType: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
+            eventName: {
+                type: DataTypes.STRING,
+                allowNull: true,
+            },
+            metadata: {
+                type: DataTypes.JSONB,
+                allowNull: true,
+            },
+        });
 
         //**
         // SCHEMA RELATIONSHIPS
@@ -384,6 +417,284 @@ export class DatabaseController {
         }
     }
 
+    // ==================== Bot Event Tracking ====================
+
+    /**
+     * Logs a bot analytics event to the database.
+     * Silently catches errors to avoid disrupting bot operations.
+     *
+     * @param eventType - The type of event (command_use, command_error, user_register, user_delete).
+     * @param eventName - An optional name for the event (e.g. the command name).
+     * @param metadata - Optional JSON metadata for extra context.
+     */
+    public async logEvent(
+        eventType: BotEventType,
+        eventName?: string,
+        metadata?: Record<string, unknown>,
+    ): Promise<void> {
+        try {
+            await this.sequelize.models["botEvents"]?.create({
+                eventType,
+                eventName: eventName ?? null,
+                metadata: metadata ?? null,
+            });
+        } catch (error) {
+            logger.error(error, "Failed to log bot event");
+        }
+    }
+
+    /**
+     * Gets event counts grouped by event type and event name.
+     * Optionally filters to events since a given date.
+     *
+     * @param since - Optional date to filter events from.
+     * @returns An array of event counts grouped by type and name.
+     */
+    public async getEventCounts(since?: Date): Promise<EventCount[]> {
+        try {
+            const whereClause = since ? 'WHERE "createdAt" >= :since' : "";
+            const results = await this.sequelize.query(
+                `SELECT "eventType", "eventName", COUNT(*)::int as count
+                 FROM "botEvents"
+                 ${whereClause}
+                 GROUP BY "eventType", "eventName"
+                 ORDER BY count DESC`,
+                {
+                    replacements: since ? { since } : undefined,
+                    type: QueryTypes.SELECT,
+                },
+            );
+            return results as EventCount[];
+        } catch (error) {
+            logger.error(error, "Error fetching event counts");
+            return [];
+        }
+    }
+
+    /**
+     * Gets daily event counts for a specific event type over a number of days.
+     * Useful for trend/time-series analysis.
+     *
+     * @param eventType - The event type to filter on.
+     * @param days - The number of days to look back (default: 30).
+     * @returns An array of daily event counts.
+     */
+    public async getDailyEventCounts(
+        eventType: BotEventType,
+        days: number = 30,
+    ): Promise<DailyEventCount[]> {
+        try {
+            const results = await this.sequelize.query(
+                `SELECT DATE("createdAt") as date, COUNT(*)::int as count
+                 FROM "botEvents"
+                 WHERE "eventType" = :eventType
+                   AND "createdAt" >= NOW() - INTERVAL '1 day' * :days
+                 GROUP BY DATE("createdAt")
+                 ORDER BY date ASC`,
+                {
+                    replacements: { eventType, days },
+                    type: QueryTypes.SELECT,
+                },
+            );
+            return results as DailyEventCount[];
+        } catch (error) {
+            logger.error(error, "Error fetching daily event counts");
+            return [];
+        }
+    }
+
+    /**
+     * Gets cumulative totals for all event types.
+     *
+     * @returns An object with total counts for each event type.
+     */
+    public async getCumulativeMetrics(): Promise<{
+        totalCommandUses: number;
+        totalCommandErrors: number;
+        totalRegistrations: number;
+        totalDeletions: number;
+        errorRate: number;
+    }> {
+        try {
+            const results = await this.sequelize.query(
+                `SELECT "eventType", COUNT(*)::int as count
+                 FROM "botEvents"
+                 GROUP BY "eventType"`,
+                { type: QueryTypes.SELECT },
+            );
+
+            const counts: Record<string, number> = {};
+            for (const row of results as {
+                eventType: string;
+                count: number;
+            }[]) {
+                counts[row.eventType] = row.count;
+            }
+
+            const totalCommandUses = counts[BotEventType.COMMAND_USE] ?? 0;
+            const totalCommandErrors = counts[BotEventType.COMMAND_ERROR] ?? 0;
+            const totalCommands = totalCommandUses + totalCommandErrors;
+
+            return {
+                totalCommandUses,
+                totalCommandErrors,
+                totalRegistrations: counts[BotEventType.USER_REGISTER] ?? 0,
+                totalDeletions: counts[BotEventType.USER_DELETE] ?? 0,
+                errorRate:
+                    totalCommands > 0 ? totalCommandErrors / totalCommands : 0,
+            };
+        } catch (error) {
+            logger.error(error, "Error fetching cumulative metrics");
+            return {
+                totalCommandUses: 0,
+                totalCommandErrors: 0,
+                totalRegistrations: 0,
+                totalDeletions: 0,
+                errorRate: 0,
+            };
+        }
+    }
+
+    /**
+     * Gets command usage counts, sorted by most used.
+     *
+     * @param since - Optional date to filter events from.
+     * @param limit - Maximum number of commands to return (default: 15).
+     * @returns An array of command names and their usage counts.
+     */
+    public async getCommandUsageCounts(
+        since?: Date,
+        limit: number = 15,
+    ): Promise<{ commandName: string; uses: number; errors: number }[]> {
+        try {
+            const whereClause = since ? 'AND "createdAt" >= :since' : "";
+            const results = await this.sequelize.query(
+                `SELECT
+                    "eventName" as "commandName",
+                    COUNT(*) FILTER (WHERE "eventType" = '${BotEventType.COMMAND_USE}')::int as uses,
+                    COUNT(*) FILTER (WHERE "eventType" = '${BotEventType.COMMAND_ERROR}')::int as errors
+                 FROM "botEvents"
+                 WHERE "eventType" IN ('${BotEventType.COMMAND_USE}', '${BotEventType.COMMAND_ERROR}')
+                   AND "eventName" IS NOT NULL
+                   ${whereClause}
+                 GROUP BY "eventName"
+                 ORDER BY uses DESC
+                 LIMIT :limit`,
+                {
+                    replacements: { ...(since ? { since } : {}), limit },
+                    type: QueryTypes.SELECT,
+                },
+            );
+            return results as {
+                commandName: string;
+                uses: number;
+                errors: number;
+            }[];
+        } catch (error) {
+            logger.error(error, "Error fetching command usage counts");
+            return [];
+        }
+    }
+
+    /**
+     * Gets daily command usage counts broken down by command name.
+     * Returns data suitable for a multi-line time-series chart.
+     *
+     * @param days - Number of days to look back (default: 30).
+     * @param limit - Maximum number of commands to include (default: 10, by total usage).
+     * @returns An object mapping command names to arrays of { date, count }.
+     */
+    public async getDailyCommandUsage(
+        days: number = 30,
+        limit: number = 10,
+    ): Promise<Record<string, { date: string; count: number }[]>> {
+        try {
+            const topCommands = (await this.sequelize.query(
+                `SELECT "eventName", COUNT(*)::int as total
+                 FROM "botEvents"
+                 WHERE "eventType" = '${BotEventType.COMMAND_USE}'
+                   AND "eventName" IS NOT NULL
+                   AND "createdAt" >= NOW() - INTERVAL '1 day' * :days
+                 GROUP BY "eventName"
+                 ORDER BY total DESC
+                 LIMIT :limit`,
+                {
+                    replacements: { days, limit },
+                    type: QueryTypes.SELECT,
+                },
+            )) as { eventName: string; total: number }[];
+
+            if (topCommands.length === 0) return {};
+
+            const commandNames = topCommands.map((c) => c.eventName);
+
+            const results = (await this.sequelize.query(
+                `SELECT DATE("createdAt") as date, "eventName", COUNT(*)::int as count
+                 FROM "botEvents"
+                 WHERE "eventType" = '${BotEventType.COMMAND_USE}'
+                   AND "eventName" IN (:commandNames)
+                   AND "createdAt" >= NOW() - INTERVAL '1 day' * :days
+                 GROUP BY DATE("createdAt"), "eventName"
+                 ORDER BY date ASC`,
+                {
+                    replacements: { commandNames, days },
+                    type: QueryTypes.SELECT,
+                },
+            )) as { date: string; eventName: string; count: number }[];
+
+            const grouped: Record<string, { date: string; count: number }[]> =
+                {};
+            for (const name of commandNames) {
+                grouped[name] = [];
+            }
+            for (const row of results) {
+                if (!grouped[row.eventName]) {
+                    grouped[row.eventName] = [];
+                }
+                grouped[row.eventName]!.push({
+                    date: row.date,
+                    count: row.count,
+                });
+            }
+
+            return grouped;
+        } catch (error) {
+            logger.error(error, "Error fetching daily command usage");
+            return {};
+        }
+    }
+
+    /**
+     * Cleans up old bot events from the database.
+     *
+     * @param maxAgeInDays - The maximum age in days for events to keep. Defaults to 90 days.
+     * @returns The number of events deleted.
+     */
+    public async cleanupOldEvents(maxAgeInDays: number = 90): Promise<number> {
+        try {
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - maxAgeInDays);
+
+            const res = await this.sequelize.models["botEvents"]?.destroy({
+                where: {
+                    createdAt: {
+                        [Op.lt]: cutoffDate,
+                    },
+                },
+            });
+
+            logger.info(
+                `Cleaned up ${res || 0} bot events older than ${maxAgeInDays} days.`,
+            );
+            return res || 0;
+        } catch (error) {
+            logger.error(error, "Error cleaning up old bot events");
+            return 0;
+        }
+    }
+
+    // ==================== Invite Management ====================
+
     /**
      * Revokes access for a user invited by the specified inviter.
      * Any users that the revoked user had themselves invited are re-parented
@@ -400,13 +711,11 @@ export class DatabaseController {
         try {
             const model = this.sequelize.models["discordApiTokenMappings"];
 
-            // Re-parent the revoked user's invitees to the inviter
             await model?.update(
                 { invitedBy: inviterId },
                 { where: { invitedBy: userId } },
             );
 
-            // Delete the revoked user
             const res = await model?.destroy({
                 where: {
                     userId: userId,
