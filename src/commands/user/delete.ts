@@ -4,6 +4,7 @@ import {
     SlashCommandBuilder,
 } from "discord.js";
 import { dbController, logger } from "@/lib";
+import { BotEventType } from "@/models/enums";
 
 export const cooldown = 5; // Cooldown in seconds
 
@@ -17,6 +18,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     logger.info(`${interaction.user.username} attempting to use /delete`);
     try {
         const result = await dbController.deleteUser(interaction.user.id);
+
+        if (result) {
+            await dbController.logEvent(BotEventType.USER_DELETE, "delete", {
+                userId: interaction.user.id,
+            });
+        }
 
         const response = result
             ? "Succesfully deleted your account and api-token from the bot"

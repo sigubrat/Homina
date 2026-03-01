@@ -1119,4 +1119,142 @@ export class ChartService {
 
         return chart;
     }
+
+    /**
+     * Creates a line chart showing daily command usage over time.
+     * Each command gets its own colored line.
+     *
+     * @param data - Object mapping command names to arrays of { date, count }.
+     * @param title - Chart title.
+     * @returns A Buffer containing the PNG chart image.
+     */
+    async createCommandUsageChart(
+        data: Record<string, { date: string; count: number }[]>,
+        title: string,
+    ) {
+        const commandNames = Object.keys(data);
+        if (commandNames.length === 0) {
+            return null;
+        }
+
+        const allDates = new Set<string>();
+        for (const entries of Object.values(data)) {
+            for (const entry of entries) {
+                allDates.add(
+                    typeof entry.date === "string"
+                        ? entry.date
+                        : new Date(entry.date).toISOString().split("T")[0]!,
+                );
+            }
+        }
+        const sortedDates = Array.from(allDates).sort();
+
+        const labels = sortedDates.map((d) => {
+            const parts = d.split("-");
+            return `${parts[1]}/${parts[2]}`;
+        });
+
+        const datasets = commandNames.map((name, index) => {
+            const dateMap = new Map<string, number>();
+            for (const entry of data[name]!) {
+                const dateKey =
+                    typeof entry.date === "string"
+                        ? entry.date
+                        : new Date(entry.date).toISOString().split("T")[0]!;
+                dateMap.set(dateKey, entry.count);
+            }
+
+            const values = sortedDates.map((d) => dateMap.get(d) ?? 0);
+            const color = namedColor(index) ?? CHART_COLORS.blue;
+
+            return {
+                label: `/${name}`,
+                data: values,
+                borderColor: color,
+                backgroundColor: color,
+                borderWidth: 2,
+                fill: false,
+                tension: 0.3,
+                pointRadius: sortedDates.length > 30 ? 0 : 3,
+                pointHoverRadius: 5,
+            };
+        });
+
+        const chart = await canvas.renderToBuffer({
+            type: "line",
+            data: {
+                labels,
+                datasets,
+            },
+            options: {
+                plugins: {
+                    datalabels: { display: false },
+                    title: {
+                        display: true,
+                        text: title,
+                        font: {
+                            size: 18,
+                        },
+                        color: "white",
+                    },
+                    legend: {
+                        display: true,
+                        labels: {
+                            color: "white",
+                            font: {
+                                size: 12,
+                            },
+                        },
+                    },
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: "white",
+                            font: {
+                                size: 11,
+                            },
+                            maxRotation: 45,
+                            autoSkip: true,
+                            maxTicksLimit: 20,
+                        },
+                        grid: {
+                            color: "rgba(255, 255, 255, 0.1)",
+                        },
+                        border: {
+                            display: false,
+                        },
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: "white",
+                            font: {
+                                size: 12,
+                            },
+                            precision: 0,
+                        },
+                        grid: {
+                            color: "rgba(255, 255, 255, 0.2)",
+                        },
+                        border: {
+                            display: false,
+                        },
+                    },
+                },
+                layout: {
+                    padding: {
+                        left: 20,
+                        right: 20,
+                        bottom: 10,
+                        top: 10,
+                    },
+                },
+                responsive: true,
+                maintainAspectRatio: false,
+            },
+        });
+
+        return chart;
+    }
 }
