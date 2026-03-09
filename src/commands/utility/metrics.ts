@@ -13,7 +13,7 @@ export const cooldown = 30;
 
 export const data = new SlashCommandBuilder()
     .setName("bot-metrics")
-    .setDescription("View detailed bot usage metrics and trends")
+    .setDescription("View detailed bot usage metrics and trends from 1st of March 2026 and onwards.")
     .addStringOption((option) =>
         option
             .setName("period")
@@ -69,7 +69,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const overviewEmbed = new EmbedBuilder()
             .setColor(0x0099ff)
             .setTitle("Bot Metrics — Cumulative Totals")
-            .setDescription("All-time cumulative statistics for the bot.")
+            .setDescription("Cumulative statistics for the bot (only includes data from 1st of March 2026 and onwards).")
             .addFields([
                 {
                     name: "Total Command Uses",
