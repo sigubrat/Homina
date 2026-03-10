@@ -25,7 +25,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     );
 
     try {
-        let result = await service.getAvailableTokensAndBombs(
+        let result = await service.getAvailableTokensAndBombsWithMetadata(
             interaction.user.id,
         );
 

@@ -29,7 +29,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     logger.info(`${interaction.user.username} attempting to use /tokens-burnt`);
 
     try {
-        let availability = await service.getAvailableTokensAndBombs(discordId);
+        let availability =
+            await service.getAvailableTokensAndBombsWithMetadata(discordId);
 
         if (
             !availability ||

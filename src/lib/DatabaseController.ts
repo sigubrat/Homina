@@ -153,6 +153,70 @@ export class DatabaseController {
             },
         );
 
+        // Guild player metadata table - stores optional per-player-per-guild nickname and player-scope API token
+        this.sequelize.define(
+            "guildPlayerMetadata",
+            {
+                userId: {
+                    type: DataTypes.STRING,
+                    allowNull: false,
+                    primaryKey: true,
+                },
+                guildId: {
+                    type: DataTypes.STRING,
+                    allowNull: false,
+                    primaryKey: true,
+                },
+                nickname: {
+                    type: DataTypes.STRING,
+                    allowNull: true,
+                },
+                playerToken: {
+                    type: DataTypes.STRING,
+                    allowNull: true,
+                },
+            },
+            {
+                indexes: [
+                    {
+                        name: "guild_player_metadata_guild_id",
+                        fields: ["guildId"],
+                    },
+                ],
+                hooks: {
+                    beforeCreate(attributes: any) {
+                        if (attributes.playerToken) {
+                            attributes.playerToken = CryptoService.encrypt(
+                                attributes.playerToken,
+                            );
+                        }
+                    },
+                    beforeUpdate(attributes: any) {
+                        if (attributes.playerToken) {
+                            attributes.playerToken = CryptoService.encrypt(
+                                attributes.playerToken,
+                            );
+                        }
+                    },
+                    afterFind: (result: any) => {
+                        if (!result) return;
+                        if (Array.isArray(result)) {
+                            result.forEach((row) => {
+                                if (row.playerToken)
+                                    row.playerToken = CryptoService.decrypt(
+                                        row.playerToken,
+                                    );
+                            });
+                        } else if (result.playerToken) {
+                            result.playerToken = CryptoService.decrypt(
+                                result.playerToken,
+                            );
+                        }
+                    },
+                },
+            },
+        );
+
         //**
         // SCHEMA RELATIONSHIPS
         //  */
@@ -434,6 +498,168 @@ export class DatabaseController {
         } catch (error) {
             logger.error(error, "Error fetching invited users");
             return [];
+        }
+    }
+
+    // ==================== Guild Player Metadata ====================
+
+    /**
+     * Upserts a player metadata record for a given userId + guildId.
+     * Only updates fields that are provided (non-undefined).
+     *
+     * @param userId - The in-game user ID.
+     * @param guildId - The in-game guild ID.
+     * @param data - Object with optional nickname and/or playerToken.
+     * @returns True if the upsert was successful, false otherwise.
+     */
+    public async upsertPlayerMetadata(
+        userId: string,
+        guildId: string,
+        data: { nickname?: string | null; playerToken?: string | null },
+    ): Promise<boolean> {
+        try {
+            const model = this.sequelize.models["guildPlayerMetadata"];
+            const existing = await model?.findOne({
+                where: { userId, guildId },
+            });
+
+            if (existing) {
+                const updates: Record<string, unknown> = {};
+                if (data.nickname !== undefined)
+                    updates.nickname = data.nickname;
+                if (data.playerToken !== undefined) {
+                    updates.playerToken = data.playerToken
+                        ? CryptoService.encrypt(data.playerToken)
+                        : null;
+                }
+                await model?.update(updates, { where: { userId, guildId } });
+            } else {
+                const record: Record<string, unknown> = {
+                    userId,
+                    guildId,
+                    nickname: data.nickname ?? null,
+                };
+                if (data.playerToken) {
+                    record.playerToken = CryptoService.encrypt(
+                        data.playerToken,
+                    );
+                } else {
+                    record.playerToken = null;
+                }
+                await model?.create(record);
+            }
+
+            return true;
+        } catch (error) {
+            logger.error(error, "Error upserting player metadata");
+            return false;
+        }
+    }
+
+    /**
+     * Retrieves a single player metadata record.
+     *
+     * @param userId - The in-game user ID.
+     * @param guildId - The in-game guild ID.
+     * @returns The metadata record or null if not found.
+     */
+    public async getPlayerMetadata(
+        userId: string,
+        guildId: string,
+    ): Promise<{
+        userId: string;
+        guildId: string;
+        nickname: string | null;
+        playerToken: string | null;
+    } | null> {
+        try {
+            const result = await this.sequelize.models[
+                "guildPlayerMetadata"
+            ]?.findOne({
+                where: { userId, guildId },
+            });
+            if (!result) return null;
+            return {
+                userId: result.get("userId") as string,
+                guildId: result.get("guildId") as string,
+                nickname: result.get("nickname") as string | null,
+                playerToken: result.get("playerToken") as string | null,
+            };
+        } catch (error) {
+            logger.error(error, "Error fetching player metadata");
+            return null;
+        }
+    }
+
+    /**
+     * Retrieves all player metadata records for a guild.
+     *
+     * @param guildId - The in-game guild ID.
+     * @returns Array of metadata records for the guild.
+     */
+    public async getAllPlayerMetadataByGuild(guildId: string): Promise<
+        {
+            userId: string;
+            guildId: string;
+            nickname: string | null;
+            playerToken: string | null;
+        }[]
+    > {
+        try {
+            const results = await this.sequelize.models[
+                "guildPlayerMetadata"
+            ]?.findAll({
+                where: { guildId },
+            });
+            return (
+                results?.map((r) => ({
+                    userId: r.get("userId") as string,
+                    guildId: r.get("guildId") as string,
+                    nickname: r.get("nickname") as string | null,
+                    playerToken: r.get("playerToken") as string | null,
+                })) ?? []
+            );
+        } catch (error) {
+            logger.error(error, "Error fetching all player metadata for guild");
+            return [];
+        }
+    }
+
+    /**
+     * Clears the nickname for a player in a guild.
+     */
+    public async clearPlayerNickname(
+        userId: string,
+        guildId: string,
+    ): Promise<boolean> {
+        try {
+            await this.sequelize.models["guildPlayerMetadata"]?.update(
+                { nickname: null },
+                { where: { userId, guildId } },
+            );
+            return true;
+        } catch (error) {
+            logger.error(error, "Error clearing player nickname");
+            return false;
+        }
+    }
+
+    /**
+     * Clears the player token for a player in a guild.
+     */
+    public async clearPlayerToken(
+        userId: string,
+        guildId: string,
+    ): Promise<boolean> {
+        try {
+            await this.sequelize.models["guildPlayerMetadata"]?.update(
+                { playerToken: null },
+                { where: { userId, guildId } },
+            );
+            return true;
+        } catch (error) {
+            logger.error(error, "Error clearing player token");
+            return false;
         }
     }
 

@@ -19,6 +19,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [1.7.0] - 2026-03-10
+
+This update introduces optional per-player metadata for your guild. You can now set custom nicknames that override in-game display names across all commands, and register player-scope API tokens to get precise token/bomb cooldown data instead of estimates.
+
+### Added
+
+- **New command!** `/set-player-nickname` - Set a custom display nickname for any guild member. The nickname overrides the in-game name in all command outputs.
+- **New command!** `/clear-player-nickname` - Remove a custom nickname, restoring the member's in-game name.
+- **New command!** `/set-player-token` - Register a player-scope API token for a guild member. When set, availability commands (`/gr-availability`, `/available-bombs`, `/tokens-burnt`) will show precise cooldown data from the API instead of estimates.
+- **New command!** `/clear-player-token` - Remove a stored player-scope API token, reverting to estimated cooldown calculations.
+- New database table `guildPlayerMetadata` for per-player-per-guild nickname and player-scope token storage.
+
+### Changed
+
+- `/gr-availability`, `/available-bombs`, and `/tokens-burnt` now use precise cooldown data from the player API when a player-scope token is registered, falling back to estimated calculations when not available.
+- All commands that display member names now respect custom nicknames (nickname > in-game name > Unknown #N).
+
 ## [1.6.0] - 2026-03-10
 
 ### Changed
