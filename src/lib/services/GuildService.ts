@@ -1378,14 +1378,20 @@ export class GuildService {
                 return null;
             }
 
-            // Filter to requested rarity/rarities (if provided), exclude bombs and sweeps
+            // Filter to requested rarity/rarities (if provided), exclude bombs and sweeps.
+            // Keep true one-shots (full boss HP dealt in a single hit) even though remainingHp is 0.
             const rarities = rarity ? this.expandRarity(rarity) : null;
-            const entries = resp.entries.filter(
-                (entry) =>
+            const entries = resp.entries.filter((entry) => {
+                const isOneShot =
+                    entry.remainingHp === 0 &&
+                    entry.damageDealt === entry.maxHp;
+
+                return (
                     (!rarities || rarities.includes(entry.rarity)) &&
                     entry.damageType === DamageType.BATTLE &&
-                    entry.remainingHp > 0,
-            );
+                    (entry.remainingHp > 0 || isOneShot)
+                );
+            });
 
             if (entries.length === 0) {
                 return null;
