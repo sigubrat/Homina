@@ -5,6 +5,20 @@ import { Collection, Events, MessageFlags } from "discord.js";
 
 export const name = Events.InteractionCreate;
 export async function execute(interaction: any) {
+    // Handle autocomplete interactions
+    if (interaction.isAutocomplete()) {
+        const command = interaction.client.commands.get(
+            interaction.commandName,
+        );
+        if (!command?.autocomplete) return;
+        try {
+            await command.autocomplete(interaction);
+        } catch (error) {
+            logger.error(error, "Error handling autocomplete");
+        }
+        return;
+    }
+
     // Handle button interactions
     if (interaction.isButton()) {
         const customId = interaction.customId;

@@ -1521,9 +1521,146 @@ export class GuildService {
                 return null;
             }
 
+            // Apply nickname overrides from player metadata
+            const metadata =
+                await dbController.getAllPlayerMetadataByGuild(guildId);
+            if (metadata.length > 0) {
+                const nicknameMap = new Map<string, string>();
+                for (const entry of metadata) {
+                    if (entry.nickname) {
+                        nicknameMap.set(entry.userId, entry.nickname);
+                    }
+                }
+                for (const member of members) {
+                    const nickname = nicknameMap.get(member.userId);
+                    if (nickname) {
+                        member.displayName = nickname;
+                    }
+                }
+            }
+
             return members;
         } catch (error) {
             logger.error(error, "Error fetching LOKI guild members: ");
+            return null;
+        }
+    }
+
+    /**
+     * Verifies that the calling Discord user belongs to the specified in-game guild.
+     * Used to enforce same-guild authorization for metadata writes.
+     *
+     * @param discordId - The Discord user ID of the caller.
+     * @param targetGuildId - The guild ID being targeted.
+     * @returns True if the caller's guild matches the target, false otherwise.
+     */
+    async verifySameGuild(
+        discordId: string,
+        targetGuildId: string,
+    ): Promise<boolean> {
+        const callerGuildId = await this.getGuildId(discordId);
+        return callerGuildId === targetGuildId;
+    }
+
+    /**
+     * Returns available tokens and bombs for guild members, using precise
+     * player-scope API data when a playerToken is stored in metadata, and
+     * falling back to the existing estimation logic otherwise.
+     */
+    async getAvailableTokensAndBombsWithMetadata(discordId: string) {
+        try {
+            const guildId = await this.getGuildId(discordId);
+            if (!guildId) return null;
+
+            const metadata =
+                await dbController.getAllPlayerMetadataByGuild(guildId);
+            const playerTokenMap = new Map<string, string>();
+            for (const entry of metadata) {
+                if (entry.playerToken) {
+                    playerTokenMap.set(entry.userId, entry.playerToken);
+                }
+            }
+
+            // If no player tokens exist, use the original estimation path
+            if (playerTokenMap.size === 0) {
+                return this.getAvailableTokensAndBombs(discordId);
+            }
+
+            // Get estimated results as the baseline
+            const estimated = await this.getAvailableTokensAndBombs(discordId);
+            if (!estimated) return null;
+
+            // Override with precise data for players with a stored token
+            await Promise.all(
+                Array.from(playerTokenMap.entries()).map(
+                    async ([userId, playerToken]) => {
+                        try {
+                            const precise =
+                                await this.getPlayerCooldowns(playerToken);
+                            if (precise) {
+                                estimated[userId] = precise;
+                            }
+                        } catch {
+                            // Fallback to estimated data if player token fails
+                        }
+                    },
+                ),
+            );
+
+            return estimated;
+        } catch (error) {
+            logger.error(
+                error,
+                "Error fetching metadata-aware tokens and bombs",
+            );
+            return null;
+        }
+    }
+
+    /**
+     * Returns available bombs for guild members, using precise
+     * player-scope API data when a playerToken is stored in metadata.
+     */
+    async getAvailableBombsWithMetadata(discordId: string) {
+        try {
+            const guildId = await this.getGuildId(discordId);
+            if (!guildId) return null;
+
+            const metadata =
+                await dbController.getAllPlayerMetadataByGuild(guildId);
+            const playerTokenMap = new Map<string, string>();
+            for (const entry of metadata) {
+                if (entry.playerToken) {
+                    playerTokenMap.set(entry.userId, entry.playerToken);
+                }
+            }
+
+            if (playerTokenMap.size === 0) {
+                return this.getAvailableBombs(discordId);
+            }
+
+            const estimated = await this.getAvailableBombs(discordId);
+            if (!estimated) return null;
+
+            await Promise.all(
+                Array.from(playerTokenMap.entries()).map(
+                    async ([userId, playerToken]) => {
+                        try {
+                            const precise =
+                                await this.getPlayerCooldowns(playerToken);
+                            if (precise) {
+                                estimated[userId] = precise;
+                            }
+                        } catch {
+                            // Fallback to estimated data if player token fails
+                        }
+                    },
+                ),
+            );
+
+            return estimated;
+        } catch (error) {
+            logger.error(error, "Error fetching metadata-aware bombs");
             return null;
         }
     }

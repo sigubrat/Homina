@@ -31,7 +31,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const discordId = interaction.user.id;
 
     try {
-        let result = await service.getAvailableBombs(discordId);
+        let result = await service.getAvailableBombsWithMetadata(discordId);
 
         if (
             !result ||
