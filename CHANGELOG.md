@@ -19,6 +19,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [1.6.0] - 2026-03-10
+
+### Changed
+
+- `/relative-performance` has had some tweaks to make the comparisons more fair.
+    -   1. One-shots are now included. This was a missed edge-case and is now fixed.
+    -   2. A user must now hit a boss twice for the data to be included in the comparison. The intention is to not punish players who have had to use a token against a poor matchup in a cycle or at the end of the season.
+
+### Added
+
+- **New command!** - `/bot-metrics` - Displays some bot metrics regarding the use of commands. Data is counted from the day of implementation and does not represent the entire history of the bot, but is a fun little utility command for those curious.
+
 ## [1.5.0] - 2026-02-25
 
 This update brings a new command to help guild leaders identify members who are losing tokens by staying at the 3/3 cap for too long. Instead of just seeing who has used the most or fewest tokens, you can now see an estimate of how many tokens each member has wasted by not spending them before regeneration was paused. Note: this command must be viewed with full knowledge of its technical limitations.
