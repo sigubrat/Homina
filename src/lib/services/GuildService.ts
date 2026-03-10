@@ -1362,6 +1362,8 @@ export class GuildService {
         season: number,
         rarity?: Rarity,
     ): Promise<Record<string, number> | null> {
+        const MIN_HITS_PER_BOSS = 2;
+
         try {
             const apiKey = await dbController.getUserToken(discordId);
             if (!apiKey) {
@@ -1459,7 +1461,8 @@ export class GuildService {
                 }
             }
 
-            // Calculate weighted relative performance per player
+            // Calculate weighted relative performance per player.
+            // A boss only contributes if the player has enough hits on that boss.
             const result: Record<string, number> = {};
 
             for (const username of allPlayers) {
@@ -1476,6 +1479,10 @@ export class GuildService {
                         continue;
                     }
 
+                    if (playerStats.tokens < MIN_HITS_PER_BOSS) {
+                        continue;
+                    }
+
                     const playerAvg =
                         playerStats.totalDamage / playerStats.tokens;
                     const relativePerformance = playerAvg / guildAvg;
@@ -1485,11 +1492,12 @@ export class GuildService {
                     totalWeight += weight;
                 }
 
-                result[username] =
-                    totalWeight > 0 ? (weightedSum / totalWeight) * 100 : 0;
+                if (totalWeight > 0) {
+                    result[username] = (weightedSum / totalWeight) * 100;
+                }
             }
 
-            return result;
+            return Object.keys(result).length > 0 ? result : null;
         } catch (error) {
             logger.error(
                 error,
