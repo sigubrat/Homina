@@ -141,7 +141,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     inline: true,
                 },
                 {
-                    name: "Needs Improvement",
+                    name: "Potential for improvement",
                     value: bottom3 || "N/A",
                     inline: true,
                 },
