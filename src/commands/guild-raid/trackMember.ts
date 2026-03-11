@@ -139,11 +139,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const discordId = interaction.user.id;
 
     const service = new GuildService();
-    const guildId = await service.getGuildId(discordId);
     let memberDisplayName = member;
-    if (guildId) {
-        const members = await fetchGuildMembers(guildId);
-        const matched = members?.find((m) => m.userId === member);
+    const members = await service.fetchGuildMembers(discordId);
+    if (members) {
+        const matched = members.find((m) => m.userId === member);
         if (matched) {
             memberDisplayName = matched.displayName;
         }
@@ -239,8 +238,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 guildAverageTokens = MAXIMUM_TOKENS_PER_SEASON;
             }
 
-            const userDamage = damagePerMember[member] || 0;
-            const userTokens = tokensPerMember[member] || 0;
+            const userDamage = damagePerMember[memberDisplayName] || 0;
+            const userTokens = tokensPerMember[memberDisplayName] || 0;
 
             const relativeDamage =
                 guildAverageDamage > 0
@@ -276,11 +275,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                         continue;
                     }
 
-                    const userData = values.find((v) => v.username === member);
+                    const userData = values.find(
+                        (v) => v.username === memberDisplayName,
+                    );
 
                     if (!userData) {
                         continue;
                     }
+
                     let nPlayers = new Set<string>(
                         values.map((v) => v.username),
                     ).size;

@@ -189,20 +189,6 @@ export class DatabaseController {
                     },
                 ],
                 hooks: {
-                    beforeCreate(attributes: any) {
-                        if (attributes.playerToken) {
-                            attributes.playerToken = CryptoService.encrypt(
-                                attributes.playerToken,
-                            );
-                        }
-                    },
-                    beforeUpdate(attributes: any) {
-                        if (attributes.playerToken) {
-                            attributes.playerToken = CryptoService.encrypt(
-                                attributes.playerToken,
-                            );
-                        }
-                    },
                     afterFind: (result: any) => {
                         if (!result) return;
                         if (Array.isArray(result)) {
