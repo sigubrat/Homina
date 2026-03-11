@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
-## [1.7.0] - 2026-03-10
+## [1.7.0] - 2026-03-11
 
 This update introduces optional per-player metadata for your guild. You can now set custom nicknames that override in-game display names across all commands, and register player-scope API tokens to get precise token/bomb cooldown data instead of estimates.
 
