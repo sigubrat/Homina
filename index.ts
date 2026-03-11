@@ -102,6 +102,9 @@ const startBot = async () => {
                     }
                 }
 
+                // Clean up old player metadata (keep 30 days)
+                await dbController.cleanupOldPlayerMetadata(30);
+
                 // Clean up old bot events (keep 90 days)
                 await dbController.cleanupOldEvents(90);
 

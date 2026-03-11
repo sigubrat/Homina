@@ -175,6 +175,11 @@ export class DatabaseController {
                     type: DataTypes.STRING,
                     allowNull: true,
                 },
+                lastUsed: {
+                    type: DataTypes.DATE,
+                    allowNull: false,
+                    defaultValue: DataTypes.NOW,
+                },
             },
             {
                 indexes: [
@@ -524,7 +529,9 @@ export class DatabaseController {
             });
 
             if (existing) {
-                const updates: Record<string, unknown> = {};
+                const updates: Record<string, unknown> = {
+                    lastUsed: new Date(),
+                };
                 if (data.nickname !== undefined)
                     updates.nickname = data.nickname;
                 if (data.playerToken !== undefined) {
@@ -538,6 +545,7 @@ export class DatabaseController {
                     userId,
                     guildId,
                     nickname: data.nickname ?? null,
+                    lastUsed: new Date(),
                 };
                 if (data.playerToken) {
                     record.playerToken = CryptoService.encrypt(
@@ -573,12 +581,18 @@ export class DatabaseController {
         playerToken: string | null;
     } | null> {
         try {
-            const result = await this.sequelize.models[
-                "guildPlayerMetadata"
-            ]?.findOne({
+            const model = this.sequelize.models["guildPlayerMetadata"];
+            const result = await model?.findOne({
                 where: { userId, guildId },
             });
             if (!result) return null;
+
+            // Touch lastUsed
+            await model?.update(
+                { lastUsed: new Date() },
+                { where: { userId, guildId } },
+            );
+
             return {
                 userId: result.get("userId") as string,
                 guildId: result.get("guildId") as string,
@@ -606,11 +620,19 @@ export class DatabaseController {
         }[]
     > {
         try {
-            const results = await this.sequelize.models[
-                "guildPlayerMetadata"
-            ]?.findAll({
+            const model = this.sequelize.models["guildPlayerMetadata"];
+            const results = await model?.findAll({
                 where: { guildId },
             });
+
+            // Touch lastUsed for all returned records
+            if (results && results.length > 0) {
+                await model?.update(
+                    { lastUsed: new Date() },
+                    { where: { guildId } },
+                );
+            }
+
             return (
                 results?.map((r) => ({
                     userId: r.get("userId") as string,
@@ -634,7 +656,7 @@ export class DatabaseController {
     ): Promise<boolean> {
         try {
             await this.sequelize.models["guildPlayerMetadata"]?.update(
-                { nickname: null },
+                { nickname: null, lastUsed: new Date() },
                 { where: { userId, guildId } },
             );
             return true;
@@ -653,7 +675,7 @@ export class DatabaseController {
     ): Promise<boolean> {
         try {
             await this.sequelize.models["guildPlayerMetadata"]?.update(
-                { playerToken: null },
+                { playerToken: null, lastUsed: new Date() },
                 { where: { userId, guildId } },
             );
             return true;
@@ -952,6 +974,40 @@ export class DatabaseController {
             return res || 0;
         } catch (error) {
             logger.error(error, "Error cleaning up old bot events");
+            return 0;
+        }
+    }
+
+    /**
+     * Cleans up old guild player metadata records that haven't been updated
+     * within the specified number of days.
+     *
+     * @param maxAgeInDays - The maximum age in days for records to keep. Defaults to 30 days.
+     * @returns The number of records deleted.
+     */
+    public async cleanupOldPlayerMetadata(
+        maxAgeInDays: number = 30,
+    ): Promise<number> {
+        try {
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - maxAgeInDays);
+
+            const res = await this.sequelize.models[
+                "guildPlayerMetadata"
+            ]?.destroy({
+                where: {
+                    lastUsed: {
+                        [Op.lt]: cutoffDate,
+                    },
+                },
+            });
+
+            logger.info(
+                `Cleaned up ${res || 0} player metadata records older than ${maxAgeInDays} days.`,
+            );
+            return res || 0;
+        } catch (error) {
+            logger.error(error, "Error cleaning up old player metadata");
             return 0;
         }
     }
