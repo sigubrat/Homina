@@ -135,7 +135,15 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const { guildId, members, nicknameMap } = data;
 
         const selectedPlayer = members.find((m) => m.userId === selectedUserId);
-        const inGameName = selectedPlayer?.displayName ?? selectedUserId;
+        if (!selectedPlayer) {
+            await interaction.editReply({
+                content:
+                    "The selected player is not a member of your guild. Please select a player from the autocomplete suggestions.",
+            });
+            return;
+        }
+
+        const inGameName = selectedPlayer.displayName;
         const nickname = nicknameMap.get(selectedUserId);
         const displayLabel = nickname
             ? `${inGameName} (aka ${nickname})`
