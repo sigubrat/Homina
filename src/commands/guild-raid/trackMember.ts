@@ -92,8 +92,10 @@ export async function autocomplete(interaction: AutocompleteInteraction) {
             return;
         }
 
-        const metadata =
-            await dbController.getAllPlayerMetadataByGuild(guildId);
+        const metadata = await dbController.getAllPlayerMetadataByGuild(
+            guildId,
+            false,
+        );
         const nicknameMap = new Map<string, string>();
         for (const entry of metadata) {
             if (entry.nickname) {

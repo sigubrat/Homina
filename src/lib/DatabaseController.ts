@@ -555,11 +555,13 @@ export class DatabaseController {
      *
      * @param userId - The in-game user ID.
      * @param guildId - The in-game guild ID.
+     * @param touchLastUsed - Whether to update the lastUsed timestamp. Defaults to true. Pass false for autocomplete / read-only paths.
      * @returns The metadata record or null if not found.
      */
     public async getPlayerMetadata(
         userId: string,
         guildId: string,
+        touchLastUsed: boolean = true,
     ): Promise<{
         userId: string;
         guildId: string;
@@ -573,11 +575,12 @@ export class DatabaseController {
             });
             if (!result) return null;
 
-            // Touch lastUsed
-            await model?.update(
-                { lastUsed: new Date() },
-                { where: { userId, guildId } },
-            );
+            if (touchLastUsed) {
+                await model?.update(
+                    { lastUsed: new Date() },
+                    { where: { userId, guildId } },
+                );
+            }
 
             return {
                 userId: result.get("userId") as string,
@@ -595,9 +598,13 @@ export class DatabaseController {
      * Retrieves all player metadata records for a guild.
      *
      * @param guildId - The in-game guild ID.
+     * @param touchLastUsed - Whether to update the lastUsed timestamp. Defaults to true. Pass false for autocomplete / read-only paths.
      * @returns Array of metadata records for the guild.
      */
-    public async getAllPlayerMetadataByGuild(guildId: string): Promise<
+    public async getAllPlayerMetadataByGuild(
+        guildId: string,
+        touchLastUsed: boolean = true,
+    ): Promise<
         {
             userId: string;
             guildId: string;
@@ -611,8 +618,7 @@ export class DatabaseController {
                 where: { guildId },
             });
 
-            // Touch lastUsed for all returned records
-            if (results && results.length > 0) {
+            if (touchLastUsed && results && results.length > 0) {
                 await model?.update(
                     { lastUsed: new Date() },
                     { where: { guildId } },

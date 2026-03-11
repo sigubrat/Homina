@@ -39,7 +39,7 @@ export async function autocomplete(interaction: AutocompleteInteraction) {
 
         const [members, metadata] = await Promise.all([
             fetchGuildMembers(guildId),
-            dbController.getAllPlayerMetadataByGuild(guildId),
+            dbController.getAllPlayerMetadataByGuild(guildId, false),
         ]);
 
         const withNicknames = metadata.filter((m) => m.nickname);
