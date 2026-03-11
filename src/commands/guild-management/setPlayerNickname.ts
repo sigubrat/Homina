@@ -33,7 +33,10 @@ export const data = new SlashCommandBuilder()
             .setMaxLength(32),
     );
 
-async function getRawMembersAndMetadata(discordId: string) {
+async function getRawMembersAndMetadata(
+    discordId: string,
+    touchLastUsed: boolean = true,
+) {
     const service = new GuildService();
     const guildId = await service.getGuildId(discordId);
     if (!guildId) return null;
@@ -41,7 +44,10 @@ async function getRawMembersAndMetadata(discordId: string) {
     const members = await fetchGuildMembers(guildId);
     if (!members || members.length === 0) return null;
 
-    const metadata = await dbController.getAllPlayerMetadataByGuild(guildId);
+    const metadata = await dbController.getAllPlayerMetadataByGuild(
+        guildId,
+        touchLastUsed,
+    );
     const nicknameMap = new Map<string, string>();
     for (const entry of metadata) {
         if (entry.nickname) {
@@ -65,7 +71,7 @@ export async function autocomplete(interaction: AutocompleteInteraction) {
     const discordId = interaction.user.id;
 
     try {
-        const data = await getRawMembersAndMetadata(discordId);
+        const data = await getRawMembersAndMetadata(discordId, false);
         if (!data) {
             await interaction.respond([]);
             return;
