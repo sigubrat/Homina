@@ -12,6 +12,13 @@ export async function up({
     if (!(COLUMN_NAME in tableDescription)) {
         await queryInterface.addColumn(TABLE_NAME, COLUMN_NAME, {
             type: DataTypes.DATE,
+            allowNull: true,
+        });
+        await queryInterface.sequelize.query(
+            `UPDATE "${TABLE_NAME}" SET "${COLUMN_NAME}" = NOW() WHERE "${COLUMN_NAME}" IS NULL`,
+        );
+        await queryInterface.changeColumn(TABLE_NAME, COLUMN_NAME, {
+            type: DataTypes.DATE,
             allowNull: false,
             defaultValue: DataTypes.NOW,
         });
