@@ -5,7 +5,7 @@ import {
 } from "@/lib/configs/constants";
 import { fetchGuildMembers } from "@/client/MiddlewareClient";
 import { GuildService } from "@/lib/services/GuildService";
-import { numericMedian } from "@/lib/utils/mathUtils";
+import { isValidUUIDv4, numericMedian } from "@/lib/utils/mathUtils";
 import { numericAverage } from "@/lib/utils/mathUtils";
 import { Rarity } from "@/models/enums";
 import type { MiddlewareMember } from "@/models/types";
@@ -128,9 +128,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 
     const member = interaction.options.getString("member");
-    if (!member || member.length === 0) {
+    if (!member || !isValidUUIDv4(member)) {
         await interaction.editReply({
-            content: "Invalid member name. Please provide a valid member.",
+            content:
+                "Invalid player selection. Please select a player from the autocomplete suggestions.",
         });
         return;
     }

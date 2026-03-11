@@ -1,6 +1,7 @@
 import { dbController, logger } from "@/lib";
 import { GuildService } from "@/lib/services/GuildService";
 import { fetchGuildMembers } from "@/client/MiddlewareClient";
+import { isValidUUIDv4 } from "@/lib/utils/mathUtils";
 import { BotEventType } from "@/models/enums";
 import type { MiddlewareMember } from "@/models/types";
 import {
@@ -100,6 +101,15 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     const discordId = interaction.user.id;
     const selectedUserId = interaction.options.getString("player", true);
+
+    if (!isValidUUIDv4(selectedUserId)) {
+        await interaction.editReply({
+            content:
+                "Invalid player selection. Please select a player from the autocomplete suggestions.",
+        });
+        return;
+    }
+
     const nickname = interaction.options.getString("nickname", true).trim();
 
     if (!nickname) {

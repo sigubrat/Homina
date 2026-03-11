@@ -103,6 +103,15 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     const discordId = interaction.user.id;
     const selectedUserId = interaction.options.getString("player", true);
+
+    if (!isValidUUIDv4(selectedUserId)) {
+        await interaction.editReply({
+            content:
+                "Invalid player selection. Please select a player from the autocomplete suggestions.",
+        });
+        return;
+    }
+
     const playerToken = interaction.options.getString("player-token", true);
 
     if (!isValidUUIDv4(playerToken)) {
