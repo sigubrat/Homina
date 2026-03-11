@@ -1,14 +1,17 @@
-import { logger } from "@/lib";
+import { dbController, logger } from "@/lib";
 import {
     MAXIMUM_GUILD_MEMBERS,
     MAXIMUM_TOKENS_PER_SEASON,
 } from "@/lib/configs/constants";
+import { fetchGuildMembers } from "@/client/MiddlewareClient";
 import { GuildService } from "@/lib/services/GuildService";
 import { numericMedian } from "@/lib/utils/mathUtils";
 import { numericAverage } from "@/lib/utils/mathUtils";
 import { Rarity } from "@/models/enums";
+import type { MiddlewareMember } from "@/models/types";
 import {
-    ChatInputCommandInteraction,
+    type AutocompleteInteraction,
+    type ChatInputCommandInteraction,
     EmbedBuilder,
     SlashCommandBuilder,
 } from "discord.js";
@@ -23,7 +26,8 @@ export const data = new SlashCommandBuilder()
         option
             .setName("member")
             .setDescription("The member to track")
-            .setRequired(true),
+            .setRequired(true)
+            .setAutocomplete(true),
     )
     .addStringOption((option) => {
         return option
@@ -62,6 +66,64 @@ export const data = new SlashCommandBuilder()
         `Track a member's guild raid stats over the last ${N_SEASONS} seasons`,
     );
 
+function buildChoiceLabel(member: MiddlewareMember, nickname?: string): string {
+    const base = member.displayName;
+    if (nickname) {
+        return `${base} (aka ${nickname})`.slice(0, 100);
+    }
+    return base.slice(0, 100);
+}
+
+export async function autocomplete(interaction: AutocompleteInteraction) {
+    const focused = interaction.options.getFocused().toLowerCase();
+    const discordId = interaction.user.id;
+
+    try {
+        const service = new GuildService();
+        const guildId = await service.getGuildId(discordId);
+        if (!guildId) {
+            await interaction.respond([]);
+            return;
+        }
+
+        const members = await fetchGuildMembers(guildId);
+        if (!members || members.length === 0) {
+            await interaction.respond([]);
+            return;
+        }
+
+        const metadata =
+            await dbController.getAllPlayerMetadataByGuild(guildId);
+        const nicknameMap = new Map<string, string>();
+        for (const entry of metadata) {
+            if (entry.nickname) {
+                nicknameMap.set(entry.userId, entry.nickname);
+            }
+        }
+
+        const filtered = members
+            .filter((m) => {
+                const nick = nicknameMap.get(m.userId);
+                return (
+                    m.displayName.toLowerCase().includes(focused) ||
+                    (nick && nick.toLowerCase().includes(focused))
+                );
+            })
+            .sort((a, b) => a.displayName.localeCompare(b.displayName))
+            .slice(0, 25);
+
+        await interaction.respond(
+            filtered.map((m) => ({
+                name: buildChoiceLabel(m, nicknameMap.get(m.userId)),
+                value: m.userId,
+            })),
+        );
+    } catch (error) {
+        logger.error(error, "Error in track-member autocomplete");
+        await interaction.respond([]);
+    }
+}
+
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 
@@ -76,6 +138,15 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const discordId = interaction.user.id;
 
     const service = new GuildService();
+    const guildId = await service.getGuildId(discordId);
+    let memberDisplayName = member;
+    if (guildId) {
+        const members = await fetchGuildMembers(guildId);
+        const matched = members?.find((m) => m.userId === member);
+        if (matched) {
+            memberDisplayName = matched.displayName;
+        }
+    }
 
     try {
         const rarity = interaction.options.getString("rarity") as
@@ -90,7 +161,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         if (!data || Object.keys(data).length === 0) {
             await interaction.editReply({
-                content: `No data found for the member ${member} in the last ${N_SEASONS} seasons.`,
+                content: `No data found for the member ${memberDisplayName} in the last ${N_SEASONS} seasons.`,
             });
             return;
         }
@@ -100,9 +171,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             | "median"
             | undefined;
         const embed = new EmbedBuilder()
-            .setTitle(`Guild Raid Stats for ${member}`)
+            .setTitle(`Guild Raid Stats for ${memberDisplayName}`)
             .setDescription(
-                `Here are the guild raid stats for **${member}** over the last ${N_SEASONS} seasons.\n` +
+                `Here are the guild raid stats for **${memberDisplayName}** over the last ${N_SEASONS} seasons.\n` +
                     "*Nb! Does not include inactive members in a season as it can only know who participated in prior seasons. This affects the average value if you had inactive players.*\n\n" +
                     "Data includes primes.",
             )
@@ -306,10 +377,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             embeds: [embed],
         });
     } catch (error) {
-        logger.error(error, `Error tracking member ${member}`);
+        logger.error(error, `Error tracking member ${memberDisplayName}`);
         await interaction.editReply({
             content:
-                "An error occurred while tracking the member. Please check that the username is correct and updated in the bot, then try again.",
+                "An error occurred while tracking the member. Please try again.",
         });
     }
 }
