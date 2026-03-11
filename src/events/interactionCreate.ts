@@ -10,11 +10,15 @@ export async function execute(interaction: any) {
         const command = interaction.client.commands.get(
             interaction.commandName,
         );
-        if (!command?.autocomplete) return;
+        if (!command?.autocomplete) {
+            await interaction.respond([]);
+            return;
+        }
         try {
             await command.autocomplete(interaction);
         } catch (error) {
             logger.error(error, "Error handling autocomplete");
+            await interaction.respond([]);
         }
         return;
     }
