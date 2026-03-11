@@ -3,7 +3,6 @@ import { GuildService } from "@/lib/services/GuildService";
 import { fetchGuildMembers } from "@/client/MiddlewareClient";
 import { testPlayerApiToken } from "@/lib/utils/commandUtils";
 import { isValidUUIDv4 } from "@/lib/utils/mathUtils";
-import { BotEventType } from "@/models/enums";
 import type { MiddlewareMember } from "@/models/types";
 import {
     type AutocompleteInteraction,
@@ -172,14 +171,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         );
 
         if (success) {
-            void dbController.logEvent(
-                BotEventType.COMMAND_USE,
-                "set-player-token",
-                {
-                    targetUserId: selectedUserId,
-                    setBy: discordId,
-                },
-            );
             await interaction.editReply({
                 content: `Successfully registered player-scope token for **${displayLabel}**. Availability commands will now use precise cooldown data for this member.`,
             });
