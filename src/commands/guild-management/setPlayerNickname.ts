@@ -2,7 +2,6 @@ import { dbController, logger } from "@/lib";
 import { GuildService } from "@/lib/services/GuildService";
 import { fetchGuildMembers } from "@/client/MiddlewareClient";
 import { isValidUUIDv4 } from "@/lib/utils/mathUtils";
-import { BotEventType } from "@/models/enums";
 import type { MiddlewareMember } from "@/models/types";
 import {
     type AutocompleteInteraction,
@@ -154,16 +153,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         );
 
         if (success) {
-            void dbController.logEvent(
-                BotEventType.COMMAND_USE,
-                "set-player-nickname",
-                {
-                    targetUserId: selectedUserId,
-                    inGameName,
-                    nickname,
-                    setBy: discordId,
-                },
-            );
             let confirmMsg = `Successfully set nickname **${nickname}** for **${inGameName}**.`;
             if (existingNickname) {
                 confirmMsg = `Successfully changed nickname for **${inGameName}** from **${existingNickname}** to **${nickname}**.`;
