@@ -188,7 +188,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     name: "Average method",
                     value: avgMethod
                         ? `Using ${avgMethod} to calculate averages`
-                        : "No average method specified, using mean",
+                        : "No average method specified, using median",
                 },
             )
             .setColor("#0099ff")
@@ -230,10 +230,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             const allMemberTokens = Object.values(tokensPerMember);
 
             const guildAverageDamage = (
-                avgMethod === "median" ? numericMedian : numericAverage
+                avgMethod === "mean" ? numericAverage : numericMedian
             )(allMemberDamages);
             let guildAverageTokens = (
-                avgMethod === "median" ? numericMedian : numericAverage
+                avgMethod === "mean" ? numericAverage : numericMedian
             )(allMemberTokens);
 
             if (guildAverageTokens > MAXIMUM_TOKENS_PER_SEASON) {

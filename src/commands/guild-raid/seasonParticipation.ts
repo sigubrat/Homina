@@ -93,7 +93,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         | null;
 
     if (!averageMethod) {
-        averageMethod = "mean";
+        averageMethod = "median";
     }
 
     const rarity = interaction.options.getString("rarity", false) as
@@ -155,7 +155,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             sortedResult,
             `Damage dealt in season ${season}`,
             interaction.options.getBoolean("show-bombs") ?? false,
-            averageMethod ? averageMethod : "mean",
+            averageMethod ? averageMethod : "median",
             average,
         );
 
