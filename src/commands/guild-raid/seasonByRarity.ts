@@ -10,7 +10,7 @@ import { numericAverage } from "@/lib/utils/mathUtils";
 import { sortGuildRaidResultDesc } from "@/lib/utils/mathUtils";
 import { isInvalidSeason } from "@/lib/utils/timeUtils";
 import { mapTierToRarity } from "@/lib/utils/utils";
-import { Rarity } from "@/models/enums";
+import { EncounterType, Rarity } from "@/models/enums";
 import {
     AttachmentBuilder,
     ChatInputCommandInteraction,
@@ -37,6 +37,16 @@ export const data = new SlashCommandBuilder()
                 { name: "Common", value: Rarity.COMMON },
             );
     })
+    .addStringOption((option) =>
+        option
+            .setName("boss-type")
+            .setDescription("Filter to main bosses or primes only")
+            .setRequired(true)
+            .addChoices(
+                { name: "Main Boss", value: "main" },
+                { name: "Prime", value: "prime" },
+            ),
+    )
     .addNumberOption((option) =>
         option
             .setName("season")
@@ -78,6 +88,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const providedSeason = interaction.options.getNumber("season");
     const season = providedSeason ?? getCurrentSeason();
     const rarity = interaction.options.getString("rarity") as Rarity;
+    const bossType = interaction.options.getString("boss-type");
+    const encounterTypeFilter =
+        bossType === "prime" ? EncounterType.SIDE_BOSS : EncounterType.BOSS;
     const discordId = interaction.user.id;
 
     if (providedSeason !== null && isInvalidSeason(providedSeason)) {
@@ -97,7 +110,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const service = new GuildService();
 
     logger.info(
-        `${interaction.user.username} attempting to use /season-by-rarity ${season} ${rarity}`,
+        `${interaction.user.username} attempting to use /season-by-rarity ${season} ${rarity} ${bossType}`,
     );
 
     try {
@@ -106,6 +119,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             season,
             rarity,
             true,
+            encounterTypeFilter,
         );
 
         if (
@@ -132,6 +146,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             providedSeason === null
                 ? `${season} (current season)`
                 : `${season}`;
+        const bossTypeLabel = bossType === "prime" ? "Primes" : "Main Bosses";
 
         const chartPromises = Object.entries(result).map(
             async ([bossName, data]) => {
@@ -170,17 +185,22 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             });
         });
 
+        const primeBarLine =
+            bossType !== "prime"
+                ? "\n- Purple bars (left y-axis): Damage dealt to primes"
+                : "";
+
         const embed = new EmbedBuilder()
             .setColor(0x0099ff)
-            .setTitle(`Damage dealt in season ${season}`)
+            .setTitle(`Damage dealt in season ${season} — ${bossTypeLabel}`)
             .setDescription(
                 "The graph shows the damage dealt to individual guild bosses\n" +
                     "- Blue bars (left y-axis): Total damage dealt to boss\n" +
                     "- Grey dotted line (leftmost y-axis): Avg damage per token\n" +
                     "- Red line (leftmost y-axis): Max damage per token\n" +
-                    "- Orange line (right y-axis): Total tokens used\n" +
-                    "- Purple bars (left y-axis): Damage dealt to primes\n" +
-                    "- Yellow dotted line (left y-axis): Guild average damage",
+                    "- Orange line (right y-axis): Total tokens used" +
+                    primeBarLine +
+                    "\n- Yellow dotted line (left y-axis): Guild average damage",
             )
             .setImage("attachment://graph-0.png") // Set the first chart as the main image
             .setFooter({
@@ -193,7 +213,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         });
 
         logger.info(
-            `${interaction.user.username} successfully used /season-by-rarity ${season} ${rarity}`,
+            `${interaction.user.username} successfully used /season-by-rarity ${season} ${rarity} ${bossType}`,
         );
     } catch (error) {
         logger.error(error, "Error fetching guild raid results");

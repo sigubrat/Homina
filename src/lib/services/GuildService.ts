@@ -302,6 +302,7 @@ export class GuildService {
         season: number,
         rarity?: Rarity,
         filterBombs: boolean = false,
+        encounterTypeFilter?: EncounterType,
     ) {
         const apiKey = await dbController.getUserToken(discordId);
         if (!apiKey) {
@@ -330,6 +331,12 @@ export class GuildService {
         if (filterBombs) {
             entries = entries.filter(
                 (entry) => entry.damageType !== DamageType.BOMB,
+            );
+        }
+
+        if (encounterTypeFilter) {
+            entries = entries.filter(
+                (entry) => entry.encounterType === encounterTypeFilter,
             );
         }
 
