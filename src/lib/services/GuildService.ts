@@ -5,6 +5,7 @@ import { evaluateToken } from "../utils/timeUtils";
 import { getUnixTimestamp } from "../utils/timeUtils";
 import { getMetaTeam } from "@/lib/utils/metaTeamUtils";
 import { createUnknownUserTracker } from "@/lib/utils/userUtils";
+import { getPrimeDisplayName } from "@/lib/utils/utils";
 import { DamageType, EncounterType, Rarity } from "@/models/enums";
 import { MetaTeams } from "@/models/enums/MetaTeams";
 import type {
@@ -358,7 +359,10 @@ export class GuildService {
                 continue;
             }
 
-            const boss = entry.type;
+            const boss =
+                encounterTypeFilter === EncounterType.SIDE_BOSS
+                    ? entry.unitId
+                    : entry.type;
 
             if (!groupedResults[boss]) {
                 groupedResults[boss] = [];
@@ -395,6 +399,11 @@ export class GuildService {
                     entry.damageDealt,
                 );
             } else {
+                const bossDisplayName =
+                    entry.encounterType === EncounterType.SIDE_BOSS
+                        ? getPrimeDisplayName(entry.unitId)
+                        : entry.type;
+
                 if (entry.damageType === DamageType.BOMB) {
                     groupedResults[boss].push({
                         bombCount: 1,
@@ -402,7 +411,7 @@ export class GuildService {
                         totalDamage: 0,
                         totalTokens: 0,
                         primeDamage: 0,
-                        boss: entry.type,
+                        boss: bossDisplayName,
                         set: entry.set + 1,
                         tier: entry.tier,
                         startedOn: entry.startedOn,
@@ -419,7 +428,7 @@ export class GuildService {
                                 ? entry.damageDealt
                                 : 0,
                         totalTokens: 1,
-                        boss: entry.type,
+                        boss: bossDisplayName,
                         set: entry.set + 1,
                         tier: entry.tier,
                         startedOn: entry.startedOn,

@@ -1,4 +1,5 @@
 import { BOSS_EMOJIS, UnitIdEmojiMapping } from "../configs/constants";
+import { characters } from "../configs/charactersConfig";
 import { logger } from "../HominaLogger";
 
 /**
@@ -40,7 +41,7 @@ export function splitByCapital(text: string): string[] {
 export function mapTierToRarity(
     tier: number,
     set: number,
-    loops: boolean = true
+    loops: boolean = true,
 ): string {
     if (tier < 0) {
         throw new Error("Tier cannot be negative");
@@ -120,6 +121,25 @@ export function getBossEmoji(boss: string) {
 }
 
 /**
+ * Resolves a prime boss unitId to a human-readable character name.
+ *
+ * Prime unitIds follow the pattern `GuildBoss{N}MiniBoss{M}{CharacterId}` where
+ * `CharacterId` matches a character's `id` from the characters config (case-insensitive suffix match).
+ *
+ * @param unitId - The raw unitId from the raid entry (e.g. "GuildBoss7MiniBoss1AstraPrimarisPsy").
+ * @returns The character's display name (e.g. "Sibyll"), or the original unitId if no match is found.
+ */
+export function getPrimeDisplayName(unitId: string): string {
+    const lowerUnitId = unitId.toLowerCase();
+    for (const char of Object.values(characters)) {
+        if (lowerUnitId.endsWith(char.id.toLowerCase())) {
+            return char.name;
+        }
+    }
+    return unitId;
+}
+
+/**
  * Maps a unit ID (`unitTid`) to its corresponding emoji representation.
  *
  * If an exact match is found in the `UnitIdEmojiMapping`, returns the associated emoji.
@@ -180,7 +200,7 @@ export function rankToElement(rank: number) {
         return "Adamantium";
     } else {
         throw new Error(
-            `Rank (${rank}) cannot be negative or greater than or equal to 21`
+            `Rank (${rank}) cannot be negative or greater than or equal to 21`,
         );
     }
 }
@@ -198,7 +218,7 @@ export function rankToElement(rank: number) {
 export function rankToTier(rank: number) {
     if (rank < 0 || rank >= 21) {
         throw new Error(
-            `Rank (${rank}) cannot be negative or greater than or equal to 21`
+            `Rank (${rank}) cannot be negative or greater than or equal to 21`,
         );
     }
 

@@ -143,4 +143,7 @@ export const characters = {
     Macer: { id: "worldJakhal", name: "Macer" },
     Kharn: { id: "worldKharn", name: "Kharn" },
     Wrask: { id: "worldTerminator", name: "Wrask" },
+
+    // Guild boss primes (not actual characters, but we want them in the same config for easy lookups)
+    Menhir: { id: "necroMenhir", name: "Menhir" },
 };
