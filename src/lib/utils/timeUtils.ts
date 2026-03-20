@@ -21,12 +21,12 @@ export function getUnixTimestamp(date: Date) {
  */
 export function evaluateToken(
     token: TokenStatus,
-    timestampInSeconds: number
+    timestampInSeconds: number,
 ): TokenStatus {
     const twelveHoursInSeconds = 12 * 60 * 60;
     const maxTokens = 3;
     const nRecharged = Math.floor(
-        (timestampInSeconds - token.refreshTime) / twelveHoursInSeconds
+        (timestampInSeconds - token.refreshTime) / twelveHoursInSeconds,
     );
 
     if (nRecharged + token.count >= maxTokens) {
@@ -55,7 +55,7 @@ export function evaluateToken(
  */
 export function SecondsToString(
     timestampInSeconds: number,
-    hideDays: boolean = false
+    hideDays: boolean = false,
 ): string {
     const secondsPerDay = 24 * 3600;
     const days = Math.floor(timestampInSeconds / secondsPerDay);
@@ -140,4 +140,31 @@ export function isInvalidSeason(season: number | null): boolean {
         season < MINIMUM_SEASON_THRESHOLD ||
         season > calculateCurrentSeason(new Date())
     );
+}
+
+/**
+ * Extracts the first time value found in a string and converts it to total minutes.
+ *
+ * Supported formats are `HH:MM` and `HHhMMm` (with optional `+` or `-` prefix for
+ * the `h/m` variant). This is intended for sorting cooldown text where the time may
+ * be embedded in a longer status string.
+ *
+ * If no valid time segment is found, a large fallback value is returned so invalid
+ * values naturally sort to the end in ascending order.
+ *
+ * @param s - Input text that may contain a supported time format.
+ * @returns Total minutes represented by the first matched time value, or Number.MAX_SAFE_INTEGER when no match is found.
+ *
+ * @example
+ * toMinutes("02:30") // 150
+ * toMinutes("cooldown 05h15m") // 315
+ */
+export function toMinutes(s: string): number {
+    const colonMatch = s.match(/(\d{1,3}):(\d{2})/);
+    if (colonMatch) return Number(colonMatch[1]) * 60 + Number(colonMatch[2]);
+
+    const hmMatch = s.match(/[+-]?(\d{1,4})h(\d{2})m/i);
+    if (hmMatch) return Number(hmMatch[1]) * 60 + Number(hmMatch[2]);
+
+    return Number.MAX_SAFE_INTEGER;
 }

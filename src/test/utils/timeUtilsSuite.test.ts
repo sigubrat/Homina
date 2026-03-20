@@ -5,6 +5,7 @@ import {
     withinNextHour,
     calculateCurrentSeason,
     isInvalidSeason,
+    toMinutes,
 } from "@/lib/utils/timeUtils";
 import { describe, expect, test } from "bun:test";
 
@@ -48,6 +49,34 @@ describe("timeUtilsSuite - Algebra", () => {
     test("withinNextHour - Should return false for cooldowns outside the next hour", () => {
         expect(withinNextHour("01h01m")).toBe(false);
         expect(withinNextHour("02h00m")).toBe(false);
+    });
+
+    test("toMinutes - should convert plain HH:MM strings to minutes", () => {
+        expect(toMinutes("00:00")).toBe(0);
+        expect(toMinutes("01:30")).toBe(90);
+        expect(toMinutes("23:59")).toBe(1439);
+    });
+
+    test("toMinutes - should extract HH:MM from larger strings", () => {
+        expect(toMinutes("ready in 02:05")).toBe(125);
+        expect(toMinutes("+12:00 left")).toBe(720);
+    });
+
+    test("toMinutes - should convert HHhMMm strings to minutes", () => {
+        expect(toMinutes("00h06m")).toBe(6);
+        expect(toMinutes("05h15m")).toBe(315);
+        expect(toMinutes("+10h07m")).toBe(607);
+    });
+
+    test("toMinutes - should parse HHhMMm from availability status rows", () => {
+        expect(toMinutes("✅ ⅔ 05h15m - ✅ +26h14m - Xakutaora")).toBe(315);
+        expect(toMinutes("✅ ⅔ 02h12m - ✅ +10h05m - CaptainRon")).toBe(132);
+        expect(toMinutes("✅ ⅔ 01h06m - ✅ +26h11m - Mecra")).toBe(66);
+    });
+
+    test("toMinutes - should return MAX_SAFE_INTEGER when no HH:MM is present", () => {
+        expect(toMinutes("READY..")).toBe(Number.MAX_SAFE_INTEGER);
+        expect(toMinutes("")).toBe(Number.MAX_SAFE_INTEGER);
     });
 
     test("calculateCurrentSeason - should return 85 for dates within the first 14 days", () => {

@@ -1,5 +1,6 @@
 import { logger } from "@/lib";
 import { GuildService } from "@/lib/services/GuildService";
+import { toMinutes } from "@/lib/utils/timeUtils";
 import { replaceUserIdKeysWithDisplayNames } from "@/lib/utils/userUtils";
 import {
     ChatInputCommandInteraction,
@@ -139,7 +140,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     tokens: available.tokens,
                 };
             })
-            .sort((a, b) => b.tokens - a.tokens) // Sort by tokens descending
+            .sort((a, b) => {
+                const byTokens = b.tokens - a.tokens;
+                if (byTokens !== 0) return byTokens;
+                return toMinutes(a.text) - toMinutes(b.text);
+            })
             .map((item) => item.text);
 
         if (table.length === 0) {
