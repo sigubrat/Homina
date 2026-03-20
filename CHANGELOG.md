@@ -19,20 +19,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [1.8.1] - 2026-03-20
+
+## Added
+
+- The `/gr-availability` list now sorts players by cooldown after sorting them by number of tokens.
+
 ## [1.8.0] - 2026-03-19
 
 ### Added
 
-- **New command!** `/player-metadata` - See an overview of the player metadata for your guild: nicknames, who has player api tokens registered and their status. 
+- **New command!** `/player-metadata` - See an overview of the player metadata for your guild: nicknames, who has player api tokens registered and their status.
 
 ### Changed
 
-- `/season-by-rarity` now displays graphs for primes and bosses separately. This means a lot more graphs so you now choose whether to show primes or main bosses when using the command. If you want to see all at the same time you must use the command twice (feedback is welcome). 
-- All commands that lets you choose between numeric mean and median for average calculation now default to median. 
+- `/season-by-rarity` now displays graphs for primes and bosses separately. This means a lot more graphs so you now choose whether to show primes or main bosses when using the command. If you want to see all at the same time you must use the command twice (feedback is welcome).
+- All commands that lets you choose between numeric mean and median for average calculation now default to median.
 
 ### Removed
 
-- `/season-by-rarity` option `show-max` is now deleted. Max values are always part of the command going forward. 
+- `/season-by-rarity` option `show-max` is now deleted. Max values are always part of the command going forward.
 
 ## [1.7.0] - 2026-03-11
 
