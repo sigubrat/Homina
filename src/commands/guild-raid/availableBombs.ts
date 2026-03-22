@@ -1,7 +1,7 @@
 import { logger } from "@/lib";
 import { GuildService } from "@/lib/services/GuildService";
 import { replaceUserIdKeysWithDisplayNames } from "@/lib/utils/userUtils";
-import { withinNextHour } from "@/lib/utils/timeUtils";
+import { toMinutes, withinNextHour } from "@/lib/utils/timeUtils";
 import {
     ChatInputCommandInteraction,
     EmbedBuilder,
@@ -99,7 +99,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     bombs: available.bombs,
                 };
             })
-            .sort((a, b) => b.bombs - a.bombs)
+            .sort((a, b) => {
+                const byBomb = b.bombs - a.bombs;
+                if (byBomb !== 0) return byBomb;
+                return toMinutes(b.text) - toMinutes(a.text);
+            })
             .map((item) => item.text);
 
         if (table.length === 0) {
