@@ -19,6 +19,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [1.9.0] - 2026-03-24
+
+## Added
+
+- `/season-by-rarity` now displays datalabels for max-values
+  - Datalabels use red text, so if your max and avg is the same they will overlap into a pink/soft red
+
+## Changed
+
+- Hapthatra and Mesophet are no longer bundled into the Menhir boss
+  - This was previously done because the API returns them as the same ID
+  - However, it is silly to consider them the same as the bosses are different and lend to very different damage scores
+  - A workaround is in place to replace their unit IDs based on their encounter index. Hopefully I got which has which index the right way round...
+
 ## [1.8.2] - 2026-03-22
 
 ## Added
@@ -68,8 +82,8 @@ This update introduces optional per-player metadata for your guild. You can now 
 ### Changed
 
 - `/relative-performance` has had some tweaks to make the comparisons more fair.
-    -   1. One-shots are now included. This was a missed edge-case and is now fixed.
-    -   2. A user must now hit a boss twice for the data to be included in the comparison. The intention is to not punish players who have had to use a token against a poor matchup in a cycle or at the end of the season.
+  - 1. One-shots are now included. This was a missed edge-case and is now fixed.
+  - 2. A user must now hit a boss twice for the data to be included in the comparison. The intention is to not punish players who have had to use a token against a poor matchup in a cycle or at the end of the season.
 
 ### Added
 
@@ -82,10 +96,10 @@ This update brings a new command to help guild leaders identify members who are 
 ### Added
 
 - **New command!** `/tokens-burnt` - Displays an overview of each guild member's currently available tokens, how many they've used this season, and how many they've burned (lost by staying capped at 3/3 too long).
-    - Burned tokens are calculated by comparing each player's `used + available` against the highest value in the guild, which represents the theoretical maximum for someone who never missed a regeneration.
-    - Members are sorted by burned tokens (descending), then available tokens, then usage.
-    - Includes status icons: 🔴 inactive & capped, ⚠️ capped but has played, 🔵 has some tokens, ✅ all tokens spent.
-    - The command also includes detailed explanations of assumptions and caveats (e.g. ±1 token uncertainty, hard cap at the configured maximum tokens per season).
+  - Burned tokens are calculated by comparing each player's `used + available` against the highest value in the guild, which represents the theoretical maximum for someone who never missed a regeneration.
+  - Members are sorted by burned tokens (descending), then available tokens, then usage.
+  - Includes status icons: 🔴 inactive & capped, ⚠️ capped but has played, 🔵 has some tokens, ✅ all tokens spent.
+  - The command also includes detailed explanations of assumptions and caveats (e.g. ±1 token uncertainty, hard cap at the configured maximum tokens per season).
 
 ## [1.4.0] - 2026-02-23
 
@@ -168,15 +182,15 @@ Special thanks to TheTimmyMan (creator of TacticusAnalytics) for collaborating o
 
 - Player tokens are no longer used/required.
 - Manual guild member / username management commands:
-    - `/add-member`
-    - `/add-username`
-    - `/member-ids`
-    - `/meta-comps`
-    - `/guild-token-status`
-    - `/memberlist-cleanup`
-    - `/player-token-status`
-    - `/remove-member`
-    - `/update-members`
+  - `/add-member`
+  - `/add-username`
+  - `/member-ids`
+  - `/meta-comps`
+  - `/guild-token-status`
+  - `/memberlist-cleanup`
+  - `/player-token-status`
+  - `/remove-member`
+  - `/update-members`
 - `/seasons` (the public API does not reliably return the correct number of seasons)
 
 ## [0.39.0] - 2026-02-07
@@ -188,17 +202,17 @@ BossG is now also well confirmed as a solid pick in the custodes team alongside 
 ### Added
 
 - `/season-by-rarity` now has a new option `show-max` where you choose to display each player's best hits against a boss or not.
-    - Required: no
-    - Defaults: False
-    - Red line
+  - Required: no
+  - Defaults: False
+  - Red line
 - Boss Gulgortz is now an optional character in the custodes team
 
 ### Changed
 
 - `/season-by-rarity` graph colors have changed slightly
-    - Avg Damage is now a grey dotted line
-    - The y-axis for average- and max damage is now grey
-    - The y-axis for tokens used is yellow to match the line chart
+  - Avg Damage is now a grey dotted line
+  - The y-axis for average- and max damage is now grey
+  - The y-axis for tokens used is yellow to match the line chart
 
 ## [0.38.3] - 2026-02-05
 
@@ -229,12 +243,12 @@ I'm back from vacation and we're therefore kicking off the new year with a patch
 ### Added
 
 - **New command!** - `/invite-user` allows users to invite other Discord users to register with their API token. The invited user receives a DM and must confirm or decline via interactive buttons, ensuring explicit consent before registration.
-    - Command has a 5 minute cooldown
-    - The invited user does not need to do any guild member mapping
-    - This is an alternative to giving the user your API token and asking them to register
+  - Command has a 5 minute cooldown
+  - The invited user does not need to do any guild member mapping
+  - This is an alternative to giving the user your API token and asking them to register
 - **Battlesuit team** is now part of all meta team calculations and charting.
-    - Core: Farsight, Revas, Actus
-    - Flex picks: Eldryon, Darkstrider, Adamatar, Calgar
+  - Core: Farsight, Revas, Actus
+  - Flex picks: Eldryon, Darkstrider, Adamatar, Calgar
 - New characters added: Tyrith, Hascule, Laviscus, and Farsight along with their emoji mappings.
 - New Machines of War units added to the config: Tsonji and Zkar.
 
@@ -386,7 +400,7 @@ Summer vacation is over (boo) but that means time for a new update (yayy). The r
 ### Added
 
 - **New command!** - `/available-bombs` is a simpler version of `/gr-availability` that only cares about bombs. It gives you an overview of available bombs and then lets you copy-paste the usernames of those with an available bomb, and optionally, you can get those who have a bomb available within an hour.
-    - Optional parameter: `soon` - Display members who have a bomb available within the hour
+  - Optional parameter: `soon` - Display members who have a bomb available within the hour
 - All commands with rarity options now include the Mythic option
 - Adamantium rank added to the options in `/meta-comps`
 - `/track-member` now also includes maximum damage dealt to each boss when a rarity filter is selected.
@@ -455,9 +469,9 @@ A small fix to some command descriptions regarding whether or not they include p
 ### Added
 
 - Added explicit confirmation that commands include primes to:
-    - `/inactivity-by-season`
-    - `/season-tokens`
-    - `/season-participation`
+  - `/inactivity-by-season`
+  - `/season-tokens`
+  - `/season-participation`
 
 ## [0.29.0] - 2025-07-28
 
@@ -511,9 +525,9 @@ This update brings more strict definitions of how meta teams are defined in all 
 ### Changed
 
 - Meta team calculations are now more strict
-    - Required number of meta heroes for it to count as a meta team **3 -> 5**
-    - The admech team now checks for 3 lynchin heroes (Rho, Tan, Actus) instead of just Rho
-    - The intention of the earlier implementation was to allow for some more casual variations that newer players often have, but I have later changed my mind as I don't think the compromise between precision and availability is worth it.
+  - Required number of meta heroes for it to count as a meta team **3 -> 5**
+  - The admech team now checks for 3 lynchin heroes (Rho, Tan, Actus) instead of just Rho
+  - The intention of the earlier implementation was to allow for some more casual variations that newer players often have, but I have later changed my mind as I don't think the compromise between precision and availability is worth it.
 - More commands now display if sidebosses are included or not in calculations
 
 ## [0.24.1] - 2025-07-04
@@ -531,7 +545,7 @@ It is time to make more use of the Player-scope tokens. This update provides a n
 ### Added
 
 - **New command!** `/meta-comps` - Shows what meta teams players, that have provided a Player-scope API token, have at a minimum rank threshold of your choosing. A player having a meta team is defined as them having the lynchpin hero of that meta team (Ragnar, Rho, Neuro) and at least 5 characters that are part of the meta team or a variation of it. This approach is intended to be a compromise between what is the perfect meta team and the various variations or 'discount' versions that are out there.
-    - Optional param: Rank [Stone, Iron, Bronze, Silver, Gold, Diamond] - The minimum rank all characters of a meta team must be for the bot to consider the player having that team.
+  - Optional param: Rank [Stone, Iron, Bronze, Silver, Gold, Diamond] - The minimum rank all characters of a meta team must be for the bot to consider the player having that team.
 
 ### Changed
 
@@ -544,8 +558,8 @@ This update brings two new commands; one for seeing the highest damage each memb
 ### Added
 
 - **New command!** `/season-highscore` - Displays a graph showing the max damage each member did against each boss in one battle and with what meta team. Also includes a CSV file you can use as a table or open in a program like Excel to see the detailed numbers. The command only shows data for the specified Rarity to make the data possible to display in a reasonable manner.
-    - Required param: season number
-    - Required param: boss rarity
+  - Required param: season number
+  - Required param: boss rarity
 - **New command!** `/guild-token-status` - Displays a list of your guild members and shows who have a player token registered.
 
 ## [0.22.0] - 2025-06-23
@@ -577,9 +591,9 @@ This updates provides two new commands for season configs and improvements to ex
 ### Added
 
 - **New command!** `/season-bosses` - This command returns a display of the guild raid bosses in the previous 5 guild raid seasons.
-    - Optional parameter: `Rarity` - filter by rarity.
+  - Optional parameter: `Rarity` - filter by rarity.
 - **New command!** `/season-same` - Displays the past seasons that has the same guild raid bosses as the provided season.
-    - Required parameter: `season` - The number of the season you want to find a similar raid boss config for.
+  - Required parameter: `season` - The number of the season you want to find a similar raid boss config for.
 
 ### Changed
 
@@ -603,9 +617,9 @@ This updates provides two new commands for season configs and improvements to ex
 ### Changed
 
 - `/gr-time-used` should be more readable and compact:
-    - Fields added to display options selected and time spent between first and last token/bomb used
-    - Discord emojis used to take up less space
-    - Shortened down rarity and loop text
+  - Fields added to display options selected and time spent between first and last token/bomb used
+  - Discord emojis used to take up less space
+  - Shortened down rarity and loop text
 
 ## [0.19.1] - 2025-06-19
 
@@ -624,9 +638,9 @@ This update brings two new commands and some minor usability improvements.
 ### Added
 
 - New command: `/track-member` - Lets you track the performance of one member in relation to the guild average over multiple seasons.
-    - Required parameter: username - The username as it is displayed in-game of the member you want to check.
-    - Optional parameter: Rarity - Lets you filter the data by rarity and display more detailed stats for the individual guild bosses at that rarity.
-    - Nb! There is no way for the bot to know how many users the guild had in prior seasons, only who participated. For most people this will be everyone, but some variations in the average value can occur in comparison to other commands who include inactive players.
+  - Required parameter: username - The username as it is displayed in-game of the member you want to check.
+  - Optional parameter: Rarity - Lets you filter the data by rarity and display more detailed stats for the individual guild bosses at that rarity.
+  - Nb! There is no way for the bot to know how many users the guild had in prior seasons, only who participated. For most people this will be everyone, but some variations in the average value can occur in comparison to other commands who include inactive players.
 - New command: `/test-token` - A simple test of your registered API token with (co-)leader permissions and Raid+Guild scope. No parameters required.
 
 ### Changed
@@ -669,8 +683,8 @@ This update provides support for optional usage of the Player-scope API tokens a
 ### Changed
 
 - Improved `/gr-available` command:
-    - Now includes a warning that token cooldowns may have inherent uncertainty due to data limitations, which may affect cooldown accuracy.
-    - Enhanced embed formatting for the display of total tokens and bombs.
+  - Now includes a warning that token cooldowns may have inherent uncertainty due to data limitations, which may affect cooldown accuracy.
+  - Enhanced embed formatting for the display of total tokens and bombs.
 
 ### Fixed
 
@@ -709,12 +723,12 @@ This update provides functionality to see how many bombs guild members have used
 ### Added
 
 - **New command!** `/season-bombs` - Returns a graph displaying how many bombs each member has used. Also shows the average (either mean or median value) bombs used
-    - Required parameter: season (number)
-    - Optional parameter: average-method (Median or Average)
-    - Bars are colored depending on standard deviation of the average value
+  - Required parameter: season (number)
+  - Optional parameter: average-method (Median or Average)
+  - Bars are colored depending on standard deviation of the average value
 - `/season-participation` now has two new optional parameters and also displays the guild's average damage:
-    - Optional parameter: show-bombs (True/false) - Choose if you want a line displaying number of bombs used in the graph - default: false
-    - Optional parameter: average-method (Median or Average) - default: average
+  - Optional parameter: show-bombs (True/false) - Choose if you want a line displaying number of bombs used in the graph - default: false
+  - Optional parameter: average-method (Median or Average) - default: average
 
 ### Changed
 
@@ -770,27 +784,27 @@ This patch provides a new command that gives more detailed statistics per member
 ### Added
 
 - `/member-stats-per-season` command that provides more detailed stats per member for a given season
-    - Required param: season (number) - The Guild raid season
-    - Optional param: rarity (Rarity) - If you want to filter stats by rarity
-    - Optional param: export (boolean) - Do you want a csv of the data?
+  - Required param: season (number) - The Guild raid season
+  - Optional param: rarity (Rarity) - If you want to filter stats by rarity
+  - Optional param: export (boolean) - Do you want a csv of the data?
 
 ### Changed
 
 - Improves readability of the `/gr-availability` command.
-    - 3/3 tokens now leads to a ⚠️ icon
-    - Names are at the end in bold to align all data
-    - Times are now always of the same length
-    - No cooldown now has text the same length of timestamps
-    - Data is sorted based on guild raid tokens
+  - 3/3 tokens now leads to a ⚠️ icon
+  - Names are at the end in bold to align all data
+  - Times are now always of the same length
+  - No cooldown now has text the same length of timestamps
+  - Data is sorted based on guild raid tokens
 
 ## [0.11.0] - 2025-05-15
 
 ### Added
 
 - Command `/gr-time-used` to see how much time and tokens it took to take down a guild-raid boss
-    - Mandatory season option
-    - Optional rarity option
-    - Pagination
+  - Mandatory season option
+  - Optional rarity option
+  - Pagination
 
 - Pagination library that extends Discord.js' EmbedBuilder
 - New Data transformation service
@@ -901,7 +915,7 @@ Reworked entirely how player-mappings are handled. Instead of a stupid JSON-file
 ### Added
 
 - A new `/inactivity-by-season` command that provides an overview of inactive players for a specific season based on a token usage threshold.
-    - **Parameters**:
-        - `season` (required): The season to check (minimum value: 70).
-        - `threshold` (optional): The minimum number of tokens required to be considered active (default: 1, minimum value: 1).
+  - **Parameters**:
+    - `season` (required): The season to check (minimum value: 70).
+    - `threshold` (optional): The minimum number of tokens required to be considered active (default: 1, minimum value: 1).
 - Added this changelog. Future updates will be explained here.
