@@ -360,7 +360,18 @@ export class ChartService {
                                   pointRadius: 3,
                                   yAxisID: "y3",
                                   datalabels: {
-                                      display: false,
+                                      display: true,
+                                      color: CHART_COLORS.red,
+                                      anchor: "end" as const,
+                                      align: 300,
+                                      font: {
+                                          size: 11,
+                                      },
+                                      formatter: function (value: number) {
+                                          return value > 0
+                                              ? shortenNumber(value)
+                                              : null;
+                                      },
                                   },
                               },
                           ]
