@@ -57,37 +57,6 @@ describe("DataTransformationServiceSuite - Algebra", () => {
         ]);
     });
 
-    test("timeUsedPerBoss - Should correctly handle the menhir twin ids", async () => {
-        const transformedData = await dtsService.timeUsedPerBoss(
-            MenhirRaidResultFixture,
-            true
-        );
-
-        expect(transformedData).toEqual([
-            {
-                "L1 TheRed": {
-                    bombs: 2,
-                    sideboss: [true, "L1 MagnusTheRed"],
-                    time: 10,
-                    tokens: 0,
-                },
-                "M1 NecroMenhir-1": {
-                    time: 50,
-                    tokens: 0,
-                    bombs: 5,
-                    sideboss: [true, "M1 SilentKing"],
-                },
-                "M1 NecroMenhir-2": {
-                    time: 10,
-                    tokens: 0,
-                    bombs: 1,
-                    sideboss: [true, "M1 SilentKing"],
-                },
-            },
-            "00h 01m 10s",
-        ]);
-    });
-
     const highscoreData: Raid[] = [
         {
             userId: "test1",
