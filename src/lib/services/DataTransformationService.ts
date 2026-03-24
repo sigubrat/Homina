@@ -12,7 +12,7 @@ export class DataTransformationService {
 
     async timeUsedPerBoss(
         seasonData: Raid[],
-        separatePrimes: boolean = false
+        separatePrimes: boolean = false,
     ): Promise<[Record<string, TimeUsed>, string]> {
         const groupedData = seasonData.reduce(
             (acc: Record<string, Raid[]>, curr: Raid) => {
@@ -25,14 +25,11 @@ export class DataTransformationService {
                     const unit = `${unitWords.at(-2)}${unitWords.at(-1)}`;
                     if (!unit) {
                         logger.error(
-                            `Unit ID ${curr.unitId} is invalid or empty while calculating time used`
+                            `Unit ID ${curr.unitId} is invalid or empty while calculating time used`,
                         );
                         return acc;
                     }
                     key = `${mapTierToRarity(curr.tier, curr.set + 1)} ${unit}`;
-                    if (unit === "NecroMenhir") {
-                        key += `-${curr.encounterIndex}`;
-                    }
                 } else {
                     key = `${mapTierToRarity(curr.tier, curr.set + 1)} ${
                         curr.type
@@ -44,7 +41,7 @@ export class DataTransformationService {
                 acc[key]!.push(curr);
                 return acc;
             },
-            {} as Record<string, Raid[]> // initial accumulator value
+            {} as Record<string, Raid[]>, // initial accumulator value
         );
 
         const result: Record<string, TimeUsed> = {};
@@ -53,13 +50,13 @@ export class DataTransformationService {
             const data = groupedData[boss];
             if (!data) {
                 logger.error(
-                    `Key ${boss} not found in groupedData while calculating time used`
+                    `Key ${boss} not found in groupedData while calculating time used`,
                 );
                 continue;
             }
 
             const totalTokens = data.filter(
-                (raid) => raid.damageType === DamageType.BATTLE
+                (raid) => raid.damageType === DamageType.BATTLE,
             ).length;
 
             const totalBombs = data.length - totalTokens;
@@ -70,7 +67,7 @@ export class DataTransformationService {
                 const lastEntry = data[data.length - 1];
                 if (!firstEntry || !lastEntry) {
                     logger.error(
-                        `First or last entry not found for boss ${boss}`
+                        `First or last entry not found for boss ${boss}`,
                     );
                     continue;
                 }
@@ -78,7 +75,7 @@ export class DataTransformationService {
                     firstEntry.encounterType === EncounterType.SIDE_BOSS;
 
                 const timeInSeconds = Math.abs(
-                    firstEntry?.startedOn - lastEntry?.startedOn
+                    firstEntry?.startedOn - lastEntry?.startedOn,
                 );
 
                 result[boss] = {
@@ -89,7 +86,7 @@ export class DataTransformationService {
                         isPrime,
                         `${mapTierToRarity(
                             firstEntry.tier,
-                            firstEntry.set + 1
+                            firstEntry.set + 1,
                         )} ${lastEntry.type}`,
                     ],
                 };
@@ -100,7 +97,7 @@ export class DataTransformationService {
             const lastEntry = data[data.length - 1];
             if (!lastEntry) {
                 logger.error(
-                    `Last entry not found for boss ${boss} while calculating time used`
+                    `Last entry not found for boss ${boss} while calculating time used`,
                 );
                 continue;
             }
@@ -108,7 +105,7 @@ export class DataTransformationService {
             const previousData = groupedData[previousKey];
             if (!previousData) {
                 logger.error(
-                    `Previous data not found for boss ${previousKey} while calculating time used`
+                    `Previous data not found for boss ${previousKey} while calculating time used`,
                 );
                 continue;
             }
@@ -116,7 +113,7 @@ export class DataTransformationService {
             const previousLast = previousData[previousData.length - 1];
             if (!previousLast) {
                 logger.error(
-                    `Previous last entry not found for boss ${previousKey}`
+                    `Previous last entry not found for boss ${previousKey}`,
                 );
                 continue;
             }
@@ -125,13 +122,13 @@ export class DataTransformationService {
                 previousLast.startedOn === undefined
             ) {
                 logger.error(
-                    `StartedOn timestamp not found for boss ${boss} or previous boss ${previousKey}`
+                    `StartedOn timestamp not found for boss ${boss} or previous boss ${previousKey}`,
                 );
                 continue;
             }
 
             const timeInSeconds = Math.abs(
-                previousLast.startedOn - lastEntry.startedOn
+                previousLast.startedOn - lastEntry.startedOn,
             );
 
             const timeUsed = timeInSeconds;
@@ -171,7 +168,7 @@ export class DataTransformationService {
             const key = `${mapTierToRarity(
                 raid.tier,
                 raid.set + 1,
-                false
+                false,
             )} ${unit}`;
 
             if (!result[key]) {
@@ -179,7 +176,7 @@ export class DataTransformationService {
             }
 
             const existingEntry = result[key].find(
-                (entry) => entry.username === raid.userId
+                (entry) => entry.username === raid.userId,
             );
 
             const team = raid.heroDetails.map((hero) => hero.unitId);

@@ -17,6 +17,27 @@ export interface PlayerApiResponse {
 class HominaTacticusClient {
     private baseUrl: string = "https://api.tacticusgame.com/api/v1";
 
+    /**
+     * Hapthatra and Mesophet are both represented as NecroMenhir in the game, so we need to replace the unitId with the correct name based on the encounter index
+     *
+     * @param data
+     * @returns the processed GuildRaidResponse with replaced unitIds for Hapthatra and Mesophet
+     */
+    private preProcessGuildRaidResponse(
+        data: GuildRaidResponse,
+    ): GuildRaidResponse {
+        data.entries.forEach((entry) => {
+            if (entry.unitId.includes("NecroMenhir")) {
+                if (entry.encounterIndex === 1) {
+                    entry.unitId = "Hapthatra";
+                } else if (entry.encounterIndex === 2) {
+                    entry.unitId = "Mesophet";
+                }
+            }
+        });
+        return data;
+    }
+
     async getGuild(apiKey: string): Promise<GuildApiResponse> {
         const response = await fetch(`${this.baseUrl}/guild`, {
             method: "GET",
@@ -105,7 +126,7 @@ class HominaTacticusClient {
 
         const body = (await response.json()) as GuildRaidResponse;
 
-        return body;
+        return this.preProcessGuildRaidResponse(body);
     }
 
     async getGuildRaidByCurrentSeason(
@@ -126,7 +147,7 @@ class HominaTacticusClient {
 
             const body = (await response.json()) as GuildRaidResponse;
 
-            return body;
+            return this.preProcessGuildRaidResponse(body);
         } catch (error) {
             throw new Error(`GET request failed: ${error}`);
         }
