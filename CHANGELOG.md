@@ -19,14 +19,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [1.9.1]
+
+This is a patch to the meta team definitions. 
+
+### Changed
+
+- The neuro team now has additional flex picks: Abaddon, Thaumachus, and Archimatos. 
+- The custodes team now also contains: Atlacoya
+
 ## [1.9.0] - 2026-03-24
 
-## Added
+### Added
 
 - `/season-by-rarity` now displays datalabels for max-values
   - Datalabels use red text, so if your max and avg is the same they will overlap into a pink/soft red
 
-## Changed
+### Changed
 
 - Hapthatra and Mesophet are no longer bundled into the Menhir boss
   - This was previously done because the API returns them as the same ID
@@ -35,13 +44,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.8.2] - 2026-03-22
 
-## Added
+### Added
 
 - The `/available-bombs` now also sorts by time since bomb was available after sorting by having a bomb available or not.
 
 ## [1.8.1] - 2026-03-20
 
-## Added
+### Added
 
 - The `/gr-availability` list now sorts players by cooldown after sorting them by number of tokens.
 
