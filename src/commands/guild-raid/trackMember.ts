@@ -7,6 +7,7 @@ import { fetchGuildMembers } from "@/client/MiddlewareClient";
 import { GuildService } from "@/lib/services/GuildService";
 import { isValidUUIDv4, numericMedian } from "@/lib/utils/mathUtils";
 import { numericAverage } from "@/lib/utils/mathUtils";
+import { mapTierToRarity } from "@/lib/utils/utils";
 import { Rarity } from "@/models/enums";
 import type { MiddlewareMember } from "@/models/types";
 import {
@@ -272,7 +273,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             } else {
                 // If rarity is provided, we need to calculate relative damage for each boss
                 const userStatsPerBoss: Record<string, string[]> = {};
-                for (const [boss, values] of Object.entries(stats)) {
+                for (const [, values] of Object.entries(stats)) {
                     if (!values || values.length === 0) {
                         continue;
                     }
@@ -323,10 +324,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                         ) + "%";
 
                     const bossName =
-                        rarity[0]! +
-                        userData.set +
+                        mapTierToRarity(userData.tier, userData.set, false) +
                         " " +
-                        boss.split(/(?=[A-Z])/)[0]?.substring(0, 4);
+                        (userData.boss ?? "").substring(0, 4);
 
                     const maxDmg = (userData.maxDmg || 0).toLocaleString(
                         undefined,

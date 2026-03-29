@@ -362,7 +362,7 @@ export class GuildService {
             const boss =
                 encounterTypeFilter === EncounterType.SIDE_BOSS
                     ? entry.unitId
-                    : entry.type;
+                    : `${entry.rarity}_${entry.type}`;
 
             if (!groupedResults[boss]) {
                 groupedResults[boss] = [];
@@ -1430,7 +1430,7 @@ export class GuildService {
             const entriesByBoss: Record<string, Raid[]> = {};
             for (const entry of entries) {
                 if (!entry.userId) continue;
-                const bossKey = entry.unitId;
+                const bossKey = `${entry.rarity}_${entry.unitId}`;
                 if (!entriesByBoss[bossKey]) {
                     entriesByBoss[bossKey] = [];
                 }

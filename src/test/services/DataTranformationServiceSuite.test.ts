@@ -9,9 +9,8 @@ const testGuildRaidData = RaidResultFixture;
 
 describe("DataTransformationServiceSuite - Algebra", () => {
     test("timeUsedPerBoss - Should properly transform guild raid data to tokens and time used per boss", async () => {
-        const transformedData = await dtsService.timeUsedPerBoss(
-            testGuildRaidData
-        );
+        const transformedData =
+            await dtsService.timeUsedPerBoss(testGuildRaidData);
 
         expect(transformedData).toEqual([
             {
@@ -29,18 +28,18 @@ describe("DataTransformationServiceSuite - Algebra", () => {
     test("timeUsedPerBoss - should display primes as well if the option is enabled", async () => {
         const transformedData = await dtsService.timeUsedPerBoss(
             testGuildRaidData,
-            true
+            true,
         );
 
         expect(transformedData).toEqual([
             {
-                "L1 AdmecManipulus": {
+                "L1 AdmecManipulus-2": {
                     time: 907,
                     tokens: 1,
                     bombs: 3,
                     sideboss: [true, "L1 Belisarius"],
                 },
-                "L1 AdmecMarshall": {
+                "L1 AdmecMarshall-1": {
                     time: 1803,
                     tokens: 2,
                     bombs: 1,
@@ -54,6 +53,37 @@ describe("DataTransformationServiceSuite - Algebra", () => {
                 },
             },
             "00h 45m 27s",
+        ]);
+    });
+
+    test("timeUsedPerBoss - Should correctly handle the menhir twin ids", async () => {
+        const transformedData = await dtsService.timeUsedPerBoss(
+            MenhirRaidResultFixture,
+            true,
+        );
+
+        expect(transformedData).toEqual([
+            {
+                "L1 TheRed-1": {
+                    bombs: 2,
+                    sideboss: [true, "L1 MagnusTheRed"],
+                    time: 10,
+                    tokens: 0,
+                },
+                "M1 NecroMenhir-1": {
+                    time: 50,
+                    tokens: 0,
+                    bombs: 5,
+                    sideboss: [true, "M1 SilentKing"],
+                },
+                "M1 NecroMenhir-2": {
+                    time: 10,
+                    tokens: 0,
+                    bombs: 1,
+                    sideboss: [true, "M1 SilentKing"],
+                },
+            },
+            "00h 01m 10s",
         ]);
     });
 
@@ -166,9 +196,8 @@ describe("DataTransformationServiceSuite - Algebra", () => {
     ];
 
     test("seasonHighscores - Should properly transform guild raid data to season highscores", async () => {
-        const transformedData = await dtsService.seasonHighscores(
-            highscoreData
-        );
+        const transformedData =
+            await dtsService.seasonHighscores(highscoreData);
 
         expect(transformedData).toEqual({
             "L1 AdmecManipulus": [
@@ -187,9 +216,8 @@ describe("DataTransformationServiceSuite - Algebra", () => {
     });
 
     test("highestDmgComps - Should properly transform guild raid data to highest damage comps", async () => {
-        const transformedData = await dtsService.highestDmgComps(
-            testGuildRaidData
-        );
+        const transformedData =
+            await dtsService.highestDmgComps(testGuildRaidData);
 
         expect(transformedData).toEqual({
             AdmecBelisarius: {

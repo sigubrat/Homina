@@ -29,7 +29,7 @@ export class DataTransformationService {
                         );
                         return acc;
                     }
-                    key = `${mapTierToRarity(curr.tier, curr.set + 1)} ${unit}`;
+                    key = `${mapTierToRarity(curr.tier, curr.set + 1)} ${unit}-${curr.encounterIndex}`;
                 } else {
                     key = `${mapTierToRarity(curr.tier, curr.set + 1)} ${
                         curr.type
