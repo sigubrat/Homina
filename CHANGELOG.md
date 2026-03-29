@@ -19,13 +19,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [1.9.2]
+
+### Fixed
+
+- The introduction of the `Legendary+` option led to a bug where if the same boss exists at both legendary- and mythic rarity the data got grouped together. This is now fixed.
+
 ## [1.9.1]
 
-This is a patch to the meta team definitions. 
+This is a patch to the meta team definitions.
 
 ### Changed
 
-- The neuro team now has additional flex picks: Abaddon, Thaumachus, and Archimatos. 
+- The neuro team now has additional flex picks: Abaddon, Thaumachus, and Archimatos.
 - The custodes team now also contains: Atlacoya
 
 ## [1.9.0] - 2026-03-24
