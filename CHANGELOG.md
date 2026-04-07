@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [1.10.0]
+
+### Added
+
+- `/season-by-rarity` now has an optional parameter for how to sort the data. The options are: total damage, avg damage, tokens used, and max damage.
+
 ## [1.9.2]
 
 ### Fixed

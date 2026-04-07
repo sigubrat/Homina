@@ -7,10 +7,10 @@ import { ChartService } from "@/lib/services/ChartService";
 import { GuildService } from "@/lib/services/GuildService.ts";
 import { numericMedian } from "@/lib/utils/mathUtils";
 import { numericAverage } from "@/lib/utils/mathUtils";
-import { sortGuildRaidResultDesc } from "@/lib/utils/mathUtils";
+import { sortGuildRaidResults } from "@/lib/utils/mathUtils";
 import { isInvalidSeason } from "@/lib/utils/timeUtils";
 import { mapTierToRarity } from "@/lib/utils/utils";
-import { EncounterType, Rarity } from "@/models/enums";
+import { EncounterType, Rarity, SortBy } from "@/models/enums";
 import {
     AttachmentBuilder,
     ChatInputCommandInteraction,
@@ -72,6 +72,20 @@ export const data = new SlashCommandBuilder()
             )
             .setRequired(false),
     )
+    .addStringOption((option) =>
+        option
+            .setName("sort-by")
+            .setDescription(
+                "Sort entries by a specific stat (defaults to total damage)",
+            )
+            .setRequired(false)
+            .addChoices(
+                { name: "Total Damage", value: SortBy.TOTAL_DAMAGE },
+                { name: "Avg Damage per Token", value: SortBy.AVG_DAMAGE },
+                { name: "Tokens Used", value: SortBy.TOKENS_USED },
+                { name: "Max Damage", value: SortBy.MAX_DAMAGE },
+            ),
+    )
     .setDescription(
         "Show guild raid stats for each boss at a specific rarity in a given season",
     );
@@ -85,6 +99,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const bossType = interaction.options.getString("boss-type");
     const encounterTypeFilter =
         bossType === "prime" ? EncounterType.SIDE_BOSS : EncounterType.BOSS;
+    const sortBy = (interaction.options.getString("sort-by") ??
+        SortBy.TOTAL_DAMAGE) as SortBy;
     const discordId = interaction.user.id;
 
     if (providedSeason !== null && isInvalidSeason(providedSeason)) {
@@ -150,9 +166,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                         ? numericAverage(damagePerRun)
                         : numericMedian(damagePerRun);
 
+                const sortedData = sortGuildRaidResults(data, sortBy);
+
                 const chartBuffer =
                     await chartService.createSeasonDamageChartAvg(
-                        sortGuildRaidResultDesc(data),
+                        sortedData,
                         `Damage dealt in season ${seasonDisplay} - ${
                             data[0]
                                 ? mapTierToRarity(

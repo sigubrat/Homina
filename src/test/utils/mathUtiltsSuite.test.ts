@@ -5,11 +5,13 @@ import {
     numericAverage,
     numericMedian,
     sortGuildRaidResultDesc,
+    sortGuildRaidResults,
     sortTokensUsed,
     standardDeviation,
 } from "@/lib/utils/mathUtils";
 import { shortenNumber } from "@/lib/utils/utils";
 import type { GuildRaidResult } from "@/models/types";
+import { SortBy } from "@/models/enums";
 import { describe, expect, test } from "bun:test";
 
 describe("mathUtilsSuite - Algebra", () => {
@@ -167,5 +169,137 @@ describe("mathUtilsSuite - Algebra", () => {
 
     test("formatDelta - Should format exactly 100 as +0.0%", () => {
         expect(formatDelta(100)).toBe("+0.0%");
+    });
+});
+
+describe("mathUtilsSuite - sortGuildRaidResults", () => {
+    const baseData: GuildRaidResult[] = [
+        {
+            username: "Alice",
+            totalDamage: 500,
+            totalTokens: 5,
+            maxDmg: 200,
+            boss: "",
+            set: 0,
+            tier: 0,
+            startedOn: 0,
+            bombCount: 0,
+        },
+        {
+            username: "Bob",
+            totalDamage: 1000,
+            totalTokens: 2,
+            maxDmg: 800,
+            boss: "",
+            set: 0,
+            tier: 0,
+            startedOn: 0,
+            bombCount: 0,
+        },
+        {
+            username: "Charlie",
+            totalDamage: 750,
+            totalTokens: 10,
+            maxDmg: 150,
+            boss: "",
+            set: 0,
+            tier: 0,
+            startedOn: 0,
+            bombCount: 0,
+        },
+    ];
+
+    test("should sort by total damage descending by default", () => {
+        const result = sortGuildRaidResults(baseData, SortBy.TOTAL_DAMAGE);
+        expect(result[0]!.username).toBe("Bob");
+        expect(result[1]!.username).toBe("Charlie");
+        expect(result[2]!.username).toBe("Alice");
+    });
+
+    test("should sort by avg damage per token descending", () => {
+        // Bob: 1000/2 = 500, Alice: 500/5 = 100, Charlie: 750/10 = 75
+        const result = sortGuildRaidResults(baseData, SortBy.AVG_DAMAGE);
+        expect(result[0]!.username).toBe("Bob");
+        expect(result[1]!.username).toBe("Alice");
+        expect(result[2]!.username).toBe("Charlie");
+    });
+
+    test("should sort by tokens used descending", () => {
+        const result = sortGuildRaidResults(baseData, SortBy.TOKENS_USED);
+        expect(result[0]!.username).toBe("Charlie");
+        expect(result[1]!.username).toBe("Alice");
+        expect(result[2]!.username).toBe("Bob");
+    });
+
+    test("should sort by max damage descending", () => {
+        const result = sortGuildRaidResults(baseData, SortBy.MAX_DAMAGE);
+        expect(result[0]!.username).toBe("Bob");
+        expect(result[1]!.username).toBe("Alice");
+        expect(result[2]!.username).toBe("Charlie");
+    });
+
+    test("should not mutate the original array", () => {
+        const original = [...baseData];
+        sortGuildRaidResults(baseData, SortBy.TOKENS_USED);
+        expect(baseData.map((d) => d.username)).toEqual(
+            original.map((d) => d.username),
+        );
+    });
+
+    test("should treat zero tokens as zero avg damage", () => {
+        const data: GuildRaidResult[] = [
+            {
+                username: "Zero",
+                totalDamage: 999,
+                totalTokens: 0,
+                boss: "",
+                set: 0,
+                tier: 0,
+                startedOn: 0,
+                bombCount: 0,
+            },
+            {
+                username: "One",
+                totalDamage: 100,
+                totalTokens: 1,
+                boss: "",
+                set: 0,
+                tier: 0,
+                startedOn: 0,
+                bombCount: 0,
+            },
+        ];
+        const result = sortGuildRaidResults(data, SortBy.AVG_DAMAGE);
+        expect(result[0]!.username).toBe("One");
+        expect(result[1]!.username).toBe("Zero");
+    });
+
+    test("should treat undefined maxDmg as zero", () => {
+        const data: GuildRaidResult[] = [
+            {
+                username: "NoMax",
+                totalDamage: 1000,
+                totalTokens: 5,
+                boss: "",
+                set: 0,
+                tier: 0,
+                startedOn: 0,
+                bombCount: 0,
+            },
+            {
+                username: "HasMax",
+                totalDamage: 100,
+                totalTokens: 1,
+                maxDmg: 50,
+                boss: "",
+                set: 0,
+                tier: 0,
+                startedOn: 0,
+                bombCount: 0,
+            },
+        ];
+        const result = sortGuildRaidResults(data, SortBy.MAX_DAMAGE);
+        expect(result[0]!.username).toBe("HasMax");
+        expect(result[1]!.username).toBe("NoMax");
     });
 });

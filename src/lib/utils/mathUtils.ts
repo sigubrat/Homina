@@ -1,5 +1,6 @@
 import type { GuildRaidResult } from "@/models/types";
 import type { TokensUsed } from "@/models/types/TokensUsed";
+import { SortBy } from "@/models/enums";
 
 // Nb! Relies on the user providing sorted data
 
@@ -27,6 +28,27 @@ export function getTopNDamageDealers(sortedData: GuildRaidResult[], n: number) {
  */
 export function sortGuildRaidResultDesc(data: GuildRaidResult[]) {
     return data.sort((a, b) => b.totalDamage - a.totalDamage);
+}
+
+export function sortGuildRaidResults(
+    data: GuildRaidResult[],
+    sortBy: SortBy,
+): GuildRaidResult[] {
+    return [...data].sort((a, b) => {
+        switch (sortBy) {
+            case SortBy.AVG_DAMAGE:
+                return (
+                    (b.totalTokens > 0 ? b.totalDamage / b.totalTokens : 0) -
+                    (a.totalTokens > 0 ? a.totalDamage / a.totalTokens : 0)
+                );
+            case SortBy.TOKENS_USED:
+                return b.totalTokens - a.totalTokens;
+            case SortBy.MAX_DAMAGE:
+                return (b.maxDmg ?? 0) - (a.maxDmg ?? 0);
+            default:
+                return b.totalDamage - a.totalDamage;
+        }
+    });
 }
 
 /**
