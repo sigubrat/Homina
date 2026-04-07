@@ -23,7 +23,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `/season-by-rarity` now has an optional parameter for how to sort the data. The options are: total damage, avg damage, tokens used, and max damage.
+- `/season-by-rarity` now has an optional parameter for how to sort the data.
+  - The options are: total damage, avg damage, tokens used, and max damage.
+  - Defaults to total damage which was the standard before this update
+- `/relative-performance` now has a new optional parameter to choose number of seasons to include in the comparison.
+  - Data is pooled for every season and you get a larger dataset to compare each player against, which can even out bad matchups in individual seasons
+  - Defaults to 1 season
 
 ## [1.9.2]
 

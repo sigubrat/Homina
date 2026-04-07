@@ -43,6 +43,21 @@ export const data = new SlashCommandBuilder()
             .setDescription("The season number (defaults to current season)")
             .setRequired(false)
             .setMinValue(MINIMUM_SEASON_THRESHOLD),
+    )
+    .addStringOption((option) =>
+        option
+            .setName("seasons")
+            .setDescription(
+                "Number of seasons to include (looks back from selected season, default 1)",
+            )
+            .setRequired(false)
+            .addChoices(
+                { name: "1", value: "1" },
+                { name: "2", value: "2" },
+                { name: "3", value: "3" },
+                { name: "4", value: "4" },
+                { name: "5", value: "5" },
+            ),
     );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
@@ -51,15 +66,24 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const rarity = interaction.options.getString("rarity", false);
     const providedSeason = interaction.options.getNumber("season");
     const season = providedSeason ?? getCurrentSeason();
+    const seasonCount = Number(interaction.options.getString("seasons") ?? "1");
     const discordId = interaction.user.id;
 
     logger.info(
-        `${interaction.user.username} attempting to use /relative-performance ${season} ${rarity}`,
+        `${interaction.user.username} attempting to use /relative-performance ${season} ${rarity} seasons=${seasonCount}`,
     );
 
     if (providedSeason !== null && isInvalidSeason(providedSeason)) {
         await interaction.editReply({
             content: `Please provide a valid season number greater than or equal to ${MINIMUM_SEASON_THRESHOLD}. The current season is ${getCurrentSeason()}`,
+        });
+        return;
+    }
+
+    const earliestSeason = season - seasonCount + 1;
+    if (isInvalidSeason(earliestSeason)) {
+        await interaction.editReply({
+            content: `The selected range would include season ${earliestSeason}, which is below the minimum (${MINIMUM_SEASON_THRESHOLD}). Please reduce the number of seasons or pick a later season.`,
         });
         return;
     }
@@ -73,6 +97,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             discordId,
             season,
             (rarity as Rarity) ?? undefined,
+            seasonCount,
         );
 
         if (
@@ -89,17 +114,23 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const chartService = new ChartService();
         const seasonDisplay =
-            providedSeason === null
-                ? `${season} (current season)`
+            seasonCount > 1
+                ? `Seasons ${season - seasonCount + 1}–${season}`
+                : providedSeason === null
+                  ? `Season ${season} (current season)`
+                  : `Season ${season}`;
+        const fileSeasonLabel =
+            seasonCount > 1
+                ? `${season - seasonCount + 1}-${season}`
                 : `${season}`;
 
         const chartBuffer = await chartService.createRelativePerformanceChart(
             result,
-            `Relative Performance - Season ${seasonDisplay} (${rarityDisplay})`,
+            `Relative Performance - ${seasonDisplay} (${rarityDisplay})`,
         );
 
         const attachment = new AttachmentBuilder(chartBuffer, {
-            name: `relative-performance-${season}-${rarityFileSafe}.png`,
+            name: `relative-performance-${fileSeasonLabel}-${rarityFileSafe}.png`,
         });
 
         const sortedEntries = Object.entries(result).sort(
@@ -123,10 +154,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const embed = new EmbedBuilder()
             .setColor(0x0099ff)
             .setTitle(
-                `Relative Performance — Season ${seasonDisplay} (${rarityDisplay})`,
+                `Relative Performance — ${seasonDisplay} (${rarityDisplay})`,
             )
             .setDescription(
-                "This chart shows how each member performs relative to the guild average across all bosses at the specified rarity.\n\n" +
+                "This chart shows how each member performs relative to the guild average across all bosses at the specified rarity." +
+                    (seasonCount > 1
+                        ? ` Data is pooled across ${seasonCount} seasons.`
+                        : "") +
+                    "\n\n" +
                     "**How it works:** For each boss, a player's average damage per token is compared to the guild's average damage per token for that boss. " +
                     "These ratios are then combined using a weighted average (weighted by the number of tokens used per boss).\n\n" +
                     "- **0%** = exactly at guild average\n" +
@@ -147,7 +182,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 },
             )
             .setImage(
-                `attachment://relative-performance-${season}-${rarityFileSafe}.png`,
+                `attachment://relative-performance-${fileSeasonLabel}-${rarityFileSafe}.png`,
             )
             .setFooter({
                 text: "Inspired by TheTimmyMan's TacticusAnalytics\nReferral code: HUG-44-CAN if you want to support the bot development",

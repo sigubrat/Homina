@@ -1377,6 +1377,7 @@ export class GuildService {
         discordId: string,
         season: number,
         rarity?: Rarity,
+        seasonCount: number = 1,
     ): Promise<Record<string, number> | null> {
         const MIN_HITS_PER_BOSS = 2;
 
@@ -1391,15 +1392,25 @@ export class GuildService {
                 return null;
             }
 
-            const resp = await this.client.getGuildRaidBySeason(apiKey, season);
-            if (!resp || !resp.entries) {
+            const seasons = Array.from(
+                { length: seasonCount },
+                (_, i) => season - seasonCount + 1 + i,
+            );
+
+            const responses = await Promise.all(
+                seasons.map((s) => this.client.getGuildRaidBySeason(apiKey, s)),
+            );
+
+            const allEntries = responses.flatMap((resp) => resp?.entries ?? []);
+
+            if (allEntries.length === 0) {
                 return null;
             }
 
             // Filter to requested rarity/rarities (if provided), exclude bombs and sweeps.
             // Keep true one-shots (full boss HP dealt in a single hit) even though remainingHp is 0.
             const rarities = rarity ? this.expandRarity(rarity) : null;
-            const entries = resp.entries.filter((entry) => {
+            const entries = allEntries.filter((entry) => {
                 const isOneShot =
                     entry.remainingHp === 0 &&
                     entry.damageDealt === entry.maxHp;
@@ -1479,9 +1490,14 @@ export class GuildService {
 
             // Calculate weighted relative performance per player.
             // A boss only contributes if the player has enough hits on that boss.
+            // Skip unknown players (no longer in guild) — their entries still
+            // contribute to guild averages above but we don't need their score.
             const result: Record<string, number> = {};
 
             for (const username of allPlayers) {
+                if (username.startsWith("Unknown #")) {
+                    continue;
+                }
                 let weightedSum = 0;
                 let totalWeight = 0;
 
