@@ -21,8 +21,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.10.0]
 
+One season rarely brings the full picture of a player's performance. This update intends to bring you more extensive insights into player performance by providing you easier access to valuable trends over time.
+
 ### Added
 
+- `/token-history` - **New command!** - See a history of tokens used for a player over N number of seasons
 - `/season-by-rarity` now has an optional parameter for how to sort the data.
   - The options are: total damage, avg damage, tokens used, and max damage.
   - Defaults to total damage which was the standard before this update

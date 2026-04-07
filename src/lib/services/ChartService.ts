@@ -869,6 +869,107 @@ export class ChartService {
         return chart;
     }
 
+    async createTokenHistoryChart(
+        data: number[],
+        seasonLabels: string[],
+        title: string,
+        average?: number,
+    ) {
+        const datasets: any[] = [
+            {
+                label: "Tokens used",
+                data: data,
+                borderColor: CHART_COLORS.blue,
+                borderWidth: 2,
+                fill: false,
+                stepped: true,
+                pointRadius: 14,
+                pointBackgroundColor: CHART_COLORS.discordbg,
+                pointBorderColor: CHART_COLORS.blue,
+                pointBorderWidth: 2,
+                datalabels: {
+                    display: true,
+                    color: "white",
+                    font: { size: 11, weight: "bold" },
+                    anchor: "center" as const,
+                    align: "center" as const,
+                },
+            },
+        ];
+
+        if (average !== undefined) {
+            datasets.push({
+                label: `Average (${average.toFixed(1)})`,
+                data: Array(seasonLabels.length).fill(average),
+                borderColor: CHART_COLORS.yellow,
+                borderWidth: 2,
+                borderDash: [5, 5],
+                fill: false,
+                pointRadius: 0,
+                datalabels: { display: false },
+            });
+        }
+
+        const chart = await canvas.renderToBuffer({
+            type: "line",
+            data: {
+                labels: seasonLabels,
+                datasets,
+            },
+            options: {
+                plugins: {
+                    datalabels: { display: false },
+                    title: {
+                        display: true,
+                        text: title,
+                        font: { size: 18 },
+                        color: "white",
+                    },
+                    legend: {
+                        display: average !== undefined,
+                        labels: {
+                            color: "white",
+                            font: { size: 12 },
+                        },
+                    },
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: "white",
+                            font: { size: 14 },
+                        },
+                        grid: { display: false },
+                    },
+                    y: {
+                        ticks: {
+                            color: "white",
+                            font: { size: 12 },
+                            stepSize: 1,
+                        },
+                        grid: {
+                            color: "rgba(255, 255, 255, 0.2)",
+                        },
+                        beginAtZero: true,
+                        max: 30,
+                    },
+                },
+                layout: {
+                    padding: {
+                        left: 20,
+                        right: 20,
+                        bottom: 10,
+                        top: 10,
+                    },
+                },
+                responsive: true,
+                maintainAspectRatio: false,
+            },
+        });
+
+        return chart;
+    }
+
     async createHighscoreChart(
         data: Record<string, Highscore[]>,
         title: string,

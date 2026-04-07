@@ -1696,4 +1696,71 @@ export class GuildService {
             return null;
         }
     }
+
+    /**
+     * Retrieves per-player token usage for the last `nSeasons` seasons.
+     *
+     * @param discordId - The Discord user ID of the requesting user.
+     * @param nSeasons - The number of past seasons to include.
+     * @param rarity - Optional rarity filter.
+     * @returns A map of season number → (userId → totalTokens), or `null` on error.
+     */
+    async getTokensUsedInLastSeasons(
+        discordId: string,
+        nSeasons: number,
+        rarity?: Rarity,
+    ): Promise<Record<number, Record<string, number>> | null> {
+        try {
+            const apiKey = await dbController.getUserToken(discordId);
+            if (!apiKey) {
+                logger.error("No API key found for user:", discordId);
+                return null;
+            }
+
+            const currentSeason =
+                await this.client.getGuildRaidByCurrentSeason(apiKey);
+            if (!currentSeason || !currentSeason.season) {
+                logger.error("No current season found for user:", discordId);
+                return null;
+            }
+
+            const currentSeasonNumber = currentSeason.season;
+            const seasons: number[] = [];
+            for (let i = nSeasons - 1; i >= 0; i--) {
+                if (currentSeasonNumber - i < MINIMUM_SEASON_THRESHOLD) {
+                    break;
+                }
+                seasons.push(currentSeasonNumber - i);
+            }
+
+            const seasonPromises = seasons.map((season) =>
+                this.getGuildRaidResultBySeason(
+                    discordId,
+                    season,
+                    rarity,
+                    true,
+                ),
+            );
+
+            const responses = await Promise.all(seasonPromises);
+
+            const result: Record<number, Record<string, number>> = {};
+            for (let idx = 0; idx < seasons.length; idx++) {
+                const seasonNr = seasons[idx]!;
+                const data = responses[idx];
+                const tokensMap: Record<string, number> = {};
+                if (data) {
+                    for (const entry of data) {
+                        tokensMap[entry.username] = entry.totalTokens || 0;
+                    }
+                }
+                result[seasonNr] = tokensMap;
+            }
+
+            return result;
+        } catch (error) {
+            logger.error(error, "Error fetching tokens used in last seasons: ");
+            return null;
+        }
+    }
 }
