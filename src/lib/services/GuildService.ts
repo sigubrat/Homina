@@ -157,31 +157,6 @@ export class GuildService {
     }
 
     /**
-     * Fetches the seasons of the guild for a given user ID.
-     * @param userId The ID of the user to fetch guild seasons for.
-     * @returns A list of seasons or null if an error occurred.
-     */
-    async getGuildSeasons(userId: string): Promise<number[] | null> {
-        try {
-            const apiKey = await dbController.getUserToken(userId);
-            if (!apiKey) {
-                return null;
-            }
-
-            const resp = await this.client.getGuild(apiKey);
-
-            if (!resp.success || !resp.guild) {
-                return null;
-            }
-
-            return resp.guild.guildRaidSeasons;
-        } catch (error) {
-            logger.error(error, "Error fetching guild seasons: ");
-            return null;
-        }
-    }
-
-    /**
      * Fetches the guild raid results for a given user ID and season.
      * @param discordId The ID of the user to fetch guild raid results for.
      * @param season The season to fetch results for.
@@ -1760,6 +1735,64 @@ export class GuildService {
             return result;
         } catch (error) {
             logger.error(error, "Error fetching tokens used in last seasons: ");
+            return null;
+        }
+    }
+
+    /**
+     * Fetches the total guild damage for the last N seasons.
+     * @param discordId The Discord user ID to retrieve the API key for.
+     * @param nSeasons The number of past seasons to include.
+     * @returns A record mapping season number to total guild damage, or null on error.
+     */
+    async getTotalDamageInLastSeasons(
+        discordId: string,
+        nSeasons: number,
+    ): Promise<Record<number, number> | null> {
+        try {
+            const apiKey = await dbController.getUserToken(discordId);
+            if (!apiKey) {
+                logger.error("No API key found for user:", discordId);
+                return null;
+            }
+
+            const currentSeason =
+                await this.client.getGuildRaidByCurrentSeason(apiKey);
+            if (!currentSeason || !currentSeason.season) {
+                logger.error("No current season found for user:", discordId);
+                return null;
+            }
+
+            const currentSeasonNumber = currentSeason.season;
+            const seasons: number[] = [];
+            for (let i = nSeasons - 1; i >= 0; i--) {
+                if (currentSeasonNumber - i < MINIMUM_SEASON_THRESHOLD) {
+                    break;
+                }
+                seasons.push(currentSeasonNumber - i);
+            }
+
+            const seasonPromises = seasons.map((season) =>
+                this.getGuildRaidResultBySeason(discordId, season),
+            );
+
+            const responses = await Promise.all(seasonPromises);
+
+            const result: Record<number, number> = {};
+            for (let idx = 0; idx < seasons.length; idx++) {
+                const seasonNr = seasons[idx]!;
+                const data = responses[idx];
+                result[seasonNr] = data
+                    ? data.reduce((sum, r) => sum + r.totalDamage, 0)
+                    : 0;
+            }
+
+            return result;
+        } catch (error) {
+            logger.error(
+                error,
+                "Error fetching total damage in last seasons: ",
+            );
             return null;
         }
     }

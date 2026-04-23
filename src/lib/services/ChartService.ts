@@ -1369,4 +1369,116 @@ export class ChartService {
 
         return chart;
     }
+
+    /**
+     * Creates a line chart showing total guild damage across seasons.
+     *
+     * @param data - Array of total damage values per season.
+     * @param seasonLabels - Labels for each season (e.g. "S80", "S81").
+     * @param title - Chart title.
+     * @param average - Optional average line value.
+     * @returns A Buffer containing the PNG chart image.
+     */
+    async createGuildDamageHistoryChart(
+        data: number[],
+        seasonLabels: string[],
+        title: string,
+        average?: number,
+    ) {
+        const datasets: any[] = [
+            {
+                label: "Total damage",
+                data: data,
+                borderColor: CHART_COLORS.blue,
+                backgroundColor: "rgba(54, 162, 235, 0.15)",
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3,
+                pointRadius: 6,
+                pointBackgroundColor: CHART_COLORS.blue,
+                pointBorderColor: "white",
+                pointBorderWidth: 2,
+                datalabels: {
+                    display: true,
+                    color: "white",
+                    font: { size: 11, weight: "bold" as const },
+                    anchor: "end" as const,
+                    align: "top" as const,
+                    formatter: (value: number) => shortenNumber(value),
+                },
+            },
+        ];
+
+        if (average !== undefined) {
+            datasets.push({
+                label: `Average (${shortenNumber(average)})`,
+                data: Array(seasonLabels.length).fill(average),
+                borderColor: CHART_COLORS.yellow,
+                borderWidth: 2,
+                borderDash: [5, 5],
+                fill: false,
+                pointRadius: 0,
+                datalabels: { display: false },
+            });
+        }
+
+        const chart = await canvas.renderToBuffer({
+            type: "line",
+            data: {
+                labels: seasonLabels,
+                datasets,
+            },
+            options: {
+                plugins: {
+                    datalabels: { display: false },
+                    title: {
+                        display: true,
+                        text: title,
+                        font: { size: 18 },
+                        color: "white",
+                    },
+                    legend: {
+                        display: true,
+                        labels: {
+                            color: "white",
+                            font: { size: 12 },
+                        },
+                    },
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: "white",
+                            font: { size: 14 },
+                        },
+                        grid: { display: false },
+                    },
+                    y: {
+                        beginAtZero: false,
+                        ticks: {
+                            color: "white",
+                            font: { size: 12 },
+                            callback: (value: any) =>
+                                shortenNumber(Number(value)),
+                        },
+                        grid: {
+                            color: "rgba(255, 255, 255, 0.2)",
+                        },
+                    },
+                },
+                layout: {
+                    padding: {
+                        left: 20,
+                        right: 30,
+                        bottom: 10,
+                        top: 20,
+                    },
+                },
+                responsive: true,
+                maintainAspectRatio: false,
+            },
+        });
+
+        return chart;
+    }
 }
