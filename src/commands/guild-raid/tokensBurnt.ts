@@ -196,7 +196,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             })
             .setTimestamp()
             .setFooter({
-                text: "Players capped at 3/3 with low usage may have lost tokens by not refreshing in time.\nGleam code: LOVRAFFLE\nReferral code: HUG-44-CAN if you want to support the bot development",
+                text: "Players capped at 3/3 with low usage may have lost tokens by not refreshing in time.\nReferral code: HUG-44-CAN if you want to support the bot development",
             });
 
         for (let i = 0; i < rows.length; i += 10) {

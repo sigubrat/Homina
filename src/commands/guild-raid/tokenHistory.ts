@@ -191,7 +191,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setImage("attachment://token-history.png")
             .setTimestamp()
             .setFooter({
-                text: "Gleam code: LOVRAFFLE\nReferral code: HUG-44-CAN if you want to support the bot development",
+                text: "Referral code: HUG-44-CAN if you want to support the bot development",
             });
 
         await interaction.editReply({ embeds: [embed], files: [attachment] });

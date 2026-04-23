@@ -104,7 +104,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setImage("attachment://guild-damage-history.png")
             .setTimestamp()
             .setFooter({
-                text: "Data fetched from the guild raid API.\nGleam code: LOVRAFFLE\nReferral code: HUG-44-CAN if you want to support the bot development",
+                text: "Data fetched from the guild raid API.\nReferral code: HUG-44-CAN if you want to support the bot development",
             });
 
         await interaction.editReply({ embeds: [embed], files: [attachment] });
