@@ -1376,14 +1376,14 @@ export class ChartService {
      * @param data - Array of total damage values per season.
      * @param seasonLabels - Labels for each season (e.g. "S80", "S81").
      * @param title - Chart title.
-     * @param average - Optional average line value.
+     * @param trendLine - Optional array of regression-predicted values for the trend line.
      * @returns A Buffer containing the PNG chart image.
      */
     async createGuildDamageHistoryChart(
         data: number[],
         seasonLabels: string[],
         title: string,
-        average?: number,
+        trendLine?: number[],
     ) {
         const datasets: any[] = [
             {
@@ -1409,13 +1409,13 @@ export class ChartService {
             },
         ];
 
-        if (average !== undefined) {
+        if (trendLine && trendLine.length > 0) {
             datasets.push({
-                label: `Average (${shortenNumber(average)})`,
-                data: Array(seasonLabels.length).fill(average),
+                label: "Trend",
+                data: trendLine,
                 borderColor: CHART_COLORS.yellow,
                 borderWidth: 2,
-                borderDash: [5, 5],
+                borderDash: [6, 4],
                 fill: false,
                 pointRadius: 0,
                 datalabels: { display: false },

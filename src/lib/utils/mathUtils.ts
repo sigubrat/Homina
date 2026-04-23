@@ -142,3 +142,38 @@ export function formatDelta(value: number): string {
     const sign = delta >= 0 ? "+" : "";
     return `${sign}${delta.toFixed(1)}%`;
 }
+
+/**
+ * Computes simple linear regression (least squares) over indexed data points.
+ * Returns the predicted y-value for each index in 0..totalLength-1.
+ *
+ * @param values - The y-values to fit (used for regression calculation).
+ * @param totalLength - The total number of points to generate predictions for
+ *                      (may be larger than values.length to extrapolate).
+ * @returns An array of predicted y-values for indices 0 through totalLength-1.
+ */
+export function linearRegression(
+    values: number[],
+    totalLength: number,
+): number[] {
+    const n = values.length;
+    if (n === 0) return Array(totalLength).fill(0);
+    if (n === 1) return Array(totalLength).fill(values[0]!);
+
+    let sumX = 0;
+    let sumY = 0;
+    let sumXY = 0;
+    let sumX2 = 0;
+
+    for (let i = 0; i < n; i++) {
+        sumX += i;
+        sumY += values[i]!;
+        sumXY += i * values[i]!;
+        sumX2 += i * i;
+    }
+
+    const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+    const intercept = (sumY - slope * sumX) / n;
+
+    return Array.from({ length: totalLength }, (_, i) => intercept + slope * i);
+}

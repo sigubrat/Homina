@@ -2,6 +2,7 @@ import {
     formatDelta,
     getTopNDamageDealers,
     isValidUUIDv4,
+    linearRegression,
     numericAverage,
     numericMedian,
     sortGuildRaidResultDesc,
@@ -301,5 +302,64 @@ describe("mathUtilsSuite - sortGuildRaidResults", () => {
         const result = sortGuildRaidResults(data, SortBy.MAX_DAMAGE);
         expect(result[0]!.username).toBe("HasMax");
         expect(result[1]!.username).toBe("NoMax");
+    });
+});
+
+describe("mathUtilsSuite - linearRegression", () => {
+    test("should return a perfect fit for a linear dataset", () => {
+        // y = 100 + 50*x  =>  [100, 150, 200, 250, 300]
+        const values = [100, 150, 200, 250, 300];
+        const result = linearRegression(values, 5);
+        for (let i = 0; i < 5; i++) {
+            expect(result[i]).toBeCloseTo(values[i]!, 5);
+        }
+    });
+
+    test("should extrapolate beyond input length", () => {
+        // y = 100 + 50*x, fit on 4 points, predict 5th
+        const values = [100, 150, 200, 250];
+        const result = linearRegression(values, 5);
+        expect(result[4]).toBeCloseTo(300, 5);
+    });
+
+    test("should handle a constant dataset", () => {
+        const values = [500, 500, 500];
+        const result = linearRegression(values, 4);
+        for (const v of result) {
+            expect(v).toBeCloseTo(500, 5);
+        }
+    });
+
+    test("should handle a single value", () => {
+        const result = linearRegression([42], 3);
+        expect(result).toEqual([42, 42, 42]);
+    });
+
+    test("should return zeros for empty input", () => {
+        const result = linearRegression([], 3);
+        expect(result).toEqual([0, 0, 0]);
+    });
+
+    test("should compute correct slope for a decreasing trend", () => {
+        // y = 1000 - 100*x  =>  [1000, 900, 800]
+        const values = [1000, 900, 800];
+        const result = linearRegression(values, 4);
+        expect(result[0]).toBeCloseTo(1000, 5);
+        expect(result[1]).toBeCloseTo(900, 5);
+        expect(result[2]).toBeCloseTo(800, 5);
+        expect(result[3]).toBeCloseTo(700, 5); // extrapolated
+    });
+
+    test("should produce a best-fit line for noisy data", () => {
+        // Points around y = 10 + 2*x with noise
+        const values = [11, 13, 14, 17, 19];
+        const result = linearRegression(values, 5);
+        // Slope should be roughly 2, intercept roughly 10
+        // Check that the trend is increasing and values are reasonable
+        for (let i = 1; i < result.length; i++) {
+            expect(result[i]!).toBeGreaterThan(result[i - 1]!);
+        }
+        // The fitted line at index 0 should be near 10-11
+        expect(result[0]).toBeCloseTo(10.6, 0);
     });
 });

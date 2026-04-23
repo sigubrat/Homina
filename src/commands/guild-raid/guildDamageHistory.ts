@@ -1,7 +1,7 @@
 import { logger } from "@/lib";
 import { ChartService } from "@/lib/services/ChartService";
 import { GuildService } from "@/lib/services/GuildService";
-import { shortenNumber } from "@/lib/utils/utils";
+import { linearRegression } from "@/lib/utils/mathUtils";
 import {
     AttachmentBuilder,
     ChatInputCommandInteraction,
@@ -70,10 +70,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
-        const activeValues = damageValues.filter((v) => v > 0);
-        const average =
-            activeValues.length > 0
-                ? activeValues.reduce((a, b) => a + b, 0) / activeValues.length
+        // Compute trend line from completed seasons (exclude current/last season)
+        const completedValues = damageValues.slice(0, -1);
+        const trendLine =
+            completedValues.length >= 2
+                ? linearRegression(completedValues, damageValues.length)
                 : undefined;
 
         const chartService = new ChartService();
@@ -81,7 +82,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             damageValues,
             seasonLabels,
             "Total Guild Damage Per Season",
-            average,
+            trendLine,
         );
 
         const attachment = new AttachmentBuilder(chartBuffer, {
@@ -98,9 +99,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             )
             .setDescription(
                 `Total guild damage per season (S${firstSeason}–S${lastSeason}).\n` +
-                    (average !== undefined
-                        ? `- **Average:** ${shortenNumber(Math.round(average))}\n`
-                        : ""),
+                    "The dashed line shows the linear trend (current season excluded).",
             )
             .setImage("attachment://guild-damage-history.png")
             .setTimestamp()
