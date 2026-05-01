@@ -72,6 +72,8 @@ export const battlesuitTeam = [
     characters.Eldryon.id,
     characters.Adamatar.id,
     characters.Calgar.id,
+    characters.Shadowsun.id,
+    characters.Aethana.id,
 ];
 
 export const lynchpinHeroes: Record<string, string[]> = {
