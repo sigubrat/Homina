@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [1.11.1]
+
+### Added
+
+- The battlesuit definition now allows for Aethana and Shadowsun as flex picks
+
 ## [1.11.0]
 
 ### Added
