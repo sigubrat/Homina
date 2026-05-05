@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [1.12.0]
+
+### Added
+
+- `/season-tokens` now shows available tokens stacked on top of used tokens when viewing the current season, giving a clear overview of each member's remaining capacity.
+
 ## [1.11.1]
 
 ### Added
