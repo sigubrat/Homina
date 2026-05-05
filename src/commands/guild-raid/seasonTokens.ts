@@ -223,7 +223,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 `The graph shows the number of tokens used by each member in season ${season}.\n` +
                     "- **Bar chart:** the number of tokens used by each member.\n" +
                     `- **Line chart:** represents the ${averageMethod.toLowerCase()} number of tokens used by the guild.\n` +
-                    "- **Includes primes:** Yes\n",
+                    "- **Includes primes:** Yes\n" +
+                    (availableTokensMap
+                        ? "\n- **Green stacked section:** estimated available tokens per member. Unless a player token has been provided, accuracy is not guaranteed due to the nature of the available data for the calculation.\n"
+                        : ""),
             )
             .addFields(
                 {
