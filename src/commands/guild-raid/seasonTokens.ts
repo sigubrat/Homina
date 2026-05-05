@@ -9,7 +9,10 @@ import { numericMedian } from "@/lib/utils/mathUtils";
 import { numericAverage } from "@/lib/utils/mathUtils";
 import { standardDeviation } from "@/lib/utils/mathUtils";
 import { isInvalidSeason } from "@/lib/utils/timeUtils";
-import { replaceUserIdFieldWithDisplayNames } from "@/lib/utils/userUtils";
+import {
+    replaceUserIdFieldWithDisplayNames,
+    replaceUserIdKeysWithDisplayNames,
+} from "@/lib/utils/userUtils";
 import { Rarity } from "@/models/enums";
 import {
     AttachmentBuilder,
@@ -163,13 +166,42 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 ? numericAverage(Object.values(tokensUsed))
                 : numericMedian(Object.values(tokensUsed));
 
-        const chartBuffer = await chartService.createNumberUsedChart(
-            tokensUsed,
-            `Tokens used in season ${season}${rarity ? ` (${rarity})` : ""}`,
-            avg,
-            averageMethod,
-            30,
-        );
+        // If viewing the current season, fetch available tokens for overlay
+        let availableTokensMap: Record<string, number> | undefined;
+        if (providedSeason === null) {
+            const availability =
+                await service.getAvailableTokensAndBombsWithMetadata(discordId);
+            if (availability && Object.keys(availability).length > 0) {
+                const namedAvailability = replaceUserIdKeysWithDisplayNames(
+                    availability,
+                    players,
+                    true,
+                );
+                availableTokensMap = {};
+                for (const [name, data] of Object.entries(namedAvailability)) {
+                    availableTokensMap[name] = data.tokens;
+                }
+            }
+        }
+
+        const chartTitle = `Tokens used in season ${season}${rarity ? ` (${rarity})` : ""}`;
+
+        const chartBuffer = availableTokensMap
+            ? await chartService.createTokensUsedWithAvailabilityChart(
+                  tokensUsed,
+                  availableTokensMap,
+                  chartTitle,
+                  avg,
+                  averageMethod,
+                  30,
+              )
+            : await chartService.createNumberUsedChart(
+                  tokensUsed,
+                  chartTitle,
+                  avg,
+                  averageMethod,
+                  30,
+              );
 
         const attachment = new AttachmentBuilder(chartBuffer, {
             name: `tokens-used-season-${season}.png`,

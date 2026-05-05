@@ -752,6 +752,169 @@ export class ChartService {
         return chart;
     }
 
+    async createTokensUsedWithAvailabilityChart(
+        tokensUsed: Record<string, number>,
+        availableTokens: Record<string, number>,
+        title: string,
+        guildAvg: number,
+        avgLabel: string,
+        maxValue: number,
+    ) {
+        const entries = Object.entries(tokensUsed);
+        entries.sort((a, b) => b[1] - a[1]);
+
+        const usernames = entries.map(([username]) => username);
+        const uses = entries.map(([, n]) => n);
+        const available = usernames.map((name) => availableTokens[name] ?? 0);
+        const stdev = standardDeviation(uses);
+
+        if (usernames.length === 0) {
+            throw new Error("No data to display in the chart.");
+        }
+
+        const chart = await canvas.renderToBuffer({
+            type: "bar",
+            data: {
+                labels: usernames,
+                datasets: [
+                    {
+                        type: "line",
+                        label: `${avgLabel} (${guildAvg.toLocaleString(
+                            undefined,
+                            {
+                                maximumFractionDigits: 1,
+                            },
+                        )})`,
+                        data: Array(usernames.length).fill(guildAvg),
+                        borderColor: CHART_COLORS.yellow,
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0,
+                        pointRadius: 0,
+                        yAxisID: "y",
+                        borderDash: [5, 5],
+                    },
+                    {
+                        label: "Tokens Used",
+                        data: uses,
+                        backgroundColor: (context: any) => {
+                            const value =
+                                context.dataset.data[context.dataIndex];
+                            if (value > guildAvg + stdev) {
+                                return CHART_COLORS.purple;
+                            } else if (value > guildAvg - stdev) {
+                                return CHART_COLORS.blue;
+                            } else if (value > guildAvg - 2 * stdev) {
+                                return CHART_COLORS.yellow;
+                            } else {
+                                return CHART_COLORS.red;
+                            }
+                        },
+                        borderWidth: 1,
+                        stack: "tokens",
+                        datalabels: {
+                            display: true,
+                            color: "white",
+                            anchor: "end",
+                            align: "bottom",
+                            offset: 2,
+                            font: {
+                                size: 11,
+                            },
+                            formatter: function (value: number) {
+                                return shortenNumber(value);
+                            },
+                        },
+                    },
+                    {
+                        label: "Available",
+                        data: available,
+                        backgroundColor: "rgba(75, 192, 192, 0.15)",
+                        borderColor: CHART_COLORS.green,
+                        borderWidth: { top: 2, left: 1, right: 1, bottom: 0 },
+                        borderSkipped: false,
+                        stack: "tokens",
+                        datalabels: {
+                            display: (context: any) =>
+                                context.dataset.data[context.dataIndex] > 0,
+                            color: CHART_COLORS.green,
+                            anchor: "center",
+                            align: "center",
+                            font: {
+                                size: 10,
+                            },
+                            formatter: function (value: number) {
+                                return `+${value}`;
+                            },
+                        },
+                    },
+                ],
+            },
+            options: {
+                plugins: {
+                    datalabels: { display: false },
+                    title: {
+                        display: true,
+                        text: [
+                            title,
+                            "Green: >1σ above avg   |   Blue: ±1σ of avg   |   Yellow: -1σ to -2σ   |   Red: ≤-2σ",
+                        ],
+                        font: {
+                            size: 18,
+                        },
+                        color: "white",
+                    },
+                    legend: {
+                        display: true,
+                        labels: {
+                            color: "white",
+                        },
+                    },
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: "white",
+                            font: {
+                                size: 12,
+                            },
+                        },
+                        grid: {
+                            display: false,
+                        },
+                        stacked: true,
+                    },
+                    y: {
+                        ticks: {
+                            color: "white",
+                            font: {
+                                size: 14,
+                            },
+                        },
+                        grid: {
+                            color: "rgba(255, 255, 255, 0.4)",
+                        },
+                        max: maxValue,
+                        min: 0,
+                        stacked: true,
+                    },
+                },
+                layout: {
+                    padding: {
+                        left: 20,
+                        right: 20,
+                        bottom: 10,
+                        top: 10,
+                    },
+                },
+                responsive: true,
+                maintainAspectRatio: false,
+            },
+        });
+
+        return chart;
+    }
+
     async createTimelineChart(data: Record<number, number>, title: string) {
         const hours = Object.keys(data).map((key) => parseInt(key));
         const values = Object.values(data);
