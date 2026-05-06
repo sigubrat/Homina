@@ -19,10 +19,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [1.13.0]
+
+Two new commands to help your guild track progress over time. Both charts include a linear regression trendline (fitted on completed seasons only) and vertical markers for notable in-game milestones such as the introduction of Mythic 1 and Mythic 2 bosses.
+
+### Added
+
+- **New command!** - `/guild-credits-history` - See how many credits your guild has earned from guild boss kills over N seasons as a line chart.
+  - Each boss kill counts as 1,000 credits. End-of-season leaderboard rewards are not included.
+  - Option: `seasons` — number of seasons to include. Min 2, max 20, default 5.
+- **New command!** - `/loops-history` - See how many full raid loops your guild has completed per season as a line chart.
+  - A loop is counted each time the season's highest-tier boss is defeated. The cap is detected automatically from the data, so it adapts to past seasons (Mythic 1 cap) and future ones without any manual config changes.
+  - Option: `seasons` — number of seasons to include. Min 2, max 20, default 5.
+
 ## [1.12.0]
 
-A small update to allow for better representation of token-usage in an ongoing season. It now also displays available tokens on top of the used tokens if a user has them available. 
-Like with all token-calculations, unless a player has provided a player-scoped API key, there is an inherent uncertainty in the calculations. Check out player-tokens and register them if you want 100% precise data. 
+A small update to allow for better representation of token-usage in an ongoing season. It now also displays available tokens on top of the used tokens if a user has them available.
+Like with all token-calculations, unless a player has provided a player-scoped API key, there is an inherent uncertainty in the calculations. Check out player-tokens and register them if you want 100% precise data.
 You can reach out at the support server if you have any questions. As a bonus I've got a code for you all: S100HOMINA
 
 ### Added
