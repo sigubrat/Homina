@@ -16,7 +16,7 @@ const MAX_SEASONS = 20;
 export const cooldown = 5;
 
 export const data = new SlashCommandBuilder()
-    .setName("laps-by-season")
+    .setName("loops-history")
     .setDescription(
         "Show how many guild raid loops the guild has completed over the last N seasons",
     )
@@ -41,7 +41,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const service = new GuildService();
 
     logger.info(
-        `${interaction.user.username} attempting to use /laps-by-season over last ${nSeasons} seasons`,
+        `${interaction.user.username} attempting to use /loops-history over last ${nSeasons} seasons`,
     );
 
     try {
@@ -119,13 +119,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         await interaction.editReply({ embeds: [embed], files: [attachment] });
 
         logger.info(
-            `${interaction.user.username} successfully used /laps-by-season`,
+            `${interaction.user.username} successfully used /loops-history for last ${nSeasons} seasons`,
         );
     } catch (error) {
-        logger.error(error, "Error occurred in laps-by-season: ");
+        logger.error(error, "Error occurred in loops-history: ");
         await interaction.editReply({
             content:
-                "An error occurred while generating the laps by season chart.",
+                "An error occurred while generating the loops by season chart.",
         });
         return;
     }

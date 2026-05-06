@@ -18,7 +18,7 @@ const CREDITS_PER_BOSS = 1000;
 export const cooldown = 5;
 
 export const data = new SlashCommandBuilder()
-    .setName("credits-by-season")
+    .setName("guild-credits-history")
     .setDescription(
         "Show how many credits the guild has earned from killing guild bosses over the last N seasons",
     )
@@ -43,7 +43,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const service = new GuildService();
 
     logger.info(
-        `${interaction.user.username} attempting to use /credits-by-season over last ${nSeasons} seasons`,
+        `${interaction.user.username} attempting to use /guild-credits-history over last ${nSeasons} seasons`,
     );
 
     try {
@@ -99,6 +99,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 `Credits earned per season (${seasonNumbers[0]}–${seasonNumbers[seasonNumbers.length - 1]}).\n` +
                     `- Each guild boss kill awards **${CREDITS_PER_BOSS.toLocaleString()}** credits.\n` +
                     "- Seasons with no kills show as **0**.\n" +
+                    "- Graph does not include the end-of-season leaderboard rewards, only credits earned from boss kills.\n" +
                     (trendline !== undefined
                         ? `- **Trend:** ${
                               trendline[trendline.length - 1]! >= trendline[0]!
@@ -116,7 +117,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         await interaction.editReply({ embeds: [embed], files: [attachment] });
 
         logger.info(
-            `${interaction.user.username} successfully used /credits-by-season`,
+            `${interaction.user.username} successfully used /guild-credits-history for last ${nSeasons} seasons`,
         );
     } catch (error) {
         logger.error(error, "Error occurred in credits-by-season: ");
