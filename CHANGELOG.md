@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.12.0]
 
+A small update to allow for better representation of token-usage in an ongoing season. It now also displays available tokens on top of the used tokens if a user has them available. 
+Like with all token-calculations, unless a player has provided a player-scoped API key, there is an inherent uncertainty in the calculations. Check out player-tokens and register them if you want 100% precise data. 
+You can reach out at the support server if you have any questions. As a bonus I've got a code for you all: S100HOMINA
+
 ### Added
 
 - `/season-tokens` now shows available tokens stacked on top of used tokens when viewing the current season, giving a clear overview of each member's remaining capacity.
