@@ -12,6 +12,16 @@ export const MAX_TOKENS_PER_SEASON = 28;
 // Season 85 starts on October 8, 2025, at 10:00 AM UTC
 export const SEASON_85_SEASON_START = new Date(2025, 9, 8, 10, 0, 0);
 
+/**
+ * Notable in-game events that materially affected guild raid performance.
+ * Used to annotate seasonal trend charts so players can see when changes
+ * occurred. Add new entries here as the game evolves.
+ */
+export const GAME_EVENTS: { season: number; label: string }[] = [
+    { season: 82, label: "Mythic 1 introduced" },
+    { season: 97, label: "Mythic 2 introduced" },
+];
+
 export const BOSS_EMOJIS: Record<string, string> = {
     Szarekh: "<:Szarekh:1385343132950069278>",
     TyrantLeviathan: "<:TyrantLeviathan:1385342042170851334>",

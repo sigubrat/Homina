@@ -1796,4 +1796,192 @@ export class GuildService {
             return null;
         }
     }
+
+    /**
+     * Counts the number of guild bosses killed per season for the last N seasons.
+     * A boss is considered killed when an entry with `encounterType === BOSS`
+     * has `remainingHp === 0`. Bosses are uniquely identified by `type+tier+set`.
+     * @param discordId The Discord user ID to retrieve the API key for.
+     * @param nSeasons The number of past seasons to include.
+     * @returns A record mapping season number to bosses killed, or null on error.
+     */
+    async getBossesKilledInLastSeasons(
+        discordId: string,
+        nSeasons: number,
+    ): Promise<Record<number, number> | null> {
+        try {
+            const apiKey = await dbController.getUserToken(discordId);
+            if (!apiKey) {
+                logger.error("No API key found for user:", discordId);
+                return null;
+            }
+
+            const currentSeason =
+                await this.client.getGuildRaidByCurrentSeason(apiKey);
+            if (!currentSeason || !currentSeason.season) {
+                logger.error("No current season found for user:", discordId);
+                return null;
+            }
+
+            const currentSeasonNumber = currentSeason.season;
+            const seasons: number[] = [];
+            for (let i = nSeasons - 1; i >= 0; i--) {
+                if (currentSeasonNumber - i < MINIMUM_SEASON_THRESHOLD) {
+                    break;
+                }
+                seasons.push(currentSeasonNumber - i);
+            }
+
+            const seasonPromises = seasons.map((season) =>
+                this.client.getGuildRaidBySeason(apiKey, season),
+            );
+
+            const responses = await Promise.all(seasonPromises);
+
+            const result: Record<number, number> = {};
+            for (let idx = 0; idx < seasons.length; idx++) {
+                const seasonNr = seasons[idx]!;
+                const resp = responses[idx];
+                if (!resp || !resp.entries) {
+                    result[seasonNr] = 0;
+                    continue;
+                }
+
+                const killedKeys = new Set<string>();
+                for (const entry of resp.entries) {
+                    if (entry.encounterType !== EncounterType.BOSS) {
+                        continue;
+                    }
+                    if (entry.remainingHp !== 0) {
+                        continue;
+                    }
+                    const key = `${entry.type}|${entry.tier}|${entry.set}`;
+                    killedKeys.add(key);
+                }
+                result[seasonNr] = killedKeys.size;
+            }
+
+            return result;
+        } catch (error) {
+            logger.error(
+                error,
+                "Error fetching bosses killed in last seasons: ",
+            );
+            return null;
+        }
+    }
+
+    /**
+     * Counts the number of completed loops per season for the last N seasons.
+     * Within a season, the boss rotation cycles through increasing rarity/set
+     * combinations until a per-season "cap" boss is reached, after which it
+     * loops back. The cap has changed over time (e.g. Mythic 1 → Mythic 2 in
+     * recent seasons) and may change again in the future, so we determine the
+     * cap dynamically per season as the highest `(rarity, set)` pair that
+     * appears in any `BOSS` entry. A loop is counted for each distinct `tier`
+     * at which that cap boss was defeated (`remainingHp === 0`).
+     * @param discordId The Discord user ID to retrieve the API key for.
+     * @param nSeasons The number of past seasons to include.
+     * @returns A record mapping season number to loops completed, or null on error.
+     */
+    async getLoopsCompletedInLastSeasons(
+        discordId: string,
+        nSeasons: number,
+    ): Promise<Record<number, number> | null> {
+        try {
+            const apiKey = await dbController.getUserToken(discordId);
+            if (!apiKey) {
+                logger.error("No API key found for user:", discordId);
+                return null;
+            }
+
+            const currentSeason =
+                await this.client.getGuildRaidByCurrentSeason(apiKey);
+            if (!currentSeason || !currentSeason.season) {
+                logger.error("No current season found for user:", discordId);
+                return null;
+            }
+
+            const currentSeasonNumber = currentSeason.season;
+            const seasons: number[] = [];
+            for (let i = nSeasons - 1; i >= 0; i--) {
+                if (currentSeasonNumber - i < MINIMUM_SEASON_THRESHOLD) {
+                    break;
+                }
+                seasons.push(currentSeasonNumber - i);
+            }
+
+            const seasonPromises = seasons.map((season) =>
+                this.client.getGuildRaidBySeason(apiKey, season),
+            );
+
+            const responses = await Promise.all(seasonPromises);
+
+            const result: Record<number, number> = {};
+            for (let idx = 0; idx < seasons.length; idx++) {
+                const seasonNr = seasons[idx]!;
+                const resp = responses[idx];
+                if (!resp || !resp.entries) {
+                    result[seasonNr] = 0;
+                    continue;
+                }
+
+                const completedLoopKeys = new Set<string>();
+                const bossEntries = resp.entries.filter(
+                    (e) => e.encounterType === EncounterType.BOSS,
+                );
+
+                if (bossEntries.length === 0) {
+                    result[seasonNr] = 0;
+                    continue;
+                }
+
+                // Determine this season's cap: the highest (rarity, set) pair
+                // that appears in any boss entry. Rarity is ranked by its
+                // position in the Rarity enum.
+                const rarityRank = (r: Rarity): number =>
+                    Object.values(Rarity).indexOf(r);
+
+                let capRarity: Rarity = bossEntries[0]!.rarity;
+                let capSet: number = bossEntries[0]!.set;
+                for (const entry of bossEntries) {
+                    const entryRank = rarityRank(entry.rarity);
+                    const capRank = rarityRank(capRarity);
+                    if (
+                        entryRank > capRank ||
+                        (entryRank === capRank && entry.set > capSet)
+                    ) {
+                        capRarity = entry.rarity;
+                        capSet = entry.set;
+                    }
+                }
+
+                for (const entry of bossEntries) {
+                    if (entry.rarity !== capRarity) {
+                        continue;
+                    }
+                    if (entry.set !== capSet) {
+                        continue;
+                    }
+                    if (entry.remainingHp !== 0) {
+                        continue;
+                    }
+                    // Each unique tier value represents a distinct loop within
+                    // the season; multiple damage entries on the same boss kill
+                    // collapse to one.
+                    const key = `${entry.type}|${entry.tier}|${entry.set}`;
+                    completedLoopKeys.add(key);
+                }
+                result[seasonNr] = completedLoopKeys.size;
+            }
+
+            return result;
+        } catch (error) {
+            logger.error(
+                error,
+                "Error fetching loops completed in last seasons: ",
+            );
+            return null;
+        }
+    }
 }

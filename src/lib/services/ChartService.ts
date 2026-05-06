@@ -8,6 +8,7 @@ import type { Highscore } from "@/models/types/Highscore";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import type { Context } from "chartjs-plugin-datalabels";
 import { CHART_COLORS, namedColor } from "../utils/colorUtils";
+import { GAME_EVENTS } from "../configs/constants";
 
 const CHART_WIDTH = 1200;
 const CHART_HEIGHT = 800;
@@ -17,7 +18,7 @@ const canvas = new ChartJSNodeCanvas({
     height: CHART_HEIGHT,
     backgroundColour: CHART_COLORS.discordbg,
     plugins: {
-        modern: [ChartDataLabels],
+        modern: [ChartDataLabels, "chartjs-plugin-annotation"],
     },
 });
 
@@ -1115,6 +1116,186 @@ export class ChartService {
                         },
                         beginAtZero: true,
                         max: 30,
+                    },
+                },
+                layout: {
+                    padding: {
+                        left: 20,
+                        right: 20,
+                        bottom: 10,
+                        top: 10,
+                    },
+                },
+                responsive: true,
+                maintainAspectRatio: false,
+            },
+        });
+
+        return chart;
+    }
+
+    async createCreditsBySeasonChart(
+        data: number[],
+        seasonLabels: string[],
+        title: string,
+        trendline?: number[],
+    ) {
+        return this.createSeasonalTrendChart(data, seasonLabels, title, {
+            seriesLabel: "Credits earned",
+            yAxisLabel: "Credits earned",
+            trendline,
+        });
+    }
+
+    async createSeasonalTrendChart(
+        data: number[],
+        seasonLabels: string[],
+        title: string,
+        options: {
+            seriesLabel: string;
+            yAxisLabel: string;
+            trendline?: number[];
+            integerTicks?: boolean;
+        },
+    ) {
+        const { seriesLabel, yAxisLabel, trendline, integerTicks } = options;
+
+        const formatValue = (value: number) =>
+            integerTicks ? `${value}` : shortenNumber(value);
+
+        // Build event annotations for seasons that fall within the visible
+        // range of the chart. Uses category-axis indices for compatibility
+        // with chartjs-plugin-annotation v3.
+        const seasonIndexByLabel = new Map<string, number>();
+        seasonLabels.forEach((label, idx) =>
+            seasonIndexByLabel.set(label, idx),
+        );
+        const eventAnnotations: Record<string, any> = {};
+        for (const event of GAME_EVENTS) {
+            const label = `S${event.season}`;
+            const idx = seasonIndexByLabel.get(label);
+            if (idx === undefined) continue;
+            eventAnnotations[`event-${event.season}`] = {
+                type: "line",
+                xMin: idx,
+                xMax: idx,
+                borderColor: "rgba(255, 99, 132, 0.85)",
+                borderWidth: 2,
+                borderDash: [6, 6],
+                label: {
+                    display: true,
+                    content: event.label,
+                    position: "start",
+                    backgroundColor: "rgba(255, 99, 132, 0.85)",
+                    color: "white",
+                    font: {
+                        size: 11,
+                        weight: "bold",
+                        family: "sans-serif",
+                        style: "normal",
+                        lineHeight: 1.2,
+                    },
+                    padding: 4,
+                    yAdjust: 4,
+                },
+            };
+        }
+
+        const datasets: any[] = [
+            {
+                label: seriesLabel,
+                data: data,
+                borderColor: CHART_COLORS.blue,
+                backgroundColor: "rgba(54, 162, 235, 0.25)",
+                borderWidth: 2,
+                fill: "origin",
+                stepped: false,
+                tension: 0,
+                pointRadius: 18,
+                pointBackgroundColor: CHART_COLORS.discordbg,
+                pointBorderColor: CHART_COLORS.blue,
+                pointBorderWidth: 2,
+                datalabels: {
+                    display: true,
+                    color: "white",
+                    font: { size: 11, weight: "bold" },
+                    anchor: "center" as const,
+                    align: "center" as const,
+                    formatter: (value: number) => formatValue(value),
+                },
+            },
+        ];
+
+        if (trendline !== undefined && trendline.length > 0) {
+            datasets.push({
+                label: "Trend (linear regression)",
+                data: trendline,
+                borderColor: CHART_COLORS.yellow,
+                borderWidth: 2,
+                borderDash: [5, 5],
+                fill: false,
+                pointRadius: 0,
+                datalabels: { display: false },
+            });
+        }
+
+        const chart = await canvas.renderToBuffer({
+            type: "line",
+            data: {
+                labels: seasonLabels,
+                datasets,
+            },
+            options: {
+                plugins: {
+                    datalabels: { display: false },
+                    title: {
+                        display: true,
+                        text: title,
+                        font: { size: 18 },
+                        color: "white",
+                    },
+                    legend: {
+                        display: trendline !== undefined,
+                        labels: {
+                            color: "white",
+                            font: { size: 12 },
+                        },
+                    },
+                    annotation: {
+                        annotations: eventAnnotations,
+                    },
+                } as any,
+                scales: {
+                    x: {
+                        ticks: {
+                            color: "white",
+                            font: { size: 14 },
+                        },
+                        grid: { display: false },
+                        title: {
+                            display: true,
+                            text: "Season",
+                            color: "white",
+                            font: { size: 14 },
+                        },
+                    },
+                    y: {
+                        ticks: {
+                            color: "white",
+                            font: { size: 12 },
+                            stepSize: integerTicks ? 1 : undefined,
+                            callback: (value: any) => formatValue(value),
+                        },
+                        grid: {
+                            color: "rgba(255, 255, 255, 0.2)",
+                        },
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: yAxisLabel,
+                            color: "white",
+                            font: { size: 14 },
+                        },
                     },
                 },
                 layout: {
