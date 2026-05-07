@@ -19,6 +19,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [1.13.1]
+
+I will never hide the fact that I despise Apple and the air their executives breathe.
+For some reason, copying the usernames from the available-bombs command was not possible on iOS devices in the same way android and windows could.
+I have now changed the formatting to allow apple-users to copy their guildmates names. It looks a bit more messy, but at least everyone can use it now.
+
+### Changed
+
+- Changed formatting of `/available-bombs` name copy-paste formatting so that iOS devices also can copy the usernames.
+- Added instructions for how to copy them based on operation system.
+
 ## [1.13.0]
 
 Two new commands to help your guild track progress over time. Both charts include a linear regression trendline (fitted on completed seasons only) and vertical markers for notable in-game milestones such as the introduction of Mythic 1 and Mythic 2 bosses.
