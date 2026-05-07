@@ -139,12 +139,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             {
                 name: "Copy players with available bombs",
                 value:
-                    "```" +
+                    "`" +
                     (Object.entries(result)
                         .filter(([, available]) => available.bombs > 0)
                         .map(([username]) => `@${username} `)
                         .join("\n") || "None") +
-                    "```",
+                    "`",
             },
         );
 
@@ -152,7 +152,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             embed.addFields({
                 name: "Copy players with bombs available in less than an hour",
                 value:
-                    "```" +
+                    "`" +
                     (Object.entries(result)
                         .filter(
                             ([, available]) =>
@@ -162,9 +162,17 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                         )
                         .map(([username]) => `@${username}`)
                         .join("\n") || "None") +
-                    "```",
+                    "`",
             });
         }
+
+        embed.addFields({
+            name: "📋 How to copy",
+            value:
+                "**Windows/Mac**: Click and drag to select → `Ctrl+C`\n" +
+                "**iPhone**: Click the text\n" +
+                "**Android**: Long-press the text",
+        });
 
         await interaction.editReply({ embeds: [embed] });
     } catch (error) {
