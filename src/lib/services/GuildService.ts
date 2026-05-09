@@ -1984,4 +1984,43 @@ export class GuildService {
             return null;
         }
     }
+
+    /**
+     * Calculates the number of tokens spent per loop for a single season.
+     * Each non-bomb raid entry costs one token; entries are grouped by their
+     * `tier` value, which corresponds to the loop number within the season.
+     * @param discordId The Discord user ID to retrieve the API key for.
+     * @param season The season number to analyse.
+     * @returns A record mapping loop number (tier) to tokens used, or null on error.
+     */
+    async getTokensPerLoopBySeason(
+        discordId: string,
+        season: number,
+    ): Promise<Record<number, number> | null> {
+        try {
+            const apiKey = await dbController.getUserToken(discordId);
+            if (!apiKey) {
+                logger.error("No API key found for user:", discordId);
+                return null;
+            }
+
+            const resp = await this.client.getGuildRaidBySeason(apiKey, season);
+            if (!resp || !resp.entries) {
+                return null;
+            }
+
+            const result: Record<number, number> = {};
+            for (const entry of resp.entries) {
+                if (entry.damageType === DamageType.BOMB) {
+                    continue;
+                }
+                result[entry.tier] = (result[entry.tier] ?? 0) + 1;
+            }
+
+            return result;
+        } catch (error) {
+            logger.error(error, "Error fetching tokens per loop by season: ");
+            return null;
+        }
+    }
 }
