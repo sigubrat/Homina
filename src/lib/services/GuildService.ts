@@ -1986,12 +1986,15 @@ export class GuildService {
     }
 
     /**
-     * Calculates the number of tokens spent per loop for a single season.
-     * Each non-bomb raid entry costs one token; entries are grouped by their
-     * `tier` value, which corresponds to the loop number within the season.
+     * Calculates the number of tokens spent per completed loop for a single
+     * season.  A loop is defined the same way as in
+     * {@link getLoopsCompletedInLastSeasons}: the cap boss (highest
+     * rarity + set pair) being defeated marks the end of a loop.  Every
+     * non-bomb raid entry costs one token; entries are bucketed into loops
+     * based on the tier ranges delimited by cap-boss kills.
      * @param discordId The Discord user ID to retrieve the API key for.
      * @param season The season number to analyse.
-     * @returns A record mapping loop number (tier) to tokens used, or null on error.
+     * @returns A record mapping 1-based loop number to tokens used, or null on error.
      */
     async getTokensPerLoopBySeason(
         discordId: string,
@@ -2009,12 +2012,61 @@ export class GuildService {
                 return null;
             }
 
+            // ── Determine the cap boss (same logic as getLoopsCompletedInLastSeasons) ──
+            const bossEntries = resp.entries.filter(
+                (e) => e.encounterType === EncounterType.BOSS,
+            );
+
+            if (bossEntries.length === 0) {
+                return null;
+            }
+
+            const rarityRank = (r: Rarity): number =>
+                Object.values(Rarity).indexOf(r);
+
+            let capRarity: Rarity = bossEntries[0]!.rarity;
+            let capSet: number = bossEntries[0]!.set;
+            for (const entry of bossEntries) {
+                const entryRank = rarityRank(entry.rarity);
+                const capRank = rarityRank(capRarity);
+                if (
+                    entryRank > capRank ||
+                    (entryRank === capRank && entry.set > capSet)
+                ) {
+                    capRarity = entry.rarity;
+                    capSet = entry.set;
+                }
+            }
+
+            // ── Find the tier values where a cap boss was killed ──
+            const completedTiers = new Set<number>();
+            for (const entry of bossEntries) {
+                if (
+                    entry.rarity === capRarity &&
+                    entry.set === capSet &&
+                    entry.remainingHp === 0
+                ) {
+                    completedTiers.add(entry.tier);
+                }
+            }
+            const sortedCapTiers = [...completedTiers].sort((a, b) => a - b);
+
+            // ── Bucket every non-bomb entry into a loop ──
             const result: Record<number, number> = {};
             for (const entry of resp.entries) {
                 if (entry.damageType === DamageType.BOMB) {
                     continue;
                 }
-                result[entry.tier] = (result[entry.tier] ?? 0) + 1;
+                // Find the first cap-kill tier >= this entry's tier
+                let loopIndex = sortedCapTiers.findIndex(
+                    (t) => entry.tier <= t,
+                );
+                if (loopIndex === -1) {
+                    // Beyond the last completed loop → current in-progress loop
+                    loopIndex = sortedCapTiers.length;
+                }
+                const loopNumber = loopIndex + 1;
+                result[loopNumber] = (result[loopNumber] ?? 0) + 1;
             }
 
             return result;

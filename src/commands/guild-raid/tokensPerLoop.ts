@@ -5,6 +5,7 @@ import {
 } from "@/lib/configs/constants";
 import { ChartService } from "@/lib/services/ChartService";
 import { GuildService } from "@/lib/services/GuildService.ts";
+import { linearRegression } from "@/lib/utils/mathUtils";
 import { isInvalidSeason } from "@/lib/utils/timeUtils";
 import {
     AttachmentBuilder,
@@ -68,6 +69,23 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const loopLabels = loopNumbers.map((n) => `Loop ${n}`);
         const tokenValues = loopNumbers.map((n) => tokensPerLoop[n] ?? 0);
 
+        // Exclude the last loop (potentially in-progress) from the regression
+        // fit, but still extrapolate the trendline across all plotted points.
+        const fitValues = tokenValues.slice(0, -1);
+        const trendline =
+            fitValues.length >= 2
+                ? linearRegression(fitValues, tokenValues.length)
+                : undefined;
+
+        let trendPct: string | undefined;
+        if (trendline && trendline[0]! !== 0) {
+            const change =
+                ((trendline[trendline.length - 1]! - trendline[0]!) /
+                    trendline[0]!) *
+                100;
+            trendPct = `${change >= 0 ? "+" : ""}${change.toFixed(1)}%`;
+        }
+
         const chartService = new ChartService();
         const chartBuffer = await chartService.createSeasonalTrendChart(
             tokenValues,
@@ -77,6 +95,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 seriesLabel: "Tokens used",
                 yAxisLabel: "Tokens used",
                 integerTicks: true,
+                trendline,
             },
         );
 
@@ -90,7 +109,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setDescription(
                 `Total guild tokens spent on each loop in season **${season}** (${loopNumbers.length} loop${loopNumbers.length !== 1 ? "s" : ""} found).\n` +
                     "- Each non-bomb attack costs one token.\n" +
-                    "- A loop corresponds to one full pass through the boss roster.\n",
+                    "- A loop is completed each time the cap boss is defeated.\n" +
+                    (trendline !== undefined
+                        ? `- **Trend:** ${
+                              trendline[trendline.length - 1]! >= trendline[0]!
+                                  ? "↗️ increasing"
+                                  : "↘️ decreasing"
+                          }${trendPct ? ` (${trendPct})` : ""} (linear regression)\n`
+                        : ""),
             )
             .setImage("attachment://tokens-per-loop.png")
             .setTimestamp()
