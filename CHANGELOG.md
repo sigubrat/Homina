@@ -19,6 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [1.14.0]
+
+### Added
+
+- **New command!** - `/tokens-per-loop` - See how many tokens your guild spent on each loop in a given season as a line chart.
+  - Includes a linear regression trendline (fitted on completed loops only) with a percentage change indicator.
+  - Option: `season` — the season to inspect. Defaults to the current season.
+
 ## [1.13.1]
 
 I will never hide the fact that I despise Apple and the air their executives breathe.
