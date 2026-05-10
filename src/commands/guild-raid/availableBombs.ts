@@ -160,7 +160,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                                 available.bombCooldown &&
                                 withinNextHour(available.bombCooldown),
                         )
-                        .map(([username]) => `@${username}`)
+                        .map(([username]) => `@${username} `)
                         .join("\n") || "None") +
                     "`",
             });
