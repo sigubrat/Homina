@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [1.14.1]
+
+### Changed
+
+- Added a space to the names in the list of `/available-bombs` to ensure you can quickly ping users without having to format anything.
+
 ## [1.14.0]
 
 ### Added
