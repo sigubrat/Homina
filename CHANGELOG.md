@@ -19,6 +19,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - -->
 
+## [1.14.2]
+
+The API changed how timestamps have handled which led to time-related calculations like bombs and tokens available to go completely haywire.
+The problem is now fixed and the bot has received some extra precautions to protect against similar changes in the future.
+
+### Fixed
+
+- Now handles timestamps no matter if they come in seconds or milliseconds
+
 ## [1.14.1]
 
 ### Changed
