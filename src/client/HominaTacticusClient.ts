@@ -1,6 +1,7 @@
 import type { Player } from "@/models/types";
 import type { Guild } from "@/models/types/Guild";
 import type { GuildRaidResponse } from "@/models/types/GuildRaidResponse";
+import { normalizeTimestamp } from "@/lib/utils/timeUtils";
 
 export interface GuildApiResponse {
     success: boolean;
@@ -27,6 +28,9 @@ class HominaTacticusClient {
         data: GuildRaidResponse,
     ): GuildRaidResponse {
         data.entries.forEach((entry) => {
+            entry.startedOn = normalizeTimestamp(entry.startedOn);
+            entry.completedOn = normalizeTimestamp(entry.completedOn);
+
             if (entry.unitId.includes("NecroMenhir")) {
                 if (entry.encounterIndex === 1) {
                     entry.unitId = "Hapthatra";

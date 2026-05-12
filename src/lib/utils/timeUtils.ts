@@ -7,6 +7,15 @@ import {
 export function getUnixTimestamp(date: Date) {
     return Math.floor(date.getTime() / 1000);
 }
+
+/**
+ * Normalizes a timestamp to Unix seconds.
+ * If the value exceeds 1e12 it is assumed to be in milliseconds and is divided by 1000.
+ * A seconds-based Unix timestamp will not exceed 1e12 until the year ~33658.
+ */
+export function normalizeTimestamp(ts: number): number {
+    return ts > 1e12 ? Math.floor(ts / 1000) : ts;
+}
 /**
  * Evaluates and updates the token status based on the elapsed time since the last refresh.
  *
