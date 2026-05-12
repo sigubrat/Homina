@@ -142,8 +142,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     "`" +
                     (Object.entries(result)
                         .filter(([, available]) => available.bombs > 0)
-                        .map(([username]) => `@${username} `)
-                        .join("\n") || "None") +
+                        .map(([username]) => `@${username}`)
+                        .join(" ") || "None") +
                     "`",
             },
         );
@@ -160,8 +160,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                                 available.bombCooldown &&
                                 withinNextHour(available.bombCooldown),
                         )
-                        .map(([username]) => `@${username} `)
-                        .join("\n") || "None") +
+                        .map(([username]) => `@${username}`)
+                        .join(" ") || "None") +
                     "`",
             });
         }
