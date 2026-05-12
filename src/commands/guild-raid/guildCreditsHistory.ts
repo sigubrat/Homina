@@ -106,6 +106,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     `- Each guild boss kill awards **${CREDITS_PER_BOSS.toLocaleString()}** credits (S${LEGACY_SEASON_THRESHOLD} and earlier: **${CREDITS_PER_BOSS_LEGACY.toLocaleString()}**).\n` +
                     "- Seasons with no kills show as **0**.\n" +
                     "- Graph does not include the end-of-season leaderboard rewards, only credits earned from boss kills.\n" +
+                    "- Note: Mythic 1 bosses changed guild credit rewards from 300->1k, but legendary orbs were worth more so the number is not comparable to today's values" +
                     (trendline !== undefined
                         ? `- **Trend:** ${
                               trendline[trendline.length - 1]! >= trendline[0]!
