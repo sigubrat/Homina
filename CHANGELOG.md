@@ -5,19 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-<!-- ## [Unreleased]
-
-### Added
+## [1.14.3]
 
 ### Changed
 
-### Fixed
-
--
-
-### Removed
-
-- -->
+- Credits calculation for `/guild-credits-history` now uses 300 credits per boss for season 81 and earlier.
+  - Added a note in the embed comparing legacy vs current boss credit rewards.
+- Fixed formatting in `/available-bombs` output to use a space instead of a newline.
 
 ## [1.14.2]
 
