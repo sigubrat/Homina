@@ -13,7 +13,9 @@ const DEFAULT_SEASONS = 5;
 const MIN_SEASONS = 2;
 const MAX_SEASONS = 20;
 
+const CREDITS_PER_BOSS_LEGACY = 300;
 const CREDITS_PER_BOSS = 1000;
+const LEGACY_SEASON_THRESHOLD = 81;
 
 export const cooldown = 5;
 
@@ -67,7 +69,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const seasonLabels = seasonNumbers.map((s) => `S${s}`);
 
         const creditsValues = seasonNumbers.map(
-            (season) => (bossesBySeason[season] ?? 0) * CREDITS_PER_BOSS,
+            (season) =>
+                (bossesBySeason[season] ?? 0) *
+                (season <= LEGACY_SEASON_THRESHOLD
+                    ? CREDITS_PER_BOSS_LEGACY
+                    : CREDITS_PER_BOSS),
         );
 
         // Exclude the last season (current, in-progress) from the regression
@@ -97,7 +103,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             )
             .setDescription(
                 `Credits earned per season (${seasonNumbers[0]}–${seasonNumbers[seasonNumbers.length - 1]}).\n` +
-                    `- Each guild boss kill awards **${CREDITS_PER_BOSS.toLocaleString()}** credits.\n` +
+                    `- Each guild boss kill awards **${CREDITS_PER_BOSS.toLocaleString()}** credits (S${LEGACY_SEASON_THRESHOLD} and earlier: **${CREDITS_PER_BOSS_LEGACY.toLocaleString()}**).\n` +
                     "- Seasons with no kills show as **0**.\n" +
                     "- Graph does not include the end-of-season leaderboard rewards, only credits earned from boss kills.\n" +
                     (trendline !== undefined
