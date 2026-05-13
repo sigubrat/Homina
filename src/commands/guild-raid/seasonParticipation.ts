@@ -141,7 +141,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             players,
         );
 
-        const sortedResult = sortGuildRaidResultDesc(transformedResult);
+        const sortedResult = sortGuildRaidResultDesc(transformedResult).filter(
+            (val) => !val.username.includes("Unknown #"),
+        );
 
         const topDamageDealers = getTopNDamageDealers(sortedResult, 3);
         const average =
