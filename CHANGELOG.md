@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.15.0]
+
+### Added
+
+- `/guild-credits-history` now supports an optional **red comparison line** showing the old system's total value (300 credits + orb drops per boss kill, valued by rarity).
+  - Enabled via the `old-comparison` option (default: off).
+  - Orb values by rarity: Common 0, Uncommon 90, Rare 210, Epic 495, Legendary 1200, Mythic 1350.
+  - Shows the average percentage difference between old and new system (only for S82+ seasons).
+- Added `starting-season` option to `/guild-credits-history` — allows looking at historical data from a specific season instead of always starting from the current one.
+- Trend line now displays percentage change per season instead of just "increasing/decreasing".
+
 ## [1.14.4]
 
 ### Changed
