@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.15.0]
 
+Have you ever been curious what the changes to the economy introduced in the mythic patch did to your guild raid income? Well, I sure was, and decided to find out by making some changes to the credit history graph. Check it out and find out how your guild was affected by the changes.
+
 ### Added
 
 - `/guild-credits-history` now supports an optional **red comparison line** showing the old system's total value (300 credits + orb drops per boss kill, valued by rarity).
