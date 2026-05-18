@@ -29,7 +29,7 @@ const ORB_VALUE_BY_RARITY: Partial<Record<Rarity, number>> = {
     [Rarity.RARE]: 210,
     [Rarity.EPIC]: 495,
     [Rarity.LEGENDARY]: 1200,
-    [Rarity.MYTHIC]: 1350,
+    [Rarity.MYTHIC]: 2700,
 };
 
 export const cooldown = 5;
