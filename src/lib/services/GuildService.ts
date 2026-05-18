@@ -1808,7 +1808,8 @@ export class GuildService {
     async getBossesKilledInLastSeasons(
         discordId: string,
         nSeasons: number,
-    ): Promise<Record<number, number> | null> {
+        startingSeason?: number,
+    ): Promise<Record<number, Partial<Record<Rarity, number>>> | null> {
         try {
             const apiKey = await dbController.getUserToken(discordId);
             if (!apiKey) {
@@ -1816,20 +1817,28 @@ export class GuildService {
                 return null;
             }
 
-            const currentSeason =
-                await this.client.getGuildRaidByCurrentSeason(apiKey);
-            if (!currentSeason || !currentSeason.season) {
-                logger.error("No current season found for user:", discordId);
-                return null;
+            let endSeason: number;
+            if (startingSeason !== undefined) {
+                endSeason = startingSeason;
+            } else {
+                const currentSeason =
+                    await this.client.getGuildRaidByCurrentSeason(apiKey);
+                if (!currentSeason || !currentSeason.season) {
+                    logger.error(
+                        "No current season found for user:",
+                        discordId,
+                    );
+                    return null;
+                }
+                endSeason = currentSeason.season;
             }
 
-            const currentSeasonNumber = currentSeason.season;
             const seasons: number[] = [];
             for (let i = nSeasons - 1; i >= 0; i--) {
-                if (currentSeasonNumber - i < MINIMUM_SEASON_THRESHOLD) {
+                if (endSeason - i < MINIMUM_SEASON_THRESHOLD) {
                     break;
                 }
-                seasons.push(currentSeasonNumber - i);
+                seasons.push(endSeason - i);
             }
 
             const seasonPromises = seasons.map((season) =>
@@ -1838,15 +1847,16 @@ export class GuildService {
 
             const responses = await Promise.all(seasonPromises);
 
-            const result: Record<number, number> = {};
+            const result: Record<number, Partial<Record<Rarity, number>>> = {};
             for (let idx = 0; idx < seasons.length; idx++) {
                 const seasonNr = seasons[idx]!;
                 const resp = responses[idx];
                 if (!resp || !resp.entries) {
-                    result[seasonNr] = 0;
+                    result[seasonNr] = {};
                     continue;
                 }
 
+                const killedByRarity: Partial<Record<Rarity, number>> = {};
                 const killedKeys = new Set<string>();
                 for (const entry of resp.entries) {
                     if (entry.encounterType !== EncounterType.BOSS) {
@@ -1856,9 +1866,12 @@ export class GuildService {
                         continue;
                     }
                     const key = `${entry.type}|${entry.tier}|${entry.set}`;
+                    if (killedKeys.has(key)) continue;
                     killedKeys.add(key);
+                    killedByRarity[entry.rarity] =
+                        (killedByRarity[entry.rarity] ?? 0) + 1;
                 }
-                result[seasonNr] = killedKeys.size;
+                result[seasonNr] = killedByRarity;
             }
 
             return result;

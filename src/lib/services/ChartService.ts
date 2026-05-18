@@ -1139,11 +1139,13 @@ export class ChartService {
         seasonLabels: string[],
         title: string,
         trendline?: number[],
+        secondaryData?: { values: number[]; label: string },
     ) {
         return this.createSeasonalTrendChart(data, seasonLabels, title, {
             seriesLabel: "Credits earned",
             yAxisLabel: "Credits earned",
             trendline,
+            secondaryData,
         });
     }
 
@@ -1156,9 +1158,16 @@ export class ChartService {
             yAxisLabel: string;
             trendline?: number[];
             integerTicks?: boolean;
+            secondaryData?: { values: number[]; label: string };
         },
     ) {
-        const { seriesLabel, yAxisLabel, trendline, integerTicks } = options;
+        const {
+            seriesLabel,
+            yAxisLabel,
+            trendline,
+            integerTicks,
+            secondaryData,
+        } = options;
 
         const formatValue = (value: number) =>
             integerTicks ? `${value}` : shortenNumber(value);
@@ -1239,6 +1248,31 @@ export class ChartService {
             });
         }
 
+        if (secondaryData !== undefined && secondaryData.values.length > 0) {
+            datasets.push({
+                label: secondaryData.label,
+                data: secondaryData.values,
+                borderColor: CHART_COLORS.red,
+                backgroundColor: "rgba(255, 99, 132, 0.15)",
+                borderWidth: 2,
+                fill: false,
+                stepped: false,
+                tension: 0,
+                pointRadius: 18,
+                pointBackgroundColor: CHART_COLORS.discordbg,
+                pointBorderColor: CHART_COLORS.red,
+                pointBorderWidth: 2,
+                datalabels: {
+                    display: true,
+                    color: "white",
+                    font: { size: 11, weight: "bold" },
+                    anchor: "center" as const,
+                    align: "center" as const,
+                    formatter: (value: number) => formatValue(value),
+                },
+            });
+        }
+
         const chart = await canvas.renderToBuffer({
             type: "line",
             data: {
@@ -1255,7 +1289,9 @@ export class ChartService {
                         color: "white",
                     },
                     legend: {
-                        display: trendline !== undefined,
+                        display:
+                            trendline !== undefined ||
+                            secondaryData !== undefined,
                         labels: {
                             color: "white",
                             font: { size: 12 },
