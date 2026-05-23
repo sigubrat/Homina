@@ -10,7 +10,7 @@ export const META_TEAM_THRESHOLD = 5;
 export const MAX_TOKENS_PER_SEASON = 28;
 
 export const STANDARD_HEADER =
-    "Referral code: HUG-44-CAN, Skulls gleam raffle code: MACHINESPIRIT";
+    "Referral code: HUG-44-CAN\nSkulls gleam raffle code: MACHINESPIRIT";
 
 // Season 85 starts on October 8, 2025, at 10:00 AM UTC
 export const SEASON_85_SEASON_START = new Date(2025, 9, 8, 10, 0, 0);

@@ -5,7 +5,7 @@ import { evaluateToken } from "../utils/timeUtils";
 import { getUnixTimestamp } from "../utils/timeUtils";
 import { getMetaTeam } from "@/lib/utils/metaTeamUtils";
 import { createUnknownUserTracker } from "@/lib/utils/userUtils";
-import { getPrimeDisplayName } from "@/lib/utils/utils";
+import { getPrimeDisplayName, mapTierToRarity } from "@/lib/utils/utils";
 import { DamageType, EncounterType, Rarity } from "@/models/enums";
 import { MetaTeams } from "@/models/enums/MetaTeams";
 import type {
@@ -2085,6 +2085,132 @@ export class GuildService {
             return result;
         } catch (error) {
             logger.error(error, "Error fetching tokens per loop by season: ");
+            return null;
+        }
+    }
+
+    /**
+     * Calculates tokens spent per loop broken down by boss for a given season
+     * and rarity. Each boss (identified by its `type` field) gets its own
+     * series. Prime encounters are grouped under the same boss they belong to
+     * (same set/tier).
+     *
+     * @param discordId The Discord user ID to retrieve the API key for.
+     * @param season The season number to analyse.
+     * @param rarity The rarity filter (supports LEGENDARY_PLUS).
+     * @returns A record mapping boss label → (1-based loop# → token count), or null on error.
+     */
+    async getTokensPerLoopByBoss(
+        discordId: string,
+        season: number,
+        rarity: Rarity,
+    ): Promise<Record<string, Record<number, number>> | null> {
+        try {
+            const apiKey = await dbController.getUserToken(discordId);
+            if (!apiKey) {
+                logger.error("No API key found for user:", discordId);
+                return null;
+            }
+
+            const resp = await this.client.getGuildRaidBySeason(apiKey, season);
+            if (!resp || !resp.entries) {
+                return null;
+            }
+
+            // ── Determine the cap boss (same logic as getTokensPerLoopBySeason) ──
+            const bossEntries = resp.entries.filter(
+                (e) => e.encounterType === EncounterType.BOSS,
+            );
+
+            if (bossEntries.length === 0) {
+                return null;
+            }
+
+            const rarityRank = (r: Rarity): number =>
+                Object.values(Rarity).indexOf(r);
+
+            let capRarity: Rarity = bossEntries[0]!.rarity;
+            let capSet: number = bossEntries[0]!.set;
+            for (const entry of bossEntries) {
+                const entryRank = rarityRank(entry.rarity);
+                const capRank = rarityRank(capRarity);
+                if (
+                    entryRank > capRank ||
+                    (entryRank === capRank && entry.set > capSet)
+                ) {
+                    capRarity = entry.rarity;
+                    capSet = entry.set;
+                }
+            }
+
+            // ── Find the tier values where a cap boss was killed ──
+            const completedTiers = new Set<number>();
+            for (const entry of bossEntries) {
+                if (
+                    entry.rarity === capRarity &&
+                    entry.set === capSet &&
+                    entry.remainingHp === 0
+                ) {
+                    completedTiers.add(entry.tier);
+                }
+            }
+            const sortedCapTiers = [...completedTiers].sort((a, b) => a - b);
+
+            // ── Filter entries by the requested rarity and bucket by boss + loop ──
+            const rarities = this.expandRarity(rarity);
+
+            // First pass: build label map from boss entries so primes resolve correctly
+            // Key by rarity + type since the same type can appear at multiple rarities
+            const bossLabelMap = new Map<string, string>();
+            for (const entry of resp.entries) {
+                const key = `${entry.rarity}_${entry.type}`;
+                if (
+                    entry.encounterType === EncounterType.BOSS &&
+                    rarities.includes(entry.rarity) &&
+                    !bossLabelMap.has(key)
+                ) {
+                    const prefix = mapTierToRarity(
+                        entry.tier,
+                        entry.set + 1,
+                        false,
+                    );
+                    bossLabelMap.set(key, `${prefix} ${entry.type}`);
+                }
+            }
+
+            // Second pass: bucket all non-bomb entries into boss + loop
+            const result: Record<string, Record<number, number>> = {};
+
+            for (const entry of resp.entries) {
+                if (entry.damageType === DamageType.BOMB) {
+                    continue;
+                }
+                if (!rarities.includes(entry.rarity)) {
+                    continue;
+                }
+
+                const key = `${entry.rarity}_${entry.type}`;
+                const bossLabel = bossLabelMap.get(key) ?? entry.type;
+
+                // Determine which loop this entry belongs to
+                let loopIndex = sortedCapTiers.findIndex(
+                    (t) => entry.tier <= t,
+                );
+                if (loopIndex === -1) {
+                    loopIndex = sortedCapTiers.length;
+                }
+                const loopNumber = loopIndex + 1;
+
+                if (!result[bossLabel]) {
+                    result[bossLabel] = {};
+                }
+                result[bossLabel][loopNumber] =
+                    (result[bossLabel][loopNumber] ?? 0) + 1;
+            }
+
+            return Object.keys(result).length > 0 ? result : null;
+        } catch (error) {
+            logger.error(error, "Error fetching tokens per loop by boss: ");
             return null;
         }
     }

@@ -1451,6 +1451,127 @@ export class ChartService {
     }
 
     /**
+     * Creates a multi-line chart where each series represents a boss,
+     * plotted over loop numbers on the x-axis.
+     *
+     * @param data Record of boss label → array of values (one per loop).
+     * @param loopLabels X-axis labels (e.g. "Loop 1", "Loop 2", ...).
+     * @param title The chart title.
+     * @returns A Buffer containing the rendered chart PNG.
+     */
+    async createMultiLineLoopChart(
+        data: Record<string, number[]>,
+        loopLabels: string[],
+        title: string,
+    ): Promise<Buffer> {
+        const datasets = Object.entries(data).map(
+            ([boss, values], colorIndex) => ({
+                type: "line" as const,
+                label: boss,
+                data: values,
+                borderColor: namedColor(colorIndex),
+                borderWidth: 3,
+                fill: false,
+                tension: 0.25,
+                pointRadius: 14,
+                pointBackgroundColor: CHART_COLORS.discordbg,
+                pointBorderColor: namedColor(colorIndex),
+                pointBorderWidth: 2,
+                datalabels: {
+                    display: true,
+                    color: "white",
+                    font: { size: 9, weight: "bold" as const },
+                    anchor: "center" as const,
+                    align: "center" as const,
+                    formatter: (value: number) => (value > 0 ? value : ""),
+                },
+            }),
+        );
+
+        const chart = await canvas.renderToBuffer({
+            type: "line",
+            data: {
+                labels: loopLabels,
+                datasets,
+            },
+            options: {
+                plugins: {
+                    datalabels: { display: false },
+                    title: {
+                        display: true,
+                        text: title,
+                        font: { size: 18 },
+                        color: "white",
+                        padding: { bottom: 16 },
+                    },
+                    legend: {
+                        display: true,
+                        position: "bottom",
+                        labels: {
+                            color: "white",
+                            font: { size: 12 },
+                            padding: 16,
+                            usePointStyle: true,
+                            pointStyle: "circle",
+                        },
+                    },
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: "white",
+                            font: { size: 13 },
+                        },
+                        grid: { display: false },
+                        title: {
+                            display: true,
+                            text: "Loop",
+                            color: "white",
+                            font: { size: 14 },
+                        },
+                    },
+                    y: {
+                        type: "logarithmic",
+                        ticks: {
+                            color: "white",
+                            font: { size: 12 },
+                            callback: (value: any) => {
+                                const nice = [
+                                    3, 5, 7, 10, 15, 20, 30, 40, 50, 70, 100,
+                                ];
+                                return nice.includes(value) ? `${value}` : "";
+                            },
+                            autoSkip: false,
+                        },
+                        grid: {
+                            color: "rgba(255, 255, 255, 0.1)",
+                        },
+                        min: 3,
+                        title: {
+                            display: true,
+                            text: "Tokens used",
+                            color: "white",
+                            font: { size: 14 },
+                        },
+                    },
+                },
+                layout: {
+                    padding: {
+                        left: 20,
+                        right: 30,
+                        bottom: 10,
+                        top: 20,
+                    },
+                },
+                responsive: true,
+                maintainAspectRatio: false,
+            },
+        });
+
+        return chart;
+    }
+
+    /**
      * Creates a horizontal bar chart showing relative performance per player.
      * Bars are color-coded by performance tier and a dashed line marks 100% (guild average).
      *
