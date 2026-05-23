@@ -2,6 +2,7 @@ import { logger } from "@/lib";
 import {
     getCurrentSeason,
     MINIMUM_SEASON_THRESHOLD,
+    STANDARD_HEADER,
 } from "@/lib/configs/constants";
 import { GuildService } from "@/lib/services/GuildService.ts";
 import { sortTokensUsed } from "@/lib/utils/mathUtils";
@@ -187,7 +188,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 },
             ])
             .setFooter({
-                text: "Referral code: HUG-44-CAN if you want to support the bot development",
+                text: STANDARD_HEADER,
             });
 
         await interaction.editReply({ embeds: [embed] });

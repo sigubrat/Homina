@@ -2,6 +2,7 @@ import { logger } from "@/lib";
 import {
     getCurrentSeason,
     MINIMUM_SEASON_THRESHOLD,
+    STANDARD_HEADER,
 } from "@/lib/configs/constants";
 import { GuildService } from "@/lib/services/GuildService";
 import { isInvalidSeason } from "@/lib/utils/timeUtils";
@@ -69,7 +70,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setTitle(`Guild raid seasons with the same config`)
             .setTimestamp()
             .setFooter({
-                text: "Referral code: HUG-44-CAN if you want to support the bot development",
+                text: STANDARD_HEADER,
             })
             .setFields(
                 {

@@ -1,4 +1,5 @@
 import { logger } from "@/lib";
+import { STANDARD_HEADER } from "@/lib/configs/constants";
 import { ChartService } from "@/lib/services/ChartService";
 import { GuildService } from "@/lib/services/GuildService.ts";
 import { linearRegression } from "@/lib/utils/mathUtils";
@@ -113,7 +114,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setImage("attachment://laps-by-season.png")
             .setTimestamp()
             .setFooter({
-                text: "Referral code: HUG-44-CAN if you want to support the bot development",
+                text: STANDARD_HEADER,
             });
 
         await interaction.editReply({ embeds: [embed], files: [attachment] });

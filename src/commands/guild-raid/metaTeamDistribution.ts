@@ -2,6 +2,7 @@ import { logger } from "@/lib";
 import {
     getCurrentSeason,
     MINIMUM_SEASON_THRESHOLD,
+    STANDARD_HEADER,
 } from "@/lib/configs/constants";
 import { ChartService } from "@/lib/services/ChartService";
 import { GuildService } from "@/lib/services/GuildService.ts";
@@ -124,7 +125,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             })
             .setImage(`attachment://${attachment.name}`)
             .setFooter({
-                text: "Referral code: HUG-44-CAN if you want to support the bot development",
+                text: STANDARD_HEADER,
             });
 
         await interaction.editReply({

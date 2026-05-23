@@ -1,4 +1,5 @@
 import { logger } from "@/lib";
+import { STANDARD_HEADER } from "@/lib/configs/constants";
 import { GRConfigService } from "@/lib/services/GRConfigService";
 import { GuildService } from "@/lib/services/GuildService";
 import { getBossEmoji } from "@/lib/utils/utils";
@@ -61,7 +62,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             )
             .setTimestamp()
             .setFooter({
-                text: "Referral code: HUG-44-CAN if you want to support the bot development",
+                text: STANDARD_HEADER,
             });
 
         if (rarity) {

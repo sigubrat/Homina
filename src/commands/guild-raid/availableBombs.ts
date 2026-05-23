@@ -1,4 +1,5 @@
 import { logger } from "@/lib";
+import { STANDARD_HEADER } from "@/lib/configs/constants";
 import { GuildService } from "@/lib/services/GuildService";
 import { replaceUserIdKeysWithDisplayNames } from "@/lib/utils/userUtils";
 import { toMinutes, withinNextHour } from "@/lib/utils/timeUtils";
@@ -119,7 +120,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setDescription("Here is the list of members with available bombs.")
             .setTimestamp()
             .setFooter({
-                text: "Referral code: HUG-44-CAN if you want to support the bot development",
+                text: STANDARD_HEADER,
             });
 
         for (let i = 0; i < table.length; i += 10) {

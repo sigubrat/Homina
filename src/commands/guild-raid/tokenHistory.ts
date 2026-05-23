@@ -1,4 +1,5 @@
 import { dbController, logger } from "@/lib";
+import { STANDARD_HEADER } from "@/lib/configs/constants";
 import { fetchGuildMembers } from "@/client/MiddlewareClient";
 import { ChartService } from "@/lib/services/ChartService";
 import { GuildService } from "@/lib/services/GuildService.ts";
@@ -191,7 +192,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setImage("attachment://token-history.png")
             .setTimestamp()
             .setFooter({
-                text: "Referral code: HUG-44-CAN if you want to support the bot development",
+                text: STANDARD_HEADER,
             });
 
         await interaction.editReply({ embeds: [embed], files: [attachment] });

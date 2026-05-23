@@ -2,6 +2,7 @@ import { dbController, logger } from "@/lib";
 import {
     MAXIMUM_GUILD_MEMBERS,
     MAXIMUM_TOKENS_PER_SEASON,
+    STANDARD_HEADER,
 } from "@/lib/configs/constants";
 import { fetchGuildMembers } from "@/client/MiddlewareClient";
 import { GuildService } from "@/lib/services/GuildService";
@@ -195,7 +196,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setColor("#0099ff")
             .setTimestamp()
             .setFooter({
-                text: "Referral code: HUG-44-CAN if you want to support the bot development",
+                text: STANDARD_HEADER,
             });
 
         if (rarity) {
