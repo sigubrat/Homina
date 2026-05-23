@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.16.0]
+
+### Added
+
+- New command: `/tokens-per-loop-by-boss` — shows how many tokens the guild spent on each individual boss per loop in a season.
+  - Requires a rarity filter (Common through Legendary+) to keep the chart readable.
+  - Each boss gets its own line on the graph, with token counts displayed inside colored circles.
+  - Logarithmic y-axis makes it easy to compare bosses even when token counts vary widely (e.g. Mythic vs Legendary).
+  - Trend indicators per boss shown in the embed description (e.g. ↗️ +9.4%, ↘️ -12.7%).
+- A gleam raffle code for the skulls event has been added to the footer of all the commands.
+
 ## [1.15.0]
 
 Have you ever been curious what the changes to the economy introduced in the mythic patch did to your guild raid income? Well, I sure was, and decided to find out by making some changes to the credit history graph. Check it out and find out how your guild was affected by the changes.
