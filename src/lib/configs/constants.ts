@@ -193,4 +193,8 @@ export const UnitIdEmojiMapping: Record<string, string> = {
     [MachinesOfWar.Rukkatrukk.id]: "<:rukkatrukk:1420719867375648839>",
     [MachinesOfWar.Tsonji.id]: "<:tsonji:1459087982299451445>",
     [MachinesOfWar.Zkar.id]: "<:zkar:1459087797708132413>",
+
+    // NPCs
+    [characters.Hapthatra.id]: "<:hapthatra:1508899689154482287>",
+    [characters.Mesophet.id]: "<:mesophet:1508900611138256969>",
 };
