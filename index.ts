@@ -7,12 +7,11 @@ import {
 import * as path from "path";
 import * as fs from "fs";
 import { dbController, logger, validateEnvVars } from "@/lib";
-import { BotEventType } from "@/models/enums";
 import { getAllCommands } from "@/lib/utils/commandUtils";
 import { InfisicalClient } from "@/client/InfisicalClient";
-import { MessageService } from "@/lib/services/MessageService";
 import type { Command } from "@/models/types/Command";
 import { FatalError } from "@/models/errors/FatalError";
+import { CleanupJob } from "@/lib/jobs/CleanupJob";
 
 export class IClient extends Client {
     commands = new Collection<string, Command>();
@@ -44,7 +43,6 @@ const startBot = async () => {
         const infisicalClient = new InfisicalClient();
         await infisicalClient.init();
         await infisicalClient.fetchSecrets();
-        const messageService = new MessageService(client);
 
         // Check database connection
         const res = await dbController.isReady();
@@ -82,42 +80,9 @@ const startBot = async () => {
         await client.login(process.env.BOT_TOKEN!);
         logger.info("Bot logged in successfully.");
 
-        // Schedule token cleanup every 24 hours
-        const runCleanup = async () => {
-            logger.info("Running token cleanup...");
-            try {
-                const deletedIds = await dbController.cleanupOldTokens();
-
-                if (deletedIds.length > 0) {
-                    for (const userId of deletedIds) {
-                        void dbController.logEvent(
-                            BotEventType.USER_CLEANUP,
-                            "token-cleanup",
-                            {
-                                userId,
-                            },
-                        );
-                        await messageService.alertDeletedUser(userId);
-                        await new Promise((resolve) =>
-                            setTimeout(resolve, 1000),
-                        ); // 1 second delay
-                    }
-                }
-
-                // Clean up old player metadata (keep 30 days)
-                await dbController.cleanupOldPlayerMetadata(30);
-
-                // Clean up old bot events (keep 90 days)
-                await dbController.cleanupOldEvents(90);
-
-                logger.info("Token cleanup completed successfully.");
-            } catch (error) {
-                logger.error(error, "Error during token cleanup:");
-            }
-        };
-
-        await runCleanup(); // Run once on startup
-        setInterval(runCleanup, 24 * 60 * 60 * 1000);
+        // Start scheduled cleanup job
+        const cleanupJob = new CleanupJob(client);
+        cleanupJob.start();
     } catch (error) {
         if (error instanceof FatalError) {
             console.error(`Fatal: ${error.message}`);

@@ -35,6 +35,7 @@
         "chartjs-node-canvas": "^5.0.0",
         "chartjs-plugin-annotation": "^3.1.0",
         "chartjs-plugin-datalabels": "^2.2.0",
+        "croner": "^10.0.1",
         "discord.js": "^14.21.0",
         "pagination.djs": "^4.0.18",
         "pg": "^8.16.3",
