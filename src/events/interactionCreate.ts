@@ -5,7 +5,7 @@ import {
     deletePendingInvite,
 } from "@/lib/services/PendingInviteStore";
 import { BotEventType } from "@/models/enums";
-import type { IClient } from "@/index";
+import { IClient } from "@/models/types/IClient";
 import { Collection, Events, type Interaction, MessageFlags } from "discord.js";
 
 export const name = Events.InteractionCreate;

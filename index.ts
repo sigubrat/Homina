@@ -1,22 +1,12 @@
-import {
-    Client,
-    GatewayIntentBits,
-    Collection,
-    ActivityType,
-} from "discord.js";
+import { GatewayIntentBits, ActivityType } from "discord.js";
 import * as path from "path";
 import * as fs from "fs";
 import { dbController, logger, validateEnvVars } from "@/lib";
 import { getAllCommands } from "@/lib/utils/commandUtils";
 import { InfisicalClient } from "@/client/InfisicalClient";
-import type { Command } from "@/models/types/Command";
 import { FatalError } from "@/models/errors/FatalError";
 import { CleanupJob } from "@/lib/jobs/CleanupJob";
-
-export class IClient extends Client {
-    commands = new Collection<string, Command>();
-    cooldowns = new Collection<string, Collection<string, number>>();
-}
+import { IClient } from "@/models/types/IClient";
 
 console.log("Starting Discord bot...");
 
