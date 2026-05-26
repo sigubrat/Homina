@@ -143,4 +143,8 @@ export const characters = {
     Macer: { id: "worldJakhal", name: "Macer" },
     Kharn: { id: "worldKharn", name: "Kharn" },
     Wrask: { id: "worldTerminator", name: "Wrask" },
+
+    // NPCs
+    Hapthatra: { id: "Hapthatra", name: "Hapthatra" },
+    Mesophet: { id: "Mesophet", name: "Mesophet" },
 };

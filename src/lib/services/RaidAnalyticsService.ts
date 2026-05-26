@@ -1,7 +1,7 @@
 import { HominaTacticusClient } from "@/client";
 import { DatabaseController, dbController, logger } from "@/lib";
 import { createUnknownUserTracker } from "@/lib/utils/userUtils";
-import { getPrimeDisplayName } from "@/lib/utils/utils";
+import { getPrimeDisplayName, mapTierToRarity } from "@/lib/utils/utils";
 import { expandRarity } from "@/lib/utils/rarityUtils";
 import { DamageType, EncounterType, Rarity } from "@/models/enums";
 import type { GuildRaidResult, Raid } from "@/models/types";
@@ -607,26 +607,16 @@ export class RaidAnalyticsService {
         }
     }
 
-    async getPrimeROI(
+    async getPrimeSpecialists(
         discordId: string,
+        rarity: Rarity,
         season?: number,
-        rarity?: Rarity,
     ): Promise<{
-        summary: {
-            primeTokens: number;
-            sideTokens: number;
-            primeDmgPerToken: number;
-            sideDmgPerToken: number;
-            primePct: number;
-        };
-        players: {
-            player: string;
-            primeTokens: number;
-            sideTokens: number;
-            primeDmgPerToken: number;
-            sideDmgPerToken: number;
-            primePct: number;
-        }[];
+        primes: Record<
+            string,
+            { player: string; avgDmg: number; tokens: number; unitId: string }[]
+        >;
+        seasonsUsed: number[];
     } | null> {
         try {
             const apiKey = await this.db.getUserToken(discordId);
@@ -636,6 +626,7 @@ export class RaidAnalyticsService {
             const players = await guildService.fetchGuildMembers(discordId);
             if (!players) return null;
 
+            // Determine target season
             let seasonNumber = season;
             if (!seasonNumber) {
                 const current =
@@ -644,24 +635,72 @@ export class RaidAnalyticsService {
                 seasonNumber = current.season;
             }
 
-            const response = await this.client.getGuildRaidBySeason(
-                apiKey,
-                seasonNumber,
-            );
-            const allEntries = response?.entries ?? [];
-            if (allEntries.length === 0) return null;
+            // Fetch target season + last 5 prior seasons
+            const seasonsToFetch = [seasonNumber];
+            for (let i = 1; i <= 5; i++) {
+                seasonsToFetch.push(seasonNumber - i);
+            }
 
-            const rarities = rarity ? expandRarity(rarity) : null;
-            const entries = allEntries.filter(
-                (entry) =>
-                    entry.damageType === DamageType.BATTLE &&
-                    (!rarities || rarities.includes(entry.rarity)),
+            const responses = await Promise.all(
+                seasonsToFetch.map((s) =>
+                    this.client.getGuildRaidBySeason(apiKey, s),
+                ),
             );
 
-            if (entries.length === 0) return null;
+            // Find which primes are active in the target season
+            const rarities = expandRarity(rarity);
+            const targetEntries = responses[0]?.entries ?? [];
+            const targetPrimeKeys = new Set<string>();
+            for (const entry of targetEntries) {
+                if (
+                    entry.encounterType === EncounterType.SIDE_BOSS &&
+                    rarities.includes(entry.rarity) &&
+                    entry.damageType === DamageType.BATTLE
+                ) {
+                    targetPrimeKeys.add(
+                        `${entry.unitId}_${entry.set}_${entry.rarity}`,
+                    );
+                }
+            }
 
+            if (targetPrimeKeys.size === 0) return null;
+
+            // Collect matching entries from all seasons (same unitId+set+rarity)
+            const allEntries = responses.flatMap((resp) => resp?.entries ?? []);
+            const primeEntries = allEntries.filter((entry) => {
+                if (
+                    entry.encounterType !== EncounterType.SIDE_BOSS ||
+                    entry.damageType !== DamageType.BATTLE
+                ) {
+                    return false;
+                }
+                const key = `${entry.unitId}_${entry.set}_${entry.rarity}`;
+                return targetPrimeKeys.has(key);
+            });
+
+            if (primeEntries.length === 0) return null;
+
+            // Track which seasons actually contributed data
+            const seasonsUsed = new Set<number>();
+            for (let i = 0; i < responses.length; i++) {
+                const resp = responses[i];
+                if (
+                    resp?.entries?.some((e) => {
+                        const key = `${e.unitId}_${e.set}_${e.rarity}`;
+                        return (
+                            e.encounterType === EncounterType.SIDE_BOSS &&
+                            e.damageType === DamageType.BATTLE &&
+                            targetPrimeKeys.has(key)
+                        );
+                    })
+                ) {
+                    seasonsUsed.add(seasonsToFetch[i]!);
+                }
+            }
+
+            // Resolve player names
             const unknownTracker = createUnknownUserTracker();
-            for (const entry of entries) {
+            for (const entry of primeEntries) {
                 const player = players.find((p) => p.userId === entry.userId);
                 if (player) {
                     entry.userId = player.displayName;
@@ -670,95 +709,76 @@ export class RaidAnalyticsService {
                 }
             }
 
-            // Split by encounter type
-            const primeEntries = entries.filter(
-                (e) => e.encounterType === EncounterType.BOSS,
-            );
-            const sideEntries = entries.filter(
-                (e) => e.encounterType === EncounterType.SIDE_BOSS,
-            );
-
-            const primeTotalDmg = primeEntries.reduce(
-                (s, e) => s + e.damageDealt,
-                0,
-            );
-            const sideTotalDmg = sideEntries.reduce(
-                (s, e) => s + e.damageDealt,
-                0,
-            );
-            const primeDmgPerToken =
-                primeEntries.length > 0
-                    ? primeTotalDmg / primeEntries.length
-                    : 0;
-            const sideDmgPerToken =
-                sideEntries.length > 0 ? sideTotalDmg / sideEntries.length : 0;
-            const totalTokens = primeEntries.length + sideEntries.length;
-            const primePct =
-                totalTokens > 0 ? (primeEntries.length / totalTokens) * 100 : 0;
-
-            // Per-player breakdown
-            const playerMap: Record<
+            // Group by prime, then by player
+            const byPrime: Record<
                 string,
                 {
-                    primeDmg: number;
-                    primeTokens: number;
-                    sideDmg: number;
-                    sideTokens: number;
+                    unitId: string;
+                    players: Record<
+                        string,
+                        { totalDamage: number; tokens: number }
+                    >;
                 }
             > = {};
-            for (const entry of entries) {
+            for (const entry of primeEntries) {
                 if (entry.userId.startsWith("Unknown #")) continue;
-                if (!playerMap[entry.userId]) {
-                    playerMap[entry.userId] = {
-                        primeDmg: 0,
-                        primeTokens: 0,
-                        sideDmg: 0,
-                        sideTokens: 0,
-                    };
+
+                const prefix = mapTierToRarity(
+                    entry.tier,
+                    entry.set + 1,
+                    false,
+                );
+                const primeKey = `${prefix} ${getPrimeDisplayName(entry.unitId)}`;
+                if (!byPrime[primeKey]) {
+                    byPrime[primeKey] = { unitId: entry.unitId, players: {} };
                 }
-                const p = playerMap[entry.userId]!;
-                if (entry.encounterType === EncounterType.BOSS) {
-                    p.primeDmg += entry.damageDealt;
-                    p.primeTokens += 1;
-                } else {
-                    p.sideDmg += entry.damageDealt;
-                    p.sideTokens += 1;
+                const primePlayers = byPrime[primeKey].players;
+
+                if (!primePlayers[entry.userId]) {
+                    primePlayers[entry.userId] = { totalDamage: 0, tokens: 0 };
+                }
+                primePlayers[entry.userId]!.totalDamage += entry.damageDealt;
+                primePlayers[entry.userId]!.tokens += 1;
+            }
+
+            // Compute top 3 per prime by avg damage per token
+            const result: Record<
+                string,
+                {
+                    player: string;
+                    avgDmg: number;
+                    tokens: number;
+                    unitId: string;
+                }[]
+            > = {};
+            for (const [
+                prime,
+                { unitId, players: playerStats },
+            ] of Object.entries(byPrime)) {
+                const ranked = Object.entries(playerStats)
+                    .filter(([, stats]) => stats.tokens >= 2)
+                    .map(([player, stats]) => ({
+                        player,
+                        avgDmg: stats.totalDamage / stats.tokens,
+                        tokens: stats.tokens,
+                        unitId,
+                    }))
+                    .sort((a, b) => b.avgDmg - a.avgDmg)
+                    .slice(0, 3);
+
+                if (ranked.length > 0) {
+                    result[prime] = ranked;
                 }
             }
 
-            const playerResults = Object.entries(playerMap)
-                .map(([player, stats]) => {
-                    const total = stats.primeTokens + stats.sideTokens;
-                    return {
-                        player,
-                        primeTokens: stats.primeTokens,
-                        sideTokens: stats.sideTokens,
-                        primeDmgPerToken:
-                            stats.primeTokens > 0
-                                ? stats.primeDmg / stats.primeTokens
-                                : 0,
-                        sideDmgPerToken:
-                            stats.sideTokens > 0
-                                ? stats.sideDmg / stats.sideTokens
-                                : 0,
-                        primePct:
-                            total > 0 ? (stats.primeTokens / total) * 100 : 0,
-                    };
-                })
-                .sort((a, b) => b.primePct - a.primePct);
-
-            return {
-                summary: {
-                    primeTokens: primeEntries.length,
-                    sideTokens: sideEntries.length,
-                    primeDmgPerToken: Math.round(primeDmgPerToken),
-                    sideDmgPerToken: Math.round(sideDmgPerToken),
-                    primePct: Math.round(primePct),
-                },
-                players: playerResults,
-            };
+            return Object.keys(result).length > 0
+                ? {
+                      primes: result,
+                      seasonsUsed: [...seasonsUsed].sort((a, b) => a - b),
+                  }
+                : null;
         } catch (error) {
-            logger.error(error, "Error calculating prime ROI");
+            logger.error(error, "Error calculating prime specialists");
             return null;
         }
     }
