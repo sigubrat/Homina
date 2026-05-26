@@ -1,5 +1,5 @@
 import { HominaTacticusClient } from "@/client";
-import { dbController, logger } from "@/lib";
+import { DatabaseController, dbController, logger } from "@/lib";
 import { getMetaTeam } from "@/lib/utils/metaTeamUtils";
 import { expandRarity } from "@/lib/utils/rarityUtils";
 import { DamageType, EncounterType, Rarity } from "@/models/enums";
@@ -9,9 +9,11 @@ import type { TeamDistribution } from "@/models/types/TeamDistribution";
 
 export class MetaTeamService {
     private client: HominaTacticusClient;
+    private db: DatabaseController;
 
-    constructor(client = new HominaTacticusClient()) {
+    constructor(client = new HominaTacticusClient(), db = dbController) {
         this.client = client;
+        this.db = db;
     }
 
     async getMetaTeamDistribution(
@@ -20,7 +22,7 @@ export class MetaTeamService {
         tier?: Rarity,
     ) {
         try {
-            const apiKey = await dbController.getUserToken(discordId);
+            const apiKey = await this.db.getUserToken(discordId);
             if (!apiKey) {
                 return null;
             }
@@ -115,7 +117,7 @@ export class MetaTeamService {
         tier?: Rarity,
     ) {
         try {
-            const apiKey = await dbController.getUserToken(discordId);
+            const apiKey = await this.db.getUserToken(discordId);
             if (!apiKey) {
                 return null;
             }

@@ -1,5 +1,5 @@
 import { HominaTacticusClient } from "@/client";
-import { dbController, logger } from "@/lib";
+import { DatabaseController, dbController, logger } from "@/lib";
 import {
     SecondsToString,
     evaluateToken,
@@ -16,9 +16,11 @@ import { GuildService } from "./GuildService";
 
 export class AvailabilityService {
     private client: HominaTacticusClient;
+    private db: DatabaseController;
 
-    constructor(client = new HominaTacticusClient()) {
+    constructor(client = new HominaTacticusClient(), db = dbController) {
         this.client = client;
+        this.db = db;
     }
 
     async getAvailableTokensAndBombs(discordId: string) {
@@ -29,7 +31,7 @@ export class AvailabilityService {
         const now = new Date();
 
         try {
-            const apiKey = await dbController.getUserToken(discordId);
+            const apiKey = await this.db.getUserToken(discordId);
             if (!apiKey) {
                 return null;
             }
@@ -185,7 +187,7 @@ export class AvailabilityService {
         const now = new Date();
 
         try {
-            const apiKey = await dbController.getUserToken(discordId);
+            const apiKey = await this.db.getUserToken(discordId);
             if (!apiKey) {
                 return null;
             }
@@ -282,8 +284,7 @@ export class AvailabilityService {
             const guildId = await guildService.getGuildId(discordId);
             if (!guildId) return null;
 
-            const metadata =
-                await dbController.getAllPlayerMetadataByGuild(guildId);
+            const metadata = await this.db.getAllPlayerMetadataByGuild(guildId);
             const playerTokenMap = new Map<string, string>();
             for (const entry of metadata) {
                 if (entry.playerToken) {
@@ -330,8 +331,7 @@ export class AvailabilityService {
             const guildId = await guildService.getGuildId(discordId);
             if (!guildId) return null;
 
-            const metadata =
-                await dbController.getAllPlayerMetadataByGuild(guildId);
+            const metadata = await this.db.getAllPlayerMetadataByGuild(guildId);
             const playerTokenMap = new Map<string, string>();
             for (const entry of metadata) {
                 if (entry.playerToken) {

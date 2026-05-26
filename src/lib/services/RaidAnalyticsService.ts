@@ -1,5 +1,5 @@
 import { HominaTacticusClient } from "@/client";
-import { dbController, logger } from "@/lib";
+import { DatabaseController, dbController, logger } from "@/lib";
 import { createUnknownUserTracker } from "@/lib/utils/userUtils";
 import { getPrimeDisplayName } from "@/lib/utils/utils";
 import { expandRarity } from "@/lib/utils/rarityUtils";
@@ -10,9 +10,11 @@ import { GuildService } from "./GuildService";
 
 export class RaidAnalyticsService {
     private client: HominaTacticusClient;
+    private db: DatabaseController;
 
-    constructor(client = new HominaTacticusClient()) {
+    constructor(client = new HominaTacticusClient(), db = dbController) {
         this.client = client;
+        this.db = db;
     }
 
     async getGuildRaidResultBySeason(
@@ -21,7 +23,7 @@ export class RaidAnalyticsService {
         rarity?: Rarity,
         includePrimes: boolean = true,
     ): Promise<GuildRaidResult[] | null> {
-        const apiKey = await dbController.getUserToken(discordId);
+        const apiKey = await this.db.getUserToken(discordId);
         if (!apiKey) {
             return null;
         }
@@ -123,7 +125,7 @@ export class RaidAnalyticsService {
         filterBombs: boolean = false,
         encounterTypeFilter?: EncounterType,
     ) {
-        const apiKey = await dbController.getUserToken(discordId);
+        const apiKey = await this.db.getUserToken(discordId);
         if (!apiKey) {
             return null;
         }
@@ -265,7 +267,7 @@ export class RaidAnalyticsService {
         season: number,
         rarity?: Rarity,
     ): Promise<Record<string, number> | null> {
-        const apiKey = await dbController.getUserToken(discordId);
+        const apiKey = await this.db.getUserToken(discordId);
         if (!apiKey) {
             return null;
         }
@@ -302,7 +304,7 @@ export class RaidAnalyticsService {
         season: number,
         rarity?: Rarity,
     ) {
-        const apiKey = await dbController.getUserToken(discordId);
+        const apiKey = await this.db.getUserToken(discordId);
         if (!apiKey) {
             return null;
         }
@@ -333,7 +335,7 @@ export class RaidAnalyticsService {
         rarity?: Rarity,
     ) {
         try {
-            const apiKey = await dbController.getUserToken(discordId);
+            const apiKey = await this.db.getUserToken(discordId);
             if (!apiKey) {
                 logger.error("No API key found for user:", discordId);
                 return null;
@@ -397,7 +399,7 @@ export class RaidAnalyticsService {
         const MIN_HITS_PER_BOSS = 2;
 
         try {
-            const apiKey = await dbController.getUserToken(discordId);
+            const apiKey = await this.db.getUserToken(discordId);
             if (!apiKey) {
                 return null;
             }
@@ -547,7 +549,7 @@ export class RaidAnalyticsService {
 
     async getTokenByHours(discordId: string) {
         try {
-            const apiKey = await dbController.getUserToken(discordId);
+            const apiKey = await this.db.getUserToken(discordId);
             if (!apiKey) {
                 logger.error("No API key found for user:", discordId);
                 return null;

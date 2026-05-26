@@ -1,5 +1,5 @@
 import { HominaTacticusClient } from "@/client";
-import { dbController, logger } from "@/lib";
+import { DatabaseController, dbController, logger } from "@/lib";
 import { expandRarity } from "@/lib/utils/rarityUtils";
 import { mapTierToRarity } from "@/lib/utils/utils";
 import { DamageType, EncounterType, Rarity } from "@/models/enums";
@@ -9,9 +9,11 @@ import { RaidAnalyticsService } from "./RaidAnalyticsService";
 
 export class HistoryService {
     private client: HominaTacticusClient;
+    private db: DatabaseController;
 
-    constructor(client = new HominaTacticusClient()) {
+    constructor(client = new HominaTacticusClient(), db = dbController) {
         this.client = client;
+        this.db = db;
     }
 
     async getTokensUsedInLastSeasons(
@@ -20,7 +22,7 @@ export class HistoryService {
         rarity?: Rarity,
     ): Promise<Record<number, Record<string, number>> | null> {
         try {
-            const apiKey = await dbController.getUserToken(discordId);
+            const apiKey = await this.db.getUserToken(discordId);
             if (!apiKey) {
                 logger.error("No API key found for user:", discordId);
                 return null;
@@ -79,7 +81,7 @@ export class HistoryService {
         nSeasons: number,
     ): Promise<Record<number, number> | null> {
         try {
-            const apiKey = await dbController.getUserToken(discordId);
+            const apiKey = await this.db.getUserToken(discordId);
             if (!apiKey) {
                 logger.error("No API key found for user:", discordId);
                 return null;
@@ -133,7 +135,7 @@ export class HistoryService {
         startingSeason?: number,
     ): Promise<Record<number, Partial<Record<Rarity, number>>> | null> {
         try {
-            const apiKey = await dbController.getUserToken(discordId);
+            const apiKey = await this.db.getUserToken(discordId);
             if (!apiKey) {
                 logger.error("No API key found for user:", discordId);
                 return null;
@@ -211,7 +213,7 @@ export class HistoryService {
         nSeasons: number,
     ): Promise<Record<number, number> | null> {
         try {
-            const apiKey = await dbController.getUserToken(discordId);
+            const apiKey = await this.db.getUserToken(discordId);
             if (!apiKey) {
                 logger.error("No API key found for user:", discordId);
                 return null;
@@ -306,7 +308,7 @@ export class HistoryService {
         season: number,
     ): Promise<Record<number, number> | null> {
         try {
-            const apiKey = await dbController.getUserToken(discordId);
+            const apiKey = await this.db.getUserToken(discordId);
             if (!apiKey) {
                 logger.error("No API key found for user:", discordId);
                 return null;
@@ -382,7 +384,7 @@ export class HistoryService {
         rarity: Rarity,
     ): Promise<Record<string, Record<number, number>> | null> {
         try {
-            const apiKey = await dbController.getUserToken(discordId);
+            const apiKey = await this.db.getUserToken(discordId);
             if (!apiKey) {
                 logger.error("No API key found for user:", discordId);
                 return null;

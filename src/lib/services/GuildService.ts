@@ -1,10 +1,6 @@
 import { HominaTacticusClient } from "@/client";
-import { dbController, logger } from "@/lib";
-import { expandRarity } from "@/lib/utils/rarityUtils";
-import { DamageType, EncounterType, Rarity } from "@/models/enums";
-import type { GuildRaidAvailable, GuildRaidResult, Raid } from "@/models/types";
-import type { TeamDistribution } from "@/models/types/TeamDistribution";
-import { MINIMUM_SEASON_THRESHOLD } from "../configs/constants";
+import { DatabaseController, dbController, logger } from "@/lib";
+import { EncounterType, Rarity } from "@/models/enums";
 import { testApiToken } from "../utils/commandUtils";
 import { fetchGuildMembers } from "@/client/MiddlewareClient";
 import { RaidAnalyticsService } from "./RaidAnalyticsService";
@@ -21,30 +17,31 @@ import { MetaTeamService } from "./MetaTeamService";
  */
 export class GuildService {
     private client: HominaTacticusClient;
+    private db: DatabaseController;
     private raidAnalytics: RaidAnalyticsService;
     private history: HistoryService;
     private availability: AvailabilityService;
     private metaTeam: MetaTeamService;
 
-    constructor(client = new HominaTacticusClient()) {
+    constructor(client = new HominaTacticusClient(), db = dbController) {
         this.client = client;
-        this.raidAnalytics = new RaidAnalyticsService(client);
-        this.history = new HistoryService(client);
-        this.availability = new AvailabilityService(client);
-        this.metaTeam = new MetaTeamService(client);
+        this.db = db;
+        this.raidAnalytics = new RaidAnalyticsService(client, db);
+        this.history = new HistoryService(client, db);
+        this.availability = new AvailabilityService(client, db);
+        this.metaTeam = new MetaTeamService(client, db);
     }
 
     // ─── Core guild methods ─────────────────────────────────────────────
 
     async getGuildId(discordId: string): Promise<string | null> {
         try {
-            const cachedGuildId =
-                await dbController.getGuildIdByUserId(discordId);
+            const cachedGuildId = await this.db.getGuildIdByUserId(discordId);
             if (cachedGuildId) {
                 return cachedGuildId;
             }
 
-            const apiKey = await dbController.getUserToken(discordId);
+            const apiKey = await this.db.getUserToken(discordId);
             if (!apiKey) {
                 return null;
             }
@@ -56,7 +53,7 @@ export class GuildService {
             }
 
             const guildId = resp.guild.guildId;
-            await dbController.updateGuildId(discordId, guildId);
+            await this.db.updateGuildId(discordId, guildId);
 
             return guildId;
         } catch (error) {
@@ -67,7 +64,7 @@ export class GuildService {
 
     async getGuildMembers(discordId: string): Promise<string[] | null> {
         try {
-            const apiKey = await dbController.getUserToken(discordId);
+            const apiKey = await this.db.getUserToken(discordId);
             if (!apiKey) {
                 throw new Error("API key not found for user: " + discordId);
             }
@@ -89,7 +86,7 @@ export class GuildService {
         userId: string,
     ): Promise<{ status: boolean; message: string }> {
         try {
-            const apiToken = await dbController.getUserToken(userId);
+            const apiToken = await this.db.getUserToken(userId);
             if (!apiToken) {
                 return {
                     status: false,
@@ -126,8 +123,7 @@ export class GuildService {
                 return null;
             }
 
-            const metadata =
-                await dbController.getAllPlayerMetadataByGuild(guildId);
+            const metadata = await this.db.getAllPlayerMetadataByGuild(guildId);
             if (metadata.length > 0) {
                 const nicknameMap = new Map<string, string>();
                 for (const entry of metadata) {
@@ -159,7 +155,7 @@ export class GuildService {
     }
 
     async getNLastSeasonConfigs(discordId: string, nSeasons: number) {
-        const apikey = await dbController.getUserToken(discordId);
+        const apikey = await this.db.getUserToken(discordId);
         if (!apikey) {
             logger.error("No API key found for user:", discordId);
             return null;
@@ -202,7 +198,7 @@ export class GuildService {
         nSeasons: number,
         season: number,
     ) {
-        const apikey = await dbController.getUserToken(discordId);
+        const apikey = await this.db.getUserToken(discordId);
         if (!apikey) {
             logger.error("No API key found for user:", discordId);
             return null;
@@ -422,10 +418,7 @@ export class GuildService {
     }
 
     async getLoopsCompletedInLastSeasons(discordId: string, nSeasons: number) {
-        return this.history.getLoopsCompletedInLastSeasons(
-            discordId,
-            nSeasons,
-        );
+        return this.history.getLoopsCompletedInLastSeasons(discordId, nSeasons);
     }
 
     async getTokensPerLoopBySeason(discordId: string, season: number) {
