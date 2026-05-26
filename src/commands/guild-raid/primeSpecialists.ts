@@ -2,6 +2,7 @@ import { logger } from "@/lib";
 import {
     getCurrentSeason,
     MINIMUM_SEASON_THRESHOLD,
+    STANDARD_FOOTER_TEXT,
 } from "@/lib/configs/constants";
 import { RaidAnalyticsService } from "@/lib/services/RaidAnalyticsService";
 import { isInvalidSeason } from "@/lib/utils/timeUtils";
@@ -105,7 +106,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             )
             .addFields(fields)
             .setTimestamp()
-            .setFooter({ text: "Homina Bot" });
+            .setFooter({ text: STANDARD_FOOTER_TEXT });
 
         await interaction.editReply({ embeds: [embed] });
     } catch (error) {

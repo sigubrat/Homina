@@ -1,5 +1,6 @@
 import { logger } from "@/lib";
 import { GuildService } from "@/lib/services/GuildService";
+import { AvailabilityService } from "@/lib/services/AvailabilityService";
 import { toMinutes } from "@/lib/utils/timeUtils";
 import { replaceUserIdKeysWithDisplayNames } from "@/lib/utils/userUtils";
 import {
@@ -20,15 +21,17 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 
     const service = new GuildService();
+    const availabilityService = new AvailabilityService();
 
     logger.info(
         `${interaction.user.username} attempting to use /available-tokens-bombs`,
     );
 
     try {
-        let result = await service.getAvailableTokensAndBombsWithMetadata(
-            interaction.user.id,
-        );
+        let result =
+            await availabilityService.getAvailableTokensAndBombsWithMetadata(
+                interaction.user.id,
+            );
 
         if (
             !result ||

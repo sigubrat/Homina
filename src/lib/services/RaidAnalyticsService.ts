@@ -1,4 +1,5 @@
 import { HominaTacticusClient } from "@/client";
+import { fetchGuildMembers } from "@/client/MiddlewareClient";
 import { DatabaseController, dbController, logger } from "@/lib";
 import { createUnknownUserTracker } from "@/lib/utils/userUtils";
 import { getPrimeDisplayName, mapTierToRarity } from "@/lib/utils/utils";
@@ -6,7 +7,6 @@ import { expandRarity } from "@/lib/utils/rarityUtils";
 import { DamageType, EncounterType, Rarity } from "@/models/enums";
 import type { GuildRaidResult, Raid } from "@/models/types";
 import { MINIMUM_SEASON_THRESHOLD } from "../configs/constants";
-import { GuildService } from "./GuildService";
 
 export class RaidAnalyticsService {
     private client: HominaTacticusClient;
@@ -15,6 +15,47 @@ export class RaidAnalyticsService {
     constructor(client = new HominaTacticusClient(), db = dbController) {
         this.client = client;
         this.db = db;
+    }
+
+    private async getGuildId(discordId: string): Promise<string | null> {
+        const cachedGuildId = await this.db.getGuildIdByUserId(discordId);
+        if (cachedGuildId) return cachedGuildId;
+
+        const apiKey = await this.db.getUserToken(discordId);
+        if (!apiKey) return null;
+
+        const resp = await this.client.getGuild(apiKey);
+        if (!resp.success || !resp.guild) return null;
+
+        const guildId = resp.guild.guildId;
+        await this.db.updateGuildId(discordId, guildId);
+        return guildId;
+    }
+
+    private async resolveGuildMembers(discordId: string) {
+        const guildId = await this.getGuildId(discordId);
+        if (!guildId) return null;
+
+        const members = await fetchGuildMembers(guildId);
+        if (!members) return null;
+
+        const metadata = await this.db.getAllPlayerMetadataByGuild(guildId);
+        if (metadata.length > 0) {
+            const nicknameMap = new Map<string, string>();
+            for (const entry of metadata) {
+                if (entry.nickname) {
+                    nicknameMap.set(entry.userId, entry.nickname);
+                }
+            }
+            for (const member of members) {
+                const nickname = nicknameMap.get(member.userId);
+                if (nickname) {
+                    member.displayName = nickname;
+                }
+            }
+        }
+
+        return members;
     }
 
     async getGuildRaidResultBySeason(
@@ -130,8 +171,7 @@ export class RaidAnalyticsService {
             return null;
         }
 
-        const guildService = new GuildService(this.client);
-        const players = await guildService.fetchGuildMembers(discordId);
+        const players = await this.resolveGuildMembers(discordId);
         if (!players) {
             return null;
         }
@@ -404,8 +444,7 @@ export class RaidAnalyticsService {
                 return null;
             }
 
-            const guildService = new GuildService(this.client);
-            const players = await guildService.fetchGuildMembers(discordId);
+            const players = await this.resolveGuildMembers(discordId);
             if (!players) {
                 return null;
             }
@@ -622,8 +661,7 @@ export class RaidAnalyticsService {
             const apiKey = await this.db.getUserToken(discordId);
             if (!apiKey) return null;
 
-            const guildService = new GuildService(this.client);
-            const players = await guildService.fetchGuildMembers(discordId);
+            const players = await this.resolveGuildMembers(discordId);
             if (!players) return null;
 
             // Determine target season

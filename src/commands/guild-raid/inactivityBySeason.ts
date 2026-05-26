@@ -5,6 +5,7 @@ import {
     STANDARD_FOOTER_TEXT,
 } from "@/lib/configs/constants";
 import { GuildService } from "@/lib/services/GuildService.ts";
+import { RaidAnalyticsService } from "@/lib/services/RaidAnalyticsService";
 import { sortTokensUsed } from "@/lib/utils/mathUtils";
 import { isInvalidSeason } from "@/lib/utils/timeUtils";
 import { replaceUserIdFieldWithDisplayNames } from "@/lib/utils/userUtils";
@@ -73,6 +74,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     }
 
     const service = new GuildService();
+    const raidAnalytics = new RaidAnalyticsService();
 
     logger.info(
         `${interaction.user.username} attempting to use /inactivity-by-season for season ${season}`,
@@ -81,7 +83,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const discordId = interaction.user.id;
 
     try {
-        const result = await service.getGuildRaidResultBySeason(
+        const result = await raidAnalytics.getGuildRaidResultBySeason(
             discordId,
             season,
             rarity,

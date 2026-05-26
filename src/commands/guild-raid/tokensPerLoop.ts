@@ -5,7 +5,7 @@ import {
     STANDARD_FOOTER_TEXT,
 } from "@/lib/configs/constants";
 import { ChartService } from "@/lib/services/ChartService";
-import { GuildService } from "@/lib/services/GuildService.ts";
+import { HistoryService } from "@/lib/services/HistoryService";
 import { linearRegression } from "@/lib/utils/mathUtils";
 import { isInvalidSeason } from "@/lib/utils/timeUtils";
 import {
@@ -44,7 +44,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         return;
     }
 
-    const service = new GuildService();
+    const service = new HistoryService();
 
     logger.info(
         `${interaction.user.username} attempting to use /tokens-per-loop for season ${season}`,

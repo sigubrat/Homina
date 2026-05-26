@@ -1,7 +1,7 @@
 import { logger } from "@/lib";
 import { STANDARD_FOOTER_TEXT } from "@/lib/configs/constants";
 import { ChartService } from "@/lib/services/ChartService";
-import { GuildService } from "@/lib/services/GuildService";
+import { RaidAnalyticsService } from "@/lib/services/RaidAnalyticsService";
 import {
     AttachmentBuilder,
     ChatInputCommandInteraction,
@@ -22,7 +22,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     const discordId = interaction.user.id;
 
-    const guildService = new GuildService();
+    const guildService = new RaidAnalyticsService();
 
     try {
         const tokensUsedPerHour = await guildService.getTokenByHours(discordId);

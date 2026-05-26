@@ -5,7 +5,7 @@ import {
     STANDARD_FOOTER_TEXT,
 } from "@/lib/configs/constants";
 import { ChartService } from "@/lib/services/ChartService";
-import { GuildService } from "@/lib/services/GuildService.ts";
+import { RaidAnalyticsService } from "@/lib/services/RaidAnalyticsService";
 import { numericMedian } from "@/lib/utils/mathUtils";
 import { numericAverage } from "@/lib/utils/mathUtils";
 import { sortGuildRaidResults } from "@/lib/utils/mathUtils";
@@ -118,7 +118,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         return;
     }
 
-    const service = new GuildService();
+    const service = new RaidAnalyticsService();
 
     logger.info(
         `${interaction.user.username} attempting to use /season-by-rarity ${season} ${rarity} ${bossType}`,

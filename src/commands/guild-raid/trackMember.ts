@@ -6,6 +6,7 @@ import {
 } from "@/lib/configs/constants";
 import { fetchGuildMembers } from "@/client/MiddlewareClient";
 import { GuildService } from "@/lib/services/GuildService";
+import { RaidAnalyticsService } from "@/lib/services/RaidAnalyticsService";
 import { isValidUUIDv4, numericMedian } from "@/lib/utils/mathUtils";
 import { numericAverage } from "@/lib/utils/mathUtils";
 import { mapTierToRarity } from "@/lib/utils/utils";
@@ -143,6 +144,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const discordId = interaction.user.id;
 
     const service = new GuildService();
+    const raidAnalytics = new RaidAnalyticsService();
     let memberDisplayName = member;
     const members = await service.fetchGuildMembers(discordId);
     if (members) {
@@ -157,7 +159,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             | Rarity
             | undefined;
 
-        const data = await service.getMemberStatsInLastSeasons(
+        const data = await raidAnalytics.getMemberStatsInLastSeasons(
             discordId,
             N_SEASONS,
             rarity,

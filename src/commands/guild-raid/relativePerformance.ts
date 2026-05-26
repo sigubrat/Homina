@@ -4,7 +4,7 @@ import {
     MINIMUM_SEASON_THRESHOLD,
 } from "@/lib/configs/constants";
 import { ChartService } from "@/lib/services/ChartService";
-import { GuildService } from "@/lib/services/GuildService";
+import { RaidAnalyticsService } from "@/lib/services/RaidAnalyticsService";
 import { formatDelta } from "@/lib/utils/mathUtils";
 import { isInvalidSeason } from "@/lib/utils/timeUtils";
 import { Rarity } from "@/models/enums";
@@ -88,7 +88,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         return;
     }
 
-    const service = new GuildService();
+    const service = new RaidAnalyticsService();
     const rarityDisplay = rarity ?? "All Rarities";
     const rarityFileSafe = rarityDisplay.replace(/\s+/g, "-");
 

@@ -13,11 +13,7 @@ import { dbController, logger } from "@/lib";
 import { BotEventType } from "@/models/enums";
 import { HominaTacticusClient } from "@/client";
 import { isValidUUIDv4 } from "../utils/mathUtils";
-import {
-    createPendingInvite,
-    consumePendingInvite,
-    deletePendingInvite,
-} from "./PendingInviteStore";
+import { createPendingInvite } from "./PendingInviteStore";
 import path from "path";
 
 export class MessageService {
