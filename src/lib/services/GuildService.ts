@@ -1,7 +1,10 @@
 import { HominaTacticusClient } from "@/client";
 import { DatabaseController, dbController, logger } from "@/lib";
 import { testApiToken } from "../utils/commandUtils";
-import { fetchGuildMembers } from "@/client/MiddlewareClient";
+import {
+    resolveGuildId,
+    resolveGuildMembers,
+} from "@/lib/utils/guildMemberUtils";
 
 /**
  * Service class for managing guild-related operations.
@@ -22,26 +25,7 @@ export class GuildService {
 
     async getGuildId(discordId: string): Promise<string | null> {
         try {
-            const cachedGuildId = await this.db.getGuildIdByUserId(discordId);
-            if (cachedGuildId) {
-                return cachedGuildId;
-            }
-
-            const apiKey = await this.db.getUserToken(discordId);
-            if (!apiKey) {
-                return null;
-            }
-
-            const resp = await this.client.getGuild(apiKey);
-
-            if (!resp.success || !resp.guild) {
-                return null;
-            }
-
-            const guildId = resp.guild.guildId;
-            await this.db.updateGuildId(discordId, guildId);
-
-            return guildId;
+            return await resolveGuildId(discordId, this.client, this.db);
         } catch (error) {
             logger.error(error, "Error fetching guild ID");
             return null;
@@ -97,34 +81,15 @@ export class GuildService {
 
     async fetchGuildMembers(discordId: string) {
         try {
-            const guildId = await this.getGuildId(discordId);
-            if (!guildId) {
-                logger.error("No guild ID found for user:", discordId);
-                return null;
-            }
-
-            const members = await fetchGuildMembers(guildId);
+            const members = await resolveGuildMembers(
+                discordId,
+                this.client,
+                this.db,
+            );
             if (!members) {
-                logger.error("No members found for guild ID:", guildId);
+                logger.error("No members found for user:", discordId);
                 return null;
             }
-
-            const metadata = await this.db.getAllPlayerMetadataByGuild(guildId);
-            if (metadata.length > 0) {
-                const nicknameMap = new Map<string, string>();
-                for (const entry of metadata) {
-                    if (entry.nickname) {
-                        nicknameMap.set(entry.userId, entry.nickname);
-                    }
-                }
-                for (const member of members) {
-                    const nickname = nicknameMap.get(member.userId);
-                    if (nickname) {
-                        member.displayName = nickname;
-                    }
-                }
-            }
-
             return members;
         } catch (error) {
             logger.error(error, "Error fetching LOKI guild members: ");

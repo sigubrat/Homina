@@ -1,6 +1,6 @@
 import { HominaTacticusClient } from "@/client";
-import { fetchGuildMembers } from "@/client/MiddlewareClient";
 import { DatabaseController, dbController, logger } from "@/lib";
+import { resolveGuildMembers } from "@/lib/utils/guildMemberUtils";
 import { getMetaTeam } from "@/lib/utils/metaTeamUtils";
 import { createUnknownUserTracker } from "@/lib/utils/userUtils";
 import { getPrimeDisplayName } from "@/lib/utils/utils";
@@ -26,29 +26,7 @@ export class AchievementService {
     }
 
     private async resolveGuildMembers(discordId: string) {
-        const guildId = await this.db.getGuildIdByUserId(discordId);
-        if (!guildId) return null;
-
-        const members = await fetchGuildMembers(guildId);
-        if (!members) return null;
-
-        const metadata = await this.db.getAllPlayerMetadataByGuild(guildId);
-        if (metadata.length > 0) {
-            const nicknameMap = new Map<string, string>();
-            for (const entry of metadata) {
-                if (entry.nickname) {
-                    nicknameMap.set(entry.userId, entry.nickname);
-                }
-            }
-            for (const member of members) {
-                const nickname = nicknameMap.get(member.userId);
-                if (nickname) {
-                    member.displayName = nickname;
-                }
-            }
-        }
-
-        return members;
+        return resolveGuildMembers(discordId, this.client, this.db);
     }
 
     async getGuildAchievements(

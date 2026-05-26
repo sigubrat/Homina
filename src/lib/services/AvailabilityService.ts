@@ -1,5 +1,6 @@
 import { HominaTacticusClient } from "@/client";
 import { DatabaseController, dbController, logger } from "@/lib";
+import { resolveGuildId } from "@/lib/utils/guildMemberUtils";
 import {
     SecondsToString,
     evaluateToken,
@@ -23,18 +24,7 @@ export class AvailabilityService {
     }
 
     private async getGuildId(discordId: string): Promise<string | null> {
-        const cachedGuildId = await this.db.getGuildIdByUserId(discordId);
-        if (cachedGuildId) return cachedGuildId;
-
-        const apiKey = await this.db.getUserToken(discordId);
-        if (!apiKey) return null;
-
-        const resp = await this.client.getGuild(apiKey);
-        if (!resp.success || !resp.guild) return null;
-
-        const guildId = resp.guild.guildId;
-        await this.db.updateGuildId(discordId, guildId);
-        return guildId;
+        return resolveGuildId(discordId, this.client, this.db);
     }
 
     private async getGuildMembers(discordId: string): Promise<string[] | null> {
