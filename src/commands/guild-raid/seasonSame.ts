@@ -2,7 +2,7 @@ import { logger } from "@/lib";
 import {
     getCurrentSeason,
     MINIMUM_SEASON_THRESHOLD,
-    STANDARD_HEADER,
+    STANDARD_FOOTER_TEXT,
 } from "@/lib/configs/constants";
 import { GuildService } from "@/lib/services/GuildService";
 import { isInvalidSeason } from "@/lib/utils/timeUtils";
@@ -70,7 +70,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setTitle(`Guild raid seasons with the same config`)
             .setTimestamp()
             .setFooter({
-                text: STANDARD_HEADER,
+                text: STANDARD_FOOTER_TEXT,
             })
             .setFields(
                 {

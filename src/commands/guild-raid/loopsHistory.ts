@@ -1,5 +1,5 @@
 import { logger } from "@/lib";
-import { STANDARD_HEADER } from "@/lib/configs/constants";
+import { STANDARD_FOOTER_TEXT } from "@/lib/configs/constants";
 import { ChartService } from "@/lib/services/ChartService";
 import { GuildService } from "@/lib/services/GuildService.ts";
 import { linearRegression } from "@/lib/utils/mathUtils";
@@ -114,7 +114,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setImage("attachment://laps-by-season.png")
             .setTimestamp()
             .setFooter({
-                text: STANDARD_HEADER,
+                text: STANDARD_FOOTER_TEXT,
             });
 
         await interaction.editReply({ embeds: [embed], files: [attachment] });

@@ -2,7 +2,7 @@ import { logger } from "@/lib";
 import {
     getCurrentSeason,
     MINIMUM_SEASON_THRESHOLD,
-    STANDARD_HEADER,
+    STANDARD_FOOTER_TEXT,
 } from "@/lib/configs/constants";
 import { ChartService } from "@/lib/services/ChartService";
 import { CsvService } from "@/lib/services/CsvService";
@@ -153,7 +153,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             })
             .setImage(`attachment://season-${season}-highscores-${rarity}.png`)
             .setFooter({
-                text: STANDARD_HEADER,
+                text: STANDARD_FOOTER_TEXT,
             });
 
         await interaction.editReply({

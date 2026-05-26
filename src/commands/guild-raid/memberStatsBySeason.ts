@@ -2,7 +2,7 @@ import { logger } from "@/lib";
 import {
     getCurrentSeason,
     MINIMUM_SEASON_THRESHOLD,
-    STANDARD_HEADER,
+    STANDARD_FOOTER_TEXT,
 } from "@/lib/configs/constants";
 import { CsvService } from "@/lib/services/CsvService";
 import { GuildService } from "@/lib/services/GuildService.ts";
@@ -195,7 +195,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             })
             .setTimestamp()
             .setFooter({
-                text: STANDARD_HEADER,
+                text: STANDARD_FOOTER_TEXT,
             });
 
         for (const stats of mergedResults) {

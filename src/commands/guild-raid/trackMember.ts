@@ -2,7 +2,7 @@ import { dbController, logger } from "@/lib";
 import {
     MAXIMUM_GUILD_MEMBERS,
     MAXIMUM_TOKENS_PER_SEASON,
-    STANDARD_HEADER,
+    STANDARD_FOOTER_TEXT,
 } from "@/lib/configs/constants";
 import { fetchGuildMembers } from "@/client/MiddlewareClient";
 import { GuildService } from "@/lib/services/GuildService";
@@ -196,7 +196,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setColor("#0099ff")
             .setTimestamp()
             .setFooter({
-                text: STANDARD_HEADER,
+                text: STANDARD_FOOTER_TEXT,
             });
 
         if (rarity) {

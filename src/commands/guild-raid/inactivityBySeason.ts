@@ -2,7 +2,7 @@ import { logger } from "@/lib";
 import {
     getCurrentSeason,
     MINIMUM_SEASON_THRESHOLD,
-    STANDARD_HEADER,
+    STANDARD_FOOTER_TEXT,
 } from "@/lib/configs/constants";
 import { GuildService } from "@/lib/services/GuildService.ts";
 import { sortTokensUsed } from "@/lib/utils/mathUtils";
@@ -188,7 +188,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 },
             ])
             .setFooter({
-                text: STANDARD_HEADER,
+                text: STANDARD_FOOTER_TEXT,
             });
 
         await interaction.editReply({ embeds: [embed] });
