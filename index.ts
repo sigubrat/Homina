@@ -12,6 +12,7 @@ import { getAllCommands } from "@/lib/utils/commandUtils";
 import { InfisicalClient } from "@/client/InfisicalClient";
 import { MessageService } from "@/lib/services/MessageService";
 import type { Command } from "@/models/types/Command";
+import { FatalError } from "@/models/errors/FatalError";
 
 export class IClient extends Client {
     commands = new Collection<string, Command>();
@@ -118,8 +119,12 @@ const startBot = async () => {
         await runCleanup(); // Run once on startup
         setInterval(runCleanup, 24 * 60 * 60 * 1000);
     } catch (error) {
-        logger.error(error, "Error starting the bot:");
-        process.exit(1); // Exit the process if there's a critical error
+        if (error instanceof FatalError) {
+            console.error(`Fatal: ${error.message}`);
+        } else {
+            logger.error(error, "Error starting the bot:");
+        }
+        process.exit(1);
     }
 };
 

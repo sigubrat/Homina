@@ -1,3 +1,5 @@
+import { FatalError } from "@/models/errors/FatalError";
+
 export interface DbTestResult {
     isSuccess: boolean;
     message?: string;
@@ -17,11 +19,10 @@ export interface DbTestResult {
 export function validateEnvVars(requiredVars: string[]): void {
     const missingVars = requiredVars.filter((varName) => !process.env[varName]);
     if (missingVars.length > 0) {
-        console.error(
-            `Missing environment variables: ${missingVars.join(
-                ", "
-            )}. Please ensure all required variables are set.`
-        );
-        process.exit(1);
+        const message = `Missing environment variables: ${missingVars.join(
+            ", ",
+        )}. Please ensure all required variables are set.`;
+        console.error(message);
+        throw new FatalError(message);
     }
 }

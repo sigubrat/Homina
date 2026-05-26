@@ -3,6 +3,7 @@ import { validateEnvVars, type DbTestResult } from "./db_utils";
 import { logger } from "./HominaLogger";
 import { CryptoService } from "./services/CryptoService";
 import { BotEventType } from "@/models/enums";
+import { FatalError } from "@/models/errors/FatalError";
 
 export interface EventCount {
     eventType: string;
@@ -51,7 +52,7 @@ export class DatabaseController {
             console.log("Attempting to define models and sync database...");
         } catch (error) {
             logger.error(error, "Unable to connect to the database:");
-            process.exit(1);
+            throw new FatalError("Unable to connect to the database");
         }
 
         // User-guild api token table - This table is used to store discord user-guild api token mapping
@@ -218,7 +219,7 @@ export class DatabaseController {
             console.log("Models defined and database synced successfully.");
         } catch (error) {
             logger.error(error, "Error syncing database");
-            process.exit(1);
+            throw new FatalError("Error syncing database");
         }
     }
 
