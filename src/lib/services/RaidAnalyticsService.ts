@@ -638,12 +638,17 @@ export class RaidAnalyticsService {
             // Fetch target season + last 5 prior seasons
             const seasonsToFetch = [seasonNumber];
             for (let i = 1; i <= 5; i++) {
-                seasonsToFetch.push(seasonNumber - i);
+                const priorSeason = seasonNumber - i;
+                if (priorSeason >= MINIMUM_SEASON_THRESHOLD) {
+                    seasonsToFetch.push(priorSeason);
+                }
             }
 
             const responses = await Promise.all(
                 seasonsToFetch.map((s) =>
-                    this.client.getGuildRaidBySeason(apiKey, s),
+                    this.client
+                        .getGuildRaidBySeason(apiKey, s)
+                        .catch(() => null),
                 ),
             );
 
