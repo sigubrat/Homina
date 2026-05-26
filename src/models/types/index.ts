@@ -14,3 +14,4 @@ export * from "./UnitItem";
 export * from "./TokenStatus";
 export * from "./SeasonConfig";
 export * from "./Middleware";
+export * from "./Command";

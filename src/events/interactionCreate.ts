@@ -1,15 +1,16 @@
 import { dbController, logger } from "@/lib";
 import { MessageService } from "@/lib/services/MessageService";
 import { BotEventType } from "@/models/enums";
-import { Collection, Events, MessageFlags } from "discord.js";
+import type { IClient } from "@/index";
+import { Collection, Events, type Interaction, MessageFlags } from "discord.js";
 
 export const name = Events.InteractionCreate;
-export async function execute(interaction: any) {
+export async function execute(interaction: Interaction) {
+    const client = interaction.client as IClient;
+
     // Handle autocomplete interactions
     if (interaction.isAutocomplete()) {
-        const command = interaction.client.commands.get(
-            interaction.commandName,
-        );
+        const command = client.commands.get(interaction.commandName);
         if (!command?.autocomplete) {
             await interaction.respond([]);
             return;
@@ -69,7 +70,7 @@ export async function execute(interaction: any) {
 
     if (!interaction.isChatInputCommand()) return; // Ignore non-chat input commands
 
-    const command = interaction.client.commands.get(interaction.commandName);
+    const command = client.commands.get(interaction.commandName);
 
     if (!command) {
         logger.error(
@@ -78,20 +79,20 @@ export async function execute(interaction: any) {
         return;
     }
 
-    const { cooldowns } = interaction.client;
+    const { cooldowns } = client;
     if (!cooldowns.has(command.data.name)) {
         cooldowns.set(command.data.name, new Collection());
     }
 
     const now = Date.now();
-    const timestamps = cooldowns.get(command.data.name);
+    const timestamps = cooldowns.get(command.data.name)!;
     const defaultCooldownDuration = 3;
     const cooldownAmount =
         (command.cooldown ?? defaultCooldownDuration) * 1_000;
 
     if (timestamps.has(interaction.user.id)) {
         const expirationTime =
-            timestamps.get(interaction.user.id) + cooldownAmount;
+            timestamps.get(interaction.user.id)! + cooldownAmount;
 
         if (now < expirationTime) {
             const expiredTimestamp = Math.round(expirationTime / 1_000);

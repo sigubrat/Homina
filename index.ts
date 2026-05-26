@@ -11,9 +11,10 @@ import { BotEventType } from "@/models/enums";
 import { getAllCommands } from "@/lib/utils/commandUtils";
 import { InfisicalClient } from "@/client/InfisicalClient";
 import { MessageService } from "@/lib/services/MessageService";
+import type { Command } from "@/models/types/Command";
 
 export class IClient extends Client {
-    commands = new Collection<string, any>();
+    commands = new Collection<string, Command>();
     cooldowns = new Collection<string, Collection<string, number>>();
 }
 

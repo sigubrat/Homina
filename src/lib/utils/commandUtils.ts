@@ -3,6 +3,7 @@ import * as path from "path";
 import { Collection } from "discord.js";
 import { HominaTacticusClient } from "@/client";
 import { logger } from "../HominaLogger";
+import type { Command } from "@/models/types/Command";
 
 /**
  * Asynchronously loads command modules from a specified directory and returns them in a collection.
@@ -15,8 +16,8 @@ import { logger } from "../HominaLogger";
  */
 async function getCommands(
     commandsPath: string,
-): Promise<Collection<string, any>> {
-    const commandsCollection = new Collection<string, any>();
+): Promise<Collection<string, Command>> {
+    const commandsCollection = new Collection<string, Command>();
     const commandFiles = await fs.readdir(commandsPath);
 
     for (const file of commandFiles) {
@@ -37,10 +38,10 @@ async function getCommands(
  * This function scans the `commands` directory, iterates through each category subdirectory,
  * loads the commands using `getCommands`, and combines them into a `Collection`.
  *
- * @returns {Promise<Collection<string, any>>} A promise that resolves to a collection containing all loaded commands, keyed by their identifiers.
+ * @returns {Promise<Collection<string, Command>>} A promise that resolves to a collection containing all loaded commands, keyed by their identifiers.
  * @throws Will throw an error if reading directories or loading commands fails.
  */
-export async function getAllCommands(): Promise<Collection<string, any>> {
+export async function getAllCommands(): Promise<Collection<string, Command>> {
     try {
         const commandsRoot = path.join(__dirname, "../../commands");
         const sources = await fs.readdir(commandsRoot, { withFileTypes: true });
@@ -48,7 +49,7 @@ export async function getAllCommands(): Promise<Collection<string, any>> {
             .filter((d) => d.isDirectory())
             .map((d) => d.name);
 
-        const commandsCollection = new Collection<string, any>();
+        const commandsCollection = new Collection<string, Command>();
         for (const category of categoryDirs) {
             const commandsPath = path.join(commandsRoot, category);
             const commands = await getCommands(commandsPath);
