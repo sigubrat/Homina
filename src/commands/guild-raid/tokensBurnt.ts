@@ -4,6 +4,8 @@ import {
     MAXIMUM_TOKENS_PER_SEASON,
 } from "@/lib/configs/constants";
 import { GuildService } from "@/lib/services/GuildService";
+import { AvailabilityService } from "@/lib/services/AvailabilityService";
+import { RaidAnalyticsService } from "@/lib/services/RaidAnalyticsService";
 import { replaceUserIdKeysWithDisplayNames } from "@/lib/utils/userUtils";
 import {
     ChatInputCommandInteraction,
@@ -23,6 +25,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 
     const service = new GuildService();
+    const availabilityService = new AvailabilityService();
+    const raidAnalytics = new RaidAnalyticsService();
     const discordId = interaction.user.id;
     const season = getCurrentSeason();
 
@@ -30,7 +34,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     try {
         let availability =
-            await service.getAvailableTokensAndBombsWithMetadata(discordId);
+            await availabilityService.getAvailableTokensAndBombsWithMetadata(
+                discordId,
+            );
 
         if (
             !availability ||
@@ -44,7 +50,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
-        const seasonResult = await service.getGuildRaidResultBySeason(
+        const seasonResult = await raidAnalytics.getGuildRaidResultBySeason(
             discordId,
             season,
             undefined,

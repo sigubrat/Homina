@@ -1,4 +1,5 @@
 import { HominaTacticusClient } from "@/client";
+import { fetchGuildMembers } from "@/client/MiddlewareClient";
 import { DatabaseController, dbController, logger } from "@/lib";
 import { getMetaTeam } from "@/lib/utils/metaTeamUtils";
 import { createUnknownUserTracker } from "@/lib/utils/userUtils";
@@ -6,7 +7,6 @@ import { getPrimeDisplayName } from "@/lib/utils/utils";
 import { DamageType, EncounterType } from "@/models/enums";
 import { MetaTeams } from "@/models/enums/MetaTeams";
 import type { Raid } from "@/models/types";
-import { GuildService } from "./GuildService";
 
 export interface Achievement {
     emoji: string;
@@ -25,6 +25,32 @@ export class AchievementService {
         this.db = db;
     }
 
+    private async resolveGuildMembers(discordId: string) {
+        const guildId = await this.db.getGuildIdByUserId(discordId);
+        if (!guildId) return null;
+
+        const members = await fetchGuildMembers(guildId);
+        if (!members) return null;
+
+        const metadata = await this.db.getAllPlayerMetadataByGuild(guildId);
+        if (metadata.length > 0) {
+            const nicknameMap = new Map<string, string>();
+            for (const entry of metadata) {
+                if (entry.nickname) {
+                    nicknameMap.set(entry.userId, entry.nickname);
+                }
+            }
+            for (const member of members) {
+                const nickname = nicknameMap.get(member.userId);
+                if (nickname) {
+                    member.displayName = nickname;
+                }
+            }
+        }
+
+        return members;
+    }
+
     async getGuildAchievements(
         discordId: string,
         season?: number,
@@ -33,8 +59,7 @@ export class AchievementService {
             const apiKey = await this.db.getUserToken(discordId);
             if (!apiKey) return null;
 
-            const guildService = new GuildService(this.client);
-            const players = await guildService.fetchGuildMembers(discordId);
+            const players = await this.resolveGuildMembers(discordId);
             if (!players) return null;
 
             let seasonNumber = season;

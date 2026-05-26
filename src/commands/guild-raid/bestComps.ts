@@ -5,7 +5,7 @@ import {
     STANDARD_FOOTER_TEXT,
 } from "@/lib/configs/constants";
 import { DataTransformationService } from "@/lib/services/DataTransformationService";
-import { GuildService } from "@/lib/services/GuildService";
+import { RaidAnalyticsService } from "@/lib/services/RaidAnalyticsService";
 import { isInvalidSeason } from "@/lib/utils/timeUtils";
 import {
     getBossEmoji,
@@ -66,7 +66,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         return;
     }
 
-    const guildService = new GuildService();
+    const guildService = new RaidAnalyticsService();
     const dtsService = new DataTransformationService();
 
     try {

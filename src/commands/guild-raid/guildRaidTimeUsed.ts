@@ -5,7 +5,7 @@ import {
     STANDARD_FOOTER_TEXT,
 } from "@/lib/configs/constants";
 import { DataTransformationService } from "@/lib/services/DataTransformationService";
-import { GuildService } from "@/lib/services/GuildService";
+import { RaidAnalyticsService } from "@/lib/services/RaidAnalyticsService";
 import { splitByCapital } from "@/lib/utils/utils";
 import { isInvalidSeason, SecondsToString } from "@/lib/utils/timeUtils";
 import { Rarity } from "@/models/enums";
@@ -79,7 +79,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const separatePrimes =
         interaction.options.getBoolean("separate-primes") ?? false;
 
-    const service = new GuildService();
+    const service = new RaidAnalyticsService();
     const transformer = new DataTransformationService();
 
     logger.info(

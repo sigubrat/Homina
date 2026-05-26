@@ -6,6 +6,7 @@ import {
 } from "@/lib/configs/constants";
 import { ChartService } from "@/lib/services/ChartService";
 import { GuildService } from "@/lib/services/GuildService";
+import { RaidAnalyticsService } from "@/lib/services/RaidAnalyticsService";
 import { numericMedian } from "@/lib/utils/mathUtils";
 import { numericAverage } from "@/lib/utils/mathUtils";
 import { standardDeviation } from "@/lib/utils/mathUtils";
@@ -66,9 +67,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     }
 
     const service = new GuildService();
+    const raidAnalytics = new RaidAnalyticsService();
 
     try {
-        let bombs = await service.getGuildRaidBombsBySeason(discordId, season);
+        let bombs = await raidAnalytics.getGuildRaidBombsBySeason(
+            discordId,
+            season,
+        );
 
         if (!bombs || Object.keys(bombs).length === 0) {
             await interaction.editReply({

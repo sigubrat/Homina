@@ -1,5 +1,6 @@
 import { ChatInputCommandInteraction } from "discord.js";
 import { GuildService } from "@/lib/services/GuildService.ts";
+import { RaidAnalyticsService } from "@/lib/services/RaidAnalyticsService";
 import { ChartService } from "@/lib/services/ChartService";
 import {
     AttachmentBuilder,
@@ -102,13 +103,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         | undefined;
 
     const service = new GuildService();
+    const raidAnalytics = new RaidAnalyticsService();
 
     logger.info(
         `${interaction.user.username} attempting to use /season-participation`,
     );
 
     try {
-        const result = await service.getGuildRaidResultBySeason(
+        const result = await raidAnalytics.getGuildRaidResultBySeason(
             discordId,
             season,
             rarity,

@@ -12,7 +12,6 @@ import type {
     TokensAndBombs,
     TokenStatus,
 } from "@/models/types";
-import { GuildService } from "./GuildService";
 
 export class AvailabilityService {
     private client: HominaTacticusClient;
@@ -21,6 +20,31 @@ export class AvailabilityService {
     constructor(client = new HominaTacticusClient(), db = dbController) {
         this.client = client;
         this.db = db;
+    }
+
+    private async getGuildId(discordId: string): Promise<string | null> {
+        const cachedGuildId = await this.db.getGuildIdByUserId(discordId);
+        if (cachedGuildId) return cachedGuildId;
+
+        const apiKey = await this.db.getUserToken(discordId);
+        if (!apiKey) return null;
+
+        const resp = await this.client.getGuild(apiKey);
+        if (!resp.success || !resp.guild) return null;
+
+        const guildId = resp.guild.guildId;
+        await this.db.updateGuildId(discordId, guildId);
+        return guildId;
+    }
+
+    private async getGuildMembers(discordId: string): Promise<string[] | null> {
+        const apiKey = await this.db.getUserToken(discordId);
+        if (!apiKey) return null;
+
+        const resp = await this.client.getGuild(apiKey);
+        if (!resp.success || !resp.guild) return null;
+
+        return resp.guild.members.map((member) => member.userId);
     }
 
     async getAvailableTokensAndBombs(discordId: string) {
@@ -63,14 +87,12 @@ export class AvailabilityService {
                 prevUsers.add(prevEntry.userId);
             }
 
-            const guildService = new GuildService(this.client);
-            const guildId = await guildService.getGuildId(discordId);
+            const guildId = await this.getGuildId(discordId);
             if (!guildId) {
                 return null;
             }
 
-            const currentMembersArr =
-                await guildService.getGuildMembers(discordId);
+            const currentMembersArr = await this.getGuildMembers(discordId);
             if (!currentMembersArr || currentMembersArr.length === 0) {
                 return null;
             }
@@ -280,8 +302,7 @@ export class AvailabilityService {
 
     async getAvailableTokensAndBombsWithMetadata(discordId: string) {
         try {
-            const guildService = new GuildService(this.client);
-            const guildId = await guildService.getGuildId(discordId);
+            const guildId = await this.getGuildId(discordId);
             if (!guildId) return null;
 
             const metadata = await this.db.getAllPlayerMetadataByGuild(guildId);
@@ -327,8 +348,7 @@ export class AvailabilityService {
 
     async getAvailableBombsWithMetadata(discordId: string) {
         try {
-            const guildService = new GuildService(this.client);
-            const guildId = await guildService.getGuildId(discordId);
+            const guildId = await this.getGuildId(discordId);
             if (!guildId) return null;
 
             const metadata = await this.db.getAllPlayerMetadataByGuild(guildId);

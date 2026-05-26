@@ -8,6 +8,7 @@ import { ChartService } from "@/lib/services/ChartService";
 import { CsvService } from "@/lib/services/CsvService";
 import { DataTransformationService } from "@/lib/services/DataTransformationService";
 import { GuildService } from "@/lib/services/GuildService";
+import { RaidAnalyticsService } from "@/lib/services/RaidAnalyticsService";
 import { isInvalidSeason } from "@/lib/utils/timeUtils";
 import { createUnknownUserTracker } from "@/lib/utils/userUtils";
 import { DamageType, EncounterType, Rarity } from "@/models/enums";
@@ -62,8 +63,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     }
 
     const service = new GuildService();
+    const raidAnalytics = new RaidAnalyticsService();
     try {
-        const seasonResult = await service.getGuildRaidBySeason(
+        const seasonResult = await raidAnalytics.getGuildRaidBySeason(
             discordId,
             season,
             rarity,

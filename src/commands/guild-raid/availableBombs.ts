@@ -1,6 +1,7 @@
 import { logger } from "@/lib";
 import { STANDARD_FOOTER_TEXT } from "@/lib/configs/constants";
 import { GuildService } from "@/lib/services/GuildService";
+import { AvailabilityService } from "@/lib/services/AvailabilityService";
 import { replaceUserIdKeysWithDisplayNames } from "@/lib/utils/userUtils";
 import { toMinutes, withinNextHour } from "@/lib/utils/timeUtils";
 import {
@@ -25,6 +26,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 
     const service = new GuildService();
+    const availabilityService = new AvailabilityService();
 
     logger.info(`${interaction.user.id} attempting to use /available-bombs`);
 
@@ -32,7 +34,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const discordId = interaction.user.id;
 
     try {
-        let result = await service.getAvailableBombsWithMetadata(discordId);
+        let result =
+            await availabilityService.getAvailableBombsWithMetadata(discordId);
 
         if (
             !result ||

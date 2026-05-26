@@ -1,35 +1,21 @@
 import { HominaTacticusClient } from "@/client";
 import { DatabaseController, dbController, logger } from "@/lib";
-import { EncounterType, Rarity } from "@/models/enums";
 import { testApiToken } from "../utils/commandUtils";
 import { fetchGuildMembers } from "@/client/MiddlewareClient";
-import { RaidAnalyticsService } from "./RaidAnalyticsService";
-import { HistoryService } from "./HistoryService";
-import { AvailabilityService } from "./AvailabilityService";
-import { MetaTeamService } from "./MetaTeamService";
 
 /**
  * Service class for managing guild-related operations.
  *
  * Core responsibilities: guild identity, member resolution, token validation,
- * and season config lookups. Analytics, history, availability, and meta-team
- * methods are delegated to focused service classes.
+ * and season config lookups.
  */
 export class GuildService {
     private client: HominaTacticusClient;
     private db: DatabaseController;
-    private raidAnalytics: RaidAnalyticsService;
-    private history: HistoryService;
-    private availability: AvailabilityService;
-    private metaTeam: MetaTeamService;
 
     constructor(client = new HominaTacticusClient(), db = dbController) {
         this.client = client;
         this.db = db;
-        this.raidAnalytics = new RaidAnalyticsService(client, db);
-        this.history = new HistoryService(client, db);
-        this.availability = new AvailabilityService(client, db);
-        this.metaTeam = new MetaTeamService(client, db);
     }
 
     // ─── Core guild methods ─────────────────────────────────────────────
@@ -259,177 +245,5 @@ export class GuildService {
                 discordId,
             );
         }
-    }
-
-    // ─── Delegated methods (facade for backward compatibility) ──────────
-
-    async getGuildRaidResultBySeason(
-        discordId: string,
-        season: number,
-        rarity?: Rarity,
-        includePrimes: boolean = true,
-    ) {
-        return this.raidAnalytics.getGuildRaidResultBySeason(
-            discordId,
-            season,
-            rarity,
-            includePrimes,
-        );
-    }
-
-    async getGuildRaidResultByRaritySeasonPerBoss(
-        discordId: string,
-        season: number,
-        rarity?: Rarity,
-        filterBombs: boolean = false,
-        encounterTypeFilter?: EncounterType,
-    ) {
-        return this.raidAnalytics.getGuildRaidResultByRaritySeasonPerBoss(
-            discordId,
-            season,
-            rarity,
-            filterBombs,
-            encounterTypeFilter,
-        );
-    }
-
-    async getGuildRaidBombsBySeason(
-        discordId: string,
-        season: number,
-        rarity?: Rarity,
-    ) {
-        return this.raidAnalytics.getGuildRaidBombsBySeason(
-            discordId,
-            season,
-            rarity,
-        );
-    }
-
-    async getGuildRaidBySeason(
-        discordId: string,
-        season: number,
-        rarity?: Rarity,
-    ) {
-        return this.raidAnalytics.getGuildRaidBySeason(
-            discordId,
-            season,
-            rarity,
-        );
-    }
-
-    async getMemberStatsInLastSeasons(
-        discordId: string,
-        nSeasons: number,
-        rarity?: Rarity,
-    ) {
-        return this.raidAnalytics.getMemberStatsInLastSeasons(
-            discordId,
-            nSeasons,
-            rarity,
-        );
-    }
-
-    async getWeightedRelativePerformance(
-        discordId: string,
-        season: number,
-        rarity?: Rarity,
-        seasonCount: number = 1,
-    ) {
-        return this.raidAnalytics.getWeightedRelativePerformance(
-            discordId,
-            season,
-            rarity,
-            seasonCount,
-        );
-    }
-
-    async getTokenByHours(discordId: string) {
-        return this.raidAnalytics.getTokenByHours(discordId);
-    }
-
-    async getMetaTeamDistribution(
-        discordId: string,
-        season: number,
-        tier?: Rarity,
-    ) {
-        return this.metaTeam.getMetaTeamDistribution(discordId, season, tier);
-    }
-
-    async getMetaTeamDistributionPerPlayer(
-        discordId: string,
-        season: number,
-        tier?: Rarity,
-    ) {
-        return this.metaTeam.getMetaTeamDistributionPerPlayer(
-            discordId,
-            season,
-            tier,
-        );
-    }
-
-    async getAvailableTokensAndBombs(discordId: string) {
-        return this.availability.getAvailableTokensAndBombs(discordId);
-    }
-
-    async getAvailableBombs(discordId: string) {
-        return this.availability.getAvailableBombs(discordId);
-    }
-
-    async getPlayerCooldowns(token: string) {
-        return this.availability.getPlayerCooldowns(token);
-    }
-
-    async getAvailableTokensAndBombsWithMetadata(discordId: string) {
-        return this.availability.getAvailableTokensAndBombsWithMetadata(
-            discordId,
-        );
-    }
-
-    async getAvailableBombsWithMetadata(discordId: string) {
-        return this.availability.getAvailableBombsWithMetadata(discordId);
-    }
-
-    async getTokensUsedInLastSeasons(
-        discordId: string,
-        nSeasons: number,
-        rarity?: Rarity,
-    ) {
-        return this.history.getTokensUsedInLastSeasons(
-            discordId,
-            nSeasons,
-            rarity,
-        );
-    }
-
-    async getTotalDamageInLastSeasons(discordId: string, nSeasons: number) {
-        return this.history.getTotalDamageInLastSeasons(discordId, nSeasons);
-    }
-
-    async getBossesKilledInLastSeasons(
-        discordId: string,
-        nSeasons: number,
-        startingSeason?: number,
-    ) {
-        return this.history.getBossesKilledInLastSeasons(
-            discordId,
-            nSeasons,
-            startingSeason,
-        );
-    }
-
-    async getLoopsCompletedInLastSeasons(discordId: string, nSeasons: number) {
-        return this.history.getLoopsCompletedInLastSeasons(discordId, nSeasons);
-    }
-
-    async getTokensPerLoopBySeason(discordId: string, season: number) {
-        return this.history.getTokensPerLoopBySeason(discordId, season);
-    }
-
-    async getTokensPerLoopByBoss(
-        discordId: string,
-        season: number,
-        rarity: Rarity,
-    ) {
-        return this.history.getTokensPerLoopByBoss(discordId, season, rarity);
     }
 }

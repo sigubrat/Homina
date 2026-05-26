@@ -5,7 +5,7 @@ import {
     STANDARD_FOOTER_TEXT,
 } from "@/lib/configs/constants";
 import { ChartService } from "@/lib/services/ChartService";
-import { GuildService } from "@/lib/services/GuildService.ts";
+import { MetaTeamService } from "@/lib/services/MetaTeamService";
 import { isInvalidSeason } from "@/lib/utils/timeUtils";
 import { Rarity } from "@/models/enums";
 import {
@@ -64,7 +64,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         return;
     }
 
-    const service = new GuildService();
+    const service = new MetaTeamService();
 
     try {
         const result = await service.getMetaTeamDistribution(

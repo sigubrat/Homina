@@ -6,6 +6,8 @@ import {
 } from "@/lib/configs/constants";
 import { ChartService } from "@/lib/services/ChartService";
 import { GuildService } from "@/lib/services/GuildService.ts";
+import { RaidAnalyticsService } from "@/lib/services/RaidAnalyticsService";
+import { AvailabilityService } from "@/lib/services/AvailabilityService";
 import { numericMedian } from "@/lib/utils/mathUtils";
 import { numericAverage } from "@/lib/utils/mathUtils";
 import { standardDeviation } from "@/lib/utils/mathUtils";
@@ -88,13 +90,15 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     }
 
     const service = new GuildService();
+    const raidAnalytics = new RaidAnalyticsService();
+    const availabilityService = new AvailabilityService();
 
     logger.info(
         `${interaction.user.username} attempting to use /tokens-by-season for season ${season}`,
     );
 
     try {
-        const result = await service.getGuildRaidResultBySeason(
+        const result = await raidAnalytics.getGuildRaidResultBySeason(
             discordId,
             season,
             rarity,
@@ -171,7 +175,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         let availableTokensMap: Record<string, number> | undefined;
         if (providedSeason === null) {
             const availability =
-                await service.getAvailableTokensAndBombsWithMetadata(discordId);
+                await availabilityService.getAvailableTokensAndBombsWithMetadata(
+                    discordId,
+                );
             if (availability && Object.keys(availability).length > 0) {
                 const namedAvailability = replaceUserIdKeysWithDisplayNames(
                     availability,

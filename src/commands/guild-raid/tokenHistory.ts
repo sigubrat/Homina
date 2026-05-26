@@ -3,6 +3,7 @@ import { STANDARD_FOOTER_TEXT } from "@/lib/configs/constants";
 import { fetchGuildMembers } from "@/client/MiddlewareClient";
 import { ChartService } from "@/lib/services/ChartService";
 import { GuildService } from "@/lib/services/GuildService.ts";
+import { HistoryService } from "@/lib/services/HistoryService";
 import { isValidUUIDv4 } from "@/lib/utils/mathUtils";
 import type { MiddlewareMember } from "@/models/types";
 import {
@@ -117,6 +118,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const discordId = interaction.user.id;
 
     const service = new GuildService();
+    const historyService = new HistoryService();
 
     // Resolve display name
     let memberDisplayName = member;
@@ -133,7 +135,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     );
 
     try {
-        const tokensBySeason = await service.getTokensUsedInLastSeasons(
+        const tokensBySeason = await historyService.getTokensUsedInLastSeasons(
             discordId,
             nSeasons,
         );

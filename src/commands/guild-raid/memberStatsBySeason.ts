@@ -6,6 +6,8 @@ import {
 } from "@/lib/configs/constants";
 import { CsvService } from "@/lib/services/CsvService";
 import { GuildService } from "@/lib/services/GuildService.ts";
+import { RaidAnalyticsService } from "@/lib/services/RaidAnalyticsService";
+import { MetaTeamService } from "@/lib/services/MetaTeamService";
 import { isInvalidSeason } from "@/lib/utils/timeUtils";
 import { replaceUserIdKeysWithDisplayNames } from "@/lib/utils/userUtils";
 import { Rarity } from "@/models/enums";
@@ -76,13 +78,15 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     }
 
     const service = new GuildService();
+    const raidAnalytics = new RaidAnalyticsService();
+    const metaTeamService = new MetaTeamService();
 
     logger.info(
         `${interaction.user.username} attempting to use /member-stats-per-season for season ${season}`,
     );
 
     try {
-        const result = await service.getGuildRaidResultBySeason(
+        const result = await raidAnalytics.getGuildRaidResultBySeason(
             discordId,
             season,
             rarity,
@@ -140,11 +144,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         // Sort by total damage descending
         result.sort((a, b) => b.totalDamage - a.totalDamage);
 
-        let teamDistributions = await service.getMetaTeamDistributionPerPlayer(
-            discordId,
-            season,
-            rarity,
-        );
+        let teamDistributions =
+            await metaTeamService.getMetaTeamDistributionPerPlayer(
+                discordId,
+                season,
+                rarity,
+            );
 
         if (!teamDistributions) {
             await interaction.editReply({
