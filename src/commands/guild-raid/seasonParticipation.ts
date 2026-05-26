@@ -14,7 +14,7 @@ import { logger } from "@/lib";
 import {
     getCurrentSeason,
     MINIMUM_SEASON_THRESHOLD,
-    STANDARD_HEADER,
+    STANDARD_FOOTER_TEXT,
 } from "@/lib/configs/constants";
 import { Rarity } from "@/models/enums";
 import { isInvalidSeason } from "@/lib/utils/timeUtils";
@@ -203,7 +203,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             )
             .setImage("attachment://graph.png")
             .setFooter({
-                text: STANDARD_HEADER,
+                text: STANDARD_FOOTER_TEXT,
             });
 
         await interaction.editReply({ embeds: [embed], files: [attachment] });

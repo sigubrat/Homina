@@ -606,4 +606,160 @@ export class RaidAnalyticsService {
             return null;
         }
     }
+
+    async getPrimeROI(
+        discordId: string,
+        season?: number,
+        rarity?: Rarity,
+    ): Promise<{
+        summary: {
+            primeTokens: number;
+            sideTokens: number;
+            primeDmgPerToken: number;
+            sideDmgPerToken: number;
+            primePct: number;
+        };
+        players: {
+            player: string;
+            primeTokens: number;
+            sideTokens: number;
+            primeDmgPerToken: number;
+            sideDmgPerToken: number;
+            primePct: number;
+        }[];
+    } | null> {
+        try {
+            const apiKey = await this.db.getUserToken(discordId);
+            if (!apiKey) return null;
+
+            const guildService = new GuildService(this.client);
+            const players = await guildService.fetchGuildMembers(discordId);
+            if (!players) return null;
+
+            let seasonNumber = season;
+            if (!seasonNumber) {
+                const current =
+                    await this.client.getGuildRaidByCurrentSeason(apiKey);
+                if (!current?.season) return null;
+                seasonNumber = current.season;
+            }
+
+            const response = await this.client.getGuildRaidBySeason(
+                apiKey,
+                seasonNumber,
+            );
+            const allEntries = response?.entries ?? [];
+            if (allEntries.length === 0) return null;
+
+            const rarities = rarity ? expandRarity(rarity) : null;
+            const entries = allEntries.filter(
+                (entry) =>
+                    entry.damageType === DamageType.BATTLE &&
+                    (!rarities || rarities.includes(entry.rarity)),
+            );
+
+            if (entries.length === 0) return null;
+
+            const unknownTracker = createUnknownUserTracker();
+            for (const entry of entries) {
+                const player = players.find((p) => p.userId === entry.userId);
+                if (player) {
+                    entry.userId = player.displayName;
+                } else {
+                    entry.userId = unknownTracker.getLabel(entry.userId);
+                }
+            }
+
+            // Split by encounter type
+            const primeEntries = entries.filter(
+                (e) => e.encounterType === EncounterType.BOSS,
+            );
+            const sideEntries = entries.filter(
+                (e) => e.encounterType === EncounterType.SIDE_BOSS,
+            );
+
+            const primeTotalDmg = primeEntries.reduce(
+                (s, e) => s + e.damageDealt,
+                0,
+            );
+            const sideTotalDmg = sideEntries.reduce(
+                (s, e) => s + e.damageDealt,
+                0,
+            );
+            const primeDmgPerToken =
+                primeEntries.length > 0
+                    ? primeTotalDmg / primeEntries.length
+                    : 0;
+            const sideDmgPerToken =
+                sideEntries.length > 0 ? sideTotalDmg / sideEntries.length : 0;
+            const totalTokens = primeEntries.length + sideEntries.length;
+            const primePct =
+                totalTokens > 0 ? (primeEntries.length / totalTokens) * 100 : 0;
+
+            // Per-player breakdown
+            const playerMap: Record<
+                string,
+                {
+                    primeDmg: number;
+                    primeTokens: number;
+                    sideDmg: number;
+                    sideTokens: number;
+                }
+            > = {};
+            for (const entry of entries) {
+                if (entry.userId.startsWith("Unknown #")) continue;
+                if (!playerMap[entry.userId]) {
+                    playerMap[entry.userId] = {
+                        primeDmg: 0,
+                        primeTokens: 0,
+                        sideDmg: 0,
+                        sideTokens: 0,
+                    };
+                }
+                const p = playerMap[entry.userId]!;
+                if (entry.encounterType === EncounterType.BOSS) {
+                    p.primeDmg += entry.damageDealt;
+                    p.primeTokens += 1;
+                } else {
+                    p.sideDmg += entry.damageDealt;
+                    p.sideTokens += 1;
+                }
+            }
+
+            const playerResults = Object.entries(playerMap)
+                .map(([player, stats]) => {
+                    const total = stats.primeTokens + stats.sideTokens;
+                    return {
+                        player,
+                        primeTokens: stats.primeTokens,
+                        sideTokens: stats.sideTokens,
+                        primeDmgPerToken:
+                            stats.primeTokens > 0
+                                ? stats.primeDmg / stats.primeTokens
+                                : 0,
+                        sideDmgPerToken:
+                            stats.sideTokens > 0
+                                ? stats.sideDmg / stats.sideTokens
+                                : 0,
+                        primePct:
+                            total > 0 ? (stats.primeTokens / total) * 100 : 0,
+                    };
+                })
+                .sort((a, b) => b.primePct - a.primePct);
+
+            return {
+                summary: {
+                    primeTokens: primeEntries.length,
+                    sideTokens: sideEntries.length,
+                    primeDmgPerToken: Math.round(primeDmgPerToken),
+                    sideDmgPerToken: Math.round(sideDmgPerToken),
+                    primePct: Math.round(primePct),
+                },
+                players: playerResults,
+            };
+        } catch (error) {
+            logger.error(error, "Error calculating prime ROI");
+            return null;
+        }
+    }
 }
