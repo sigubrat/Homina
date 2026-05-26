@@ -1,5 +1,9 @@
 import { dbController, logger } from "@/lib";
 import { MessageService } from "@/lib/services/MessageService";
+import {
+    consumePendingInvite,
+    deletePendingInvite,
+} from "@/lib/services/PendingInviteStore";
 import { BotEventType } from "@/models/enums";
 import type { IClient } from "@/index";
 import { Collection, Events, type Interaction, MessageFlags } from "discord.js";
@@ -34,34 +38,34 @@ export async function execute(interaction: Interaction) {
             customId.startsWith("invite_decline_")
         ) {
             const messageService = new MessageService(interaction.client);
-
-            // Extract userId from customId and verify it matches the user clicking
-            const userId = customId.split("_")[2];
-            if (userId !== interaction.user.id) {
-                await interaction.reply({
-                    content: "This invitation is not for you.",
-                    flags: MessageFlags.Ephemeral,
-                });
-                return;
-            }
+            const nonce = customId.replace(/^invite_(confirm|decline)_/, "");
 
             if (customId.startsWith("invite_confirm_")) {
-                const parts = customId.split("_");
-                const apiToken = parts[3];
-                const inviterId = parts[4];
-                if (!apiToken || !inviterId) {
+                const invite = consumePendingInvite(nonce);
+                if (!invite) {
                     await interaction.reply({
-                        content: "Invalid invitation data.",
+                        content:
+                            "This invitation has expired or is invalid. Please ask for a new invite.",
                         flags: MessageFlags.Ephemeral,
                     });
                     return;
                 }
+
+                if (invite.inviteeId !== interaction.user.id) {
+                    await interaction.reply({
+                        content: "This invitation is not for you.",
+                        flags: MessageFlags.Ephemeral,
+                    });
+                    return;
+                }
+
                 await messageService.handleInviteConfirm(
                     interaction,
-                    apiToken,
-                    inviterId,
+                    invite.apiToken,
+                    invite.inviterId,
                 );
             } else if (customId.startsWith("invite_decline_")) {
+                deletePendingInvite(nonce);
                 await messageService.handleInviteDecline(interaction);
             }
         }

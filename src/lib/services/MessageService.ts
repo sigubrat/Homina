@@ -13,6 +13,11 @@ import { dbController, logger } from "@/lib";
 import { BotEventType } from "@/models/enums";
 import { HominaTacticusClient } from "@/client";
 import { isValidUUIDv4 } from "../utils/mathUtils";
+import {
+    createPendingInvite,
+    consumePendingInvite,
+    deletePendingInvite,
+} from "./PendingInviteStore";
 import path from "path";
 
 export class MessageService {
@@ -77,15 +82,15 @@ export class MessageService {
                 .setColor("#0099ff")
                 .setTimestamp();
 
+            const nonce = createPendingInvite(apiToken, inviterId, userId);
+
             const confirmButton = new ButtonBuilder()
-                .setCustomId(
-                    `invite_confirm_${userId}_${apiToken}_${inviterId}`,
-                )
+                .setCustomId(`invite_confirm_${nonce}`)
                 .setLabel("Confirm")
                 .setStyle(ButtonStyle.Success);
 
             const declineButton = new ButtonBuilder()
-                .setCustomId(`invite_decline_${userId}`)
+                .setCustomId(`invite_decline_${nonce}`)
                 .setLabel("Decline")
                 .setStyle(ButtonStyle.Danger);
 
