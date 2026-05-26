@@ -18,7 +18,7 @@ export const cooldown = 5;
 export const data = new SlashCommandBuilder()
     .setName("prime-specialists")
     .setDescription(
-        "See who deals the most damage to each prime, using data from seasons with the same config",
+        "See who deals the most damage to each prime, using data from seasons with matching primes",
     )
     .addStringOption((option) =>
         option
