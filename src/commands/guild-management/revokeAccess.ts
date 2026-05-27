@@ -48,7 +48,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     } catch {
                         // If we can't fetch the user, we'll just display the ID
                         logger.warn(
-                            `Could not fetch user or member for ID ${userId} in /revoke-access command`,
+                            `Could not fetch user or member for ID ${userId} in /${commandName} command`,
                         );
                     }
                 }

@@ -12,9 +12,10 @@ import {
 } from "discord.js";
 
 export const cooldown = 5;
+const commandName = "set-player-token";
 
 export const data = new SlashCommandBuilder()
-    .setName("set-player-token")
+    .setName(commandName)
     .setDescription(
         "Register a player-scope API token for a guild member to enable precise cooldown data",
     )
@@ -98,7 +99,7 @@ export async function autocomplete(interaction: AutocompleteInteraction) {
             })),
         );
     } catch (error) {
-        logger.error(error, "Error in set-player-token autocomplete");
+        logger.error(error, `Error in ${commandName} autocomplete`);
         await interaction.respond([]);
     }
 }

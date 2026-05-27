@@ -72,7 +72,7 @@ export async function autocomplete(interaction: AutocompleteInteraction) {
             }),
         );
     } catch (error) {
-        logger.error(error, "Error in clear-player-nickname autocomplete");
+        logger.error(error, `Error in ${commandName} autocomplete`);
         await interaction.respond([]);
     }
 }

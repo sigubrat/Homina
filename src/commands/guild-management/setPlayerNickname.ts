@@ -11,9 +11,10 @@ import {
 } from "discord.js";
 
 export const cooldown = 5;
+const commandName = "set-player-nickname";
 
 export const data = new SlashCommandBuilder()
-    .setName("set-player-nickname")
+    .setName(commandName)
     .setDescription(
         "Set a custom display nickname for a guild member across all commands",
     )
@@ -96,7 +97,7 @@ export async function autocomplete(interaction: AutocompleteInteraction) {
             })),
         );
     } catch (error) {
-        logger.error(error, "Error in set-player-nickname autocomplete");
+        logger.error(error, `Error in ${commandName} autocomplete`);
         await interaction.respond([]);
     }
 }

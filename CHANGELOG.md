@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.17.0]
+
+The following patch provides two new commands but also comes with a lot of behind-the-scenes upgrades that will lead to quicker development, better testing possibilities and quicker bugfixing.
+
+### Added
+
+- **New command!** `/season-achievements` - See fun guild-wide superlatives and awards for a season. Who dealt the most damage? Who used the most bombs? Find out with this end-of-season summary of guild highlights.
+  - Optional parameter: `season` — defaults to the current season.
+- **New command!** `/prime-specialists` - See who in your guild deals the most damage to each prime boss, ranked by average damage per token. To give you the most reliable picture, the command pools data from the current season and up to 5 prior seasons that had the same primes active — so even if primes haven't been hit many times this season yet, you'll still get meaningful rankings.
+  - Required parameter: `rarity` — the rarity tier to check.
+  - Optional parameter: `season` — defaults to the current season.
+  - Only players with at least 2 tokens used on a prime are included to avoid fluky one-hit rankings.
+
+### Changed
+
+- Major restructuring of the bot's internals to allow quicker development, better test-coverage, and quicker bug fixes.
+
 ## [1.16.0]
 
 ### Added
