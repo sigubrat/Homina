@@ -5,9 +5,10 @@ import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 
 // 5 minutes cooldown
 export const cooldown = 5 * 60;
+const commandName = "invite-user";
 
 export const data = new SlashCommandBuilder()
-    .setName("invite-user")
+    .setName(commandName)
     .setDescription("Invite a user to register with your API token")
     .addUserOption((option) =>
         option
@@ -63,7 +64,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 "An error occurred while trying to invite the user. Please try again later.",
         });
         logger.error(
-            `Error while ${interaction.user.username} was trying to invite ${invitedUser.username}: ${error}`,
+            `Error in /${commandName} command while ${interaction.user.username} was trying to invite ${invitedUser.username}: ${error}`,
         );
     }
 }

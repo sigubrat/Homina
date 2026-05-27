@@ -7,9 +7,10 @@ import {
 } from "discord.js";
 
 export const cooldown = 5;
+const commandName = "member-ids";
 
 export const data = new SlashCommandBuilder()
-    .setName("member-ids")
+    .setName(commandName)
     .setDescription(
         "Get a list of members in the guild for use in registering usernames",
     );
@@ -18,7 +19,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     logger.info(
-        `${interaction.user.username} attempting to use /member-ids and received the member list`,
+        `${interaction.user.username} attempting to use /${commandName} and received the member list`,
     );
 
     const service = new GuildService();
@@ -83,7 +84,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             `${interaction.user.username} used /member-ids and received the member list`,
         );
     } catch (error) {
-        logger.error(error, "Error fetching members:");
+        logger.error(
+            error,
+            `Error in /${commandName} command while fetching members:`,
+        );
         await interaction.editReply({
             content: "An error occurred while fetching the member list.",
             options: {

@@ -10,9 +10,10 @@ import {
 } from "discord.js";
 
 export const cooldown = 5;
+const commandName = "revoke-access";
 
 export const data = new SlashCommandBuilder()
-    .setName("revoke-access")
+    .setName(commandName)
     .setDescription("Revoke access for a user you previously invited");
 
 export async function execute(interaction: ChatInputCommandInteraction) {
@@ -105,7 +106,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     },
                 );
                 logger.info(
-                    `${interaction.user.username} revoked access for user ${selectedUserId}`,
+                    `${interaction.user.username} successfully used /${commandName} to revoke access for user ${selectedUserId}`,
                 );
                 await selectInteraction.update({
                     content: `Successfully revoked access for <@${selectedUserId}>.`,
@@ -124,7 +125,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             });
         }
     } catch (error) {
-        logger.error(error, "Error in /revoke-access command");
+        logger.error(error, `Error in /${commandName} command`);
         await interaction.editReply({
             content:
                 "An error occurred while processing your request. Please try again later.",

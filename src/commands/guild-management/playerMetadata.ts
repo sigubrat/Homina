@@ -10,9 +10,10 @@ import {
 } from "discord.js";
 
 export const cooldown = 10;
+const commandName = "player-metadata";
 
 export const data = new SlashCommandBuilder()
-    .setName("player-metadata")
+    .setName(commandName)
     .setDescription(
         "Show nicknames and player API token status for all guild members",
     );
@@ -23,7 +24,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const discordId = interaction.user.id;
 
     logger.info(
-        `${interaction.user.username} attempting to use /player-metadata`,
+        `${interaction.user.username} attempting to use /${commandName}`,
     );
 
     try {
