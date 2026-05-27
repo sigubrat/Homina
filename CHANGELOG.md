@@ -17,6 +17,8 @@ The following patch provides two new commands but also comes with a lot of behin
   - Required parameter: `rarity` — the rarity tier to check.
   - Optional parameter: `season` — defaults to the current season.
   - Only players with at least 2 tokens used on a prime are included to avoid fluky one-hit rankings.
+- `/gr-availability` and `/available-bombs` now display an estimate of the total damage your guild can do with the currently available bombs
+  - Bomb damage is calculated from your guild's level and number of available bombs, displaying minimum damage, average damage, and maximum possible damage.
 
 ### Changed
 

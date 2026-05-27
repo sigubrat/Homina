@@ -1,5 +1,5 @@
 import { logger } from "@/lib";
-import { STANDARD_FOOTER_TEXT } from "@/lib/configs/constants";
+import { miscEmojis, STANDARD_FOOTER_TEXT } from "@/lib/configs/constants";
 import { GuildService } from "@/lib/services/GuildService";
 import { AvailabilityService } from "@/lib/services/AvailabilityService";
 import { replaceUserIdKeysWithDisplayNames } from "@/lib/utils/userUtils";
@@ -84,7 +84,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         let maxBombs = Object.keys(result).length;
         maxBombs = maxBombs > 30 ? 30 : maxBombs;
 
-        const formattedTotalBombs = `Total bombs: \`${totalBombs}/${maxBombs}\``;
+        const formattedTotalBombs = `${miscEmojis.bomb} \`${totalBombs}/${maxBombs}\``;
 
         const guildLevel = await service.getGuildLevel(discordId);
         const bombEstimate =
