@@ -13,9 +13,10 @@ import {
 } from "discord.js";
 
 export const cooldown = 5;
+const commandName = "season-achievements";
 
 export const data = new SlashCommandBuilder()
-    .setName("season-achievements")
+    .setName(commandName)
     .setDescription("See fun guild-wide superlatives and awards for a season")
     .addNumberOption((option) =>
         option
@@ -32,7 +33,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const discordId = interaction.user.id;
 
     logger.info(
-        `${interaction.user.username} attempting to use /achievements season=${providedSeason}`,
+        `${interaction.user.username} attempting to use /${commandName} season=${providedSeason}`,
     );
 
     if (providedSeason !== null && isInvalidSeason(providedSeason)) {
@@ -73,7 +74,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         await interaction.editReply({ embeds: [embed] });
     } catch (error) {
-        logger.error(error, "Error executing /achievements");
+        logger.error(error, `Error executing /${commandName}`);
         await interaction.editReply({
             content:
                 "An error occurred while fetching achievements. Please try again later.",
