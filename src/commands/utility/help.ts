@@ -9,9 +9,10 @@ import {
 import { Pagination } from "pagination.djs";
 
 export const cooldown = 5; // Cooldown in seconds
+const commandName = "help";
 
 export const data = new SlashCommandBuilder()
-    .setName("help")
+    .setName(commandName)
     .setDescription("Get an overview of the bot commands");
 
 export async function execute(interaction: ChatInputCommandInteraction) {
@@ -84,9 +85,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         await pagination.render();
 
-        logger.info(`${interaction.user.username} used /help`);
+        logger.info(`${interaction.user.username} used /${commandName}`);
     } catch (error) {
-        logger.error(error, "Error executing /help command");
+        logger.error(error, `Error executing /${commandName} command`);
         await interaction.editReply({
             content:
                 "An error occurred while trying to fetch help information.",

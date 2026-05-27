@@ -5,9 +5,10 @@ import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { getPackageVersion } from "@/lib/utils/utils";
 
 export const cooldown = 60;
+const commandName = "bot-stats";
 
 export const data = new SlashCommandBuilder()
-    .setName("bot-stats")
+    .setName(commandName)
     .setDescription("Get statistics about the bot and its performance");
 
 export async function execute(interaction: ChatInputCommandInteraction) {
