@@ -6,7 +6,7 @@ import {
     evaluateToken,
     getUnixTimestamp,
 } from "../utils/timeUtils";
-import { DamageType, Rarity } from "@/models/enums";
+import { DamageType } from "@/models/enums";
 import type {
     GuildRaidAvailable,
     Raid,

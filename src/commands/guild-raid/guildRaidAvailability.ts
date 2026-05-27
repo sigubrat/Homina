@@ -3,6 +3,7 @@ import { GuildService } from "@/lib/services/GuildService";
 import { AvailabilityService } from "@/lib/services/AvailabilityService";
 import { toMinutes } from "@/lib/utils/timeUtils";
 import { replaceUserIdKeysWithDisplayNames } from "@/lib/utils/userUtils";
+import { estimateBombDamage } from "@/lib/utils/mathUtils";
 import {
     ChatInputCommandInteraction,
     EmbedBuilder,
@@ -90,6 +91,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         maxBombs = maxBombs > 30 ? 30 : maxBombs;
 
         const formattedTotalBombs = `Total bombs: \`${totalBombs}/${maxBombs}\``;
+
+        const guildLevel = await service.getGuildLevel(interaction.user.id);
+        const bombEstimate =
+            totalBombs > 0 && guildLevel
+                ? estimateBombDamage(totalBombs, guildLevel)
+                : null;
 
         const table = Object.entries(result)
             .map(([userId, available]) => {
@@ -190,6 +197,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 inline: true,
             },
         );
+
+        if (bombEstimate) {
+            embed.addFields({
+                name: "Estimated total bomb damage based on your guild level and available bombs",
+                value: `Min: \`${bombEstimate?.minDamage.toLocaleString()}\` \nAvg: \`${bombEstimate?.avgDamage.toLocaleString()}\` \nMax: \`${bombEstimate?.maxDamage.toLocaleString()}\``,
+                inline: false,
+            });
+        }
 
         await interaction.editReply({ embeds: [embed] });
     } catch (error) {
