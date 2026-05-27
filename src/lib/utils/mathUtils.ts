@@ -1,6 +1,8 @@
 import type { GuildRaidResult } from "@/models/types";
 import type { TokensUsed } from "@/models/types/TokensUsed";
 import { SortBy } from "@/models/enums";
+import { bombDamageByGuildLevel } from "../configs/constants";
+import type { BombEstimate } from "@/models/types/BombEstimate";
 
 // Nb! Relies on the user providing sorted data
 
@@ -176,4 +178,40 @@ export function linearRegression(
     const intercept = (sumY - slope * sumX) / n;
 
     return Array.from({ length: totalLength }, (_, i) => intercept + slope * i);
+}
+
+/**
+ * Estimates the total bomb damage for a given number of available bombs at a specific guild level.
+ *
+ * Looks up the min/max damage range for the guild level and returns the scaled
+ * minimum, maximum, and average (midpoint) total damage across all available bombs.
+ *
+ * @param available - The number of bombs available. Must be greater than zero.
+ * @param guildLevel - The current guild level. Must have a corresponding entry in `bombDamageByGuildLevel`.
+ * @returns A `BombEstimate` containing `minDamage`, `maxDamage`, and `avgDamage`.
+ * @throws If `available` is zero or negative.
+ * @throws If no damage data exists for the given `guildLevel`.
+ */
+export function estimateBombDamage(
+    available: number,
+    guildLevel: number,
+): BombEstimate {
+    if (available <= 0) {
+        throw new Error("Available bombs must be greater than zero");
+    }
+
+    const damageRange = bombDamageByGuildLevel[guildLevel];
+    if (!damageRange) {
+        throw new Error(
+            `No bomb damage data available for guild level ${guildLevel}`,
+        );
+    }
+
+    // Use the average of the min and max bomb damage for estimation
+    const averageDamage = (damageRange.min + damageRange.max) / 2;
+    return {
+        minDamage: damageRange.min * available,
+        maxDamage: damageRange.max * available,
+        avgDamage: averageDamage * available,
+    };
 }

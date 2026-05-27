@@ -211,4 +211,23 @@ export class GuildService {
             );
         }
     }
+
+    async getGuildLevel(discordId: string): Promise<number | null> {
+        try {
+            const apiKey = await this.db.getUserToken(discordId);
+            if (!apiKey) {
+                logger.error("No API key found for user:", discordId);
+                return null;
+            }
+            const resp = await this.client.getGuild(apiKey);
+            if (!resp.success || !resp.guild) {
+                logger.error("Failed to fetch guild for user:", discordId);
+                return null;
+            }
+            return resp.guild.level;
+        } catch (error) {
+            logger.error(error, "Error fetching guild level");
+            return null;
+        }
+    }
 }

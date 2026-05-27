@@ -1,4 +1,5 @@
 import {
+    estimateBombDamage,
     formatDelta,
     getTopNDamageDealers,
     isValidUUIDv4,
@@ -361,5 +362,52 @@ describe("mathUtilsSuite - linearRegression", () => {
         }
         // The fitted line at index 0 should be near 10-11
         expect(result[0]).toBeCloseTo(10.6, 0);
+    });
+});
+
+describe("mathUtilsSuite - estimateBombDamage", () => {
+    test("returns correct min/max/avg for level 1", () => {
+        // min=80, max=100, avg=90; 5 bombs
+        const result = estimateBombDamage(5, 1);
+        expect(result.minDamage).toBe(400);
+        expect(result.maxDamage).toBe(500);
+        expect(result.avgDamage).toBe(450);
+    });
+
+    test("returns correct min/max/avg for level 10", () => {
+        // min=280, max=370, avg=325; 3 bombs
+        const result = estimateBombDamage(3, 10);
+        expect(result.minDamage).toBe(840);
+        expect(result.maxDamage).toBe(1110);
+        expect(result.avgDamage).toBe(975);
+    });
+
+    test("returns correct min/max/avg for level 60 (boundary)", () => {
+        // min=26210, max=34640, avg=30425; 2 bombs
+        const result = estimateBombDamage(2, 60);
+        expect(result.minDamage).toBe(52420);
+        expect(result.maxDamage).toBe(69280);
+        expect(result.avgDamage).toBe(60850);
+    });
+
+    test("throws when available is zero", () => {
+        expect(() => estimateBombDamage(0, 1)).toThrow(
+            "Available bombs must be greater than zero",
+        );
+    });
+
+    test("throws when available is negative", () => {
+        expect(() => estimateBombDamage(-3, 1)).toThrow(
+            "Available bombs must be greater than zero",
+        );
+    });
+
+    test("throws for an unknown guild level", () => {
+        expect(() => estimateBombDamage(5, 0)).toThrow(
+            "No bomb damage data available for guild level 0",
+        );
+        expect(() => estimateBombDamage(5, 61)).toThrow(
+            "No bomb damage data available for guild level 61",
+        );
     });
 });

@@ -4,6 +4,7 @@ import { GuildService } from "@/lib/services/GuildService";
 import { AvailabilityService } from "@/lib/services/AvailabilityService";
 import { replaceUserIdKeysWithDisplayNames } from "@/lib/utils/userUtils";
 import { toMinutes, withinNextHour } from "@/lib/utils/timeUtils";
+import { estimateBombDamage } from "@/lib/utils/mathUtils";
 import {
     ChatInputCommandInteraction,
     EmbedBuilder,
@@ -85,6 +86,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const formattedTotalBombs = `Total bombs: \`${totalBombs}/${maxBombs}\``;
 
+        const guildLevel = await service.getGuildLevel(discordId);
+        const bombEstimate =
+            totalBombs > 0 && guildLevel
+                ? estimateBombDamage(totalBombs, guildLevel)
+                : null;
+
         const table = Object.entries(result)
             .map(([userId, available]) => {
                 const bombIcon = available.bombs > 0 ? "✅" : `❌`;
@@ -139,6 +146,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 name: "Total bombs",
                 value: formattedTotalBombs,
                 inline: true,
+            },
+            {
+                name: "Estimated total bomb damage based on your guild level and available bombs",
+                value: `Min: \`${bombEstimate?.minDamage.toLocaleString()}\` \nAvg: \`${bombEstimate?.avgDamage.toLocaleString()}\` \nMax: \`${bombEstimate?.maxDamage.toLocaleString()}\``,
+                inline: false,
             },
             {
                 name: "Copy players with available bombs",
