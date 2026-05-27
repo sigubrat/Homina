@@ -11,8 +11,10 @@ import {
 
 export const cooldown = 5;
 
+const commandName = "clear-player-token";
+
 export const data = new SlashCommandBuilder()
-    .setName("clear-player-token")
+    .setName(commandName)
     .setDescription(
         "Remove a player-scope API token for a guild member, reverting to estimated cooldowns",
     )
@@ -72,7 +74,7 @@ export async function autocomplete(interaction: AutocompleteInteraction) {
             }),
         );
     } catch (error) {
-        logger.error(error, "Error in clear-player-token autocomplete");
+        logger.error(error, `Error in ${commandName} autocomplete`);
         await interaction.respond([]);
     }
 }
@@ -140,7 +142,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             });
         }
     } catch (error) {
-        logger.error(error, "Error in /clear-player-token command");
+        logger.error(error, `Error in /${commandName} command`);
         await interaction.editReply({
             content:
                 "An error occurred while processing your request. Please try again later.",

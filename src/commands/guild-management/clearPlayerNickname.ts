@@ -10,9 +10,10 @@ import {
 } from "discord.js";
 
 export const cooldown = 5;
+const commandName = "clear-player-nickname";
 
 export const data = new SlashCommandBuilder()
-    .setName("clear-player-nickname")
+    .setName(commandName)
     .setDescription(
         "Remove a custom nickname for a guild member, restoring their in-game name",
     )

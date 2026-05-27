@@ -166,15 +166,9 @@ export class RaidAnalyticsService {
         }
 
         const unknownTracker = createUnknownUserTracker();
-
-        for (const entry of entries) {
-            const player = players.find((p) => p.userId === entry.userId);
-            if (player) {
-                entry.userId = player.displayName;
-            } else {
-                entry.userId = unknownTracker.getLabel(entry.userId);
-            }
-        }
+        const playerNames = new Map<string, string>(
+            players.map((p) => [p.userId, p.displayName]),
+        );
 
         const groupedResults: Record<string, GuildRaidResult[]> = {};
 
@@ -192,7 +186,9 @@ export class RaidAnalyticsService {
                 groupedResults[boss] = [];
             }
 
-            const username = entry.userId;
+            const username =
+                playerNames.get(entry.userId) ??
+                unknownTracker.getLabel(entry.userId);
 
             const existingUserEntry = groupedResults[boss].find(
                 (e) => e.username === username,
@@ -445,14 +441,9 @@ export class RaidAnalyticsService {
             }
 
             const unknownTracker = createUnknownUserTracker();
-            for (const entry of entries) {
-                const player = players.find((p) => p.userId === entry.userId);
-                if (player) {
-                    entry.userId = player.displayName;
-                } else {
-                    entry.userId = unknownTracker.getLabel(entry.userId);
-                }
-            }
+            const playerNames = new Map<string, string>(
+                players.map((p) => [p.userId, p.displayName]),
+            );
 
             const entriesByBoss: Record<string, Raid[]> = {};
             for (const entry of entries) {
@@ -479,7 +470,9 @@ export class RaidAnalyticsService {
                 > = {};
 
                 for (const entry of bossEntries) {
-                    const username = entry.userId;
+                    const username =
+                        playerNames.get(entry.userId) ??
+                        unknownTracker.getLabel(entry.userId);
                     totalDamage += entry.damageDealt;
                     totalTokens += 1;
 
@@ -706,14 +699,9 @@ export class RaidAnalyticsService {
 
             // Resolve player names
             const unknownTracker = createUnknownUserTracker();
-            for (const entry of primeEntries) {
-                const player = players.find((p) => p.userId === entry.userId);
-                if (player) {
-                    entry.userId = player.displayName;
-                } else {
-                    entry.userId = unknownTracker.getLabel(entry.userId);
-                }
-            }
+            const playerNames = new Map<string, string>(
+                players.map((p) => [p.userId, p.displayName]),
+            );
 
             // Group by prime, then by player
             const byPrime: Record<
@@ -727,7 +715,10 @@ export class RaidAnalyticsService {
                 }
             > = {};
             for (const entry of primeEntries) {
-                if (entry.userId.startsWith("Unknown #")) continue;
+                const playerName =
+                    playerNames.get(entry.userId) ??
+                    unknownTracker.getLabel(entry.userId);
+                if (playerName.startsWith("Unknown #")) continue;
 
                 const prefix = mapTierToRarity(
                     entry.tier,
@@ -740,11 +731,11 @@ export class RaidAnalyticsService {
                 }
                 const primePlayers = byPrime[primeKey].players;
 
-                if (!primePlayers[entry.userId]) {
-                    primePlayers[entry.userId] = { totalDamage: 0, tokens: 0 };
+                if (!primePlayers[playerName]) {
+                    primePlayers[playerName] = { totalDamage: 0, tokens: 0 };
                 }
-                primePlayers[entry.userId]!.totalDamage += entry.damageDealt;
-                primePlayers[entry.userId]!.tokens += 1;
+                primePlayers[playerName]!.totalDamage += entry.damageDealt;
+                primePlayers[playerName]!.tokens += 1;
             }
 
             // Compute top 3 per prime by avg damage per token
