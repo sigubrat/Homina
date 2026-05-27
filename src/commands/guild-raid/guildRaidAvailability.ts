@@ -9,6 +9,7 @@ import {
     EmbedBuilder,
     SlashCommandBuilder,
 } from "discord.js";
+import { miscEmojis } from "@/lib/configs/constants";
 
 export const cooldown = 5;
 
@@ -78,7 +79,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             0,
         );
 
-        const formattedTotalTokens = `Total tokens: \`${totalTokens}/${
+        const formattedTotalTokens = `${miscEmojis.raidToken} \`${totalTokens}/${
             players.length * 3
         }\``;
 
@@ -90,7 +91,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         let maxBombs = Object.keys(result).length;
         maxBombs = maxBombs > 30 ? 30 : maxBombs;
 
-        const formattedTotalBombs = `Total bombs: \`${totalBombs}/${maxBombs}\``;
+        const formattedTotalBombs = `${miscEmojis.bomb} \`${totalBombs}/${maxBombs}\``;
 
         const guildLevel = await service.getGuildLevel(interaction.user.id);
         const bombEstimate =

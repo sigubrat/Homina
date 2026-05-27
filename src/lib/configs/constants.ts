@@ -199,6 +199,11 @@ export const UnitIdEmojiMapping: Record<string, string> = {
     [characters.Mesophet.id]: "<:mesophet:1508900611138256969>",
 };
 
+export const miscEmojis = {
+    bomb: "<:bomb:1509192928877219840>",
+    raidToken: "<:raid:1509193658056966346>",
+};
+
 export const bombDamageByGuildLevel: Record<
     number,
     { min: number; max: number }
