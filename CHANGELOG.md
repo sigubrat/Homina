@@ -30,6 +30,11 @@ The following patch provides two new commands, some quality-of-life changes to h
 - Major restructuring of the bot's internals to allow quicker development, better test-coverage, and quicker bug fixes.
 - Automatic user cleanup changed from 30 to 60 days to avoid confusion when using it after a short break
 
+### Fixed
+
+- Fixed an error that occurs when a command tries to send more than discord's allowed limit of attachments
+  - `/season-by-rarity` now sends the graphs in batches if it's more than 10
+
 ## [1.16.0]
 
 ### Added
