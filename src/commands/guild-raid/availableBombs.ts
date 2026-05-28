@@ -4,7 +4,8 @@ import { GuildService } from "@/lib/services/GuildService";
 import { AvailabilityService } from "@/lib/services/AvailabilityService";
 import { replaceUserIdKeysWithDisplayNames } from "@/lib/utils/userUtils";
 import { toMinutes, withinNextHour } from "@/lib/utils/timeUtils";
-import { estimateBombDamage } from "@/lib/utils/mathUtils";
+import { estimateBombDamage, getBossKillState } from "@/lib/utils/mathUtils";
+import { EncounterType } from "@/models/enums";
 import {
     ChatInputCommandInteraction,
     EmbedBuilder,
@@ -86,7 +87,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const formattedTotalBombs = `${miscEmojis.bomb} \`${totalBombs}/${maxBombs}\``;
 
-        const guildLevel = await service.getGuildLevel(discordId);
+        const [guildLevel, bossUnits] = await Promise.all([
+            service.getGuildLevel(discordId),
+            availabilityService.getCurrentBossUnits(discordId),
+        ]);
         const bombEstimate =
             totalBombs > 0 && guildLevel
                 ? estimateBombDamage(totalBombs, guildLevel)
@@ -152,6 +156,27 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 value: `Min: \`${bombEstimate?.minDamage.toLocaleString()}\` \nAvg: \`${bombEstimate?.avgDamage.toLocaleString()}\` \nMax: \`${bombEstimate?.maxDamage.toLocaleString()}\``,
                 inline: false,
             },
+            ...(bombEstimate && bossUnits
+                ? [
+                      {
+                          name: "Boss kill chance with available bombs",
+                          value: bossUnits
+                              .map((unit) => {
+                                  const label =
+                                      unit.encounterType === EncounterType.BOSS
+                                          ? "Boss"
+                                          : "Side Boss";
+                                  const state = getBossKillState(
+                                      unit.remainingHp,
+                                      bombEstimate,
+                                  );
+                                  return `${label}: \`${unit.remainingHp.toLocaleString()} HP\` → \`${state}\``;
+                              })
+                              .join("\n"),
+                          inline: false,
+                      },
+                  ]
+                : []),
             {
                 name: "Copy players with available bombs",
                 value:

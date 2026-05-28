@@ -6,7 +6,7 @@ import {
     evaluateToken,
     getUnixTimestamp,
 } from "../utils/timeUtils";
-import { DamageType } from "@/models/enums";
+import { DamageType, EncounterType } from "@/models/enums";
 import type {
     GuildRaidAvailable,
     Raid,
@@ -375,6 +375,57 @@ export class AvailabilityService {
             return estimated;
         } catch (error) {
             logger.error(error, "Error fetching metadata-aware bombs");
+            return null;
+        }
+    }
+
+    async getCurrentBossUnits(
+        discordId: string,
+    ): Promise<
+        | {
+              unitId: string;
+              remainingHp: number;
+              encounterType: EncounterType;
+          }[]
+        | null
+    > {
+        try {
+            const apiKey = await this.db.getUserToken(discordId);
+            if (!apiKey) return null;
+
+            const resp = await this.client.getGuildRaidByCurrentSeason(apiKey);
+            if (!resp || !resp.entries || resp.entries.length === 0)
+                return null;
+
+            const entries = resp.entries;
+
+            // Find the most recent entry to identify the current boss type
+            const mostRecent = entries.reduce((a, b) =>
+                a.startedOn > b.startedOn ? a : b,
+            );
+            const currentType = mostRecent.type;
+
+            // Filter entries for the current boss type
+            const currentTypeEntries = entries.filter(
+                (e) => e.type === currentType,
+            );
+
+            // Group by unitId, keep only the most recent entry per unit
+            const unitMap = new Map<string, Raid>();
+            for (const entry of currentTypeEntries) {
+                const existing = unitMap.get(entry.unitId);
+                if (!existing || entry.startedOn > existing.startedOn) {
+                    unitMap.set(entry.unitId, entry);
+                }
+            }
+
+            return Array.from(unitMap.values()).map((e) => ({
+                unitId: e.unitId,
+                remainingHp: e.remainingHp,
+                encounterType: e.encounterType,
+            }));
+        } catch (error) {
+            logger.error(error, "Error fetching current boss units");
             return null;
         }
     }
