@@ -165,6 +165,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                       {
                           name: "Boss kill chance with available bombs",
                           value:
+                              (bossUnits.some(
+                                  (u) =>
+                                      u.encounterType ===
+                                      EncounterType.BOSS,
+                              )
+                                  ? ""
+                                  : `${bossUnits[0]?.type ?? "Boss"}: \`Full HP\`\n`) +
                               bossUnits
                                   .map((unit) => {
                                       const label =
@@ -198,7 +205,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                               })
                                   .map(
                                       () =>
-                                          `${bossUnits[0]?.type ?? "Side Boss"} Side: \`Full HP\``,
+                                          `${bossUnits[0]?.type} Unknown Prime: \`Full HP\``,
                                   )
                                   .join("\n")
                                   .replace(/^(?=.)/, "\n"),

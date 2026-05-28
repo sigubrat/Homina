@@ -418,6 +418,19 @@ export class AvailabilityService {
                 }
             }
 
+            // If the most recent entry overall is a side boss, the main boss hasn't
+            // been attacked yet in this loop — exclude any stale dead boss entry.
+            if (mostRecent.encounterType === EncounterType.SIDE_BOSS) {
+                for (const [key, e] of unitMap) {
+                    if (
+                        e.encounterType === EncounterType.BOSS &&
+                        e.remainingHp === 0
+                    ) {
+                        unitMap.delete(key);
+                    }
+                }
+            }
+
             return Array.from(unitMap.values()).map((e) => ({
                 unitId: e.unitId,
                 remainingHp: e.remainingHp,

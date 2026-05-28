@@ -218,10 +218,21 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 text: STANDARD_FOOTER_TEXT,
             });
 
+        const DISCORD_MAX_ATTACHMENTS = 10;
+        const firstBatch = chartAttachments.slice(0, DISCORD_MAX_ATTACHMENTS);
+        const remaining = chartAttachments.slice(DISCORD_MAX_ATTACHMENTS);
+
         await interaction.editReply({
             embeds: [embed],
-            files: chartAttachments,
+            files: firstBatch,
         });
+
+        for (let i = 0; i < remaining.length; i += DISCORD_MAX_ATTACHMENTS) {
+            await interaction.followUp({
+                content: `Charts continued (${i + DISCORD_MAX_ATTACHMENTS + 1}–${Math.min(i + DISCORD_MAX_ATTACHMENTS * 2, chartAttachments.length)} of ${chartAttachments.length}):`,
+                files: remaining.slice(i, i + DISCORD_MAX_ATTACHMENTS),
+            });
+        }
 
         logger.info(
             `${interaction.user.username} successfully used /season-by-rarity ${season} ${rarity} ${bossType}`,
