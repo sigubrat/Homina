@@ -224,7 +224,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                             const label =
                                 unit.encounterType === EncounterType.BOSS
                                     ? unit.type
-                                    : `${getPrimeDisplayName(unit.unitId)} Side`;
+                                    : `${getPrimeDisplayName(unit.unitId)}`;
                             if (unit.remainingHp === 0) {
                                 return `${label}: \`Dead ☠️\``;
                             }

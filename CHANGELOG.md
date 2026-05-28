@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.17.0]
 
-The following patch provides two new commands but also comes with a lot of behind-the-scenes upgrades that will lead to quicker development, better testing possibilities and quicker bugfixing.
+The following patch provides two new commands, some quality-of-life changes to help you decide whether to bomb the remaining hp of a boss or spend a token, and some major structural changes behind the scenes.
 
 ### Added
 
@@ -22,6 +22,11 @@ The following patch provides two new commands but also comes with a lot of behin
 
 ### Changed
 
+- `/gr-availability` and `/available-bombs` now provide insights into whether or not you can kill a boss with bombs
+  - The commands calculate the min, avg, and max damage dealt if everyone with available bombs use them against the current bosses
+  - Bomb damage is based on min and max levels for your guild
+  - The probability of killing the boss or each prime is displayed in a percentage or text if not possible or the boss is already dead.
+  - The damage approximation assumes each bomb's random damage is independent from the others, the damage valuesare uniformly distributed, and all bombs are used
 - Major restructuring of the bot's internals to allow quicker development, better test-coverage, and quicker bug fixes.
 
 ## [1.16.0]
