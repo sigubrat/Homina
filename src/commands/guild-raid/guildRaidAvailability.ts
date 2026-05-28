@@ -7,6 +7,7 @@ import {
     estimateBombDamage,
     estimateBombKillProbability,
 } from "@/lib/utils/mathUtils";
+import { getPrimeDisplayName } from "@/lib/utils/utils";
 import { EncounterType } from "@/models/enums";
 import {
     ChatInputCommandInteraction,
@@ -217,27 +218,42 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         if (totalBombs > 0 && guildLevel && bossUnits) {
             embed.addFields({
                 name: "Boss kill chance with available bombs",
-                value: bossUnits
-                    .map((unit) => {
-                        const label =
-                            unit.encounterType === EncounterType.BOSS
-                                ? "Boss"
-                                : "Side Boss";
-                        if (unit.remainingHp === 0) {
-                            return `${label}: \`Dead ☠️\``;
-                        }
-                        const prob = estimateBombKillProbability(
-                            unit.remainingHp,
-                            totalBombs,
-                            guildLevel,
-                        );
-                        const probDisplay =
-                            prob === 0
-                                ? "Not possible :x:"
-                                : `${(prob * 100).toFixed(1)}%`;
-                        return `${label}: \`${unit.remainingHp.toLocaleString()} HP\` → \`${probDisplay}\``;
+                value:
+                    bossUnits
+                        .map((unit) => {
+                            const label =
+                                unit.encounterType === EncounterType.BOSS
+                                    ? unit.type
+                                    : `${getPrimeDisplayName(unit.unitId)} Side`;
+                            if (unit.remainingHp === 0) {
+                                return `${label}: \`Dead ☠️\``;
+                            }
+                            const prob = estimateBombKillProbability(
+                                unit.remainingHp,
+                                totalBombs,
+                                guildLevel,
+                            );
+                            const probDisplay =
+                                prob === 0
+                                    ? "Not possible ❌"
+                                    : `${(prob * 100).toFixed(1)}%`;
+                            return `${label}: \`${unit.remainingHp.toLocaleString()} HP\` → \`${probDisplay}\``;
+                        })
+                        .join("\n") +
+                    Array.from({
+                        length:
+                            2 -
+                            bossUnits.filter(
+                                (u) =>
+                                    u.encounterType === EncounterType.SIDE_BOSS,
+                            ).length,
                     })
-                    .join("\n"),
+                        .map(
+                            () =>
+                                `${bossUnits[0]?.type ?? "Side Boss"} Side: \`Full HP\``,
+                        )
+                        .join("\n")
+                        .replace(/^(?=.)/, "\n"),
                 inline: false,
             });
         }
