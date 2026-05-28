@@ -216,20 +216,55 @@ export function estimateBombDamage(
     };
 }
 
-export type BombKillState =
-    | "Dead"
-    | "Guaranteed"
-    | "Likely"
-    | "Unlikely"
-    | "Impossible";
+// Abramowitz & Stegun approximation, max error ~1.5e-7
+function erf(x: number): number {
+    const sign = x >= 0 ? 1 : -1;
+    const t = 1 / (1 + 0.3275911 * Math.abs(x));
+    const poly =
+        t *
+        (0.254829592 +
+            t *
+                (-0.284496736 +
+                    t * (1.421413741 + t * (-1.453152027 + t * 1.061405429))));
+    return sign * (1 - poly * Math.exp(-(x * x)));
+}
 
-export function getBossKillState(
+function normalCdf(x: number): number {
+    return 0.5 * (1 + erf(x / Math.SQRT2));
+}
+
+/**
+ * Estimates the probability (0–1) that `available` bombs deal enough total
+ * damage to kill a unit with `remainingHp` HP, for a guild at `guildLevel`.
+ *
+ * Each bomb's damage is modelled as uniform in [min, max]. The sum of N
+ * independent uniform variables is approximated with a normal distribution
+ * (CLT), which is accurate for any realistic number of bombs.
+ *
+ * @returns 1 if the kill is certain, 0 if it is impossible, otherwise a value in (0, 1).
+ */
+export function estimateBombKillProbability(
     hp: number,
-    estimate: BombEstimate,
-): BombKillState {
-    if (hp === 0) return "Dead";
-    if (hp <= estimate.minDamage) return "Guaranteed";
-    if (hp <= estimate.avgDamage) return "Likely";
-    if (hp <= estimate.maxDamage) return "Unlikely";
-    return "Impossible";
+    available: number,
+    guildLevel: number,
+): number {
+    if (hp <= 0) return 1;
+    if (available <= 0) return 0;
+
+    const damageRange = bombDamageByGuildLevel[guildLevel];
+    if (!damageRange) return 0;
+
+    const minTotal = damageRange.min * available;
+    const maxTotal = damageRange.max * available;
+
+    if (hp <= minTotal) return 1;
+    if (hp > maxTotal) return 0;
+
+    // Sum of N uniform[a, b]: mean = N*(a+b)/2, variance = N*(b-a)²/12
+    const mean = (available * (damageRange.min + damageRange.max)) / 2;
+    const variance =
+        (available * Math.pow(damageRange.max - damageRange.min, 2)) / 12;
+    const std = Math.sqrt(variance);
+
+    return 1 - normalCdf((hp - mean) / std);
 }
