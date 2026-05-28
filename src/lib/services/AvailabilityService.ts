@@ -379,13 +379,12 @@ export class AvailabilityService {
         }
     }
 
-    async getCurrentBossUnits(
-        discordId: string,
-    ): Promise<
+    async getCurrentBossUnits(discordId: string): Promise<
         | {
               unitId: string;
               remainingHp: number;
               encounterType: EncounterType;
+              type: string;
           }[]
         | null
     > {
@@ -423,6 +422,7 @@ export class AvailabilityService {
                 unitId: e.unitId,
                 remainingHp: e.remainingHp,
                 encounterType: e.encounterType,
+                type: e.type,
             }));
         } catch (error) {
             logger.error(error, "Error fetching current boss units");
