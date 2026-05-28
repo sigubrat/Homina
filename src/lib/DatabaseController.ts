@@ -423,11 +423,11 @@ export class DatabaseController {
      * Deletes old records from the database for Discord API token mappings
      * that have not been used within the specified maximum age in days.
      *
-     * @param maxAgeInDays - The maximum age in days for tokens to keep. Records older than this will be deleted. Defaults to 30 days.
+     * @param maxAgeInDays - The maximum age in days for tokens to keep. Records older than this will be deleted. Defaults to 60 days.
      * @returns A list of user IDs whose tokens were deleted.
      */
     public async cleanupOldTokens(
-        maxAgeInDays: number = 30,
+        maxAgeInDays: number = 60,
     ): Promise<string[]> {
         try {
             const cutoffDate = new Date();
