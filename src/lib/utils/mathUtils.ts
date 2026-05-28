@@ -215,3 +215,21 @@ export function estimateBombDamage(
         avgDamage: averageDamage * available,
     };
 }
+
+export type BombKillState =
+    | "Dead"
+    | "Guaranteed"
+    | "Likely"
+    | "Unlikely"
+    | "Impossible";
+
+export function getBossKillState(
+    hp: number,
+    estimate: BombEstimate,
+): BombKillState {
+    if (hp === 0) return "Dead";
+    if (hp <= estimate.minDamage) return "Guaranteed";
+    if (hp <= estimate.avgDamage) return "Likely";
+    if (hp <= estimate.maxDamage) return "Unlikely";
+    return "Impossible";
+}

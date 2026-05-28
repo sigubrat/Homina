@@ -3,7 +3,8 @@ import { GuildService } from "@/lib/services/GuildService";
 import { AvailabilityService } from "@/lib/services/AvailabilityService";
 import { toMinutes } from "@/lib/utils/timeUtils";
 import { replaceUserIdKeysWithDisplayNames } from "@/lib/utils/userUtils";
-import { estimateBombDamage } from "@/lib/utils/mathUtils";
+import { estimateBombDamage, getBossKillState } from "@/lib/utils/mathUtils";
+import { EncounterType } from "@/models/enums";
 import {
     ChatInputCommandInteraction,
     EmbedBuilder,
@@ -93,7 +94,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const formattedTotalBombs = `${miscEmojis.bomb} \`${totalBombs}/${maxBombs}\``;
 
-        const guildLevel = await service.getGuildLevel(interaction.user.id);
+        const [guildLevel, bossUnits] = await Promise.all([
+            service.getGuildLevel(interaction.user.id),
+            availabilityService.getCurrentBossUnits(interaction.user.id),
+        ]);
         const bombEstimate =
             totalBombs > 0 && guildLevel
                 ? estimateBombDamage(totalBombs, guildLevel)
@@ -202,7 +206,27 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         if (bombEstimate) {
             embed.addFields({
                 name: "Estimated total bomb damage based on your guild level and available bombs",
-                value: `Min: \`${bombEstimate?.minDamage.toLocaleString()}\` \nAvg: \`${bombEstimate?.avgDamage.toLocaleString()}\` \nMax: \`${bombEstimate?.maxDamage.toLocaleString()}\``,
+                value: `Min: \`${bombEstimate.minDamage.toLocaleString()}\` \nAvg: \`${bombEstimate.avgDamage.toLocaleString()}\` \nMax: \`${bombEstimate.maxDamage.toLocaleString()}\``,
+                inline: false,
+            });
+        }
+
+        if (bombEstimate && bossUnits) {
+            embed.addFields({
+                name: "Boss kill chance with available bombs",
+                value: bossUnits
+                    .map((unit) => {
+                        const label =
+                            unit.encounterType === EncounterType.BOSS
+                                ? "Boss"
+                                : "Side Boss";
+                        const state = getBossKillState(
+                            unit.remainingHp,
+                            bombEstimate,
+                        );
+                        return `${label}: \`${unit.remainingHp.toLocaleString()} HP\` → \`${state}\``;
+                    })
+                    .join("\n"),
                 inline: false,
             });
         }
