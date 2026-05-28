@@ -1,7 +1,7 @@
 import {
     estimateBombDamage,
+    estimateBombKillProbability,
     formatDelta,
-    getBossKillState,
     getTopNDamageDealers,
     isValidUUIDv4,
     linearRegression,
@@ -413,38 +413,65 @@ describe("mathUtilsSuite - estimateBombDamage", () => {
     });
 });
 
-describe("mathUtilsSuite - getBossKillState", () => {
-    const estimate = { minDamage: 100, avgDamage: 150, maxDamage: 200 };
+describe("mathUtilsSuite - estimateBombKillProbability", () => {
+    // Level 1: min=80, max=100 per bomb
+    // 5 bombs: minTotal=400, maxTotal=500, mean=450
 
-    test("returns Dead when hp is 0", () => {
-        expect(getBossKillState(0, estimate)).toBe("Dead");
+    test("returns 1 when hp is 0 (already dead)", () => {
+        expect(estimateBombKillProbability(0, 5, 1)).toBe(1);
     });
 
-    test("returns Guaranteed when hp equals minDamage", () => {
-        expect(getBossKillState(100, estimate)).toBe("Guaranteed");
+    test("returns 1 when hp is negative", () => {
+        expect(estimateBombKillProbability(-1, 5, 1)).toBe(1);
     });
 
-    test("returns Guaranteed when hp is below minDamage", () => {
-        expect(getBossKillState(50, estimate)).toBe("Guaranteed");
+    test("returns 0 when no bombs are available", () => {
+        expect(estimateBombKillProbability(100, 0, 1)).toBe(0);
     });
 
-    test("returns Likely when hp is between minDamage and avgDamage", () => {
-        expect(getBossKillState(125, estimate)).toBe("Likely");
+    test("returns 0 for an unknown guild level", () => {
+        expect(estimateBombKillProbability(100, 5, 0)).toBe(0);
     });
 
-    test("returns Likely when hp equals avgDamage", () => {
-        expect(getBossKillState(150, estimate)).toBe("Likely");
+    test("returns 1 when hp equals minTotal (guaranteed)", () => {
+        expect(estimateBombKillProbability(400, 5, 1)).toBe(1);
     });
 
-    test("returns Unlikely when hp is between avgDamage and maxDamage", () => {
-        expect(getBossKillState(175, estimate)).toBe("Unlikely");
+    test("returns 1 when hp is below minTotal", () => {
+        expect(estimateBombKillProbability(300, 5, 1)).toBe(1);
     });
 
-    test("returns Unlikely when hp equals maxDamage", () => {
-        expect(getBossKillState(200, estimate)).toBe("Unlikely");
+    test("returns 0 when hp exceeds maxTotal (impossible)", () => {
+        expect(estimateBombKillProbability(501, 5, 1)).toBe(0);
     });
 
-    test("returns Impossible when hp exceeds maxDamage", () => {
-        expect(getBossKillState(201, estimate)).toBe("Impossible");
+    test("returns ~0.5 when hp equals the mean", () => {
+        // mean = 5 * (80+100)/2 = 450
+        const result = estimateBombKillProbability(450, 5, 1);
+        expect(result).toBeCloseTo(0.5, 1);
+    });
+
+    test("returns > 0.5 when hp is below the mean", () => {
+        const result = estimateBombKillProbability(430, 5, 1);
+        expect(result).toBeGreaterThan(0.5);
+        expect(result).toBeLessThan(1);
+    });
+
+    test("returns < 0.5 when hp is above the mean", () => {
+        const result = estimateBombKillProbability(470, 5, 1);
+        expect(result).toBeLessThan(0.5);
+        expect(result).toBeGreaterThan(0);
+    });
+
+    test("higher hp yields lower probability", () => {
+        const low = estimateBombKillProbability(420, 5, 1);
+        const high = estimateBombKillProbability(480, 5, 1);
+        expect(low).toBeGreaterThan(high);
+    });
+
+    test("more bombs yields higher probability for the same hp", () => {
+        const fewer = estimateBombKillProbability(450, 5, 1);
+        const more = estimateBombKillProbability(450, 8, 1);
+        expect(more).toBeGreaterThan(fewer);
     });
 });

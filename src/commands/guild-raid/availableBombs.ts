@@ -4,7 +4,10 @@ import { GuildService } from "@/lib/services/GuildService";
 import { AvailabilityService } from "@/lib/services/AvailabilityService";
 import { replaceUserIdKeysWithDisplayNames } from "@/lib/utils/userUtils";
 import { toMinutes, withinNextHour } from "@/lib/utils/timeUtils";
-import { estimateBombDamage, getBossKillState } from "@/lib/utils/mathUtils";
+import {
+    estimateBombDamage,
+    estimateBombKillProbability,
+} from "@/lib/utils/mathUtils";
 import { EncounterType } from "@/models/enums";
 import {
     ChatInputCommandInteraction,
@@ -156,7 +159,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 value: `Min: \`${bombEstimate?.minDamage.toLocaleString()}\` \nAvg: \`${bombEstimate?.avgDamage.toLocaleString()}\` \nMax: \`${bombEstimate?.maxDamage.toLocaleString()}\``,
                 inline: false,
             },
-            ...(bombEstimate && bossUnits
+            ...(totalBombs > 0 && guildLevel && bossUnits
                 ? [
                       {
                           name: "Boss kill chance with available bombs",
@@ -166,11 +169,19 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                                       unit.encounterType === EncounterType.BOSS
                                           ? "Boss"
                                           : "Side Boss";
-                                  const state = getBossKillState(
+                                  if (unit.remainingHp === 0) {
+                                      return `${label}: \`Dead ☠️\``;
+                                  }
+                                  const prob = estimateBombKillProbability(
                                       unit.remainingHp,
-                                      bombEstimate,
+                                      totalBombs,
+                                      guildLevel,
                                   );
-                                  return `${label}: \`${unit.remainingHp.toLocaleString()} HP\` → \`${state}\``;
+                                  const probDisplay =
+                                      prob === 0
+                                          ? "Not possible :x:"
+                                          : `${(prob * 100).toFixed(1)}%`;
+                                  return `${label}: \`${unit.remainingHp.toLocaleString()} HP\` → \`${probDisplay}\``;
                               })
                               .join("\n"),
                           inline: false,
