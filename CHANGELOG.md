@@ -28,6 +28,7 @@ The following patch provides two new commands, some quality-of-life changes to h
   - The probability of killing the boss or each prime is displayed in a percentage or text if not possible or the boss is already dead.
   - The damage approximation assumes each bomb's random damage is independent from the others, the damage valuesare uniformly distributed, and all bombs are used
 - Major restructuring of the bot's internals to allow quicker development, better test-coverage, and quicker bug fixes.
+- Automatic user cleanup changed from 30 to 60 days to avoid confusion when using it after a short break
 
 ## [1.16.0]
 
