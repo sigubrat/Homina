@@ -5,4 +5,5 @@ export enum BotEventType {
     USER_DELETE = "user_delete",
     USER_REVOKE = "user_revoke",
     USER_CLEANUP = "user_cleanup",
+    BOT_EVENT = "bot_event",
 }
