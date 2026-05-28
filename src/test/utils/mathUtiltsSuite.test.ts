@@ -1,6 +1,7 @@
 import {
     estimateBombDamage,
     formatDelta,
+    getBossKillState,
     getTopNDamageDealers,
     isValidUUIDv4,
     linearRegression,
@@ -409,5 +410,41 @@ describe("mathUtilsSuite - estimateBombDamage", () => {
         expect(() => estimateBombDamage(5, 61)).toThrow(
             "No bomb damage data available for guild level 61",
         );
+    });
+});
+
+describe("mathUtilsSuite - getBossKillState", () => {
+    const estimate = { minDamage: 100, avgDamage: 150, maxDamage: 200 };
+
+    test("returns Dead when hp is 0", () => {
+        expect(getBossKillState(0, estimate)).toBe("Dead");
+    });
+
+    test("returns Guaranteed when hp equals minDamage", () => {
+        expect(getBossKillState(100, estimate)).toBe("Guaranteed");
+    });
+
+    test("returns Guaranteed when hp is below minDamage", () => {
+        expect(getBossKillState(50, estimate)).toBe("Guaranteed");
+    });
+
+    test("returns Likely when hp is between minDamage and avgDamage", () => {
+        expect(getBossKillState(125, estimate)).toBe("Likely");
+    });
+
+    test("returns Likely when hp equals avgDamage", () => {
+        expect(getBossKillState(150, estimate)).toBe("Likely");
+    });
+
+    test("returns Unlikely when hp is between avgDamage and maxDamage", () => {
+        expect(getBossKillState(175, estimate)).toBe("Unlikely");
+    });
+
+    test("returns Unlikely when hp equals maxDamage", () => {
+        expect(getBossKillState(200, estimate)).toBe("Unlikely");
+    });
+
+    test("returns Impossible when hp exceeds maxDamage", () => {
+        expect(getBossKillState(201, estimate)).toBe("Impossible");
     });
 });
