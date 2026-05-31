@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<!-- ===================== SEO ===================== -->
+<title>Homina — Tacticus Discord Bot for Guild Raid Analytics</title>
+<meta name="description" content="Homina is a free Warhammer 40,000: Tacticus Discord bot that turns your guild's raid data into clear charts — damage, tokens, bombs, participation and season trends." />
+<meta name="keywords" content="Tacticus Discord bot, Warhammer 40k Tacticus, Tacticus bot, Tacticus guild raid, guild raid analytics, Tacticus tools, Discord bot, Warhammer 40000 Tacticus" />
+<meta name="author" content="sigubrat" />
+<meta name="robots" content="index, follow" />
+<meta name="theme-color" content="#0c0b0d" />
+<link rel="canonical" href="https://sigubrat.github.io/Homina/" />
+<link rel="icon" type="image/jpeg" href="assets/logo.jpg" />
+<link rel="apple-touch-icon" href="assets/logo.jpg" />
+
+<!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Homina" />
+<meta property="og:title" content="Homina — Tacticus Discord Bot for Guild Raid Analytics" />
+<meta property="og:description" content="A free Warhammer 40,000: Tacticus Discord bot that turns your guild's raid data into clear charts — damage, tokens, bombs, participation and season trends." />
+<meta property="og:url" content="https://sigubrat.github.io/Homina/" />
+<meta property="og:image" content="https://sigubrat.github.io/Homina/assets/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Homina — a Warhammer 40,000: Tacticus guild raid analytics Discord bot" />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Homina — Tacticus Discord Bot for Guild Raid Analytics" />
+<meta name="twitter:description" content="A free Warhammer 40,000: Tacticus Discord bot for guild raid analytics — damage, tokens, bombs, participation and season trends." />
+<meta name="twitter:image" content="https://sigubrat.github.io/Homina/assets/og-image.png" />
+
+<!-- Structured data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://sigubrat.github.io/Homina/#website",
+      "url": "https://sigubrat.github.io/Homina/",
+      "name": "Homina",
+      "description": "A Warhammer 40,000: Tacticus Discord bot for guild raid analytics.",
+      "inLanguage": "en"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "Homina",
+      "applicationCategory": "Discord bot",
+      "applicationSubCategory": "Warhammer 40,000: Tacticus guild raid analytics",
+      "operatingSystem": "Discord",
+      "url": "https://sigubrat.github.io/Homina/",
+      "downloadUrl": "https://discord.com/discovery/applications/1351837170498801714",
+      "description": "Homina is a free Warhammer 40,000: Tacticus Discord bot that turns your guild's raid data into clear, decision-ready charts — damage, tokens, bombs, participation and season trends. 40+ slash commands, powered by the official Tacticus API.",
+      "image": "https://sigubrat.github.io/Homina/assets/og-image.png",
+      "author": { "@type": "Person", "name": "sigubrat", "url": "https://github.com/sigubrat" },
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "softwareHelp": "https://sigubrat.github.io/Homina/commands.html",
+      "sameAs": [
+        "https://github.com/sigubrat/Homina",
+        "https://discord.gg/FajYxuWY9b",
+        "https://discord.com/discovery/applications/1351837170498801714"
+      ]
+    }
+  ]
+}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600;700;800&family=Marcellus&family=Cormorant+Garamond:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body class="fx-tempcode">
+
+<div class="grain"></div>
+<div class="vignette"></div>
+
+<!-- ===================== NAV ===================== -->
+<nav class="nav">
+    <div class="nav-inner">
+        <a class="brand" href="index.html">
+            <img src="assets/logo.jpg" alt="Homina logo" />
+            <span class="wordmark">HOMINA</span>
+        </a>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#showcase">Examples</a>
+            <a href="#start">Get started</a>
+            <a href="commands.html">Commands</a>
+            <a href="#support">Support</a>
+        </div>
+        <div class="nav-cta">
+            <a class="icon-btn" href="https://github.com/sigubrat/Homina" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.5v-2c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.4-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0C18 5.6 19 5.9 19 5.9c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.2c0 .3.2.6.8.5A11.5 11.5 0 0 0 23.5 12C23.5 5.7 18.3.5 12 .5z"/></svg>
+            </a>
+            <a class="icon-btn" href="https://discord.gg/FajYxuWY9b" target="_blank" rel="noopener" aria-label="Discord" title="Support server">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.3.5c1.7.4 2.5.9 3.4 1.5a13 13 0 0 0-10.9 0c.9-.6 1.8-1.1 3.4-1.5L10.6 3a19.8 19.8 0 0 0-4.9 1.4C2.6 9 1.8 13.5 2.2 18a20 20 0 0 0 6 3l.5-.9c-.8-.3-1.6-.7-2.3-1.2l.5-.4a14.3 14.3 0 0 0 12.2 0l.5.4c-.7.5-1.5.9-2.3 1.2l.5.9a20 20 0 0 0 6-3c.5-5.2-.8-9.7-3.5-13.6zM9 15.3c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2zm6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2z"/></svg>
+            </a>
+            <a class="btn btn-primary" href="https://discord.com/discovery/applications/1351837170498801714" target="_blank" rel="noopener">Add the bot</a>
+        </div>
+    </div>
+</nav>
+
+<!-- ===================== HERO ===================== -->
+<header class="hero" id="top">
+    <div class="hero-glow"></div>
+    <div class="hero-field" id="field">
+        <div class="float-card" style="left:17%;top:34%;--w:300px;--op:.42;--blur:2px;--rot:-6deg;--dur:17s;" data-depth="0.5">
+            <div class="fc-inner"><img src="assets/graph-damage-history.png" alt="" /></div>
+        </div>
+        <div class="float-card" style="left:83%;top:30%;--w:330px;--op:.46;--blur:1px;--rot:5deg;--dur:21s;" data-depth="0.85">
+            <div class="fc-inner"><img src="assets/graph-relative-performance.png" alt="" /></div>
+        </div>
+        <div class="float-card" style="left:24%;top:74%;--w:250px;--op:.34;--blur:3px;--rot:4deg;--dur:19s;" data-depth="0.35">
+            <div class="fc-inner"><img src="assets/graph-season-tokens.png" alt="" /></div>
+        </div>
+        <div class="float-card" style="left:80%;top:75%;--w:240px;--op:.36;--blur:2px;--rot:-5deg;--dur:23s;" data-depth="0.6">
+            <div class="fc-inner"><img src="assets/graph-available-bombs.png" alt="" /></div>
+        </div>
+        <div class="float-card" style="left:50%;top:16%;--w:240px;--op:.26;--blur:4px;--rot:0deg;--dur:25s;" data-depth="0.2">
+            <div class="fc-inner"><img src="assets/graph-damage-history.png" alt="" /></div>
+        </div>
+    </div>
+
+    <div class="hero-inner">
+        <div class="seal">
+            <img src="assets/logo.jpg" alt="Homina seal" />
+        </div>
+        <div class="hero-eyebrow"><span class="pip"></span> Warhammer 40,000: Tacticus</div>
+        <h1 class="hero-title">HOMINA<span class="sr-only"> — the Warhammer 40,000: Tacticus Discord bot for guild raid analytics</span></h1>
+        <div class="hero-sub">Guild Raid Analytics · For the Omnissiah</div>
+        <p class="hero-lede">A Discord bot that turns your guild's Tacticus API data into <strong>clear, decision-ready charts</strong> — damage, tokens, bombs, participation and season trends. The cogitator does the maths, so your leaders don't have to.</p>
+        <div class="hero-cta">
+            <a class="btn btn-primary" href="https://discord.com/discovery/applications/1351837170498801714" target="_blank" rel="noopener">
+                Add to your server
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+            <a class="btn btn-ghost" href="commands.html">Browse commands</a>
+        </div>
+        <div class="hero-stats">
+            <div class="stat"><b>40+</b><span>Slash commands</span></div>
+            <div class="stat"><b>Live</b><span>Tacticus API data</span></div>
+            <div class="stat"><b>Open</b><span>Source · GitHub</span></div>
+        </div>
+    </div>
+
+    <a class="scroll-hint" href="#features">
+        <span>Scroll</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+</header>
+
+<!-- ===================== FEATURES ===================== -->
+<section class="section" id="features">
+    <div class="wrap">
+        <div class="section-head">
+            <span class="kicker">What it does</span>
+            <h2 class="section-title">Every angle of your Guild Raid, measured.</h2>
+            <p class="section-sub">Homina reads your guild's raid data straight from the official Tacticus API and renders it as charts and readouts your members can actually act on.</p>
+        </div>
+        <div class="features">
+            <article class="feature">
+                <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18" stroke-linecap="round"/><rect x="6" y="11" width="3" height="6"/><rect x="11" y="7" width="3" height="10"/><rect x="16" y="13" width="3" height="4"/></svg></div>
+                <h3>Damage &amp; Performance</h3>
+                <p>See exactly who's carrying the season — total damage, damage-per-token, and how each member stacks up against the guild average.</p>
+                <div class="chips"><span class="chip">gr-damage-history</span><span class="chip">relative-performance</span><span class="chip">member-stats-per-season</span></div>
+            </article>
+            <article class="feature">
+                <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M9.5 10h3.5a1.5 1.5 0 0 1 0 3H10a1.5 1.5 0 0 0 0 3h3.5" stroke-linecap="round"/></svg></div>
+                <h3>Token Economy</h3>
+                <p>Track token usage and efficiency across the guild — medians, standard deviation, tokens-per-loop and estimated availability per member.</p>
+                <div class="chips"><span class="chip">season-tokens</span><span class="chip">tokens-per-loop</span><span class="chip">token-history</span></div>
+            </article>
+            <article class="feature">
+                <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="14" r="6"/><path d="M15 7l3-3M17 4l2 2M19 6l2-1" stroke-linecap="round"/></svg></div>
+                <h3>Bomb Tracking</h3>
+                <p>Know who has bombs ready right now, project total bomb damage for your guild level, and copy-paste ping lists straight into chat.</p>
+                <div class="chips"><span class="chip">available-bombs</span><span class="chip">season-bombs</span></div>
+            </article>
+            <article class="feature">
+                <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 17l6-6 4 4 8-8" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 7h5v5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <h3>Season Trends</h3>
+                <p>Plot guild credits, loops and damage across many seasons to spot momentum, slumps and the impact of roster changes over time.</p>
+                <div class="chips"><span class="chip">guild-credits-history</span><span class="chip">loops-history</span><span class="chip">season-by-rarity</span></div>
+            </article>
+            <article class="feature">
+                <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20v-1a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v1" stroke-linecap="round"/><circle cx="10" cy="8" r="3.2"/><path d="M17 11l2 2 3-3.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <h3>Participation &amp; Activity</h3>
+                <p>Surface inactivity by season, activity-per-hour patterns and per-member participation so leaders can manage the roster fairly.</p>
+                <div class="chips"><span class="chip">season-participation</span><span class="chip">inactivity-by-season</span><span class="chip">activity-per-hour</span></div>
+            </article>
+            <article class="feature">
+                <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" stroke-linecap="round"/></svg></div>
+                <h3>Guild Management</h3>
+                <p>Register members with scoped API keys, set friendly nicknames, invite teammates and manage access — all from inside Discord.</p>
+                <div class="chips"><span class="chip">register</span><span class="chip">invite-user</span><span class="chip">set-player-nickname</span></div>
+            </article>
+        </div>
+    </div>
+</section>
+
+<!-- ===================== SHOWCASE ===================== -->
+<section class="section alt" id="showcase">
+    <div class="wrap">
+        <div class="section-head center">
+            <span class="kicker">Example output</span>
+            <h2 class="section-title">Charts your guild will actually read.</h2>
+            <p class="section-sub">Every command returns a clean, annotated graphic — colour-coded, with medians and context baked in.</p>
+        </div>
+        <div class="showcase">
+            <figure class="shot">
+                <div class="shot-head"><span class="dot"></span><span class="cmd">member-stats-per-season</span></div>
+                <div class="shot-img"><img src="assets/graph-damage-history.png" alt="Per-member damage breakdown chart" /></div>
+                <figcaption class="shot-cap"><b>Damage breakdown.</b> Total damage, average &amp; max damage-per-token and the guild median, ranked member by member.</figcaption>
+            </figure>
+            <figure class="shot">
+                <div class="shot-head"><span class="dot"></span><span class="cmd">relative-performance</span></div>
+                <div class="shot-img"><img src="assets/graph-relative-performance.png" alt="Relative performance chart" /></div>
+                <figcaption class="shot-cap"><b>Above or below average.</b> A diverging view of how far each member sits from the guild's mean performance.</figcaption>
+            </figure>
+            <figure class="shot">
+                <div class="shot-head"><span class="dot"></span><span class="cmd">season-tokens</span></div>
+                <div class="shot-img"><img src="assets/graph-season-tokens.png" alt="Season tokens chart in Discord" /></div>
+                <figcaption class="shot-cap"><b>Token usage.</b> Per-member tokens with the guild median, standard deviation and estimated available tokens.</figcaption>
+            </figure>
+            <figure class="shot">
+                <div class="shot-head"><span class="dot"></span><span class="cmd">available-bombs</span></div>
+                <div class="shot-img"><img src="assets/graph-available-bombs.png" alt="Available bombs readout in Discord" /></div>
+                <figcaption class="shot-cap"><b>Bomb readiness.</b> Who's ready, projected bomb damage, boss-kill chances and a copy-paste ping list.</figcaption>
+            </figure>
+        </div>
+    </div>
+</section>
+
+<!-- ===================== GET STARTED ===================== -->
+<section class="section" id="start">
+    <div class="wrap">
+        <div class="section-head">
+            <span class="kicker">Get started</span>
+            <h2 class="section-title">Up and running in three rites.</h2>
+        </div>
+        <div class="steps">
+            <div class="step">
+                <div class="num">RITE 01</div>
+                <h3>Add Homina</h3>
+                <p>Invite the bot to your Discord server from its application page, or join the support server to try it first.</p>
+            </div>
+            <div class="step">
+                <div class="num">RITE 02</div>
+                <h3>Register your guild</h3>
+                <p>Run <code>/register</code> with an API key created by a (co-)leader with <strong>Guild</strong> and <strong>Raid</strong> scope. That's the whole setup.</p>
+            </div>
+            <div class="step">
+                <div class="num">RITE 03</div>
+                <h3>Invoke the cogitator</h3>
+                <p>Use any command — start with <code>/help</code> or <code>/season-tokens</code> — and Homina returns the chart in seconds.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===================== SUPPORT ===================== -->
+<section class="section alt" id="support">
+    <div class="wrap">
+        <div class="section-head center">
+            <span class="kicker">Support the work</span>
+            <h2 class="section-title">Help keep the machine-spirit fed.</h2>
+            <p class="section-sub">Homina is free and open source. If it helps your guild, here are a few ways to give back — the easiest costs you nothing.</p>
+        </div>
+
+        <div class="temp-banner" id="temp-banner">
+            <span class="tb-label">Active code</span>
+            <span class="tb-code" id="temp-code">MACHINESPIRIT</span>
+            <span class="tb-note" id="temp-note">Limited-time raffle code — redeem in-game before it expires.</span>
+        </div>
+
+        <div class="support-grid">
+            <div class="referral">
+                <span class="tag">◇ Costs you nothing</span>
+                <h3>Use my friend referral code</h3>
+                <p>Redeem this permanent code <strong>once</strong> in Tacticus. As you level up, I earn small creator rewards — the simplest way to support development, and you keep playing exactly as you would anyway.</p>
+                <div class="code-pill">
+                    <span class="code" id="referral-code">HUG-44-CAN</span>
+                    <button type="button" data-copy="referral-code">Copy</button>
+                </div>
+            </div>
+            <div class="support-side">
+                <a class="coffee" href="https://www.buymeacoffee.com/homina" target="_blank" rel="noopener">
+                    <div class="c-icon">☕</div>
+                    <h3>Buy me a coffee</h3>
+                    <p>Chip in toward hosting and the late nights spent feeding the cogitator. Every bit is appreciated.</p>
+                    <span class="lc-go">buymeacoffee.com/homina</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===================== LINKS ===================== -->
+<section class="section" id="links">
+    <div class="wrap">
+        <div class="links">
+            <a class="link-card" href="https://discord.com/discovery/applications/1351837170498801714" target="_blank" rel="noopener">
+                <div class="lc-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.3.5c1.7.4 2.5.9 3.4 1.5a13 13 0 0 0-10.9 0c.9-.6 1.8-1.1 3.4-1.5L10.6 3a19.8 19.8 0 0 0-4.9 1.4C2.6 9 1.8 13.5 2.2 18a20 20 0 0 0 6 3l.5-.9c-.8-.3-1.6-.7-2.3-1.2l.5-.4a14.3 14.3 0 0 0 12.2 0l.5.4c-.7.5-1.5.9-2.3 1.2l.5.9a20 20 0 0 0 6-3c.5-5.2-.8-9.7-3.5-13.6zM9 15.3c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2zm6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2z"/></svg></div>
+                <h3>Add the bot</h3>
+                <p>Find Homina on Discord's app directory and add it to your server in a couple of clicks.</p>
+                <span class="lc-go">App directory <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            </a>
+            <a class="link-card" href="https://discord.gg/FajYxuWY9b" target="_blank" rel="noopener">
+                <div class="lc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6A8.4 8.4 0 0 1 12.5 3H13a8.5 8.5 0 0 1 8 8v.5z" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <h3>Support server</h3>
+                <p>Questions, bug reports and feature requests — join the community and get help directly.</p>
+                <span class="lc-go">Join Discord <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            </a>
+            <a class="link-card" href="https://github.com/sigubrat/Homina" target="_blank" rel="noopener">
+                <div class="lc-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.5v-2c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.4-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0C18 5.6 19 5.9 19 5.9c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.2c0 .3.2.6.8.5A11.5 11.5 0 0 0 23.5 12C23.5 5.7 18.3.5 12 .5z"/></svg></div>
+                <h3>Source on GitHub</h3>
+                <p>Homina is fully open source. Read the code, open issues, or contribute a command of your own.</p>
+                <span class="lc-go">sigubrat/Homina <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="footer">
+    <div class="wrap">
+        <div class="footer-main">
+            <div class="footer-magos">
+                <img src="assets/magos-penguin.png" alt="Homina's Magos mascot" />
+                <div>
+                    <div class="tag">Built by a Tool Builder &amp; Player Ambassador</div>
+                    <h3>Forged for the Tacticus community</h3>
+                    <p>Homina is a community project by an official Player Ambassador and Tool Builder program member. Not affiliated with or endorsed by Snowprint Studios.</p>
+                </div>
+            </div>
+            <div class="footer-links">
+                <a class="icon-btn" href="https://github.com/sigubrat/Homina" target="_blank" rel="noopener" aria-label="GitHub">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.5v-2c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.4-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0C18 5.6 19 5.9 19 5.9c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.2c0 .3.2.6.8.5A11.5 11.5 0 0 0 23.5 12C23.5 5.7 18.3.5 12 .5z"/></svg>
+                </a>
+                <a class="icon-btn" href="https://discord.gg/FajYxuWY9b" target="_blank" rel="noopener" aria-label="Discord">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.3.5c1.7.4 2.5.9 3.4 1.5a13 13 0 0 0-10.9 0c.9-.6 1.8-1.1 3.4-1.5L10.6 3a19.8 19.8 0 0 0-4.9 1.4C2.6 9 1.8 13.5 2.2 18a20 20 0 0 0 6 3l.5-.9c-.8-.3-1.6-.7-2.3-1.2l.5-.4a14.3 14.3 0 0 0 12.2 0l.5.4c-.7.5-1.5.9-2.3 1.2l.5.9a20 20 0 0 0 6-3c.5-5.2-.8-9.7-3.5-13.6zM9 15.3c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2zm6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2z"/></svg>
+                </a>
+                <a class="icon-btn" href="https://www.buymeacoffee.com/homina" target="_blank" rel="noopener" aria-label="Buy me a coffee">☕</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>© <span id="year">2026</span> Homina · A Warhammer 40,000: Tacticus community tool</span>
+            <span><a href="commands.html">Command docs</a> · <a href="https://github.com/sigubrat/Homina" target="_blank" rel="noopener">Open source</a></span>
+        </div>
+    </div>
+</footer>
+
+<!-- ===================== TWEAKS MOUNT ===================== -->
+<div id="tweaks-root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="tweaks-app.jsx"></script>
+
+<script>
+(function () {
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    /* ---- mouse + scroll parallax on hero float cards ---- */
+    var field = document.getElementById("field");
+    var cards = field ? Array.prototype.slice.call(field.querySelectorAll(".float-card")) : [];
+    var mx = 0, my = 0, sy = 0;
+    function strength() {
+        return window.__parallaxStrength != null ? window.__parallaxStrength : 14;
+    }
+    function apply() {
+        var s = strength();
+        for (var i = 0; i < cards.length; i++) {
+            var d = parseFloat(cards[i].getAttribute("data-depth")) || 0.4;
+            var px = mx * s * d;
+            var py = my * s * d + sy * d * 0.25;
+            cards[i].style.setProperty("--px", px.toFixed(1) + "px");
+            cards[i].style.setProperty("--py", py.toFixed(1) + "px");
+        }
+    }
+    window.addEventListener("mousemove", function (e) {
+        mx = (e.clientX / window.innerWidth - 0.5) * 2;
+        my = (e.clientY / window.innerHeight - 0.5) * 2;
+        apply();
+    });
+    window.addEventListener("scroll", function () {
+        sy = -window.scrollY * 0.06;
+        apply();
+    }, { passive: true });
+
+    /* ---- copy buttons ---- */
+    document.addEventListener("click", function (e) {
+        var btn = e.target.closest("[data-copy]");
+        if (!btn) return;
+        var el = document.getElementById(btn.getAttribute("data-copy"));
+        if (!el) return;
+        var text = el.textContent.trim();
+        navigator.clipboard && navigator.clipboard.writeText(text);
+        var old = btn.textContent;
+        btn.textContent = "Copied ✓";
+        btn.classList.add("copied");
+        setTimeout(function () {
+            btn.textContent = old;
+            btn.classList.remove("copied");
+        }, 1600);
+    });
+
+    /* ---- nav active section highlight ---- */
+    var navLinks = Array.prototype.slice.call(document.querySelectorAll(".nav-links a[href^='#']"));
+    var sections = navLinks.map(function (a) {
+        return document.querySelector(a.getAttribute("href"));
+    });
+    window.addEventListener("scroll", function () {
+        var pos = window.scrollY + 120;
+        var current = -1;
+        for (var i = 0; i < sections.length; i++) {
+            if (sections[i] && sections[i].offsetTop <= pos) current = i;
+        }
+        navLinks.forEach(function (a, i) {
+            a.classList.toggle("active", i === current);
+        });
+    }, { passive: true });
+})();
+</script>
+</body>
+</html>

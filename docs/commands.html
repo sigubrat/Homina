@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<!-- ===================== SEO ===================== -->
+<title>Command List — Homina Tacticus Discord Bot Docs</title>
+<meta name="description" content="Full command reference for Homina, the Warhammer 40,000: Tacticus Discord bot. 40+ slash commands for guild raid damage, tokens, bombs, participation and season analytics." />
+<meta name="keywords" content="Tacticus Discord bot commands, Homina commands, Tacticus bot docs, Warhammer 40k Tacticus guild raid, Tacticus slash commands, guild raid analytics" />
+<meta name="author" content="sigubrat" />
+<meta name="robots" content="index, follow" />
+<meta name="theme-color" content="#0c0b0d" />
+<link rel="canonical" href="https://sigubrat.github.io/Homina/commands.html" />
+<link rel="icon" type="image/jpeg" href="assets/logo.jpg" />
+<link rel="apple-touch-icon" href="assets/logo.jpg" />
+
+<!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Homina" />
+<meta property="og:title" content="Command List — Homina Tacticus Discord Bot Docs" />
+<meta property="og:description" content="Full command reference for Homina, the Warhammer 40,000: Tacticus Discord bot. 40+ slash commands for guild raid damage, tokens, bombs and season analytics." />
+<meta property="og:url" content="https://sigubrat.github.io/Homina/commands.html" />
+<meta property="og:image" content="https://sigubrat.github.io/Homina/assets/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Homina — a Warhammer 40,000: Tacticus guild raid analytics Discord bot" />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Command List — Homina Tacticus Discord Bot Docs" />
+<meta name="twitter:description" content="Full command reference for the Homina Warhammer 40,000: Tacticus Discord bot — 40+ guild raid analytics commands." />
+<meta name="twitter:image" content="https://sigubrat.github.io/Homina/assets/og-image.png" />
+
+<!-- Structured data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Homina Command Codex — Tacticus Discord Bot Commands",
+  "description": "Complete documentation of every Homina slash command for Warhammer 40,000: Tacticus guild raid analytics.",
+  "inLanguage": "en",
+  "image": "https://sigubrat.github.io/Homina/assets/og-image.png",
+  "author": { "@type": "Person", "name": "sigubrat", "url": "https://github.com/sigubrat" },
+  "about": { "@type": "SoftwareApplication", "name": "Homina", "applicationCategory": "Discord bot", "url": "https://sigubrat.github.io/Homina/" },
+  "mainEntityOfPage": "https://sigubrat.github.io/Homina/commands.html"
+}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600;700;800&family=Marcellus&family=Cormorant+Garamond:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body class="fx-tempcode">
+
+<div class="grain"></div>
+<div class="vignette"></div>
+
+<!-- ===================== NAV ===================== -->
+<nav class="nav">
+    <div class="nav-inner">
+        <a class="brand" href="index.html">
+            <img src="assets/logo.jpg" alt="Homina logo" />
+            <span class="wordmark">HOMINA</span>
+        </a>
+        <div class="nav-links">
+            <a href="index.html#features">Features</a>
+            <a href="index.html#showcase">Examples</a>
+            <a href="index.html#start">Get started</a>
+            <a href="commands.html" class="active">Commands</a>
+            <a href="index.html#support">Support</a>
+        </div>
+        <div class="nav-cta">
+            <a class="icon-btn" href="https://github.com/sigubrat/Homina" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.5v-2c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.4-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0C18 5.6 19 5.9 19 5.9c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.2c0 .3.2.6.8.5A11.5 11.5 0 0 0 23.5 12C23.5 5.7 18.3.5 12 .5z"/></svg>
+            </a>
+            <a class="icon-btn" href="https://discord.gg/FajYxuWY9b" target="_blank" rel="noopener" aria-label="Discord" title="Support server">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.3.5c1.7.4 2.5.9 3.4 1.5a13 13 0 0 0-10.9 0c.9-.6 1.8-1.1 3.4-1.5L10.6 3a19.8 19.8 0 0 0-4.9 1.4C2.6 9 1.8 13.5 2.2 18a20 20 0 0 0 6 3l.5-.9c-.8-.3-1.6-.7-2.3-1.2l.5-.4a14.3 14.3 0 0 0 12.2 0l.5.4c-.7.5-1.5.9-2.3 1.2l.5.9a20 20 0 0 0 6-3c.5-5.2-.8-9.7-3.5-13.6zM9 15.3c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2zm6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2z"/></svg>
+            </a>
+            <a class="btn btn-primary" href="https://discord.com/discovery/applications/1351837170498801714" target="_blank" rel="noopener">Add the bot</a>
+        </div>
+    </div>
+</nav>
+
+<!-- ===================== DOCS HERO ===================== -->
+<header class="docs-hero">
+    <div class="wrap">
+        <span class="kicker">Command Codex</span>
+        <h1>Every command, documented.<span class="sr-only"> Homina Tacticus Discord bot command list and reference.</span></h1>
+        <p>Homina ships 40+ slash commands. They all run inside Discord and return charts or readouts in seconds. Browse by category or search below.</p>
+        <div class="scope-note">
+            <span class="sn-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l8 4v6c0 5-3.4 8.5-8 10-4.6-1.5-8-5-8-10V6l8-4z" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <p><strong>Before you start:</strong> run <code>/register</code> with an API token created by a Leader or Co-Leader with <strong>Guild</strong> and <strong>Raid</strong> scope. One registration unlocks every command for your guild. Options marked <span class="opt req"><span class="star">★</span> required</span> must be supplied; everything else is optional and sensibly defaulted (e.g. <code>season</code> defaults to the current one).</p>
+        </div>
+    </div>
+</header>
+
+<!-- ===================== TOOLBAR ===================== -->
+<div class="codex-bar">
+    <div class="wrap codex-bar-inner">
+        <label class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4" stroke-linecap="round"/></svg>
+            <input type="text" id="search" placeholder="Search commands — e.g. tokens, bombs, damage…" autocomplete="off" />
+        </label>
+        <nav class="cat-jumps" id="cat-jumps"></nav>
+        <span class="codex-count" id="count"></span>
+    </div>
+</div>
+
+<!-- ===================== CODEX ===================== -->
+<main class="codex">
+    <div class="wrap" id="codex-root"></div>
+    <div class="wrap"><div class="cmd-empty" id="empty" style="display:none;">No commands match that search.</div></div>
+</main>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="footer">
+    <div class="wrap">
+        <div class="footer-main">
+            <div class="footer-magos">
+                <img src="assets/magos-penguin.png" alt="Homina's Magos mascot" />
+                <div>
+                    <div class="tag">Built by a Tool Builder &amp; Player Ambassador</div>
+                    <h3>Forged for the Tacticus community</h3>
+                    <p>Homina is a community project by an official Player Ambassador and Tool Builder program member. Not affiliated with or endorsed by Snowprint Studios.</p>
+                </div>
+            </div>
+            <div class="footer-links">
+                <a class="icon-btn" href="https://github.com/sigubrat/Homina" target="_blank" rel="noopener" aria-label="GitHub">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.5v-2c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.4-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0C18 5.6 19 5.9 19 5.9c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.2c0 .3.2.6.8.5A11.5 11.5 0 0 0 23.5 12C23.5 5.7 18.3.5 12 .5z"/></svg>
+                </a>
+                <a class="icon-btn" href="https://discord.gg/FajYxuWY9b" target="_blank" rel="noopener" aria-label="Discord">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.3.5c1.7.4 2.5.9 3.4 1.5a13 13 0 0 0-10.9 0c.9-.6 1.8-1.1 3.4-1.5L10.6 3a19.8 19.8 0 0 0-4.9 1.4C2.6 9 1.8 13.5 2.2 18a20 20 0 0 0 6 3l.5-.9c-.8-.3-1.6-.7-2.3-1.2l.5-.4a14.3 14.3 0 0 0 12.2 0l.5.4c-.7.5-1.5.9-2.3 1.2l.5.9a20 20 0 0 0 6-3c.5-5.2-.8-9.7-3.5-13.6zM9 15.3c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2zm6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2z"/></svg>
+                </a>
+                <a class="icon-btn" href="https://www.buymeacoffee.com/homina" target="_blank" rel="noopener" aria-label="Buy me a coffee">☕</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>© <span id="year">2026</span> Homina · A Warhammer 40,000: Tacticus community tool</span>
+            <span><a href="index.html">Home</a> · <a href="https://github.com/sigubrat/Homina" target="_blank" rel="noopener">Open source</a></span>
+        </div>
+    </div>
+</footer>
+
+<div id="tweaks-root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="tweaks-app.jsx"></script>
+
+<script src="commands-data.js"></script>
+<script>
+(function () {
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    var data = window.HOMINA_COMMANDS || [];
+    var root = document.getElementById("codex-root");
+    var jumps = document.getElementById("cat-jumps");
+    var countEl = document.getElementById("count");
+    var emptyEl = document.getElementById("empty");
+    var totalCmds = 0;
+
+    function optBadge(o) {
+        var req = o.charAt(0) === "*";
+        var name = req ? o.slice(1) : o;
+        return '<span class="opt' + (req ? ' req' : '') + '">' +
+            (req ? '<span class="star">★</span> ' : '') + name + '</span>';
+    }
+
+    function cmdCard(c) {
+        var opts = (c.opts || []).map(optBadge).join("");
+        var optsHtml = opts ? '<div class="cmd-opts">' + opts + '</div>' : '';
+        var search = (c.name + " " + c.desc + " " + (c.opts || []).join(" ")).toLowerCase();
+        if (c.img) {
+            return '<article class="cmd featured" data-search="' + search + '">' +
+                '<div class="cmd-body">' +
+                    '<div class="cmd-name">' + c.name + '<span class="ex-badge">Example</span></div>' +
+                    '<p class="cmd-desc">' + c.desc + '</p>' + optsHtml +
+                '</div>' +
+                '<div class="cmd-shot"><img src="' + c.img + '" alt="' + (c.imgAlt || c.name) + '" loading="lazy" /></div>' +
+            '</article>';
+        }
+        return '<article class="cmd" data-search="' + search + '">' +
+            '<div class="cmd-name">' + c.name + '</div>' +
+            '<p class="cmd-desc">' + c.desc + '</p>' + optsHtml +
+        '</article>';
+    }
+
+    data.forEach(function (cat) {
+        totalCmds += cat.commands.length;
+        var cards = cat.commands.map(cmdCard).join("");
+        var sec = document.createElement("section");
+        sec.className = "cat";
+        sec.id = cat.id;
+        sec.innerHTML =
+            '<div class="cat-head">' +
+                '<h2>' + cat.title + '</h2>' +
+                '<span class="cat-tally">' + cat.commands.length + '</span>' +
+                '<span class="cat-blurb">' + cat.blurb + '</span>' +
+            '</div>' +
+            '<div class="cmd-grid">' + cards + '</div>';
+        root.appendChild(sec);
+
+        var a = document.createElement("a");
+        a.href = "#" + cat.id;
+        a.textContent = cat.title;
+        jumps.appendChild(a);
+    });
+
+    countEl.textContent = totalCmds + " commands";
+
+    // search
+    var search = document.getElementById("search");
+    search.addEventListener("input", function () {
+        var q = search.value.trim().toLowerCase();
+        var shown = 0;
+        data.forEach(function (cat) {
+            var sec = document.getElementById(cat.id);
+            var cards = sec.querySelectorAll(".cmd");
+            var catShown = 0;
+            cards.forEach(function (card) {
+                var match = !q || card.getAttribute("data-search").indexOf(q) !== -1;
+                card.style.display = match ? "" : "none";
+                if (match) { catShown++; shown++; }
+            });
+            sec.style.display = catShown ? "" : "none";
+        });
+        countEl.textContent = q ? shown + " of " + totalCmds : totalCmds + " commands";
+        emptyEl.style.display = shown ? "none" : "block";
+    });
+})();
+</script>
+</body>
+</html>
