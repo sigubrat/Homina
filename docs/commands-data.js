@@ -44,7 +44,7 @@ window.HOMINA_COMMANDS = [
         commands: [
             { name: "available-bombs", desc: "See who has bombs available now, projected bomb damage, boss-kill chances and a copy-paste ping list.", opts: ["soon"], img: "assets/graph-available-bombs.png", imgAlt: "Available bombs readout" },
             { name: "season-bombs", desc: "Check how many bombs each member has used in a specific guild raid season.", opts: ["season", "average-method"] },
-            { name: "gr-availability", desc: "Get an overview of how many guild raid tokens and bombs each member has available." }
+            { name: "gr-availability", desc: "Get an overview of how many guild raid tokens and bombs each member has available.", img: "assets/graph-gr-availability.png", imgAlt: "Guild raid availability overview" }
         ]
     },
     {
@@ -52,7 +52,7 @@ window.HOMINA_COMMANDS = [
         title: "Participation & Activity",
         blurb: "Manage the roster fairly with clear activity data.",
         commands: [
-            { name: "season-participation", desc: "Check how much each member has participated in a specific guild raid season.", opts: ["season", "rarity", "show-bombs", "average-method"] },
+            { name: "season-participation", desc: "Check how much each member has participated in a specific guild raid season.", opts: ["season", "rarity", "show-bombs", "average-method"], img: "assets/graph-season-participation.png", imgAlt: "Season participation chart" },
             { name: "inactivity-by-season", desc: "Find out who did not use the required number of tokens in a season.", opts: ["season", "threshold", "rarity"] },
             { name: "activity-per-hour", desc: "See what time of day your guild uses their guild raid tokens." },
             { name: "gr-time-used", desc: "See how long it takes to complete each raid boss in a given season.", opts: ["season", "rarity", "separate-primes", "show-delta"] }
