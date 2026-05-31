@@ -17,8 +17,8 @@ Add the bot to a Discord server, then run `/register` with an API token created 
 
 ## Key links
 
-- [Landing page](https://sigubrat.github.io/Homina/): overview of features and example charts
-- [Command documentation](https://sigubrat.github.io/Homina/commands.html): full reference for all commands
+- [Landing page](https://hominabot.com/): overview of features and example charts
+- [Command documentation](https://hominabot.com/commands.html): full reference for all commands
 - [Add the bot (Discord app directory)](https://discord.com/discovery/applications/1351837170498801714)
 - [Support / community Discord server](https://discord.gg/FajYxuWY9b)
 - [Source code on GitHub](https://github.com/sigubrat/Homina)
