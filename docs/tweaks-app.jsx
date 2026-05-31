@@ -8,8 +8,8 @@ const HOMINA_TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
     "grain": false,
     "parallax": 14,
     "showTempCode": true,
-    "tempCode": "MACHINESPIRIT",
-    "tempNote": "Limited-time raffle code — redeem in-game before it expires."
+    "tempCode": "HOMINAMAY",
+    "tempNote": "Limited-time code — redeem in-game before it expires."
 }/*EDITMODE-END*/;
 
 function hexToRgba(hex, a) {
