@@ -1,0 +1,84 @@
+# Homina
+
+> Homina is a free, open-source Discord bot for the mobile game **Warhammer 40,000: Tacticus**. It reads a guild's data from the official Tacticus API and turns it into clear, decision-ready charts and readouts for **Guild Raid** analytics — damage, tokens, bombs, participation and multi-season trends. It runs entirely inside Discord via 40+ slash commands.
+
+## About
+
+- **Name:** Homina
+- **Type:** Discord bot (Warhammer 40,000: Tacticus guild raid analytics)
+- **Cost:** Free and open source
+- **Author:** sigubrat — an official Tacticus Player Ambassador and Tool Builder program member
+- **Data source:** the official Tacticus public API (player- and guild-scoped API tokens)
+- **Affiliation:** A community tool. Not affiliated with or endorsed by Snowprint Studios.
+
+## Getting started
+
+Add the bot to a Discord server, then run `/register` with an API token created by a guild Leader or Co-Leader that has **Guild** and **Raid** scope. A single registration unlocks every command for the whole guild. Most commands default the `season` option to the current season.
+
+## Key links
+
+- [Landing page](https://sigubrat.github.io/Homina/): overview of features and example charts
+- [Command documentation](https://sigubrat.github.io/Homina/commands.html): full reference for all commands
+- [Add the bot (Discord app directory)](https://discord.com/discovery/applications/1351837170498801714)
+- [Support / community Discord server](https://discord.gg/FajYxuWY9b)
+- [Source code on GitHub](https://github.com/sigubrat/Homina)
+- [Buy me a coffee](https://www.buymeacoffee.com/homina)
+- Friend referral code (permanent, redeem once in-game to support the developer): `HUG-44-CAN`
+
+## Commands
+
+### Getting started
+- `/register`: Register your account with a Guild + Raid scoped API token.
+- `/test-token`: Test whether your registered API token is still valid.
+- `/delete`: Delete your Discord account and API token from the bot.
+
+### Damage & performance
+- `/member-stats-per-season`: Detailed per-member stats for a season — total damage, average/max damage-per-token, guild median.
+- `/relative-performance`: How each member performs relative to the guild average across all bosses at a rarity.
+- `/season-highscore`: Each player's highscore per boss for a season.
+- `/best-comps`: The highest-scoring raid team compositions for a season.
+- `/prime-specialists`: Who deals the most damage to each prime, using seasons with matching primes.
+
+### Token economy
+- `/season-tokens`: Tokens used by each member in a season, with median, standard deviation and estimated availability.
+- `/tokens-per-loop`: Tokens the guild spent on each loop in a season.
+- `/tokens-per-loop-by-boss`: Tokens spent on each boss per loop in a season.
+- `/tokens-burnt`: Tokens each member wasted by hitting the cap this season.
+- `/token-history`: A player's token usage over the last N seasons as a line chart.
+
+### Bombs & availability
+- `/available-bombs`: Who has bombs ready now, projected bomb damage, boss-kill chances and a copy-paste ping list.
+- `/season-bombs`: Bombs used by each member in a season.
+- `/gr-availability`: Overview of tokens and bombs each member currently has available.
+
+### Participation & activity
+- `/season-participation`: How much each member participated in a season.
+- `/inactivity-by-season`: Members who did not use the required number of tokens in a season.
+- `/activity-per-hour`: What time of day the guild uses its raid tokens.
+- `/gr-time-used`: How long it takes to complete each raid boss in a season.
+
+### Seasons & trends
+- `/guild-credits-history`: Credits earned from killing guild bosses over the last N seasons.
+- `/loops-history`: Guild raid loops completed over the last N seasons.
+- `/gr-damage-history`: Total guild damage dealt over the last N seasons (line chart).
+- `/season-by-rarity`: Guild raid stats for each boss at a rarity in a season.
+- `/season-bosses`: Guild boss configs for previous seasons.
+- `/season-same`: Previous seasons with the same boss config.
+- `/meta-team-distribution`: Distribution of meta teams in a season.
+- `/achievements`: Fun guild-wide superlatives and awards for a season.
+- `/track-member`: Track a single member's raid stats over recent seasons.
+
+### Guild management
+- `/player-metadata`: Nicknames and API token status for all guild members.
+- `/member-ids`: List of guild members for use in registering usernames.
+- `/set-player-nickname`: Set a custom display nickname for a member.
+- `/clear-player-nickname`: Remove a custom nickname, restoring the in-game name.
+- `/set-player-token`: Register a player-scope API token for a member for precise cooldown data.
+- `/clear-player-token`: Remove a player-scope API token, reverting to estimated cooldowns.
+- `/invite-user`: Invite a user to register with your API token.
+- `/revoke-access`: Revoke access for a previously invited user.
+
+### Utility
+- `/help`: Overview of the bot and its commands.
+- `/bot-stats`: Statistics about the bot and its performance.
+- `/bot-metrics`: Detailed bot usage metrics and trends.
