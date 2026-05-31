@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://sigubrat.github.io/Homina/sitemap.xml
+Sitemap: https://hominabot.com/sitemap.xml
