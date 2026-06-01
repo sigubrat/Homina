@@ -73,7 +73,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600;700;800&family=Marcellus&family=Cormorant+Garamond:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="styles.css" />
 </head>
-<body class="fx-tempcode">
+<body>
+
+<!-- ===================== TOP BANNER ===================== -->
+<div class="temp-banner" id="temp-banner">
+    <span class="tb-label"><svg class="tb-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/></svg> Active code</span>
+    <span class="tb-code" id="temp-code"></span>
+    <span class="tb-note" id="temp-note"></span>
+    <button class="tb-copy" type="button" data-copy="temp-code">Copy code</button>
+    <button class="tb-close" type="button" aria-label="Dismiss banner" onclick="document.getElementById('temp-banner').classList.add('tb-hidden')">&#x2715;</button>
+</div>
 
 <div class="grain"></div>
 <div class="vignette"></div>
@@ -276,12 +285,6 @@
             <p class="section-sub">Homina is free and open source. If it helps your guild, here are a few ways to give back — the easiest costs you nothing.</p>
         </div>
 
-        <div class="temp-banner" id="temp-banner">
-            <span class="tb-label">Active code</span>
-            <span class="tb-code" id="temp-code">HOMINAMAY</span>
-            <span class="tb-note" id="temp-note">Limited-time code — redeem in-game before it expires.</span>
-        </div>
-
         <div class="support-grid">
             <div class="referral">
                 <span class="tag">◇ Costs you nothing</span>
@@ -362,14 +365,7 @@
     </div>
 </footer>
 
-<!-- ===================== TWEAKS MOUNT ===================== -->
-<div id="tweaks-root"></div>
-
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
-<script type="text/babel" src="tweaks-panel.jsx"></script>
-<script type="text/babel" src="tweaks-app.jsx"></script>
+<script src="site-config.js"></script>
 
 <script>
 (function () {
