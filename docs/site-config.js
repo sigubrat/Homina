@@ -4,8 +4,8 @@
 var SITE_CONFIG = {
     // Temporary code banner
     showBanner: true,
-    tempCode: "MACHINESPIRIT",
-    tempNote: "Limited-time raffle code \u2013 redeem in-game before it expires."
+    tempCode: "HOMINAMAY",
+    tempNote: "Limited-time code \u2013 redeem in-game before it expires."
 };
 
 (function () {
