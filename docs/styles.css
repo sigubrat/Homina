@@ -996,6 +996,72 @@ body.fx-tempcode {
     transform: translateX(4px);
 }
 
+/* ---------- terms page ---------- */
+.terms-page {
+    padding: 120px 0 60px;
+}
+.terms-nav {
+    display: flex;
+    gap: 18px;
+    margin-bottom: 40px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+}
+.terms-nav a {
+    color: var(--accent-bright);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+}
+.terms-nav a:hover {
+    border-bottom-color: var(--accent-bright);
+}
+.terms-section {
+    margin-bottom: 60px;
+    max-width: 720px;
+}
+.terms-section h1 {
+    font-family: var(--font-display);
+    font-size: 32px;
+    color: var(--bone);
+    margin-bottom: 8px;
+}
+.terms-updated {
+    font-size: 13px;
+    color: var(--bone-dim);
+    margin-bottom: 28px;
+}
+.terms-section h2 {
+    font-family: var(--font-display);
+    font-size: 20px;
+    color: var(--bone);
+    margin: 28px 0 10px;
+}
+.terms-section p,
+.terms-section li {
+    color: var(--bone-dim);
+    font-size: 15px;
+    line-height: 1.7;
+}
+.terms-section ul {
+    padding-left: 22px;
+    margin: 10px 0;
+}
+.terms-section li {
+    margin-bottom: 8px;
+}
+.terms-section code {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    background: rgba(255, 255, 255, 0.06);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+.terms-section a {
+    color: var(--accent-bright);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
 /* ---------- footer ---------- */
 .footer {
     border-top: 1px solid var(--line-soft);
