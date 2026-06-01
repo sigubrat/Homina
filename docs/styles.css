@@ -1342,6 +1342,8 @@ body.fx-tempcode {
     border-radius: var(--radius);
     background: var(--panel-solid);
     padding: 22px 22px 20px;
+    cursor: pointer;
+    position: relative;
     transition:
         border-color 0.18s,
         transform 0.18s;
@@ -1349,6 +1351,48 @@ body.fx-tempcode {
 .cmd:hover {
     border-color: var(--accent);
     transform: translateY(-2px);
+}
+.cmd.copied {
+    border-color: var(--accent-bright);
+}
+.cmd.copied::after {
+    content: "Copied ✓";
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--accent-bright);
+    opacity: 1;
+    animation: cmd-copied-fade 1.2s ease-out forwards;
+}
+@keyframes cmd-copied-fade {
+    0% {
+        opacity: 1;
+    }
+    70% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+.cmd:not(.copied):hover::after {
+    content: "Click to copy";
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 10px;
+    font-family: var(--font-mono);
+    letter-spacing: 0.04em;
+    color: var(--bone-dim);
+    opacity: 0;
+    animation: cmd-hint-in 0.2s ease forwards 0.3s;
+}
+@keyframes cmd-hint-in {
+    to {
+        opacity: 1;
+    }
 }
 .cmd.featured {
     grid-column: 1 / -1;

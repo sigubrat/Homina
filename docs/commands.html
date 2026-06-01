@@ -105,7 +105,7 @@
             <span class="sn-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l8 4v6c0 5-3.4 8.5-8 10-4.6-1.5-8-5-8-10V6l8-4z" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </span>
-            <p><strong>Before you start:</strong> run <code>/register</code> with an API token created by a Leader or Co-Leader with <strong>Guild</strong> and <strong>Raid</strong> scope. One registration unlocks every command for your guild. Options marked <span class="opt req"><span class="star">★</span> required</span> must be supplied; everything else is optional and sensibly defaulted (e.g. <code>season</code> defaults to the current one).</p>
+            <p><strong>Before you start:</strong> run <code>/register</code> with an API token created by a Leader or Co-Leader with <strong>Guild</strong> and <strong>Raid</strong> scope. One registration unlocks every command for your guild. Options marked <span class="opt req"><span class="star">★</span>required</span> must be supplied; everything else is optional and sensibly defaulted (e.g. <code>season</code> defaults to the current one).</p>
         </div>
     </div>
 </header>
@@ -241,6 +241,20 @@
         });
         countEl.textContent = q ? shown + " of " + totalCmds : totalCmds + " commands";
         emptyEl.style.display = shown ? "none" : "block";
+    });
+
+    // click-to-copy command name
+    root.addEventListener("click", function (e) {
+        var card = e.target.closest(".cmd");
+        if (!card) return;
+        var nameEl = card.querySelector(".cmd-name");
+        if (!nameEl) return;
+        var text = nameEl.textContent.replace(/Example$/, "").trim();
+        if (!text) return;
+        var copyText = text.startsWith("/") ? text : "/" + text;
+        navigator.clipboard && navigator.clipboard.writeText(copyText);
+        card.classList.add("copied");
+        setTimeout(function () { card.classList.remove("copied"); }, 1200);
     });
 })();
 </script>
