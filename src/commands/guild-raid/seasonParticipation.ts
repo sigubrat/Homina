@@ -71,6 +71,14 @@ export const data = new SlashCommandBuilder()
             )
             .setRequired(false),
     )
+    .addBooleanOption((option) =>
+        option
+            .setName("include-unknown")
+            .setDescription(
+                "Include players with unknown usernames in the results",
+            )
+            .setRequired(false),
+    )
     .setDescription(
         "Check how much each member has participated in a specific guild raid season",
     );
@@ -145,7 +153,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         );
 
         const sortedResult = sortGuildRaidResultDesc(transformedResult).filter(
-            (val) => !val.username.includes("Unknown #"),
+            (val) =>
+                !val.username.includes("Unknown #") ||
+                interaction.options.getBoolean("include-unknown"),
         );
 
         const topDamageDealers = getTopNDamageDealers(sortedResult, 3);
