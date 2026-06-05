@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.17.1]
+
+### Added
+
+- Added a True/False option to include unknown users in `/season-participation` command
+  - These users were previously filtered out.
+  - Option name: `include-unknown`
+  - Required: No
+  - Default: False
+
 ## [1.17.0]
 
 The following patch provides two new commands, some quality-of-life changes to help you decide whether to bomb the remaining hp of a boss or spend a token, and some major structural changes behind the scenes. Thank you for using this little hobby project of mine. Here's a code to redeem in-game to show my thanks: HOMINAMAY. Also remember to check out the gleam code for the skulls raffle! It can be found at the footer of all commands.
