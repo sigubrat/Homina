@@ -1,4 +1,5 @@
 import { logger } from "@/lib";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import { STANDARD_FOOTER_TEXT } from "@/lib/configs/constants";
 import { ChartService } from "@/lib/services/ChartService";
 import { HistoryService } from "@/lib/services/HistoryService";
@@ -51,7 +52,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             nSeasons,
         );
 
-        if (!loopsBySeason || Object.keys(loopsBySeason).length === 0) {
+        if (Object.keys(loopsBySeason).length === 0) {
             await interaction.editReply({
                 content:
                     "No data found for the specified seasons. Please make sure you have registered your API-token.",
@@ -123,11 +124,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             `${interaction.user.username} successfully used /loops-history for last ${nSeasons} seasons`,
         );
     } catch (error) {
-        logger.error(error, "Error occurred in loops-history: ");
-        await interaction.editReply({
-            content:
-                "An error occurred while generating the loops by season chart.",
-        });
-        return;
+        await handleCommandError(interaction, error);
     }
 }

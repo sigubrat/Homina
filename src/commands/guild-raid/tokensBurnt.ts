@@ -1,4 +1,5 @@
 import { logger } from "@/lib";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import {
     getCurrentSeason,
     MAXIMUM_TOKENS_PER_SEASON,
@@ -38,11 +39,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 discordId,
             );
 
-        if (
-            !availability ||
-            typeof availability !== "object" ||
-            Object.keys(availability).length === 0
-        ) {
+        if (Object.keys(availability).length === 0) {
             await interaction.editReply({
                 content:
                     "No availability data found for the current season. Ensure you are registered and have the correct permissions.",
@@ -58,20 +55,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         );
 
         const tokensUsedMap: Record<string, number> = {};
-        if (seasonResult) {
-            for (const entry of seasonResult) {
-                tokensUsedMap[entry.username] = entry.totalTokens || 0;
-            }
+        for (const entry of seasonResult) {
+            tokensUsedMap[entry.username] = entry.totalTokens || 0;
         }
 
         const players = await service.fetchGuildMembers(discordId);
-        if (!players) {
-            await interaction.editReply({
-                content:
-                    "Something went wrong while fetching guild members from the game. Please try again or contact the support server if the issue persists.",
-            });
-            return;
-        }
 
         availability = replaceUserIdKeysWithDisplayNames(
             availability,
@@ -266,14 +254,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             `${interaction.user.username} successfully used /token-overview`,
         );
     } catch (error) {
-        logger.error(
-            error,
-            `Error occurred in token-overview by ${interaction.user.username}`,
-        );
-        await interaction.editReply({
-            content:
-                "An error occurred while fetching the data. Please try again later or contact the Bot developer if the problem persists.",
-        });
-        return;
+        await handleCommandError(interaction, error);
     }
 }

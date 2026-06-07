@@ -1,5 +1,6 @@
 import { dbController, logger } from "@/lib";
 import { GuildService } from "@/lib/services/GuildService";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import { fetchGuildMembers } from "@/client/MiddlewareClient";
 import { isValidUUIDv4 } from "@/lib/utils/mathUtils";
 import type { MiddlewareMember } from "@/models/types";
@@ -39,10 +40,8 @@ async function getRawMembersAndMetadata(
 ) {
     const service = new GuildService();
     const guildId = await service.getGuildId(discordId);
-    if (!guildId) return null;
 
     const members = await fetchGuildMembers(guildId);
-    if (!members || members.length === 0) return null;
 
     const metadata = await dbController.getAllPlayerMetadataByGuild(
         guildId,
@@ -125,14 +124,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     try {
         const data = await getRawMembersAndMetadata(discordId);
-        if (!data) {
-            await interaction.editReply({
-                content:
-                    "Could not determine your guild or fetch members. Make sure you are registered.",
-            });
-            return;
-        }
-
         const { guildId, members, nicknameMap } = data;
 
         const selectedPlayer = members.find((m) => m.userId === selectedUserId);
@@ -147,28 +138,16 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const inGameName = selectedPlayer.displayName;
         const existingNickname = nicknameMap.get(selectedUserId);
 
-        const success = await dbController.upsertPlayerMetadata(
-            selectedUserId,
-            guildId,
-            { nickname },
-        );
-
-        if (success) {
-            let confirmMsg = `Successfully set nickname **${nickname}** for **${inGameName}**.`;
-            if (existingNickname) {
-                confirmMsg = `Successfully changed nickname for **${inGameName}** from **${existingNickname}** to **${nickname}**.`;
-            }
-            await interaction.editReply({ content: confirmMsg });
-        } else {
-            await interaction.editReply({
-                content: "Failed to set nickname. Please try again later.",
-            });
-        }
-    } catch (error) {
-        logger.error(error, "Error in /set-player-nickname command");
-        await interaction.editReply({
-            content:
-                "An error occurred while processing your request. Please try again later.",
+        await dbController.upsertPlayerMetadata(selectedUserId, guildId, {
+            nickname,
         });
+
+        let confirmMsg = `Successfully set nickname **${nickname}** for **${inGameName}**.`;
+        if (existingNickname) {
+            confirmMsg = `Successfully changed nickname for **${inGameName}** from **${existingNickname}** to **${nickname}**.`;
+        }
+        await interaction.editReply({ content: confirmMsg });
+    } catch (error) {
+        await handleCommandError(interaction, error);
     }
 }

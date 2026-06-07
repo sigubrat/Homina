@@ -1,4 +1,5 @@
 import { logger } from "@/lib";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import { STANDARD_FOOTER_TEXT } from "@/lib/configs/constants";
 import { GRConfigService } from "@/lib/services/GRConfigService";
 import { GuildService } from "@/lib/services/GuildService";
@@ -43,7 +44,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     try {
         const configs = await guildService.getNLastSeasonConfigs(discordId, 5);
-        if (configs === null || configs.length === 0) {
+        if (configs.length === 0) {
             await interaction.editReply({
                 content:
                     "Could not fetch data for you. Ensure your token is valid.",
@@ -125,9 +126,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         await interaction.editReply({ embeds: [embed] });
     } catch (error) {
-        logger.error(
-            error,
-            `Error while executing /season-configs command for ${interaction.user.username}`,
-        );
+        await handleCommandError(interaction, error);
     }
 }

@@ -1,5 +1,6 @@
 import { dbController, logger } from "@/lib";
 import { GuildService } from "@/lib/services/GuildService";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import { fetchGuildMembers } from "@/client/MiddlewareClient";
 import { testPlayerApiToken } from "@/lib/utils/commandUtils";
 import { isValidUUIDv4 } from "@/lib/utils/mathUtils";
@@ -41,10 +42,8 @@ async function getRawMembersAndMetadata(
 ) {
     const service = new GuildService();
     const guildId = await service.getGuildId(discordId);
-    if (!guildId) return null;
 
     const members = await fetchGuildMembers(guildId);
-    if (!members || members.length === 0) return null;
 
     const metadata = await dbController.getAllPlayerMetadataByGuild(
         guildId,
@@ -130,14 +129,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     try {
         const data = await getRawMembersAndMetadata(discordId);
-        if (!data) {
-            await interaction.editReply({
-                content:
-                    "Could not determine your guild or fetch members. Make sure you are registered.",
-            });
-            return;
-        }
-
         const { guildId, members, nicknameMap } = data;
 
         const selectedPlayer = members.find((m) => m.userId === selectedUserId);
@@ -165,27 +156,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
-        const success = await dbController.upsertPlayerMetadata(
-            selectedUserId,
-            guildId,
-            { playerToken },
-        );
-
-        if (success) {
-            await interaction.editReply({
-                content: `Successfully registered player-scope token for **${displayLabel}**. Availability commands will now use precise cooldown data for this member.`,
-            });
-        } else {
-            await interaction.editReply({
-                content:
-                    "Failed to store the player token. Please try again later.",
-            });
-        }
-    } catch (error) {
-        logger.error(error, "Error in /set-player-token command");
-        await interaction.editReply({
-            content:
-                "An error occurred while processing your request. Please try again later.",
+        await dbController.upsertPlayerMetadata(selectedUserId, guildId, {
+            playerToken,
         });
+
+        await interaction.editReply({
+            content: `Successfully registered player-scope token for **${displayLabel}**. Availability commands will now use precise cooldown data for this member.`,
+        });
+    } catch (error) {
+        await handleCommandError(interaction, error);
     }
 }

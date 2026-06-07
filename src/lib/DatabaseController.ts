@@ -260,21 +260,15 @@ export class DatabaseController {
         guildId: string,
         invitedBy?: string,
     ): Promise<boolean> {
-        try {
-            const encryptedToken = CryptoService.encrypt(token);
-            await this.sequelize.models["discordApiTokenMappings"]?.upsert({
-                userId: userId,
-                token: encryptedToken,
-                guildId: guildId,
-                tokenLastUsed: new Date(),
-                invitedBy: invitedBy ?? null,
-            });
-
-            return true;
-        } catch (error) {
-            logger.error(error, "Error storing registered user to database");
-            return false;
-        }
+        const encryptedToken = CryptoService.encrypt(token);
+        await this.sequelize.models["discordApiTokenMappings"]?.upsert({
+            userId: userId,
+            token: encryptedToken,
+            guildId: guildId,
+            tokenLastUsed: new Date(),
+            invitedBy: invitedBy ?? null,
+        });
+        return true;
     }
 
     /**
@@ -288,19 +282,14 @@ export class DatabaseController {
      * Any errors encountered during the operation are logged and result in an `undefined` return value.
      */
     public async deleteUser(userId: string): Promise<number | undefined> {
-        try {
-            const res = await this.sequelize.models[
-                "discordApiTokenMappings"
-            ]?.destroy({
-                where: {
-                    userId: userId,
-                },
-            });
-            return res;
-        } catch (error) {
-            logger.error(error, "Error deleting user from database");
-            return undefined;
-        }
+        const res = await this.sequelize.models[
+            "discordApiTokenMappings"
+        ]?.destroy({
+            where: {
+                userId: userId,
+            },
+        });
+        return res;
     }
 
     /**
@@ -331,28 +320,23 @@ export class DatabaseController {
      * @returns A promise that resolves to the user's token string, or `null` if not found or on error.
      */
     public async getUserToken(discordId: string): Promise<string | null> {
-        try {
-            const model = this.sequelize.models["discordApiTokenMappings"];
-            const result = await model?.findOne({
-                where: {
-                    userId: discordId,
-                },
-            });
-            if (!result) {
-                return null;
-            }
-
-            // Update tokenLastUsed to now
-            await model?.update(
-                { tokenLastUsed: new Date() },
-                { where: { userId: discordId } },
-            );
-
-            return result.get("token") as string;
-        } catch (error) {
-            logger.error(error, "Error retrieving user token from database");
+        const model = this.sequelize.models["discordApiTokenMappings"];
+        const result = await model?.findOne({
+            where: {
+                userId: discordId,
+            },
+        });
+        if (!result) {
             return null;
         }
+
+        // Update tokenLastUsed to now
+        await model?.update(
+            { tokenLastUsed: new Date() },
+            { where: { userId: discordId } },
+        );
+
+        return result.get("token") as string;
     }
 
     /**
@@ -362,18 +346,13 @@ export class DatabaseController {
      * @returns The guild ID if found, or `null` if not found or an error occurs.
      */
     public async getGuildIdByUserId(discordId: string): Promise<string | null> {
-        try {
-            const result = await this.sequelize.models[
-                "discordApiTokenMappings"
-            ]?.findOne({
-                where: { userId: discordId },
-                attributes: ["guildId"],
-            });
-            return (result?.get("guildId") as string) || null;
-        } catch (error) {
-            logger.error(error, "Error fetching guild ID for user");
-            return null;
-        }
+        const result = await this.sequelize.models[
+            "discordApiTokenMappings"
+        ]?.findOne({
+            where: { userId: discordId },
+            attributes: ["guildId"],
+        });
+        return (result?.get("guildId") as string) || null;
     }
 
     /**
@@ -387,16 +366,11 @@ export class DatabaseController {
         discordId: string,
         guildId: string,
     ): Promise<boolean> {
-        try {
-            await this.sequelize.models["discordApiTokenMappings"]?.update(
-                { guildId },
-                { where: { userId: discordId } },
-            );
-            return true;
-        } catch (error) {
-            logger.error(error, "Error updating guild ID for user");
-            return false;
-        }
+        await this.sequelize.models["discordApiTokenMappings"]?.update(
+            { guildId },
+            { where: { userId: discordId } },
+        );
+        return true;
     }
 
     /**
@@ -509,46 +483,39 @@ export class DatabaseController {
         guildId: string,
         data: { nickname?: string | null; playerToken?: string | null },
     ): Promise<boolean> {
-        try {
-            const model = this.sequelize.models["guildPlayerMetadata"];
-            const existing = await model?.findOne({
-                where: { userId, guildId },
-            });
+        const model = this.sequelize.models["guildPlayerMetadata"];
+        const existing = await model?.findOne({
+            where: { userId, guildId },
+        });
 
-            if (existing) {
-                const updates: Record<string, unknown> = {
-                    lastUsed: new Date(),
-                };
-                if (data.nickname !== undefined)
-                    updates.nickname = data.nickname;
-                if (data.playerToken !== undefined) {
-                    updates.playerToken = data.playerToken
-                        ? CryptoService.encrypt(data.playerToken)
-                        : null;
-                }
-                await model?.update(updates, { where: { userId, guildId } });
-            } else {
-                const record: Record<string, unknown> = {
-                    userId,
-                    guildId,
-                    nickname: data.nickname ?? null,
-                    lastUsed: new Date(),
-                };
-                if (data.playerToken) {
-                    record.playerToken = CryptoService.encrypt(
-                        data.playerToken,
-                    );
-                } else {
-                    record.playerToken = null;
-                }
-                await model?.create(record);
+        if (existing) {
+            const updates: Record<string, unknown> = {
+                lastUsed: new Date(),
+            };
+            if (data.nickname !== undefined)
+                updates.nickname = data.nickname;
+            if (data.playerToken !== undefined) {
+                updates.playerToken = data.playerToken
+                    ? CryptoService.encrypt(data.playerToken)
+                    : null;
             }
-
-            return true;
-        } catch (error) {
-            logger.error(error, "Error upserting player metadata");
-            return false;
+            await model?.update(updates, { where: { userId, guildId } });
+        } else {
+            const record: Record<string, unknown> = {
+                userId,
+                guildId,
+                nickname: data.nickname ?? null,
+                lastUsed: new Date(),
+            };
+            if (data.playerToken) {
+                record.playerToken = CryptoService.encrypt(data.playerToken);
+            } else {
+                record.playerToken = null;
+            }
+            await model?.create(record);
         }
+
+        return true;
     }
 
     /**
@@ -569,30 +536,25 @@ export class DatabaseController {
         nickname: string | null;
         playerToken: string | null;
     } | null> {
-        try {
-            const model = this.sequelize.models["guildPlayerMetadata"];
-            const result = await model?.findOne({
-                where: { userId, guildId },
-            });
-            if (!result) return null;
+        const model = this.sequelize.models["guildPlayerMetadata"];
+        const result = await model?.findOne({
+            where: { userId, guildId },
+        });
+        if (!result) return null;
 
-            if (touchLastUsed) {
-                await model?.update(
-                    { lastUsed: new Date() },
-                    { where: { userId, guildId } },
-                );
-            }
-
-            return {
-                userId: result.get("userId") as string,
-                guildId: result.get("guildId") as string,
-                nickname: result.get("nickname") as string | null,
-                playerToken: result.get("playerToken") as string | null,
-            };
-        } catch (error) {
-            logger.error(error, "Error fetching player metadata");
-            return null;
+        if (touchLastUsed) {
+            await model?.update(
+                { lastUsed: new Date() },
+                { where: { userId, guildId } },
+            );
         }
+
+        return {
+            userId: result.get("userId") as string,
+            guildId: result.get("guildId") as string,
+            nickname: result.get("nickname") as string | null,
+            playerToken: result.get("playerToken") as string | null,
+        };
     }
 
     /**
@@ -613,31 +575,26 @@ export class DatabaseController {
             playerToken: string | null;
         }[]
     > {
-        try {
-            const model = this.sequelize.models["guildPlayerMetadata"];
-            const results = await model?.findAll({
-                where: { guildId },
-            });
+        const model = this.sequelize.models["guildPlayerMetadata"];
+        const results = await model?.findAll({
+            where: { guildId },
+        });
 
-            if (touchLastUsed && results && results.length > 0) {
-                await model?.update(
-                    { lastUsed: new Date() },
-                    { where: { guildId } },
-                );
-            }
-
-            return (
-                results?.map((r) => ({
-                    userId: r.get("userId") as string,
-                    guildId: r.get("guildId") as string,
-                    nickname: r.get("nickname") as string | null,
-                    playerToken: r.get("playerToken") as string | null,
-                })) ?? []
+        if (touchLastUsed && results && results.length > 0) {
+            await model?.update(
+                { lastUsed: new Date() },
+                { where: { guildId } },
             );
-        } catch (error) {
-            logger.error(error, "Error fetching all player metadata for guild");
-            return [];
         }
+
+        return (
+            results?.map((r) => ({
+                userId: r.get("userId") as string,
+                guildId: r.get("guildId") as string,
+                nickname: r.get("nickname") as string | null,
+                playerToken: r.get("playerToken") as string | null,
+            })) ?? []
+        );
     }
 
     /**
@@ -647,16 +604,11 @@ export class DatabaseController {
         userId: string,
         guildId: string,
     ): Promise<boolean> {
-        try {
-            await this.sequelize.models["guildPlayerMetadata"]?.update(
-                { nickname: null, lastUsed: new Date() },
-                { where: { userId, guildId } },
-            );
-            return true;
-        } catch (error) {
-            logger.error(error, "Error clearing player nickname");
-            return false;
-        }
+        await this.sequelize.models["guildPlayerMetadata"]?.update(
+            { nickname: null, lastUsed: new Date() },
+            { where: { userId, guildId } },
+        );
+        return true;
     }
 
     /**
@@ -666,16 +618,11 @@ export class DatabaseController {
         userId: string,
         guildId: string,
     ): Promise<boolean> {
-        try {
-            await this.sequelize.models["guildPlayerMetadata"]?.update(
-                { playerToken: null, lastUsed: new Date() },
-                { where: { userId, guildId } },
-            );
-            return true;
-        } catch (error) {
-            logger.error(error, "Error clearing player token");
-            return false;
-        }
+        await this.sequelize.models["guildPlayerMetadata"]?.update(
+            { playerToken: null, lastUsed: new Date() },
+            { where: { userId, guildId } },
+        );
+        return true;
     }
 
     // ==================== Bot Event Tracking ====================
@@ -1020,25 +967,20 @@ export class DatabaseController {
         userId: string,
         inviterId: string,
     ): Promise<boolean> {
-        try {
-            const model = this.sequelize.models["discordApiTokenMappings"];
+        const model = this.sequelize.models["discordApiTokenMappings"];
 
-            await model?.update(
-                { invitedBy: inviterId },
-                { where: { invitedBy: userId } },
-            );
+        await model?.update(
+            { invitedBy: inviterId },
+            { where: { invitedBy: userId } },
+        );
 
-            const res = await model?.destroy({
-                where: {
-                    userId: userId,
-                    invitedBy: inviterId,
-                },
-            });
-            return (res ?? 0) > 0;
-        } catch (error) {
-            logger.error(error, "Error revoking invited user");
-            return false;
-        }
+        const res = await model?.destroy({
+            where: {
+                userId: userId,
+                invitedBy: inviterId,
+            },
+        });
+        return (res ?? 0) > 0;
     }
 }
 

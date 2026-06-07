@@ -1,4 +1,5 @@
-import { dbController, logger } from "@/lib";
+import { dbController } from "@/lib";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import { SecondsToString } from "@/lib/utils/timeUtils";
 import { EmbedBuilder } from "@discordjs/builders";
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
@@ -61,9 +62,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         await interaction.editReply({ embeds: [statsEmbed] });
     } catch (error) {
-        logger.error(error);
-        await interaction.editReply({
-            content: "An error occurred while fetching the bot statistics.",
-        });
+        await handleCommandError(interaction, error);
     }
 }

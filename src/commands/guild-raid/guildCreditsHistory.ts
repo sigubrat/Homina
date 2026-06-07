@@ -1,4 +1,5 @@
 import { logger } from "@/lib";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import {
     getCurrentSeason,
     MINIMUM_SEASON_THRESHOLD,
@@ -98,7 +99,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             startingSeason,
         );
 
-        if (!bossesByRarity || Object.keys(bossesByRarity).length === 0) {
+        if (Object.keys(bossesByRarity).length === 0) {
             await interaction.editReply({
                 content:
                     "No data found for the specified seasons. Please make sure you have registered your API-token.",
@@ -228,11 +229,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             `${interaction.user.username} successfully used /guild-credits-history for last ${nSeasons} seasons`,
         );
     } catch (error) {
-        logger.error(error, "Error occurred in credits-by-season: ");
-        await interaction.editReply({
-            content:
-                "An error occurred while generating the credits by season chart.",
-        });
-        return;
+        await handleCommandError(interaction, error);
     }
 }

@@ -1,4 +1,5 @@
 import { logger } from "@/lib";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import { miscEmojis, STANDARD_FOOTER_TEXT } from "@/lib/configs/constants";
 import { GuildService } from "@/lib/services/GuildService";
 import { AvailabilityService } from "@/lib/services/AvailabilityService";
@@ -43,12 +44,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         let result =
             await availabilityService.getAvailableBombsWithMetadata(discordId);
 
-        if (
-            !result ||
-            typeof result !== "object" ||
-            Object.keys(result).length === 0 ||
-            result === null
-        ) {
+        if (Object.keys(result).length === 0) {
             await interaction.editReply({
                 content:
                     "No data found for the current season. Ensure you are registered and have the correct permissions.",
@@ -57,13 +53,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         const players = await service.fetchGuildMembers(discordId);
-        if (!players) {
-            await interaction.editReply({
-                content:
-                    "Something went wrong while fetching guild members from the game. Please try again or contact the support server if the issue persists",
-            });
-            return;
-        }
 
         // Replace User IDs with display names in the result
         result = replaceUserIdKeysWithDisplayNames(result, players, true);
@@ -253,12 +242,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         await interaction.editReply({ embeds: [embed] });
     } catch (error) {
-        logger.error(
-            error,
-            `${interaction.user.id} failed to use /available-bombs`,
-        );
-        await interaction.editReply(
-            "There was an error while fetching available bombs.",
-        );
+        await handleCommandError(interaction, error);
     }
 }

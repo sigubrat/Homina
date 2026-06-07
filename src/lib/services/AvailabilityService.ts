@@ -1,5 +1,5 @@
 import { HominaTacticusClient } from "@/client";
-import { DatabaseController, dbController, logger } from "@/lib";
+import { DatabaseController, dbController } from "@/lib";
 import { resolveGuildId } from "@/lib/utils/guildMemberUtils";
 import {
     SecondsToString,
@@ -7,6 +7,9 @@ import {
     getUnixTimestamp,
 } from "../utils/timeUtils";
 import { DamageType, EncounterType } from "@/models/enums";
+import { BotError } from "@/models/errors/BotError";
+import { DatabaseError, ExternalApiError } from "@/models/errors/ServiceError";
+import { NotRegisteredError } from "@/models/errors/UserError";
 import type {
     GuildRaidAvailable,
     Raid,
@@ -23,16 +26,29 @@ export class AvailabilityService {
         this.db = db;
     }
 
-    private async getGuildId(discordId: string): Promise<string | null> {
+    private async getGuildId(discordId: string): Promise<string> {
         return resolveGuildId(discordId, this.client, this.db);
     }
 
-    private async getGuildMembers(discordId: string): Promise<string[] | null> {
-        const apiKey = await this.db.getUserToken(discordId);
-        if (!apiKey) return null;
+    private async getGuildMembers(discordId: string): Promise<string[]> {
+        let apiKey: string | null;
+        try {
+            apiKey = await this.db.getUserToken(discordId);
+        } catch (error) {
+            if (error instanceof BotError) throw error;
+            throw new DatabaseError("Failed to retrieve API token", {
+                cause: error,
+                context: { discordId },
+            });
+        }
+        if (!apiKey) throw new NotRegisteredError();
 
         const resp = await this.client.getGuild(apiKey);
-        if (!resp.success || !resp.guild) return null;
+        if (!resp.success || !resp.guild) {
+            throw new ExternalApiError("Guild fetch returned unsuccessful response", {
+                context: { discordId },
+            });
+        }
 
         return resp.guild.members.map((member) => member.userId);
     }
@@ -45,14 +61,23 @@ export class AvailabilityService {
         const now = new Date();
 
         try {
-            const apiKey = await this.db.getUserToken(discordId);
-            if (!apiKey) {
-                return null;
+            let apiKey: string | null;
+            try {
+                apiKey = await this.db.getUserToken(discordId);
+            } catch (error) {
+                if (error instanceof BotError) throw error;
+                throw new DatabaseError("Failed to retrieve API token", {
+                    cause: error,
+                    context: { discordId },
+                });
             }
+            if (!apiKey) throw new NotRegisteredError();
 
             const resp = await this.client.getGuildRaidByCurrentSeason(apiKey);
             if (!resp || !resp.entries) {
-                return null;
+                throw new ExternalApiError("No current season data returned", {
+                    context: { discordId },
+                });
             }
 
             const prevSeason = await this.client.getGuildRaidBySeason(
@@ -60,13 +85,15 @@ export class AvailabilityService {
                 resp.season - 1,
             );
 
+            if (!prevSeason || !prevSeason.entries) {
+                throw new ExternalApiError("No previous season data returned", {
+                    context: { discordId },
+                });
+            }
+
             const sortedEntries = prevSeason.entries
                 .filter((e) => e.damageType !== DamageType.BOMB)
                 .sort((a, b) => b.startedOn - a.startedOn);
-
-            if (!prevSeason || !prevSeason.entries) {
-                return null;
-            }
 
             const prevUsers = new Set<string>();
 
@@ -78,14 +105,7 @@ export class AvailabilityService {
             }
 
             const guildId = await this.getGuildId(discordId);
-            if (!guildId) {
-                return null;
-            }
-
             const currentMembersArr = await this.getGuildMembers(discordId);
-            if (!currentMembersArr || currentMembersArr.length === 0) {
-                return null;
-            }
 
             const currentMembers = new Set(currentMembersArr);
 
@@ -120,6 +140,9 @@ export class AvailabilityService {
                     users[id]?.tokens.push(entry);
                 }
             }
+
+            // suppress unused variable warning — guildId used for member filtering above
+            void guildId;
 
             const result: Record<string, GuildRaidAvailable> = {};
 
@@ -188,8 +211,11 @@ export class AvailabilityService {
 
             return result;
         } catch (error) {
-            logger.error(error, "Error fetching available tokens and bombs: ");
-            return null;
+            if (error instanceof BotError) throw error;
+            throw new ExternalApiError("Failed to fetch available tokens and bombs", {
+                cause: error,
+                context: { discordId },
+            });
         }
     }
 
@@ -199,15 +225,24 @@ export class AvailabilityService {
         const now = new Date();
 
         try {
-            const apiKey = await this.db.getUserToken(discordId);
-            if (!apiKey) {
-                return null;
+            let apiKey: string | null;
+            try {
+                apiKey = await this.db.getUserToken(discordId);
+            } catch (error) {
+                if (error instanceof BotError) throw error;
+                throw new DatabaseError("Failed to retrieve API token", {
+                    cause: error,
+                    context: { discordId },
+                });
             }
+            if (!apiKey) throw new NotRegisteredError();
 
             const resp = await this.client.getGuildRaidByCurrentSeason(apiKey);
 
             if (!resp || !resp.entries) {
-                return null;
+                throw new ExternalApiError("No current season data returned", {
+                    context: { discordId },
+                });
             }
 
             const userBombs: Record<string, Raid[]> = {};
@@ -252,8 +287,11 @@ export class AvailabilityService {
 
             return result;
         } catch (error) {
-            logger.error(error, "Error fetching user bombs: ");
-            return null;
+            if (error instanceof BotError) throw error;
+            throw new ExternalApiError("Failed to fetch available bombs", {
+                cause: error,
+                context: { discordId },
+            });
         }
     }
 
@@ -261,7 +299,9 @@ export class AvailabilityService {
         try {
             const resp = await this.client.getPlayer(token);
             if (!resp || !resp.player) {
-                return null;
+                throw new ExternalApiError("Player API returned no player data", {
+                    context: {},
+                });
             }
 
             const player = resp.player;
@@ -285,17 +325,28 @@ export class AvailabilityService {
 
             return status;
         } catch (error) {
-            logger.error(error, "Error fetching player cooldowns: ");
-            return null;
+            if (error instanceof BotError) throw error;
+            throw new ExternalApiError("Failed to fetch player cooldowns", {
+                cause: error,
+            });
         }
     }
 
     async getAvailableTokensAndBombsWithMetadata(discordId: string) {
         try {
             const guildId = await this.getGuildId(discordId);
-            if (!guildId) return null;
 
-            const metadata = await this.db.getAllPlayerMetadataByGuild(guildId);
+            let metadata: Awaited<ReturnType<typeof this.db.getAllPlayerMetadataByGuild>>;
+            try {
+                metadata = await this.db.getAllPlayerMetadataByGuild(guildId);
+            } catch (error) {
+                if (error instanceof BotError) throw error;
+                throw new DatabaseError("Failed to fetch player metadata", {
+                    cause: error,
+                    context: { guildId },
+                });
+            }
+
             const playerTokenMap = new Map<string, string>();
             for (const entry of metadata) {
                 if (entry.playerToken) {
@@ -308,7 +359,6 @@ export class AvailabilityService {
             }
 
             const estimated = await this.getAvailableTokensAndBombs(discordId);
-            if (!estimated) return null;
 
             await Promise.all(
                 Array.from(playerTokenMap.entries()).map(
@@ -320,7 +370,7 @@ export class AvailabilityService {
                                 estimated[userId] = precise;
                             }
                         } catch {
-                            // Fallback to estimated data if player token fails
+                            // Fallback to estimated data if individual player token fails
                         }
                     },
                 ),
@@ -328,20 +378,29 @@ export class AvailabilityService {
 
             return estimated;
         } catch (error) {
-            logger.error(
-                error,
-                "Error fetching metadata-aware tokens and bombs",
-            );
-            return null;
+            if (error instanceof BotError) throw error;
+            throw new ExternalApiError("Failed to fetch metadata-aware tokens and bombs", {
+                cause: error,
+                context: { discordId },
+            });
         }
     }
 
     async getAvailableBombsWithMetadata(discordId: string) {
         try {
             const guildId = await this.getGuildId(discordId);
-            if (!guildId) return null;
 
-            const metadata = await this.db.getAllPlayerMetadataByGuild(guildId);
+            let metadata: Awaited<ReturnType<typeof this.db.getAllPlayerMetadataByGuild>>;
+            try {
+                metadata = await this.db.getAllPlayerMetadataByGuild(guildId);
+            } catch (error) {
+                if (error instanceof BotError) throw error;
+                throw new DatabaseError("Failed to fetch player metadata", {
+                    cause: error,
+                    context: { guildId },
+                });
+            }
+
             const playerTokenMap = new Map<string, string>();
             for (const entry of metadata) {
                 if (entry.playerToken) {
@@ -354,7 +413,6 @@ export class AvailabilityService {
             }
 
             const estimated = await this.getAvailableBombs(discordId);
-            if (!estimated) return null;
 
             await Promise.all(
                 Array.from(playerTokenMap.entries()).map(
@@ -366,7 +424,7 @@ export class AvailabilityService {
                                 estimated[userId] = precise;
                             }
                         } catch {
-                            // Fallback to estimated data if player token fails
+                            // Fallback to estimated data if individual player token fails
                         }
                     },
                 ),
@@ -374,8 +432,11 @@ export class AvailabilityService {
 
             return estimated;
         } catch (error) {
-            logger.error(error, "Error fetching metadata-aware bombs");
-            return null;
+            if (error instanceof BotError) throw error;
+            throw new ExternalApiError("Failed to fetch metadata-aware bombs", {
+                cause: error,
+                context: { discordId },
+            });
         }
     }
 
@@ -389,8 +450,17 @@ export class AvailabilityService {
         | null
     > {
         try {
-            const apiKey = await this.db.getUserToken(discordId);
-            if (!apiKey) return null;
+            let apiKey: string | null;
+            try {
+                apiKey = await this.db.getUserToken(discordId);
+            } catch (error) {
+                if (error instanceof BotError) throw error;
+                throw new DatabaseError("Failed to retrieve API token", {
+                    cause: error,
+                    context: { discordId },
+                });
+            }
+            if (!apiKey) throw new NotRegisteredError();
 
             const resp = await this.client.getGuildRaidByCurrentSeason(apiKey);
             if (!resp || !resp.entries || resp.entries.length === 0)
@@ -398,18 +468,15 @@ export class AvailabilityService {
 
             const entries = resp.entries;
 
-            // Find the most recent entry to identify the current boss type
             const mostRecent = entries.reduce((a, b) =>
                 a.startedOn > b.startedOn ? a : b,
             );
             const currentType = mostRecent.type;
 
-            // Filter entries for the current boss type
             const currentTypeEntries = entries.filter(
                 (e) => e.type === currentType,
             );
 
-            // Group by unitId, keep only the most recent entry per unit
             const unitMap = new Map<string, Raid>();
             for (const entry of currentTypeEntries) {
                 const existing = unitMap.get(entry.unitId);
@@ -418,8 +485,6 @@ export class AvailabilityService {
                 }
             }
 
-            // If the most recent entry overall is a side boss, the main boss hasn't
-            // been attacked yet in this loop — exclude any stale dead boss entry.
             if (mostRecent.encounterType === EncounterType.SIDE_BOSS) {
                 for (const [key, e] of unitMap) {
                     if (
@@ -438,8 +503,11 @@ export class AvailabilityService {
                 type: e.type,
             }));
         } catch (error) {
-            logger.error(error, "Error fetching current boss units");
-            return null;
+            if (error instanceof BotError) throw error;
+            throw new ExternalApiError("Failed to fetch current boss units", {
+                cause: error,
+                context: { discordId },
+            });
         }
     }
 }

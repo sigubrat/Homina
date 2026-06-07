@@ -1,6 +1,7 @@
-import { dbController, logger } from "@/lib";
+import { dbController } from "@/lib";
 import { MessageService } from "@/lib/services/MessageService";
 import { isValidUUIDv4 } from "@/lib/utils/mathUtils";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 
 // 5 minutes cooldown
@@ -59,12 +60,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             });
         }
     } catch (error) {
-        await interaction.editReply({
-            content:
-                "An error occurred while trying to invite the user. Please try again later.",
-        });
-        logger.error(
-            `Error in /${commandName} command while ${interaction.user.username} was trying to invite ${invitedUser.username}: ${error}`,
-        );
+        await handleCommandError(interaction, error);
     }
 }

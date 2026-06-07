@@ -2,6 +2,7 @@ import { dbController, logger } from "@/lib";
 import { GuildService } from "@/lib/services/GuildService";
 import { fetchGuildMembers } from "@/client/MiddlewareClient";
 import { isValidUUIDv4 } from "@/lib/utils/mathUtils";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import {
     type AutocompleteInteraction,
     type ChatInputCommandInteraction,
@@ -32,10 +33,6 @@ export async function autocomplete(interaction: AutocompleteInteraction) {
     try {
         const service = new GuildService();
         const guildId = await service.getGuildId(discordId);
-        if (!guildId) {
-            await interaction.respond([]);
-            return;
-        }
 
         const [members, metadata] = await Promise.all([
             fetchGuildMembers(guildId),
@@ -94,13 +91,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     try {
         const service = new GuildService();
         const guildId = await service.getGuildId(discordId);
-        if (!guildId) {
-            await interaction.editReply({
-                content:
-                    "Could not determine your guild. Make sure you are registered.",
-            });
-            return;
-        }
 
         const entry = await dbController.getPlayerMetadata(
             selectedUserId,
@@ -116,25 +106,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const clearedNickname = entry.nickname;
 
-        const success = await dbController.clearPlayerNickname(
-            selectedUserId,
-            guildId,
-        );
+        await dbController.clearPlayerNickname(selectedUserId, guildId);
 
-        if (success) {
-            await interaction.editReply({
-                content: `Successfully cleared nickname **${clearedNickname}**. The member's in-game name will be used again.`,
-            });
-        } else {
-            await interaction.editReply({
-                content: "Failed to clear nickname. Please try again later.",
-            });
-        }
-    } catch (error) {
-        logger.error(error, "Error in /clear-player-nickname command");
         await interaction.editReply({
-            content:
-                "An error occurred while processing your request. Please try again later.",
+            content: `Successfully cleared nickname **${clearedNickname}**. The member's in-game name will be used again.`,
         });
+    } catch (error) {
+        await handleCommandError(interaction, error);
     }
 }

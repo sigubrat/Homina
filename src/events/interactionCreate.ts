@@ -1,9 +1,11 @@
 import { dbController, logger } from "@/lib";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import { MessageService } from "@/lib/services/MessageService";
 import {
     consumePendingInvite,
     deletePendingInvite,
 } from "@/lib/services/PendingInviteStore";
+import { BotError } from "@/models/errors/BotError";
 import { BotEventType } from "@/models/enums";
 import { IClient } from "@/models/types/IClient";
 import { Collection, Events, type Interaction, MessageFlags } from "discord.js";
@@ -118,20 +120,13 @@ export async function execute(interaction: Interaction) {
             BotEventType.COMMAND_ERROR,
             command.data.name,
             {
-                error: error instanceof Error ? error.message : String(error),
+                error: error instanceof BotError
+                    ? error.code
+                    : error instanceof Error
+                      ? error.message
+                      : String(error),
             },
         );
-        logger.error(error, "Failed to create interaction command");
-        if (interaction.replied || interaction.deferred) {
-            await interaction.followUp({
-                content: "There was an error while executing this command!",
-                flags: MessageFlags.Ephemeral,
-            });
-        } else {
-            await interaction.reply({
-                content: "There was an error while executing this command!",
-                flags: MessageFlags.Ephemeral,
-            });
-        }
+        await handleCommandError(interaction, error);
     }
 }

@@ -1,8 +1,11 @@
 import { HominaTacticusClient } from "@/client";
-import { DatabaseController, dbController, logger } from "@/lib";
+import { DatabaseController, dbController } from "@/lib";
 import { expandRarity } from "@/lib/utils/rarityUtils";
 import { mapTierToRarity } from "@/lib/utils/utils";
 import { DamageType, EncounterType, Rarity } from "@/models/enums";
+import { BotError } from "@/models/errors/BotError";
+import { DatabaseError, ExternalApiError } from "@/models/errors/ServiceError";
+import { NotRegisteredError } from "@/models/errors/UserError";
 import type { GuildRaidResult, Raid } from "@/models/types";
 import { MINIMUM_SEASON_THRESHOLD } from "../configs/constants";
 import { RaidAnalyticsService } from "./RaidAnalyticsService";
@@ -16,23 +19,35 @@ export class HistoryService {
         this.db = db;
     }
 
+    private async requireApiKey(discordId: string): Promise<string> {
+        let apiKey: string | null;
+        try {
+            apiKey = await this.db.getUserToken(discordId);
+        } catch (error) {
+            if (error instanceof BotError) throw error;
+            throw new DatabaseError("Failed to retrieve API token", {
+                cause: error,
+                context: { discordId },
+            });
+        }
+        if (!apiKey) throw new NotRegisteredError();
+        return apiKey;
+    }
+
     async getTokensUsedInLastSeasons(
         discordId: string,
         nSeasons: number,
         rarity?: Rarity,
-    ): Promise<Record<number, Record<string, number>> | null> {
+    ): Promise<Record<number, Record<string, number>>> {
         try {
-            const apiKey = await this.db.getUserToken(discordId);
-            if (!apiKey) {
-                logger.error("No API key found for user:", discordId);
-                return null;
-            }
+            const apiKey = await this.requireApiKey(discordId);
 
             const currentSeason =
                 await this.client.getGuildRaidByCurrentSeason(apiKey);
             if (!currentSeason || !currentSeason.season) {
-                logger.error("No current season found for user:", discordId);
-                return null;
+                throw new ExternalApiError("No current season data returned", {
+                    context: { discordId },
+                });
             }
 
             const currentSeasonNumber = currentSeason.season;
@@ -71,27 +86,27 @@ export class HistoryService {
 
             return result;
         } catch (error) {
-            logger.error(error, "Error fetching tokens used in last seasons: ");
-            return null;
+            if (error instanceof BotError) throw error;
+            throw new ExternalApiError("Failed to fetch tokens used in last seasons", {
+                cause: error,
+                context: { discordId },
+            });
         }
     }
 
     async getTotalDamageInLastSeasons(
         discordId: string,
         nSeasons: number,
-    ): Promise<Record<number, number> | null> {
+    ): Promise<Record<number, number>> {
         try {
-            const apiKey = await this.db.getUserToken(discordId);
-            if (!apiKey) {
-                logger.error("No API key found for user:", discordId);
-                return null;
-            }
+            const apiKey = await this.requireApiKey(discordId);
 
             const currentSeason =
                 await this.client.getGuildRaidByCurrentSeason(apiKey);
             if (!currentSeason || !currentSeason.season) {
-                logger.error("No current season found for user:", discordId);
-                return null;
+                throw new ExternalApiError("No current season data returned", {
+                    context: { discordId },
+                });
             }
 
             const currentSeasonNumber = currentSeason.season;
@@ -121,11 +136,11 @@ export class HistoryService {
 
             return result;
         } catch (error) {
-            logger.error(
-                error,
-                "Error fetching total damage in last seasons: ",
-            );
-            return null;
+            if (error instanceof BotError) throw error;
+            throw new ExternalApiError("Failed to fetch total damage in last seasons", {
+                cause: error,
+                context: { discordId },
+            });
         }
     }
 
@@ -133,13 +148,9 @@ export class HistoryService {
         discordId: string,
         nSeasons: number,
         startingSeason?: number,
-    ): Promise<Record<number, Partial<Record<Rarity, number>>> | null> {
+    ): Promise<Record<number, Partial<Record<Rarity, number>>>> {
         try {
-            const apiKey = await this.db.getUserToken(discordId);
-            if (!apiKey) {
-                logger.error("No API key found for user:", discordId);
-                return null;
-            }
+            const apiKey = await this.requireApiKey(discordId);
 
             let endSeason: number;
             if (startingSeason !== undefined) {
@@ -148,11 +159,9 @@ export class HistoryService {
                 const currentSeason =
                     await this.client.getGuildRaidByCurrentSeason(apiKey);
                 if (!currentSeason || !currentSeason.season) {
-                    logger.error(
-                        "No current season found for user:",
-                        discordId,
-                    );
-                    return null;
+                    throw new ExternalApiError("No current season data returned", {
+                        context: { discordId },
+                    });
                 }
                 endSeason = currentSeason.season;
             }
@@ -200,30 +209,27 @@ export class HistoryService {
 
             return result;
         } catch (error) {
-            logger.error(
-                error,
-                "Error fetching bosses killed in last seasons: ",
-            );
-            return null;
+            if (error instanceof BotError) throw error;
+            throw new ExternalApiError("Failed to fetch bosses killed in last seasons", {
+                cause: error,
+                context: { discordId },
+            });
         }
     }
 
     async getLoopsCompletedInLastSeasons(
         discordId: string,
         nSeasons: number,
-    ): Promise<Record<number, number> | null> {
+    ): Promise<Record<number, number>> {
         try {
-            const apiKey = await this.db.getUserToken(discordId);
-            if (!apiKey) {
-                logger.error("No API key found for user:", discordId);
-                return null;
-            }
+            const apiKey = await this.requireApiKey(discordId);
 
             const currentSeason =
                 await this.client.getGuildRaidByCurrentSeason(apiKey);
             if (!currentSeason || !currentSeason.season) {
-                logger.error("No current season found for user:", discordId);
-                return null;
+                throw new ExternalApiError("No current season data returned", {
+                    context: { discordId },
+                });
             }
 
             const currentSeasonNumber = currentSeason.season;
@@ -295,11 +301,11 @@ export class HistoryService {
 
             return result;
         } catch (error) {
-            logger.error(
-                error,
-                "Error fetching loops completed in last seasons: ",
-            );
-            return null;
+            if (error instanceof BotError) throw error;
+            throw new ExternalApiError("Failed to fetch loops completed in last seasons", {
+                cause: error,
+                context: { discordId },
+            });
         }
     }
 
@@ -308,11 +314,7 @@ export class HistoryService {
         season: number,
     ): Promise<Record<number, number> | null> {
         try {
-            const apiKey = await this.db.getUserToken(discordId);
-            if (!apiKey) {
-                logger.error("No API key found for user:", discordId);
-                return null;
-            }
+            const apiKey = await this.requireApiKey(discordId);
 
             const resp = await this.client.getGuildRaidBySeason(apiKey, season);
             if (!resp || !resp.entries) {
@@ -373,8 +375,11 @@ export class HistoryService {
 
             return result;
         } catch (error) {
-            logger.error(error, "Error fetching tokens per loop by season: ");
-            return null;
+            if (error instanceof BotError) throw error;
+            throw new ExternalApiError("Failed to fetch tokens per loop by season", {
+                cause: error,
+                context: { discordId, season },
+            });
         }
     }
 
@@ -384,11 +389,7 @@ export class HistoryService {
         rarity: Rarity,
     ): Promise<Record<string, Record<number, number>> | null> {
         try {
-            const apiKey = await this.db.getUserToken(discordId);
-            if (!apiKey) {
-                logger.error("No API key found for user:", discordId);
-                return null;
-            }
+            const apiKey = await this.requireApiKey(discordId);
 
             const resp = await this.client.getGuildRaidBySeason(apiKey, season);
             if (!resp || !resp.entries) {
@@ -481,8 +482,11 @@ export class HistoryService {
 
             return Object.keys(result).length > 0 ? result : null;
         } catch (error) {
-            logger.error(error, "Error fetching tokens per loop by boss: ");
-            return null;
+            if (error instanceof BotError) throw error;
+            throw new ExternalApiError("Failed to fetch tokens per loop by boss", {
+                cause: error,
+                context: { discordId, season },
+            });
         }
     }
 }

@@ -1,4 +1,5 @@
 import { logger } from "@/lib";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import {
     getCurrentSeason,
     MINIMUM_SEASON_THRESHOLD,
@@ -74,10 +75,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         await interaction.editReply({ embeds: [embed] });
     } catch (error) {
-        logger.error(error, `Error executing /${commandName}`);
-        await interaction.editReply({
-            content:
-                "An error occurred while fetching achievements. Please try again later.",
-        });
+        await handleCommandError(interaction, error);
     }
 }

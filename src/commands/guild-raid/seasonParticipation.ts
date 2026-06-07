@@ -12,6 +12,7 @@ import { numericAverage } from "@/lib/utils/mathUtils";
 import { sortGuildRaidResultDesc } from "@/lib/utils/mathUtils";
 import { getTopNDamageDealers } from "@/lib/utils/mathUtils";
 import { logger } from "@/lib";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import {
     getCurrentSeason,
     MINIMUM_SEASON_THRESHOLD,
@@ -125,11 +126,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             true,
         );
 
-        if (
-            !result ||
-            typeof result !== "object" ||
-            Object.keys(result).length === 0
-        ) {
+        if (result.length === 0) {
             await interaction.editReply({
                 content:
                     "No data found for the specified season. Ensure you are registered and have the correct permissions.",
@@ -138,13 +135,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         const players = await service.fetchGuildMembers(discordId);
-        if (!players) {
-            await interaction.editReply({
-                content:
-                    "Something went wrong while fetching guild members from the game. Please try again or contact the support server if the issue persists",
-            });
-            return;
-        }
 
         const transformedResult = replaceUserIdFieldWithDisplayNames(
             result,
@@ -224,10 +214,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             `${interaction.user.username} successfully used /season-participation`,
         );
     } catch (error) {
-        logger.error(error, "Error executing command");
-        await interaction.editReply({
-            content:
-                "An error occurred while processing your request. Please try again later.",
-        });
+        await handleCommandError(interaction, error);
     }
 }

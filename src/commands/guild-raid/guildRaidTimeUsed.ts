@@ -1,4 +1,5 @@
 import { logger } from "@/lib";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import {
     getCurrentSeason,
     MINIMUM_SEASON_THRESHOLD,
@@ -93,7 +94,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             rarity,
         );
 
-        if (!seasonData || seasonData.length === 0) {
+        if (seasonData.length === 0) {
             await interaction.editReply({
                 content:
                     "No data found for the specified season or the user has not participated.",
@@ -289,13 +290,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             `${interaction.user.username} successfully executed /gr-time-used ${season} ${rarity}`,
         );
     } catch (error) {
-        logger.error(
-            error,
-            `Error while executing /gr-time-used command for user ${discordID}`,
-        );
-        await interaction.editReply({
-            content:
-                "An error occurred while processing your request. Please try again later.",
-        });
+        await handleCommandError(interaction, error);
     }
 }

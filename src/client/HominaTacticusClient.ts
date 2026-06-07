@@ -2,6 +2,7 @@ import type { Player } from "@/models/types";
 import type { Guild } from "@/models/types/Guild";
 import type { GuildRaidResponse } from "@/models/types/GuildRaidResponse";
 import { normalizeTimestamp } from "@/lib/utils/timeUtils";
+import { ExternalApiError } from "@/models/errors/ServiceError";
 
 export interface GuildApiResponse {
     success: boolean;
@@ -52,7 +53,9 @@ class HominaTacticusClient {
         });
 
         if (!response.ok) {
-            throw new Error(`GET request failed: ${response.statusText}`);
+            throw new ExternalApiError("Tacticus guild API request failed", {
+                context: { status: response.status, statusText: response.statusText },
+            });
         }
 
         const body = await response.json();
@@ -87,7 +90,9 @@ class HominaTacticusClient {
             },
         });
         if (!response.ok) {
-            throw new Error(`GET request failed: ${response.statusText}`);
+            throw new ExternalApiError("Tacticus player API request failed", {
+                context: { status: response.status, statusText: response.statusText },
+            });
         }
         const body = await response.json();
 
@@ -125,7 +130,9 @@ class HominaTacticusClient {
         });
 
         if (!response.ok) {
-            throw new Error(`GET request failed: ${response.statusText}`);
+            throw new ExternalApiError("Tacticus guild raid API request failed", {
+                context: { season, status: response.status, statusText: response.statusText },
+            });
         }
 
         const body = (await response.json()) as GuildRaidResponse;
@@ -136,25 +143,26 @@ class HominaTacticusClient {
     async getGuildRaidByCurrentSeason(
         apiKey: string,
     ): Promise<GuildRaidResponse> {
-        try {
-            const response = await fetch(`${this.baseUrl}/guildRaid`, {
-                method: "GET",
-                headers: {
-                    Accept: "application/json",
-                    "X-API-KEY": `${apiKey}`,
+        const response = await fetch(`${this.baseUrl}/guildRaid`, {
+            method: "GET",
+            headers: {
+                Accept: "application/json",
+                "X-API-KEY": `${apiKey}`,
+            },
+        });
+
+        if (!response.ok) {
+            throw new ExternalApiError(
+                "Tacticus current guild raid API request failed",
+                {
+                    context: { status: response.status, statusText: response.statusText },
                 },
-            });
-
-            if (!response.ok) {
-                throw new Error(`GET request failed: ${response.status}`);
-            }
-
-            const body = (await response.json()) as GuildRaidResponse;
-
-            return this.preProcessGuildRaidResponse(body);
-        } catch (error) {
-            throw new Error(`GET request failed: ${error}`);
+            );
         }
+
+        const body = (await response.json()) as GuildRaidResponse;
+
+        return this.preProcessGuildRaidResponse(body);
     }
 }
 

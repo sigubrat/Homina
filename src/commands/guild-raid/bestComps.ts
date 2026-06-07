@@ -1,4 +1,4 @@
-import { logger } from "@/lib";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import {
     getCurrentSeason,
     MINIMUM_SEASON_THRESHOLD,
@@ -76,7 +76,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             rarity,
         );
 
-        if (!seasonData || seasonData.length === 0) {
+        if (seasonData.length === 0) {
             await interaction.editReply(
                 `No data found for season ${season} with rarity ${rarity}.`,
             );
@@ -139,6 +139,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         await interaction.editReply({ embeds: [embed] });
     } catch (error) {
-        logger.error(error, `Error during /best-comp by user ${discordID}`);
+        await handleCommandError(interaction, error);
     }
 }

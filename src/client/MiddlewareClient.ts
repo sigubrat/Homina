@@ -4,7 +4,7 @@
  */
 
 import type { MiddlewareMember } from "@/models/types";
-import { logger } from "@/lib";
+import { ExternalApiError } from "@/models/errors/ServiceError";
 
 const MIDDLEWARE_URL = process.env.MIDDLEWARE_URL ?? "http://localhost:3001";
 const MIDDLEWARE_TIMEOUT = 30000;
@@ -38,15 +38,19 @@ export async function fetchGuildMembers(
         clearTimeout(timeoutId);
 
         if (!response.ok) {
-            logger.error(`Middleware request failed: ${response.status}`);
-            return [];
+            throw new ExternalApiError("Middleware guild members request failed", {
+                context: { guildId, status: response.status },
+            });
         }
 
         const data = (await response.json()) as MiddlewareResponse;
         return data.success ? (data.members ?? []) : [];
     } catch (error) {
         clearTimeout(timeoutId);
-        logger.error(error, "Failed to fetch guild members via middleware");
-        return [];
+        if (error instanceof ExternalApiError) throw error;
+        throw new ExternalApiError("Failed to fetch guild members via middleware", {
+            cause: error,
+            context: { guildId },
+        });
     }
 }

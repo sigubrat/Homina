@@ -1,4 +1,5 @@
 import { logger } from "@/lib";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import {
     getCurrentSeason,
     MINIMUM_SEASON_THRESHOLD,
@@ -50,14 +51,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             season,
         );
 
-        if (!matches) {
-            await interaction.editReply({
-                content:
-                    "Could not fetch data for you. Ensure your token is valid.",
-            });
-            return;
-        }
-
         if (matches.length === 0) {
             await interaction.editReply({
                 content: `No previous seasons found with the same config as season ${season}.`,
@@ -88,9 +81,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         await interaction.editReply({ embeds: [embed] });
     } catch (error) {
-        logger.error(
-            error,
-            `Error while executing /season-configs command for ${interaction.user.username}`,
-        );
+        await handleCommandError(interaction, error);
     }
 }

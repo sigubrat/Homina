@@ -1,4 +1,5 @@
 import { logger } from "@/lib";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import {
     getCurrentSeason,
     MINIMUM_SEASON_THRESHOLD,
@@ -105,11 +106,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             true,
         );
 
-        if (
-            !result ||
-            typeof result !== "object" ||
-            Object.keys(result).length === 0
-        ) {
+        if (result.length === 0) {
             await interaction.editReply({
                 content:
                     "No data found for the specified season or the user has not participated.",
@@ -118,13 +115,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         const players = await service.fetchGuildMembers(discordId);
-        if (!players) {
-            await interaction.editReply({
-                content:
-                    "No players found in the guild. Please make sure you have registered your API-token",
-            });
-            return;
-        }
 
         const transformedResult = replaceUserIdFieldWithDisplayNames(
             result,
@@ -139,15 +129,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         // Then find out who did not participate at all
-        const guildId = await service.getGuildId(interaction.user.id);
-        if (!guildId) {
-            await interaction.editReply({
-                content:
-                    "Could not find your guild's ID. Please make sure you have registered your API-token",
-            });
-            return;
-        }
-
         const playersNotParticipated = players.filter(
             (player) =>
                 !transformedResult.some(
@@ -261,12 +242,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             `${interaction.user.username} successfully used /tokens-by-season for season ${season}`,
         );
     } catch (error) {
-        logger.error(error, "Error occured in tokens-by-season: ");
-        await interaction.editReply({
-            content:
-                "An error occured while attempting to get tokens used in season: " +
-                season,
-        });
-        return;
+        await handleCommandError(interaction, error);
     }
 }
