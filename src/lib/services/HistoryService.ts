@@ -6,7 +6,6 @@ import { DamageType, EncounterType, Rarity } from "@/models/enums";
 import { BotError } from "@/models/errors/BotError";
 import { DatabaseError, ExternalApiError } from "@/models/errors/ServiceError";
 import { NotRegisteredError } from "@/models/errors/UserError";
-import type { GuildRaidResult, Raid } from "@/models/types";
 import { MINIMUM_SEASON_THRESHOLD } from "../configs/constants";
 import { RaidAnalyticsService } from "./RaidAnalyticsService";
 

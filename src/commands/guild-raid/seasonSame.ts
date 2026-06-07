@@ -1,4 +1,3 @@
-import { logger } from "@/lib";
 import { handleCommandError } from "@/lib/utils/errorUtils";
 import {
     getCurrentSeason,

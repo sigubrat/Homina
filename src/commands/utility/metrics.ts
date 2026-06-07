@@ -1,4 +1,4 @@
-import { dbController, logger } from "@/lib";
+import { dbController } from "@/lib";
 import { handleCommandError } from "@/lib/utils/errorUtils";
 import { BotEventType } from "@/models/enums";
 import { ChartService } from "@/lib/services/ChartService";
