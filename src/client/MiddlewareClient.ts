@@ -44,7 +44,12 @@ export async function fetchGuildMembers(
         }
 
         const data = (await response.json()) as MiddlewareResponse;
-        return data.success ? (data.members ?? []) : [];
+        if (!data.success) {
+            throw new ExternalApiError("Middleware returned unsuccessful response", {
+                context: { guildId, error: data.error },
+            });
+        }
+        return data.members ?? [];
     } catch (error) {
         clearTimeout(timeoutId);
         if (error instanceof ExternalApiError) throw error;
