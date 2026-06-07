@@ -1,4 +1,3 @@
-import { logger } from "@/lib";
 import { handleCommandError } from "@/lib/utils/errorUtils";
 import { STANDARD_FOOTER_TEXT } from "@/lib/configs/constants";
 import { GRConfigService } from "@/lib/services/GRConfigService";

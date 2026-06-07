@@ -2,6 +2,7 @@ import { AvailabilityService } from "@/lib/services/AvailabilityService";
 import { describe, expect, test } from "bun:test";
 import { createMockClient } from "../mocks/mockTacticusClient";
 import { createMockDb } from "../mocks/mockDbController";
+import { NotRegisteredError } from "@/models/errors/UserError";
 import { DamageType, EncounterType, Rarity } from "@/models/enums";
 import type { Raid } from "@/models/types";
 
@@ -28,12 +29,14 @@ function makeRaid(overrides: Partial<Raid> & { startedOn: number }): Raid {
 }
 
 describe("AvailabilityServiceSuite - getCurrentBossUnits", () => {
-    test("returns null when no API key is found", async () => {
+    test("throws NotRegisteredError when no API key is found", async () => {
         const service = new AvailabilityService(
             createMockClient(),
             createMockDb({ getUserToken: async () => null }),
         );
-        expect(await service.getCurrentBossUnits("user-1")).toBeNull();
+        await expect(service.getCurrentBossUnits("user-1")).rejects.toBeInstanceOf(
+            NotRegisteredError,
+        );
     });
 
     test("returns null when the API returns no entries", async () => {

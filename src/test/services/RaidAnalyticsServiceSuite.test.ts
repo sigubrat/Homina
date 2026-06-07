@@ -2,13 +2,14 @@ import { RaidAnalyticsService } from "@/lib/services/RaidAnalyticsService";
 import { describe, expect, test } from "bun:test";
 import { createMockClient } from "../mocks/mockTacticusClient";
 import { createMockDb } from "../mocks/mockDbController";
+import { NotRegisteredError } from "@/models/errors/UserError";
 import { RaidResultFixture } from "../testFixtures";
 import { DamageType, EncounterType, Rarity } from "@/models/enums";
 import type { Raid } from "@/models/types";
 
 describe("RaidAnalyticsServiceSuite", () => {
     describe("getGuildRaidResultBySeason", () => {
-        test("should return null when no API key is found", async () => {
+        test("should throw NotRegisteredError when no API key is found", async () => {
             const mockDb = createMockDb({
                 getUserToken: async () => null,
             });
@@ -16,11 +17,9 @@ describe("RaidAnalyticsServiceSuite", () => {
                 createMockClient(),
                 mockDb,
             );
-            const result = await service.getGuildRaidResultBySeason(
-                "user-1",
-                85,
-            );
-            expect(result).toBeNull();
+            await expect(
+                service.getGuildRaidResultBySeason("user-1", 85),
+            ).rejects.toBeInstanceOf(NotRegisteredError);
         });
 
         test("should return empty array when API returns no entries", async () => {

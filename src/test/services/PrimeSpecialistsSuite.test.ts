@@ -4,6 +4,7 @@ import { createMockDb } from "../mocks/mockDbController";
 import { DamageType, EncounterType, Rarity } from "@/models/enums";
 import type { Raid } from "@/models/types";
 import type { MiddlewareMember } from "@/models/types";
+import { NotRegisteredError } from "@/models/errors/UserError";
 
 const mockMembers: MiddlewareMember[] = [
     { userId: "player-a", displayName: "Alice", role: "member" },
@@ -16,7 +17,12 @@ let mockFetchGuildMembersResult: MiddlewareMember[] | null = mockMembers;
 
 // Mock the middleware so resolveGuildMembers doesn't make HTTP calls
 mock.module("@/client/MiddlewareClient", () => ({
-    fetchGuildMembers: async () => mockFetchGuildMembersResult,
+    fetchGuildMembers: async () => {
+        if (mockFetchGuildMembersResult === null) {
+            throw new Error("Simulated fetch failure");
+        }
+        return mockFetchGuildMembersResult;
+    },
 }));
 
 // Import after mocking
@@ -47,31 +53,33 @@ function makeRaid(overrides: Partial<Raid> = {}): Raid {
 }
 
 describe("RaidAnalyticsServiceSuite - getPrimeSpecialists", () => {
-    test("should return null when no API key is found", async () => {
+    test("should throw NotRegisteredError when no API key is found", async () => {
         const mockDb = createMockDb({
             getUserToken: async () => null,
         });
         const service = new RaidAnalyticsService(createMockClient(), mockDb);
-        const result = await service.getPrimeSpecialists(
-            "user-1",
-            Rarity.LEGENDARY,
-        );
-        expect(result).toBeNull();
+        await expect(
+            service.getPrimeSpecialists("user-1", Rarity.LEGENDARY),
+        ).rejects.toBeInstanceOf(NotRegisteredError);
     });
 
-    test("should return null when guild members cannot be fetched", async () => {
+    test("should throw when guild members cannot be fetched", async () => {
         mockFetchGuildMembersResult = null;
-        const mockDb = createMockDb({
-            getGuildIdByUserId: async () => "guild-1",
-            getAllPlayerMetadataByGuild: async () => [],
-        });
-        const service = new RaidAnalyticsService(createMockClient(), mockDb);
-        const result = await service.getPrimeSpecialists(
-            "user-1",
-            Rarity.LEGENDARY,
-        );
-        expect(result).toBeNull();
-        mockFetchGuildMembersResult = mockMembers;
+        try {
+            const mockDb = createMockDb({
+                getGuildIdByUserId: async () => "guild-1",
+                getAllPlayerMetadataByGuild: async () => [],
+            });
+            const service = new RaidAnalyticsService(
+                createMockClient(),
+                mockDb,
+            );
+            await expect(
+                service.getPrimeSpecialists("user-1", Rarity.LEGENDARY),
+            ).rejects.toThrow();
+        } finally {
+            mockFetchGuildMembersResult = mockMembers;
+        }
     });
 
     test("should return null when no current season is found and no season specified", async () => {
@@ -269,10 +277,8 @@ describe("RaidAnalyticsServiceSuite - getPrimeSpecialists", () => {
     });
 
     test("should aggregate data from multiple seasons", async () => {
-        let callCount = 0;
         const mockClient = createMockClient({
             getGuildRaidBySeason: async (_apiKey: string, season: number) => {
-                callCount++;
                 if (season === 85) {
                     return {
                         season: 85,
