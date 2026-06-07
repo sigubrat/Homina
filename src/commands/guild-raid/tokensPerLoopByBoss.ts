@@ -75,7 +75,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             rarity,
         );
 
-        if (Object.keys(tokensPerLoopByBoss).length === 0) {
+        if (!tokensPerLoopByBoss || Object.keys(tokensPerLoopByBoss).length === 0) {
             await interaction.editReply({
                 content: `No data found for season ${season} at ${rarity} rarity. Please make sure you have registered your API-token.`,
             });

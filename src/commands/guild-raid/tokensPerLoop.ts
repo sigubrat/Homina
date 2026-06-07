@@ -57,7 +57,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             season,
         );
 
-        if (Object.keys(tokensPerLoop).length === 0) {
+        if (!tokensPerLoop || Object.keys(tokensPerLoop).length === 0) {
             await interaction.editReply({
                 content: `No data found for season ${season}. Please make sure you have registered your API-token.`,
             });
