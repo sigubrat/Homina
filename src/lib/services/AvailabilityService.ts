@@ -104,7 +104,6 @@ export class AvailabilityService {
                 prevUsers.add(prevEntry.userId);
             }
 
-            const guildId = await this.getGuildId(discordId);
             const currentMembersArr = await this.getGuildMembers(discordId);
 
             const currentMembers = new Set(currentMembersArr);
@@ -140,9 +139,6 @@ export class AvailabilityService {
                     users[id]?.tokens.push(entry);
                 }
             }
-
-            // suppress unused variable warning — guildId used for member filtering above
-            void guildId;
 
             const result: Record<string, GuildRaidAvailable> = {};
 
