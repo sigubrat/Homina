@@ -1,4 +1,5 @@
 import { logger } from "@/lib";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import { GuildService } from "@/lib/services/GuildService";
 import { AvailabilityService } from "@/lib/services/AvailabilityService";
 import { toMinutes } from "@/lib/utils/timeUtils";
@@ -40,12 +41,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 interaction.user.id,
             );
 
-        if (
-            !result ||
-            typeof result !== "object" ||
-            Object.keys(result).length === 0 ||
-            result === null
-        ) {
+        if (Object.keys(result).length === 0) {
             await interaction.editReply({
                 content:
                     "No data found for the current season. Ensure you are registered and have the correct permissions.",
@@ -54,13 +50,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         const players = await service.fetchGuildMembers(interaction.user.id);
-        if (!players) {
-            await interaction.editReply({
-                content:
-                    "Something went wrong while fetching guild members from the game. Please try again or contact the support server if the issue persists",
-            });
-            return;
-        }
 
         // Replace User IDs with display names in the result
         result = replaceUserIdKeysWithDisplayNames(result, players, true);
@@ -266,14 +255,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         await interaction.editReply({ embeds: [embed] });
     } catch (error) {
-        logger.error(
-            error,
-            `Error occured in available-tokens-bombs by ${interaction.user.username}`,
-        );
-        await interaction.editReply({
-            content:
-                "An error occurred while fetching the data. Please try again later or contact the Bot developer if the problem persists.",
-        });
-        return;
+        await handleCommandError(interaction, error);
     }
 }

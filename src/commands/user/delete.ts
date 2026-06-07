@@ -5,6 +5,7 @@ import {
 } from "discord.js";
 import { dbController, logger } from "@/lib";
 import { BotEventType } from "@/models/enums";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 
 export const cooldown = 5; // Cooldown in seconds
 
@@ -34,12 +35,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             content: response,
         });
     } catch (error) {
-        logger.error(error, "Error deleting user account");
-        await interaction.editReply({
-            content: "An error occurred while trying to delete your account.",
-            options: { flags: MessageFlags.Ephemeral },
-        });
-        return;
+        await handleCommandError(interaction, error);
     }
 
     logger.info(`${interaction.user.username} successfully used /delete`);

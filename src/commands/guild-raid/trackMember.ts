@@ -1,4 +1,5 @@
 import { dbController, logger } from "@/lib";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import {
     MAXIMUM_GUILD_MEMBERS,
     MAXIMUM_TOKENS_PER_SEASON,
@@ -84,13 +85,8 @@ export async function autocomplete(interaction: AutocompleteInteraction) {
     try {
         const service = new GuildService();
         const guildId = await service.getGuildId(discordId);
-        if (!guildId) {
-            await interaction.respond([]);
-            return;
-        }
-
         const members = await fetchGuildMembers(guildId);
-        if (!members || members.length === 0) {
+        if (members.length === 0) {
             await interaction.respond([]);
             return;
         }
@@ -145,16 +141,15 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     const service = new GuildService();
     const raidAnalytics = new RaidAnalyticsService();
-    let memberDisplayName = member;
-    const members = await service.fetchGuildMembers(discordId);
-    if (members) {
+
+    try {
+        let memberDisplayName = member;
+        const members = await service.fetchGuildMembers(discordId);
         const matched = members.find((m) => m.userId === member);
         if (matched) {
             memberDisplayName = matched.displayName;
         }
-    }
 
-    try {
         const rarity = interaction.options.getString("rarity") as
             | Rarity
             | undefined;
@@ -165,7 +160,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             rarity,
         );
 
-        if (!data || Object.keys(data).length === 0) {
+        if (Object.keys(data).length === 0) {
             await interaction.editReply({
                 content: `No data found for the member ${memberDisplayName} in the last ${N_SEASONS} seasons.`,
             });
@@ -385,10 +380,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             embeds: [embed],
         });
     } catch (error) {
-        logger.error(error, `Error tracking member ${memberDisplayName}`);
-        await interaction.editReply({
-            content:
-                "An error occurred while tracking the member. Please try again.",
-        });
+        await handleCommandError(interaction, error);
     }
 }

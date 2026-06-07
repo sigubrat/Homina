@@ -1,4 +1,5 @@
 import { logger } from "@/lib";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import {
     getCurrentSeason,
     MINIMUM_SEASON_THRESHOLD,
@@ -75,7 +76,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             season,
         );
 
-        if (!bombs || Object.keys(bombs).length === 0) {
+        if (Object.keys(bombs).length === 0) {
             await interaction.editReply({
                 content: `No data found for season ${season}.`,
             });
@@ -84,14 +85,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         // replace user IDs with display names
         const players = await service.fetchGuildMembers(discordId);
-        if (!players) {
-            await interaction.editReply({
-                content:
-                    "Something went wrong while fetching guild members from the game. Please try again or contact the support server if the issue persists",
-            });
-            return;
-        }
-
         bombs = replaceUserIdKeysWithDisplayNames(bombs, players);
 
         const averageMethod = interaction.options.getString(
@@ -159,11 +152,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             `Guild raid bombs for season ${season} requested by user ${interaction.user.id}`,
         );
     } catch (error) {
-        logger.error(
-            `Error fetching guild raid bombs for season ${season}: ${error}`,
-        );
-        await interaction.editReply({
-            content: `An error occurred while fetching data for season ${season}. Please try again later.`,
-        });
+        await handleCommandError(interaction, error);
     }
 }

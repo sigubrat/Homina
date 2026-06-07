@@ -5,9 +5,12 @@ import {
 } from "discord.js";
 import { isValidUUIDv4 } from "@/lib/utils/mathUtils";
 import { testApiToken } from "@/lib/utils/commandUtils";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import { dbController, logger } from "@/lib";
 import { HominaTacticusClient } from "@/client";
 import { BotEventType } from "@/models/enums";
+import { InvalidInputError } from "@/models/errors/UserError";
+import { ExternalApiError } from "@/models/errors/ServiceError";
 
 export const cooldown = 5; // Cooldown in seconds
 
@@ -26,63 +29,35 @@ export const data = new SlashCommandBuilder()
     .setDescription("Register your account to use the bot");
 
 export async function execute(interaction: ChatInputCommandInteraction) {
-    try {
-        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
+    try {
         const apiToken = interaction.options.getString("api-token");
         if (!apiToken || !isValidUUIDv4(apiToken)) {
-            await interaction.editReply({
-                content: "API token is required.",
-                options: {
-                    flags: MessageFlags.Ephemeral,
-                },
-            });
-            return;
+            throw new InvalidInputError("API token is required and must be a valid UUID.");
         }
 
         logger.info(
             `User ${interaction.user.username} attempting to register a token`,
         );
 
-        let result = await testApiToken(apiToken);
-        if (!result) {
-            await interaction.editReply({
-                content:
-                    "Token is invalid or does not have the required permissions",
-                options: {
-                    flags: MessageFlags.Ephemeral,
-                },
-            });
-            return;
+        const tokenValid = await testApiToken(apiToken);
+        if (!tokenValid) {
+            throw new InvalidInputError(
+                "Token is invalid or does not have the required permissions.",
+            );
         }
 
-        // Fetch the guild ID from the API
         const client = new HominaTacticusClient();
         const guildResponse = await client.getGuild(apiToken);
-        if (!guildResponse || !guildResponse.success || !guildResponse.guild) {
-            await interaction.editReply({
-                content: `Failed to fetch guild information: ${guildResponse?.message || "Unknown error"}`,
-                options: { flags: MessageFlags.Ephemeral },
-            });
-            return;
+        if (!guildResponse.success || !guildResponse.guild) {
+            throw new ExternalApiError(
+                `Failed to fetch guild information: ${guildResponse.message ?? "Unknown error"}`,
+            );
         }
 
         const guildId = guildResponse.guild.guildId;
-
-        result = await dbController.registerUser(
-            interaction.user.id,
-            apiToken,
-            guildId,
-        );
-        if (!result) {
-            await interaction.editReply({
-                content: "Something went wrong while registering your token",
-                options: {
-                    flags: MessageFlags.Ephemeral,
-                },
-            });
-            return;
-        }
+        await dbController.registerUser(interaction.user.id, apiToken, guildId);
 
         void dbController.logEvent(BotEventType.USER_REGISTER, "register", {
             userId: interaction.user.id,
@@ -95,17 +70,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         await interaction.editReply({
             content:
                 "Token successfully registered to your user. You're all set to use the bot commands!",
-            options: {
-                flags: MessageFlags.Ephemeral,
-            },
         });
     } catch (error) {
-        logger.error(error, "Error occurred while executing register command");
-        await interaction.editReply({
-            content: "An error occurred while processing your registration.",
-            options: {
-                flags: MessageFlags.Ephemeral,
-            },
-        });
+        await handleCommandError(interaction, error);
     }
 }

@@ -1,4 +1,4 @@
-import { logger } from "@/lib";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import { STANDARD_FOOTER_TEXT } from "@/lib/configs/constants";
 import { ChartService } from "@/lib/services/ChartService";
 import { RaidAnalyticsService } from "@/lib/services/RaidAnalyticsService";
@@ -26,10 +26,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     try {
         const tokensUsedPerHour = await guildService.getTokenByHours(discordId);
-        if (
-            tokensUsedPerHour === null ||
-            Object.values(tokensUsedPerHour).length === 0
-        ) {
+        if (Object.values(tokensUsedPerHour).length === 0) {
             await interaction.editReply({
                 content:
                     "Could not fetch data for you. Ensure your token is valid.",
@@ -79,10 +76,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         return;
     } catch (error) {
-        logger.error(error, "Error fetching token timeline:");
-        await interaction.editReply({
-            content: "An error occurred while fetching the token timeline.",
-        });
-        return;
+        await handleCommandError(interaction, error);
     }
 }

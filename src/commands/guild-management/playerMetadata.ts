@@ -1,5 +1,6 @@
 import { dbController, logger } from "@/lib";
 import { GuildService } from "@/lib/services/GuildService";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import { fetchGuildMembers } from "@/client/MiddlewareClient";
 import { testPlayerApiToken } from "@/lib/utils/commandUtils";
 import {
@@ -30,13 +31,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     try {
         const service = new GuildService();
         const guildId = await service.getGuildId(discordId);
-        if (!guildId) {
-            await interaction.editReply({
-                content:
-                    "No guild found. Ensure you are registered and have the correct permissions.",
-            });
-            return;
-        }
 
         const [members, metadata] = await Promise.all([
             fetchGuildMembers(guildId),
@@ -101,9 +95,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             `${interaction.user.username} successfully used /player-metadata`,
         );
     } catch (error) {
-        logger.error(error, "Error fetching player metadata");
-        await interaction.editReply({
-            content: "An error occurred while fetching player metadata.",
-        });
+        await handleCommandError(interaction, error);
     }
 }

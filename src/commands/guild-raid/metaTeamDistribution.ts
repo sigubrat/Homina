@@ -1,4 +1,5 @@
 import { logger } from "@/lib";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import {
     getCurrentSeason,
     MINIMUM_SEASON_THRESHOLD,
@@ -73,11 +74,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             rarity,
         );
 
-        if (
-            !result ||
-            typeof result !== "object" ||
-            Object.keys(result).length === 0
-        ) {
+        if (Object.keys(result).length === 0) {
             await interaction.editReply({
                 content:
                     "No data found for the specified season. Ensure you are registered and have the correct permissions.",
@@ -137,10 +134,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             `${interaction.user.username} successfully used /meta-team-distribution for season ${season}`,
         );
     } catch (error) {
-        logger.error(error, "Error fetching guild raid result");
-        await interaction.editReply({
-            content: "An error occurred while fetching the guild raid result.",
-        });
-        return;
+        await handleCommandError(interaction, error);
     }
 }

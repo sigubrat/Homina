@@ -1,5 +1,6 @@
 import { logger } from "@/lib";
 import { GuildService } from "@/lib/services/GuildService.ts";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import {
     ChatInputCommandInteraction,
     MessageFlags,
@@ -27,7 +28,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     try {
         const members = await service.getGuildMembers(interaction.user.id);
 
-        if (!members || members.length === 0) {
+        if (members.length === 0) {
             await interaction.editReply({
                 content:
                     "No members found. Ensure you are registered and have the correct permissions.",
@@ -38,26 +39,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             return;
         }
 
-        const guildId = await service.getGuildId(interaction.user.id);
-        if (!guildId) {
-            await interaction.editReply({
-                content:
-                    "No guild found. Ensure you are registered and have the correct permissions.",
-                options: {
-                    flags: MessageFlags.Ephemeral,
-                },
-            });
-            return;
-        }
-
         const players = await service.fetchGuildMembers(interaction.user.id);
-        if (!players) {
-            await interaction.editReply({
-                content:
-                    "Something went wrong while fetching guild members from the game. Please try again or contact the support server if the issue persists",
-            });
-            return;
-        }
 
         const mapping: Record<string, string> = {};
         members.forEach((member) => {
@@ -84,15 +66,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             `${interaction.user.username} used /member-ids and received the member list`,
         );
     } catch (error) {
-        logger.error(
-            error,
-            `Error in /${commandName} command while fetching members:`,
-        );
-        await interaction.editReply({
-            content: "An error occurred while fetching the member list.",
-            options: {
-                flags: MessageFlags.Ephemeral,
-            },
-        });
+        await handleCommandError(interaction, error);
     }
 }

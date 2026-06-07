@@ -1,4 +1,5 @@
 import { logger } from "@/lib";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import {
     getCurrentSeason,
     MINIMUM_SEASON_THRESHOLD,
@@ -100,11 +101,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             seasonCount,
         );
 
-        if (
-            !result ||
-            typeof result !== "object" ||
-            Object.keys(result).length === 0
-        ) {
+        if (Object.keys(result).length === 0) {
             await interaction.editReply({
                 content:
                     "No data found for the specified season and rarity. Ensure you are registered and have the correct permissions.",
@@ -197,12 +194,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             `${interaction.user.username} successfully used /relative-performance ${season} ${rarity}`,
         );
     } catch (error) {
-        logger.error(
-            error,
-            `${interaction.user.id} failed to use /relative-performance`,
-        );
-        await interaction.editReply(
-            "There was an error while calculating relative performance.",
-        );
+        await handleCommandError(interaction, error);
     }
 }

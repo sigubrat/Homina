@@ -5,7 +5,7 @@ import {
     SlashCommandBuilder,
 } from "discord.js";
 import { GuildService } from "@/lib/services/GuildService";
-import { logger } from "@/lib";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 export const cooldown = 5;
 
 export const data = new SlashCommandBuilder()
@@ -44,9 +44,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             embeds: [embed],
         });
     } catch (error) {
-        logger.error(error, "Error testing API token");
-        await interaction.editReply({
-            content: "An error occurred while testing your API token.",
-        });
+        await handleCommandError(interaction, error);
     }
 }

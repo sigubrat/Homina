@@ -1,4 +1,5 @@
 import { logger } from "@/lib";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import {
     getCurrentSeason,
     MINIMUM_SEASON_THRESHOLD,
@@ -93,11 +94,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             true,
         );
 
-        if (
-            !result ||
-            typeof result !== "object" ||
-            Object.keys(result).length === 0
-        ) {
+        if (Object.keys(result).length === 0) {
             await interaction.editReply({
                 content:
                     "No data found for the specified season or the user has not participated.",
@@ -106,13 +103,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         }
 
         const players = await service.fetchGuildMembers(discordId);
-        if (!players) {
-            await interaction.editReply({
-                content:
-                    "Something went wrong while fetching guild members from the game. Please try again or contact the support server if the issue persists",
-            });
-            return;
-        }
 
         // Replace User IDs with display names in the result
         for (const entry of result) {
@@ -253,10 +243,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             `${interaction.user.username} successfully used /member-stats-per-season for season ${season}`,
         );
     } catch (error) {
-        logger.error(error, "Error fetching guild raid result: ");
-        await interaction.editReply({
-            content: "An error occurred while fetching the guild raid result.",
-        });
-        return;
+        await handleCommandError(interaction, error);
     }
 }

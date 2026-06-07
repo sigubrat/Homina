@@ -1,11 +1,14 @@
 import { HominaTacticusClient } from "@/client";
-import { DatabaseController, dbController, logger } from "@/lib";
+import { DatabaseController, dbController } from "@/lib";
 import { resolveGuildMembers } from "@/lib/utils/guildMemberUtils";
 import { getMetaTeam } from "@/lib/utils/metaTeamUtils";
 import { createUnknownUserTracker } from "@/lib/utils/userUtils";
 import { getPrimeDisplayName } from "@/lib/utils/utils";
 import { DamageType, EncounterType } from "@/models/enums";
 import { MetaTeams } from "@/models/enums/MetaTeams";
+import { BotError } from "@/models/errors/BotError";
+import { DatabaseError, ExternalApiError } from "@/models/errors/ServiceError";
+import { NotRegisteredError } from "@/models/errors/UserError";
 import type { Raid } from "@/models/types";
 
 export interface Achievement {
@@ -34,11 +37,19 @@ export class AchievementService {
         season?: number,
     ): Promise<Achievement[] | null> {
         try {
-            const apiKey = await this.db.getUserToken(discordId);
-            if (!apiKey) return null;
+            let apiKey: string | null;
+            try {
+                apiKey = await this.db.getUserToken(discordId);
+            } catch (error) {
+                if (error instanceof BotError) throw error;
+                throw new DatabaseError("Failed to retrieve API token", {
+                    cause: error,
+                    context: { discordId },
+                });
+            }
+            if (!apiKey) throw new NotRegisteredError();
 
             const players = await this.resolveGuildMembers(discordId);
-            if (!players) return null;
 
             let seasonNumber = season;
             if (!seasonNumber) {
@@ -80,7 +91,6 @@ export class AchievementService {
                 (e) => !e.userId.startsWith("Unknown #"),
             );
 
-            // Get previous season for "Most Improved"
             let prevEntries: Raid[] = [];
             if (seasonNumber > 1) {
                 const prevResponse = await this.client.getGuildRaidBySeason(
@@ -112,8 +122,11 @@ export class AchievementService {
             );
             return achievements.length > 0 ? achievements : null;
         } catch (error) {
-            logger.error(error, "Error calculating achievements");
-            return null;
+            if (error instanceof BotError) throw error;
+            throw new ExternalApiError("Failed to calculate achievements", {
+                cause: error,
+                context: { discordId },
+            });
         }
     }
 
@@ -124,7 +137,6 @@ export class AchievementService {
     ): Achievement[] {
         const achievements: Achievement[] = [];
 
-        // Group entries by player
         const byPlayer: Record<string, Raid[]> = {};
         for (const entry of entries) {
             if (!byPlayer[entry.userId]) byPlayer[entry.userId] = [];

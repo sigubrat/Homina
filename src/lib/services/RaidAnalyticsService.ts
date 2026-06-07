@@ -1,10 +1,13 @@
 import { HominaTacticusClient } from "@/client";
-import { DatabaseController, dbController, logger } from "@/lib";
+import { DatabaseController, dbController } from "@/lib";
 import { resolveGuildMembers } from "@/lib/utils/guildMemberUtils";
 import { createUnknownUserTracker } from "@/lib/utils/userUtils";
 import { getPrimeDisplayName, mapTierToRarity } from "@/lib/utils/utils";
 import { expandRarity } from "@/lib/utils/rarityUtils";
 import { DamageType, EncounterType, Rarity } from "@/models/enums";
+import { BotError } from "@/models/errors/BotError";
+import { DatabaseError, ExternalApiError } from "@/models/errors/ServiceError";
+import { NotRegisteredError } from "@/models/errors/UserError";
 import type { GuildRaidResult, Raid } from "@/models/types";
 import { MINIMUM_SEASON_THRESHOLD } from "../configs/constants";
 
@@ -21,105 +24,121 @@ export class RaidAnalyticsService {
         return resolveGuildMembers(discordId, this.client, this.db);
     }
 
+    private async requireApiKey(discordId: string): Promise<string> {
+        let apiKey: string | null;
+        try {
+            apiKey = await this.db.getUserToken(discordId);
+        } catch (error) {
+            if (error instanceof BotError) throw error;
+            throw new DatabaseError("Failed to retrieve API token", {
+                cause: error,
+                context: { discordId },
+            });
+        }
+        if (!apiKey) throw new NotRegisteredError();
+        return apiKey;
+    }
+
     async getGuildRaidResultBySeason(
         discordId: string,
         season: number,
         rarity?: Rarity,
         includePrimes: boolean = true,
-    ): Promise<GuildRaidResult[] | null> {
-        const apiKey = await this.db.getUserToken(discordId);
-        if (!apiKey) {
-            return null;
-        }
+    ): Promise<GuildRaidResult[]> {
+        try {
+            const apiKey = await this.requireApiKey(discordId);
 
-        const resp = await this.client.getGuildRaidBySeason(apiKey, season);
-        if (!resp || !resp.entries) {
-            return null;
-        }
+            const resp = await this.client.getGuildRaidBySeason(apiKey, season);
+            let entries: Raid[] = resp.entries;
 
-        let entries: Raid[] = resp.entries;
-
-        if (rarity) {
-            const rarities = expandRarity(rarity);
-            entries = entries.filter((entry) =>
-                rarities.includes(entry.rarity),
-            );
-        }
-
-        const damagePeruser: GuildRaidResult[] = [];
-
-        for (const entry of entries) {
-            if (!entry.userId) {
-                continue;
+            if (rarity) {
+                const rarities = expandRarity(rarity);
+                entries = entries.filter((entry) =>
+                    rarities.includes(entry.rarity),
+                );
             }
 
-            if (
-                !includePrimes &&
-                entry.encounterType === EncounterType.SIDE_BOSS
-            ) {
-                continue;
-            }
+            const damagePeruser: GuildRaidResult[] = [];
 
-            const username = entry.userId;
-
-            const existingEntry = damagePeruser.find(
-                (e) => e.username === username,
-            );
-
-            const isPrime = entry.encounterType === EncounterType.SIDE_BOSS;
-
-            if (existingEntry) {
-                if (entry.damageType === DamageType.BOMB) {
-                    existingEntry.bombCount++;
+            for (const entry of entries) {
+                if (!entry.userId) {
                     continue;
                 }
-                existingEntry.totalDamage += entry.damageDealt;
-                existingEntry.totalTokens += 1;
-                existingEntry.maxDmg = Math.max(
-                    existingEntry.maxDmg ?? 0,
-                    entry.damageDealt,
-                );
-                existingEntry.minDmg = Math.min(
-                    existingEntry.minDmg ?? entry.damageDealt,
-                    entry.damageDealt,
-                );
-                if (isPrime) {
-                    existingEntry.primeDamage =
-                        (existingEntry.primeDamage ?? 0) + entry.damageDealt;
+
+                if (
+                    !includePrimes &&
+                    entry.encounterType === EncounterType.SIDE_BOSS
+                ) {
+                    continue;
                 }
-            } else {
-                if (entry.damageType === DamageType.BOMB) {
-                    damagePeruser.push({
-                        username: username,
-                        totalDamage: 0,
-                        totalTokens: 0,
-                        boss: entry.type,
-                        set: entry.set + 1,
-                        tier: entry.tier,
-                        startedOn: entry.startedOn,
-                        minDmg: undefined,
-                        maxDmg: undefined,
-                        bombCount: 1,
-                        primeDamage: 0,
-                    });
+
+                const username = entry.userId;
+
+                const existingEntry = damagePeruser.find(
+                    (e) => e.username === username,
+                );
+
+                const isPrime = entry.encounterType === EncounterType.SIDE_BOSS;
+
+                if (existingEntry) {
+                    if (entry.damageType === DamageType.BOMB) {
+                        existingEntry.bombCount++;
+                        continue;
+                    }
+                    existingEntry.totalDamage += entry.damageDealt;
+                    existingEntry.totalTokens += 1;
+                    existingEntry.maxDmg = Math.max(
+                        existingEntry.maxDmg ?? 0,
+                        entry.damageDealt,
+                    );
+                    existingEntry.minDmg = Math.min(
+                        existingEntry.minDmg ?? entry.damageDealt,
+                        entry.damageDealt,
+                    );
+                    if (isPrime) {
+                        existingEntry.primeDamage =
+                            (existingEntry.primeDamage ?? 0) + entry.damageDealt;
+                    }
                 } else {
-                    damagePeruser.push({
-                        username: username,
-                        totalDamage: entry.damageDealt,
-                        totalTokens: 1,
-                        boss: entry.type,
-                        set: entry.set + 1,
-                        tier: entry.tier,
-                        startedOn: entry.startedOn,
-                        minDmg: entry.damageDealt,
-                        maxDmg: entry.damageDealt,
-                        bombCount: 0,
-                        primeDamage: isPrime ? entry.damageDealt : 0,
-                    });
+                    if (entry.damageType === DamageType.BOMB) {
+                        damagePeruser.push({
+                            username: username,
+                            totalDamage: 0,
+                            totalTokens: 0,
+                            boss: entry.type,
+                            set: entry.set + 1,
+                            tier: entry.tier,
+                            startedOn: entry.startedOn,
+                            minDmg: undefined,
+                            maxDmg: undefined,
+                            bombCount: 1,
+                            primeDamage: 0,
+                        });
+                    } else {
+                        damagePeruser.push({
+                            username: username,
+                            totalDamage: entry.damageDealt,
+                            totalTokens: 1,
+                            boss: entry.type,
+                            set: entry.set + 1,
+                            tier: entry.tier,
+                            startedOn: entry.startedOn,
+                            minDmg: entry.damageDealt,
+                            maxDmg: entry.damageDealt,
+                            bombCount: 0,
+                            primeDamage: isPrime ? entry.damageDealt : 0,
+                        });
+                    }
                 }
             }
+            return damagePeruser;
+        } catch (error) {
+            if (error instanceof BotError) throw error;
+            throw new ExternalApiError("Failed to fetch guild raid results", {
+                cause: error,
+                context: { discordId, season },
+            });
         }
-        return damagePeruser;
     }
 
     async getGuildRaidResultByRaritySeasonPerBoss(
@@ -129,173 +148,171 @@ export class RaidAnalyticsService {
         filterBombs: boolean = false,
         encounterTypeFilter?: EncounterType,
     ) {
-        const apiKey = await this.db.getUserToken(discordId);
-        if (!apiKey) {
-            return null;
-        }
+        try {
+            const apiKey = await this.requireApiKey(discordId);
+            const players = await this.resolveGuildMembers(discordId);
 
-        const players = await this.resolveGuildMembers(discordId);
-        if (!players) {
-            return null;
-        }
+            const resp = await this.client.getGuildRaidBySeason(apiKey, season);
+            let entries: Raid[] = resp.entries;
 
-        const resp = await this.client.getGuildRaidBySeason(apiKey, season);
-        if (!resp || !resp.entries) {
-            return null;
-        }
-
-        let entries: Raid[] = resp.entries;
-
-        if (rarity) {
-            const rarities = expandRarity(rarity);
-            entries = entries.filter((entry) =>
-                rarities.includes(entry.rarity),
-            );
-        }
-
-        if (filterBombs) {
-            entries = entries.filter(
-                (entry) => entry.damageType !== DamageType.BOMB,
-            );
-        }
-
-        if (encounterTypeFilter) {
-            entries = entries.filter(
-                (entry) => entry.encounterType === encounterTypeFilter,
-            );
-        }
-
-        const unknownTracker = createUnknownUserTracker();
-        const playerNames = new Map<string, string>(
-            players.map((p) => [p.userId, p.displayName]),
-        );
-
-        const groupedResults: Record<string, GuildRaidResult[]> = {};
-
-        for (const entry of entries) {
-            if (!entry.userId) {
-                continue;
+            if (rarity) {
+                const rarities = expandRarity(rarity);
+                entries = entries.filter((entry) =>
+                    rarities.includes(entry.rarity),
+                );
             }
 
-            const boss =
-                encounterTypeFilter === EncounterType.SIDE_BOSS
-                    ? entry.unitId
-                    : `${entry.rarity}_${entry.type}`;
-
-            if (!groupedResults[boss]) {
-                groupedResults[boss] = [];
+            if (filterBombs) {
+                entries = entries.filter(
+                    (entry) => entry.damageType !== DamageType.BOMB,
+                );
             }
 
-            const username =
-                playerNames.get(entry.userId) ??
-                unknownTracker.getLabel(entry.userId);
+            if (encounterTypeFilter) {
+                entries = entries.filter(
+                    (entry) => entry.encounterType === encounterTypeFilter,
+                );
+            }
 
-            const existingUserEntry = groupedResults[boss].find(
-                (e) => e.username === username,
+            const unknownTracker = createUnknownUserTracker();
+            const playerNames = new Map<string, string>(
+                players.map((p) => [p.userId, p.displayName]),
             );
 
-            if (existingUserEntry) {
-                if (entry.damageType === DamageType.BOMB) {
-                    existingUserEntry.bombCount++;
+            const groupedResults: Record<string, GuildRaidResult[]> = {};
+
+            for (const entry of entries) {
+                if (!entry.userId) {
                     continue;
                 }
-                existingUserEntry.totalDamage += entry.damageDealt;
-                existingUserEntry.totalTokens += 1;
 
-                if (entry.encounterType === EncounterType.SIDE_BOSS) {
-                    existingUserEntry.primeDamage =
-                        (existingUserEntry.primeDamage ?? 0) +
-                        entry.damageDealt;
+                const boss =
+                    encounterTypeFilter === EncounterType.SIDE_BOSS
+                        ? entry.unitId
+                        : `${entry.rarity}_${entry.type}`;
+
+                if (!groupedResults[boss]) {
+                    groupedResults[boss] = [];
                 }
 
-                existingUserEntry.maxDmg = Math.max(
-                    existingUserEntry.maxDmg ?? 0,
-                    entry.damageDealt,
+                const username =
+                    playerNames.get(entry.userId) ??
+                    unknownTracker.getLabel(entry.userId);
+
+                const existingUserEntry = groupedResults[boss].find(
+                    (e) => e.username === username,
                 );
 
-                existingUserEntry.minDmg = Math.min(
-                    existingUserEntry.minDmg ?? entry.damageDealt,
-                    entry.damageDealt,
-                );
-            } else {
-                const bossDisplayName =
-                    entry.encounterType === EncounterType.SIDE_BOSS
-                        ? getPrimeDisplayName(entry.unitId)
-                        : entry.type;
+                if (existingUserEntry) {
+                    if (entry.damageType === DamageType.BOMB) {
+                        existingUserEntry.bombCount++;
+                        continue;
+                    }
+                    existingUserEntry.totalDamage += entry.damageDealt;
+                    existingUserEntry.totalTokens += 1;
 
-                if (entry.damageType === DamageType.BOMB) {
-                    groupedResults[boss].push({
-                        bombCount: 1,
-                        username: username,
-                        totalDamage: 0,
-                        totalTokens: 0,
-                        primeDamage: 0,
-                        boss: bossDisplayName,
-                        set: entry.set + 1,
-                        tier: entry.tier,
-                        startedOn: entry.startedOn,
-                        minDmg: undefined,
-                        maxDmg: undefined,
-                    });
+                    if (entry.encounterType === EncounterType.SIDE_BOSS) {
+                        existingUserEntry.primeDamage =
+                            (existingUserEntry.primeDamage ?? 0) +
+                            entry.damageDealt;
+                    }
+
+                    existingUserEntry.maxDmg = Math.max(
+                        existingUserEntry.maxDmg ?? 0,
+                        entry.damageDealt,
+                    );
+
+                    existingUserEntry.minDmg = Math.min(
+                        existingUserEntry.minDmg ?? entry.damageDealt,
+                        entry.damageDealt,
+                    );
                 } else {
-                    groupedResults[boss].push({
-                        bombCount: 0,
-                        username: username,
-                        totalDamage: entry.damageDealt,
-                        primeDamage:
-                            entry.encounterType === EncounterType.SIDE_BOSS
-                                ? entry.damageDealt
-                                : 0,
-                        totalTokens: 1,
-                        boss: bossDisplayName,
-                        set: entry.set + 1,
-                        tier: entry.tier,
-                        startedOn: entry.startedOn,
-                        minDmg: entry.damageDealt,
-                        maxDmg: entry.damageDealt,
-                    });
+                    const bossDisplayName =
+                        entry.encounterType === EncounterType.SIDE_BOSS
+                            ? getPrimeDisplayName(entry.unitId)
+                            : entry.type;
+
+                    if (entry.damageType === DamageType.BOMB) {
+                        groupedResults[boss].push({
+                            bombCount: 1,
+                            username: username,
+                            totalDamage: 0,
+                            totalTokens: 0,
+                            primeDamage: 0,
+                            boss: bossDisplayName,
+                            set: entry.set + 1,
+                            tier: entry.tier,
+                            startedOn: entry.startedOn,
+                            minDmg: undefined,
+                            maxDmg: undefined,
+                        });
+                    } else {
+                        groupedResults[boss].push({
+                            bombCount: 0,
+                            username: username,
+                            totalDamage: entry.damageDealt,
+                            primeDamage:
+                                entry.encounterType === EncounterType.SIDE_BOSS
+                                    ? entry.damageDealt
+                                    : 0,
+                            totalTokens: 1,
+                            boss: bossDisplayName,
+                            set: entry.set + 1,
+                            tier: entry.tier,
+                            startedOn: entry.startedOn,
+                            minDmg: entry.damageDealt,
+                            maxDmg: entry.damageDealt,
+                        });
+                    }
                 }
             }
-        }
 
-        return groupedResults;
+            return groupedResults;
+        } catch (error) {
+            if (error instanceof BotError) throw error;
+            throw new ExternalApiError("Failed to fetch guild raid results by boss", {
+                cause: error,
+                context: { discordId, season },
+            });
+        }
     }
 
     async getGuildRaidBombsBySeason(
         discordId: string,
         season: number,
         rarity?: Rarity,
-    ): Promise<Record<string, number> | null> {
-        const apiKey = await this.db.getUserToken(discordId);
-        if (!apiKey) {
-            return null;
-        }
+    ): Promise<Record<string, number>> {
+        try {
+            const apiKey = await this.requireApiKey(discordId);
 
-        const resp = await this.client.getGuildRaidBySeason(apiKey, season);
-        if (!resp || !resp.entries) {
-            return null;
-        }
+            const resp = await this.client.getGuildRaidBySeason(apiKey, season);
+            let entries: Raid[] = resp.entries;
 
-        let entries: Raid[] = resp.entries;
+            if (rarity) {
+                const rarities = expandRarity(rarity);
+                entries = entries.filter((entry) =>
+                    rarities.includes(entry.rarity),
+                );
+            }
 
-        if (rarity) {
-            const rarities = expandRarity(rarity);
-            entries = entries.filter((entry) =>
-                rarities.includes(entry.rarity),
+            const bombs = entries.filter(
+                (entry) => entry.damageType === DamageType.BOMB,
             );
+
+            const bombsPerUser: Record<string, number> = {};
+            for (const bomb of bombs) {
+                const username = bomb.userId;
+                bombsPerUser[username] = (bombsPerUser[username] ?? 0) + 1;
+            }
+
+            return bombsPerUser;
+        } catch (error) {
+            if (error instanceof BotError) throw error;
+            throw new ExternalApiError("Failed to fetch guild raid bombs", {
+                cause: error,
+                context: { discordId, season },
+            });
         }
-
-        const bombs: Raid[] = entries.filter(
-            (entry) => entry.damageType === DamageType.BOMB,
-        );
-
-        const bombsPerUser: Record<string, number> = {};
-        for (const bomb of bombs) {
-            const username = bomb.userId;
-            bombsPerUser[username] = (bombsPerUser[username] ?? 0) + 1;
-        }
-
-        return bombsPerUser;
     }
 
     async getGuildRaidBySeason(
@@ -303,29 +320,26 @@ export class RaidAnalyticsService {
         season: number,
         rarity?: Rarity,
     ) {
-        const apiKey = await this.db.getUserToken(discordId);
-        if (!apiKey) {
-            return null;
-        }
+        try {
+            const apiKey = await this.requireApiKey(discordId);
 
-        const resp = await this.client.getGuildRaidBySeason(apiKey, season);
-        if (!resp || !resp.entries) {
-            return null;
-        }
+            const resp = await this.client.getGuildRaidBySeason(apiKey, season);
 
-        if (rarity) {
-            const rarities = expandRarity(rarity);
-            resp.entries = resp.entries.filter((entry) =>
-                rarities.includes(entry.rarity),
-            );
-        }
+            if (rarity) {
+                const rarities = expandRarity(rarity);
+                resp.entries = resp.entries.filter((entry) =>
+                    rarities.includes(entry.rarity),
+                );
+            }
 
-        const entries = resp.entries;
-        if (!entries) {
-            return null;
+            return resp.entries;
+        } catch (error) {
+            if (error instanceof BotError) throw error;
+            throw new ExternalApiError("Failed to fetch guild raid by season", {
+                cause: error,
+                context: { discordId, season },
+            });
         }
-
-        return entries;
     }
 
     async getMemberStatsInLastSeasons(
@@ -334,17 +348,14 @@ export class RaidAnalyticsService {
         rarity?: Rarity,
     ) {
         try {
-            const apiKey = await this.db.getUserToken(discordId);
-            if (!apiKey) {
-                logger.error("No API key found for user:", discordId);
-                return null;
-            }
+            const apiKey = await this.requireApiKey(discordId);
 
             const currentSeason =
                 await this.client.getGuildRaidByCurrentSeason(apiKey);
             if (!currentSeason || !currentSeason.season) {
-                logger.error("No current season found for user:", discordId);
-                return null;
+                throw new ExternalApiError("No current season data returned", {
+                    context: { discordId },
+                });
             }
 
             const currentSeasonNumber = currentSeason.season;
@@ -381,11 +392,11 @@ export class RaidAnalyticsService {
 
             return resultBySeason;
         } catch (error) {
-            logger.error(
-                error,
-                "Error fetching member stats in last seasons: ",
-            );
-            return null;
+            if (error instanceof BotError) throw error;
+            throw new ExternalApiError("Failed to fetch member stats across seasons", {
+                cause: error,
+                context: { discordId },
+            });
         }
     }
 
@@ -394,19 +405,12 @@ export class RaidAnalyticsService {
         season: number,
         rarity?: Rarity,
         seasonCount: number = 1,
-    ): Promise<Record<string, number> | null> {
+    ): Promise<Record<string, number>> {
         const MIN_HITS_PER_BOSS = 2;
 
         try {
-            const apiKey = await this.db.getUserToken(discordId);
-            if (!apiKey) {
-                return null;
-            }
-
+            const apiKey = await this.requireApiKey(discordId);
             const players = await this.resolveGuildMembers(discordId);
-            if (!players) {
-                return null;
-            }
 
             const seasons = Array.from(
                 { length: seasonCount },
@@ -418,10 +422,6 @@ export class RaidAnalyticsService {
             );
 
             const allEntries = responses.flatMap((resp) => resp?.entries ?? []);
-
-            if (allEntries.length === 0) {
-                return null;
-            }
 
             const rarities = rarity ? expandRarity(rarity) : null;
             const entries = allEntries.filter((entry) => {
@@ -435,10 +435,6 @@ export class RaidAnalyticsService {
                     (entry.remainingHp > 0 || isOneShot)
                 );
             });
-
-            if (entries.length === 0) {
-                return null;
-            }
 
             const unknownTracker = createUnknownUserTracker();
             const playerNames = new Map<string, string>(
@@ -532,30 +528,27 @@ export class RaidAnalyticsService {
                 }
             }
 
-            return Object.keys(result).length > 0 ? result : null;
+            return result;
         } catch (error) {
-            logger.error(
-                error,
-                "Error calculating weighted relative performance",
-            );
-            return null;
+            if (error instanceof BotError) throw error;
+            throw new ExternalApiError("Failed to calculate weighted relative performance", {
+                cause: error,
+                context: { discordId, season },
+            });
         }
     }
 
     async getTokenByHours(discordId: string) {
         try {
-            const apiKey = await this.db.getUserToken(discordId);
-            if (!apiKey) {
-                logger.error("No API key found for user:", discordId);
-                return null;
-            }
+            const apiKey = await this.requireApiKey(discordId);
 
             const currentSeason =
                 await this.client.getGuildRaidByCurrentSeason(apiKey);
 
             if (!currentSeason || !currentSeason.season) {
-                logger.error("No current season found for user:", discordId);
-                return null;
+                throw new ExternalApiError("No current season data returned", {
+                    context: { discordId },
+                });
             }
 
             const prevSeason = await this.client.getGuildRaidBySeason(
@@ -564,11 +557,9 @@ export class RaidAnalyticsService {
             );
 
             if (!prevSeason || !prevSeason.entries) {
-                logger.error(
-                    "No previous season entries found for user:",
-                    discordId,
-                );
-                return null;
+                throw new ExternalApiError("No previous season data returned", {
+                    context: { discordId },
+                });
             }
 
             const timeline: Record<number, number> = {};
@@ -597,8 +588,11 @@ export class RaidAnalyticsService {
 
             return timeline;
         } catch (error) {
-            logger.error(error, "Error fetching token timeline: ");
-            return null;
+            if (error instanceof BotError) throw error;
+            throw new ExternalApiError("Failed to fetch token timeline", {
+                cause: error,
+                context: { discordId },
+            });
         }
     }
 
@@ -614,13 +608,9 @@ export class RaidAnalyticsService {
         seasonsUsed: number[];
     } | null> {
         try {
-            const apiKey = await this.db.getUserToken(discordId);
-            if (!apiKey) return null;
-
+            const apiKey = await this.requireApiKey(discordId);
             const players = await this.resolveGuildMembers(discordId);
-            if (!players) return null;
 
-            // Determine target season
             let seasonNumber = season;
             if (!seasonNumber) {
                 const current =
@@ -629,7 +619,6 @@ export class RaidAnalyticsService {
                 seasonNumber = current.season;
             }
 
-            // Fetch target season + last 5 prior seasons
             const seasonsToFetch = [seasonNumber];
             for (let i = 1; i <= 5; i++) {
                 const priorSeason = seasonNumber - i;
@@ -646,7 +635,6 @@ export class RaidAnalyticsService {
                 ),
             );
 
-            // Find which primes are active in the target season
             const rarities = expandRarity(rarity);
             const targetEntries = responses[0]?.entries ?? [];
             const targetPrimeKeys = new Set<string>();
@@ -664,7 +652,6 @@ export class RaidAnalyticsService {
 
             if (targetPrimeKeys.size === 0) return null;
 
-            // Collect matching entries from all seasons (same unitId+set+rarity)
             const allEntries = responses.flatMap((resp) => resp?.entries ?? []);
             const primeEntries = allEntries.filter((entry) => {
                 if (
@@ -679,7 +666,6 @@ export class RaidAnalyticsService {
 
             if (primeEntries.length === 0) return null;
 
-            // Track which seasons actually contributed data
             const seasonsUsed = new Set<number>();
             for (let i = 0; i < responses.length; i++) {
                 const resp = responses[i];
@@ -697,13 +683,11 @@ export class RaidAnalyticsService {
                 }
             }
 
-            // Resolve player names
             const unknownTracker = createUnknownUserTracker();
             const playerNames = new Map<string, string>(
                 players.map((p) => [p.userId, p.displayName]),
             );
 
-            // Group by prime, then by player
             const byPrime: Record<
                 string,
                 {
@@ -738,7 +722,6 @@ export class RaidAnalyticsService {
                 primePlayers[playerName]!.tokens += 1;
             }
 
-            // Compute top 3 per prime by avg damage per token
             const result: Record<
                 string,
                 {
@@ -775,8 +758,11 @@ export class RaidAnalyticsService {
                   }
                 : null;
         } catch (error) {
-            logger.error(error, "Error calculating prime specialists");
-            return null;
+            if (error instanceof BotError) throw error;
+            throw new ExternalApiError("Failed to calculate prime specialists", {
+                cause: error,
+                context: { discordId },
+            });
         }
     }
 }

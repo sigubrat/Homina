@@ -163,19 +163,12 @@ export class MessageService {
             }
             const guildId = guildResponse.guild.guildId;
 
-            const result = await dbController.registerUser(
+            await dbController.registerUser(
                 interaction.user.id,
                 apiToken,
                 guildId,
                 inviterId,
             );
-            if (!result) {
-                await interaction.followUp({
-                    content:
-                        "Something went wrong while registering you. Please try again later or reach out to the support server.",
-                });
-                return;
-            }
 
             void dbController.logEvent(
                 BotEventType.USER_REGISTER,

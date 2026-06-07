@@ -1,5 +1,6 @@
 import { dbController, logger } from "@/lib";
 import { BotEventType } from "@/models/enums";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import {
     ActionRowBuilder,
     ChatInputCommandInteraction,
@@ -125,10 +126,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             });
         }
     } catch (error) {
-        logger.error(error, `Error in /${commandName} command`);
-        await interaction.editReply({
-            content:
-                "An error occurred while processing your request. Please try again later.",
-        });
+        await handleCommandError(interaction, error);
     }
 }

@@ -1,4 +1,5 @@
 import { logger } from "@/lib";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import {
     getCurrentSeason,
     MINIMUM_SEASON_THRESHOLD,
@@ -74,10 +75,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             rarity,
         );
 
-        if (
-            !tokensPerLoopByBoss ||
-            Object.keys(tokensPerLoopByBoss).length === 0
-        ) {
+        if (Object.keys(tokensPerLoopByBoss).length === 0) {
             await interaction.editReply({
                 content: `No data found for season ${season} at ${rarity} rarity. Please make sure you have registered your API-token.`,
             });
@@ -155,11 +153,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             `${interaction.user.username} successfully used /tokens-per-loop-by-boss for season ${season}`,
         );
     } catch (error) {
-        logger.error(error, "Error occurred in tokens-per-loop-by-boss: ");
-        await interaction.editReply({
-            content:
-                "An error occurred while generating the tokens per loop by boss chart.",
-        });
-        return;
+        await handleCommandError(interaction, error);
     }
 }

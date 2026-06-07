@@ -1,5 +1,8 @@
 import { HominaTacticusClient } from "@/client";
-import { DatabaseController, dbController, logger } from "@/lib";
+import { DatabaseController, dbController } from "@/lib";
+import { BotError } from "@/models/errors/BotError";
+import { DatabaseError, ExternalApiError } from "@/models/errors/ServiceError";
+import { NotRegisteredError } from "@/models/errors/UserError";
 import { testApiToken } from "../utils/commandUtils";
 import {
     resolveGuildId,
@@ -23,33 +26,48 @@ export class GuildService {
 
     // ─── Core guild methods ─────────────────────────────────────────────
 
-    async getGuildId(discordId: string): Promise<string | null> {
+    async getGuildId(discordId: string): Promise<string> {
         try {
             return await resolveGuildId(discordId, this.client, this.db);
         } catch (error) {
-            logger.error(error, "Error fetching guild ID");
-            return null;
+            if (error instanceof BotError) throw error;
+            throw new DatabaseError("Failed to resolve guild ID", {
+                cause: error,
+                context: { discordId },
+            });
         }
     }
 
-    async getGuildMembers(discordId: string): Promise<string[] | null> {
+    async getGuildMembers(discordId: string): Promise<string[]> {
+        let apiKey: string | null;
         try {
-            const apiKey = await this.db.getUserToken(discordId);
-            if (!apiKey) {
-                throw new Error("API key not found for user: " + discordId);
-            }
-
-            const resp = await this.client.getGuild(apiKey);
-
-            if (!resp.success || !resp.guild) {
-                throw new Error("Failed to fetch guild for user: " + discordId);
-            }
-
-            return resp.guild.members.map((member) => member.userId);
+            apiKey = await this.db.getUserToken(discordId);
         } catch (error) {
-            logger.error(error, "Error fetching guild members");
-            return null;
+            if (error instanceof BotError) throw error;
+            throw new DatabaseError("Failed to retrieve API token", {
+                cause: error,
+                context: { discordId },
+            });
         }
+        if (!apiKey) throw new NotRegisteredError();
+
+        let resp;
+        try {
+            resp = await this.client.getGuild(apiKey);
+        } catch (error) {
+            if (error instanceof BotError) throw error;
+            throw new ExternalApiError("Failed to fetch guild members", {
+                cause: error,
+                context: { discordId },
+            });
+        }
+        if (!resp.success || !resp.guild) {
+            throw new ExternalApiError("Guild fetch returned unsuccessful response", {
+                context: { discordId },
+            });
+        }
+
+        return resp.guild.members.map((member) => member.userId);
     }
 
     async testRegisteredGuildApiToken(
@@ -70,30 +88,23 @@ export class GuildService {
             }
             return { status: true, message: "API token is valid" };
         } catch (error) {
-            logger.error(error, "Error testing player API token");
-            return {
-                status: false,
-                message:
-                    "Something went horribly wrong while testing your token. Please register it again.",
-            };
+            if (error instanceof BotError) throw error;
+            throw new DatabaseError("Failed to test API token", {
+                cause: error,
+                context: { userId },
+            });
         }
     }
 
     async fetchGuildMembers(discordId: string) {
         try {
-            const members = await resolveGuildMembers(
-                discordId,
-                this.client,
-                this.db,
-            );
-            if (!members) {
-                logger.error("No members found for user:", discordId);
-                return null;
-            }
-            return members;
+            return await resolveGuildMembers(discordId, this.client, this.db);
         } catch (error) {
-            logger.error(error, "Error fetching LOKI guild members: ");
-            return null;
+            if (error instanceof BotError) throw error;
+            throw new ExternalApiError("Failed to fetch guild members", {
+                cause: error,
+                context: { discordId },
+            });
         }
     }
 
@@ -106,17 +117,32 @@ export class GuildService {
     }
 
     async getNLastSeasonConfigs(discordId: string, nSeasons: number) {
-        const apikey = await this.db.getUserToken(discordId);
-        if (!apikey) {
-            logger.error("No API key found for user:", discordId);
-            return null;
+        let apikey: string | null;
+        try {
+            apikey = await this.db.getUserToken(discordId);
+        } catch (error) {
+            if (error instanceof BotError) throw error;
+            throw new DatabaseError("Failed to retrieve API token", {
+                cause: error,
+                context: { discordId },
+            });
         }
+        if (!apikey) throw new NotRegisteredError();
 
-        const currentSeason =
-            await this.client.getGuildRaidByCurrentSeason(apikey);
+        let currentSeason;
+        try {
+            currentSeason = await this.client.getGuildRaidByCurrentSeason(apikey);
+        } catch (error) {
+            if (error instanceof BotError) throw error;
+            throw new ExternalApiError("Failed to fetch current raid season", {
+                cause: error,
+                context: { discordId },
+            });
+        }
         if (!currentSeason || !currentSeason.season) {
-            logger.error("No current season found for user:", discordId);
-            return null;
+            throw new ExternalApiError("No current season data returned", {
+                context: { discordId },
+            });
         }
 
         const currentSeasonNumber = currentSeason.season;
@@ -129,19 +155,24 @@ export class GuildService {
         }
         seasons.push(currentSeasonNumber);
 
-        const seasonPromises = seasons.map(
-            async (season) =>
-                await this.client.getGuildRaidBySeason(apikey, season),
-        );
+        try {
+            const seasonPromises = seasons.map(
+                async (season) =>
+                    await this.client.getGuildRaidBySeason(apikey!, season),
+            );
+            const responses = await Promise.all(seasonPromises);
 
-        const responses = await Promise.all(seasonPromises);
-
-        const configs = responses.map((resp) => ({
-            config: Number(resp.seasonConfigId.at(-1)),
-            season: resp.season,
-        }));
-
-        return configs;
+            return responses.map((resp) => ({
+                config: Number(resp.seasonConfigId.at(-1)),
+                season: resp.season,
+            }));
+        } catch (error) {
+            if (error instanceof BotError) throw error;
+            throw new ExternalApiError("Failed to fetch season configs", {
+                cause: error,
+                context: { discordId },
+            });
+        }
     }
 
     async getSeasonsWithSameConfig(
@@ -149,11 +180,17 @@ export class GuildService {
         nSeasons: number,
         season: number,
     ) {
-        const apikey = await this.db.getUserToken(discordId);
-        if (!apikey) {
-            logger.error("No API key found for user:", discordId);
-            return null;
+        let apikey: string | null;
+        try {
+            apikey = await this.db.getUserToken(discordId);
+        } catch (error) {
+            if (error instanceof BotError) throw error;
+            throw new DatabaseError("Failed to retrieve API token", {
+                cause: error,
+                context: { discordId },
+            });
         }
+        if (!apikey) throw new NotRegisteredError();
 
         try {
             const desiredSeason = await this.client.getGuildRaidBySeason(
@@ -162,18 +199,16 @@ export class GuildService {
             );
 
             if (!desiredSeason || !desiredSeason.season) {
-                logger.error("No current season found for user:", discordId);
-                return null;
+                throw new ExternalApiError("No season data returned", {
+                    context: { discordId, season },
+                });
             }
 
             const desiredConfig = desiredSeason.seasonConfigId;
-
             if (!desiredConfig) {
-                logger.error(
-                    `No season config found for season ${season} for user:`,
-                    discordId,
-                );
-                return null;
+                throw new ExternalApiError("No season config found", {
+                    context: { discordId, season },
+                });
             }
 
             const currentSeasonNumber = desiredSeason.season;
@@ -186,48 +221,58 @@ export class GuildService {
             }
 
             const seasonPromises = seasons.map(
-                async (season) =>
+                async (s) =>
                     await this.client
-                        .getGuildRaidBySeason(apikey, season)
+                        .getGuildRaidBySeason(apikey!, s)
                         .catch(() => null),
             );
 
             const responses = await Promise.all(seasonPromises);
 
-            const result = responses
+            return responses
                 .filter(
                     (resp) =>
                         resp &&
                         resp.seasonConfigId.at(-1) === desiredConfig.at(-1),
                 )
                 .map((resp) => resp!.season);
-
-            return result;
         } catch (error) {
-            logger.error(
-                error,
-                `Error fetching desired season ${season} for user:`,
-                discordId,
+            if (error instanceof BotError) throw error;
+            throw new ExternalApiError(
+                `Failed to fetch seasons with same config as season ${season}`,
+                { cause: error, context: { discordId, season } },
             );
         }
     }
 
-    async getGuildLevel(discordId: string): Promise<number | null> {
+    async getGuildLevel(discordId: string): Promise<number> {
+        let apiKey: string | null;
         try {
-            const apiKey = await this.db.getUserToken(discordId);
-            if (!apiKey) {
-                logger.error("No API key found for user:", discordId);
-                return null;
-            }
-            const resp = await this.client.getGuild(apiKey);
-            if (!resp.success || !resp.guild) {
-                logger.error("Failed to fetch guild for user:", discordId);
-                return null;
-            }
-            return resp.guild.level;
+            apiKey = await this.db.getUserToken(discordId);
         } catch (error) {
-            logger.error(error, "Error fetching guild level");
-            return null;
+            if (error instanceof BotError) throw error;
+            throw new DatabaseError("Failed to retrieve API token", {
+                cause: error,
+                context: { discordId },
+            });
         }
+        if (!apiKey) throw new NotRegisteredError();
+
+        let resp;
+        try {
+            resp = await this.client.getGuild(apiKey);
+        } catch (error) {
+            if (error instanceof BotError) throw error;
+            throw new ExternalApiError("Failed to fetch guild level", {
+                cause: error,
+                context: { discordId },
+            });
+        }
+        if (!resp.success || !resp.guild) {
+            throw new ExternalApiError("Guild fetch returned unsuccessful response", {
+                context: { discordId },
+            });
+        }
+        return resp.guild.level;
     }
 }

@@ -1,4 +1,5 @@
 import { logger } from "@/lib";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import {
     getCurrentSeason,
     MINIMUM_SEASON_THRESHOLD,
@@ -71,9 +72,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             rarity,
         );
 
-        seasonResult?.sort((a, b) => b.damageDealt - a.damageDealt);
+        seasonResult.sort((a, b) => b.damageDealt - a.damageDealt);
 
-        if (!seasonResult || seasonResult.length === 0) {
+        if (seasonResult.length === 0) {
             await interaction.editReply({
                 content: `No results found for season ${season} with rarity ${rarity}.`,
             });
@@ -87,7 +88,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         );
 
         const players = await service.fetchGuildMembers(discordId);
-        if (!players || players.length === 0) {
+        if (players.length === 0) {
             await interaction.editReply({
                 content: "Could not fetch guild members.",
             });
@@ -112,14 +113,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             await transformerService.seasonHighscores(filteredData);
 
         const csvService = new CsvService();
-
-        const guildId = await service.getGuildId(discordId);
-        if (!guildId) {
-            await interaction.editReply({
-                content: "Could not find the guild ID for your account",
-            });
-            return;
-        }
 
         const csvBuffer = await csvService.createHighscores(highscores);
 
@@ -163,10 +156,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             files: [attachment, csvAttachment],
         });
     } catch (error) {
-        logger.error(error, "Error fetching season results:");
-        await interaction.editReply({
-            content: "An error occurred while fetching the season results.",
-        });
-        return;
+        await handleCommandError(interaction, error);
     }
 }

@@ -1,4 +1,5 @@
 import { logger } from "@/lib";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import { ChartService } from "@/lib/services/ChartService";
 import { HistoryService } from "@/lib/services/HistoryService";
 import { linearRegression } from "@/lib/utils/mathUtils";
@@ -48,7 +49,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             nSeasons,
         );
 
-        if (!damageBySeason || Object.keys(damageBySeason).length === 0) {
+        if (Object.keys(damageBySeason).length === 0) {
             await interaction.editReply({
                 content:
                     "No data found for the specified seasons. Please make sure you have registered your API token.",
@@ -113,11 +114,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             `${interaction.user.username} successfully used /gr-damage-history`,
         );
     } catch (error) {
-        logger.error(error, "Error occurred in gr-damage-history: ");
-        await interaction.editReply({
-            content:
-                "An error occurred while generating the damage history chart. Please try again later or contact the Bot developer if the problem persists.",
-        });
-        return;
+        await handleCommandError(interaction, error);
     }
 }

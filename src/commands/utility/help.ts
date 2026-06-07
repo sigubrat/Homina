@@ -1,4 +1,5 @@
 import { logger } from "@/lib";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import {
     ActionRowBuilder,
     ButtonBuilder,
@@ -87,10 +88,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         logger.info(`${interaction.user.username} used /${commandName}`);
     } catch (error) {
-        logger.error(error, `Error executing /${commandName} command`);
-        await interaction.editReply({
-            content:
-                "An error occurred while trying to fetch help information.",
-        });
+        await handleCommandError(interaction, error);
     }
 }

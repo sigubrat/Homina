@@ -1,4 +1,5 @@
 import { dbController, logger } from "@/lib";
+import { handleCommandError } from "@/lib/utils/errorUtils";
 import { BotEventType } from "@/models/enums";
 import { ChartService } from "@/lib/services/ChartService";
 import {
@@ -250,9 +251,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             files,
         });
     } catch (error) {
-        logger.error(error, "Error fetching bot metrics");
-        await interaction.editReply({
-            content: "An error occurred while fetching bot metrics.",
-        });
+        await handleCommandError(interaction, error);
     }
 }
