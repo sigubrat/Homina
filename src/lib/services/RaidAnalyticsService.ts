@@ -97,7 +97,8 @@ export class RaidAnalyticsService {
                     );
                     if (isPrime) {
                         existingEntry.primeDamage =
-                            (existingEntry.primeDamage ?? 0) + entry.damageDealt;
+                            (existingEntry.primeDamage ?? 0) +
+                            entry.damageDealt;
                     }
                 } else {
                     if (entry.damageType === DamageType.BOMB) {
@@ -270,10 +271,13 @@ export class RaidAnalyticsService {
             return groupedResults;
         } catch (error) {
             if (error instanceof BotError) throw error;
-            throw new ExternalApiError("Failed to fetch guild raid results by boss", {
-                cause: error,
-                context: { discordId, season },
-            });
+            throw new ExternalApiError(
+                "Failed to fetch guild raid results by boss",
+                {
+                    cause: error,
+                    context: { discordId, season },
+                },
+            );
         }
     }
 
@@ -393,10 +397,13 @@ export class RaidAnalyticsService {
             return resultBySeason;
         } catch (error) {
             if (error instanceof BotError) throw error;
-            throw new ExternalApiError("Failed to fetch member stats across seasons", {
-                cause: error,
-                context: { discordId },
-            });
+            throw new ExternalApiError(
+                "Failed to fetch member stats across seasons",
+                {
+                    cause: error,
+                    context: { discordId },
+                },
+            );
         }
     }
 
@@ -531,10 +538,13 @@ export class RaidAnalyticsService {
             return result;
         } catch (error) {
             if (error instanceof BotError) throw error;
-            throw new ExternalApiError("Failed to calculate weighted relative performance", {
-                cause: error,
-                context: { discordId, season },
-            });
+            throw new ExternalApiError(
+                "Failed to calculate weighted relative performance",
+                {
+                    cause: error,
+                    context: { discordId, season },
+                },
+            );
         }
     }
 
@@ -759,10 +769,71 @@ export class RaidAnalyticsService {
                 : null;
         } catch (error) {
             if (error instanceof BotError) throw error;
-            throw new ExternalApiError("Failed to calculate prime specialists", {
-                cause: error,
-                context: { discordId },
-            });
+            throw new ExternalApiError(
+                "Failed to calculate prime specialists",
+                {
+                    cause: error,
+                    context: { discordId },
+                },
+            );
+        }
+    }
+
+    async getActivityByHourPerPlayer(
+        discordId: string,
+    ): Promise<Record<string, Record<number, number>>> {
+        try {
+            const apiKey = await this.requireApiKey(discordId);
+
+            const currentSeason =
+                await this.client.getGuildRaidByCurrentSeason(apiKey);
+
+            if (!currentSeason || !currentSeason.season) {
+                throw new ExternalApiError("No current season data returned", {
+                    context: { discordId },
+                });
+            }
+
+            const prevSeason = await this.client.getGuildRaidBySeason(
+                apiKey,
+                currentSeason.season - 1,
+            );
+
+            if (!prevSeason || !prevSeason.entries) {
+                throw new ExternalApiError("No previous season data returned", {
+                    context: { discordId },
+                });
+            }
+
+            const raids = currentSeason.entries
+                .concat(prevSeason.entries)
+                .filter((raid) => raid.damageType === DamageType.BATTLE);
+
+            const result: Record<string, Record<number, number>> = {};
+
+            for (const raid of raids) {
+                if (!raid.startedOn) continue;
+
+                if (!result[raid.userId]) {
+                    const hours: Record<number, number> = {};
+                    for (let i = 0; i < 24; i++) hours[i] = 0;
+                    result[raid.userId] = hours;
+                }
+
+                const hour = new Date(raid.startedOn * 1000).getUTCHours();
+                result[raid.userId]![hour]!++;
+            }
+
+            return result;
+        } catch (error) {
+            if (error instanceof BotError) throw error;
+            throw new ExternalApiError(
+                "Failed to fetch per-player activity by hour",
+                {
+                    cause: error,
+                    context: { discordId },
+                },
+            );
         }
     }
 }

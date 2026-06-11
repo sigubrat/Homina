@@ -268,3 +268,41 @@ export function estimateBombKillProbability(
 
     return 1 - normalCdf((hp - mean) / std);
 }
+
+/**
+ * Determines an "activity weight" (0, 0.5, or 1) for each player based on their
+ * historical activity at the current UTC hour.
+ *
+ * - 1.0: player has been active at this hour before (active)
+ * - 0.0: player has zero activity at this hour AND both adjacent hours (inactive)
+ * - 0.5: player has zero activity at this hour but one adjacent hour has activity (possibly active)
+ *
+ * Players not present in the activity profile default to weight 1.0 (assume active).
+ */
+export function getPlayerAwakeWeights(
+    activityByHourPerPlayer: Record<string, Record<number, number>>,
+    currentHour: number,
+): Record<string, number> {
+    const weights: Record<string, number> = {};
+    const prevHour = (currentHour + 23) % 24;
+    const nextHour = (currentHour + 1) % 24;
+
+    for (const [userId, hours] of Object.entries(activityByHourPerPlayer)) {
+        const activityAtCurrent = hours[currentHour] ?? 0;
+
+        if (activityAtCurrent > 0) {
+            weights[userId] = 1.0;
+        } else {
+            const activityAtPrev = hours[prevHour] ?? 0;
+            const activityAtNext = hours[nextHour] ?? 0;
+
+            if (activityAtPrev === 0 && activityAtNext === 0) {
+                weights[userId] = 0.0;
+            } else {
+                weights[userId] = 0.5;
+            }
+        }
+    }
+
+    return weights;
+}

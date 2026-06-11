@@ -3,11 +3,13 @@ import { handleCommandError } from "@/lib/utils/errorUtils";
 import { miscEmojis, STANDARD_FOOTER_TEXT } from "@/lib/configs/constants";
 import { GuildService } from "@/lib/services/GuildService";
 import { AvailabilityService } from "@/lib/services/AvailabilityService";
+import { RaidAnalyticsService } from "@/lib/services/RaidAnalyticsService";
 import { replaceUserIdKeysWithDisplayNames } from "@/lib/utils/userUtils";
 import { toMinutes, withinNextHour } from "@/lib/utils/timeUtils";
 import {
     estimateBombDamage,
     estimateBombKillProbability,
+    getPlayerAwakeWeights,
 } from "@/lib/utils/mathUtils";
 import { getPrimeDisplayName } from "@/lib/utils/utils";
 import { EncounterType } from "@/models/enums";
@@ -80,13 +82,49 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const formattedTotalBombs = `${miscEmojis.bomb} \`${totalBombs}/${maxBombs}\``;
 
-        const [guildLevel, bossUnits] = await Promise.all([
+        const raidAnalyticsService = new RaidAnalyticsService();
+
+        const [guildLevel, bossUnits, activityProfile] = await Promise.all([
             service.getGuildLevel(discordId),
             availabilityService.getCurrentBossUnits(discordId),
+            raidAnalyticsService.getActivityByHourPerPlayer(discordId),
         ]);
         const bombEstimate =
             totalBombs > 0 && guildLevel
                 ? estimateBombDamage(totalBombs, guildLevel)
+                : null;
+
+        // Calculate awake player weights based on activity patterns
+        const currentHour = new Date().getUTCHours();
+        const awakeWeights = getPlayerAwakeWeights(
+            activityProfile,
+            currentHour,
+        );
+
+        // Map userId weights to displayName weights
+        const awakeWeightsByName: Record<string, number> = {};
+        for (const player of players) {
+            awakeWeightsByName[player.displayName] =
+                awakeWeights[player.userId] ?? 1.0;
+        }
+
+        // Compute weighted awake bomb count
+        const awakeBombs = Object.entries(result).reduce(
+            (acc, [name, available]) => {
+                const weight = awakeWeightsByName[name] ?? 1.0;
+                return acc + available.bombs * weight;
+            },
+            0,
+        );
+        const awakeBombsLow = Math.floor(awakeBombs);
+        const awakeBombsHigh = Math.ceil(awakeBombs);
+        const awakeBombEstimate =
+            awakeBombsLow > 0 && guildLevel
+                ? estimateBombDamage(awakeBombsLow, guildLevel)
+                : null;
+        const awakeBombEstimateHigh =
+            awakeBombsHigh > 0 && guildLevel
+                ? estimateBombDamage(awakeBombsHigh, guildLevel)
                 : null;
 
         const table = Object.entries(result)
@@ -102,8 +140,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     }${available.bombCooldown.slice(0, -4).replace(" ", "")}\``;
                 }
 
+                const weight = awakeWeightsByName[userId] ?? 1.0;
+                const activityIndicator =
+                    weight === 0 ? " 💤" : weight === 0.5 ? " ⏰" : " ✨";
+
                 return {
-                    text: `${bombStatus} - ${userId}`,
+                    text: `${bombStatus} - ${userId}${activityIndicator}`,
                     bombs: available.bombs,
                 };
             })
@@ -155,9 +197,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                           name: "Boss kill chance with available bombs",
                           value:
                               (bossUnits.some(
-                                  (u) =>
-                                      u.encounterType ===
-                                      EncounterType.BOSS,
+                                  (u) => u.encounterType === EncounterType.BOSS,
                               )
                                   ? ""
                                   : `${bossUnits[0]?.type ?? "Boss"}: \`Full HP\`\n`) +
@@ -198,6 +238,49 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                                   )
                                   .join("\n")
                                   .replace(/^(?=.)/, "\n"),
+                          inline: false,
+                      },
+                  ]
+                : []),
+            ...(awakeBombEstimate &&
+            guildLevel &&
+            bossUnits &&
+            totalBombs !== awakeBombsLow
+                ? [
+                      {
+                          name: `Active players estimate (${currentHour}:00 UTC) — ✨ active, ⏰ possibly active, 💤 inactive`,
+                          value:
+                              `Bombs: \`${awakeBombsLow}${awakeBombsLow !== awakeBombsHigh ? `-${awakeBombsHigh}` : ""}\`\n` +
+                              `Damage: \`${awakeBombEstimate.avgDamage.toLocaleString()}${awakeBombEstimateHigh ? `-${awakeBombEstimateHigh.avgDamage.toLocaleString()}` : ""}\` avg\n` +
+                              bossUnits
+                                  .filter((u) => u.remainingHp > 0)
+                                  .map((unit) => {
+                                      const label =
+                                          unit.encounterType ===
+                                          EncounterType.BOSS
+                                              ? unit.type
+                                              : getPrimeDisplayName(
+                                                    unit.unitId,
+                                                );
+                                      const probLow =
+                                          estimateBombKillProbability(
+                                              unit.remainingHp,
+                                              awakeBombsLow,
+                                              guildLevel,
+                                          );
+                                      const probHigh =
+                                          estimateBombKillProbability(
+                                              unit.remainingHp,
+                                              awakeBombsHigh,
+                                              guildLevel,
+                                          );
+                                      const display =
+                                          probLow === probHigh
+                                              ? `${(probLow * 100).toFixed(1)}%`
+                                              : `${(probLow * 100).toFixed(1)}-${(probHigh * 100).toFixed(1)}%`;
+                                      return `${label}: \`${display}\``;
+                                  })
+                                  .join("\n"),
                           inline: false,
                       },
                   ]
