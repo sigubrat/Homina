@@ -5,33 +5,30 @@ import {
     MINIMUM_SEASON_THRESHOLD,
     STANDARD_FOOTER_TEXT,
 } from "@/lib/configs/constants";
+import { ChartService } from "@/lib/services/ChartService";
 import { DataTransformationService } from "@/lib/services/DataTransformationService";
 import { RaidAnalyticsService } from "@/lib/services/RaidAnalyticsService";
-import { splitByCapital } from "@/lib/utils/utils";
-import { isInvalidSeason, SecondsToString } from "@/lib/utils/timeUtils";
+import { isInvalidSeason } from "@/lib/utils/timeUtils";
 import { Rarity } from "@/models/enums";
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { Pagination } from "pagination.djs";
+import {
+    AttachmentBuilder,
+    ChatInputCommandInteraction,
+    EmbedBuilder,
+    SlashCommandBuilder,
+} from "discord.js";
+
+const commandName = "tokens-per-boss";
 
 export const cooldown = 5;
 
 export const data = new SlashCommandBuilder()
-    .setName("gr-time-used")
-    .setDescription(
-        "See how long it takes to to complete each raid boss in a given season",
-    )
-    .addNumberOption((option) =>
-        option
-            .setName("season")
-            .setDescription("The season number (defaults to current season)")
-            .setRequired(false)
-            .setMinValue(MINIMUM_SEASON_THRESHOLD),
-    )
+    .setName(commandName)
+    .setDescription("See tokens used per boss across loops in a given season")
     .addStringOption((option) => {
         return option
             .setName("rarity")
-            .setDescription("The rarity of the boss")
-            .setRequired(false)
+            .setDescription("The rarity of the bosses to show")
+            .setRequired(true)
             .addChoices(
                 { name: "Legendary+", value: Rarity.LEGENDARY_PLUS },
                 { name: "Mythic", value: Rarity.MYTHIC },
@@ -42,26 +39,18 @@ export const data = new SlashCommandBuilder()
                 { name: "Common", value: Rarity.COMMON },
             );
     })
-    .addBooleanOption((option) =>
+    .addNumberOption((option) =>
         option
-            .setName("separate-primes")
-            .setDescription("Show primes separately (default: false)")
-            .setRequired(false),
-    )
-    .addBooleanOption((option) =>
-        option
-            .setName("show-delta")
-            .setDescription(
-                "Show the delta between times, tokens and bombs used each loop",
-            )
-            .setRequired(false),
+            .setName("season")
+            .setDescription("The season number (defaults to current season)")
+            .setRequired(false)
+            .setMinValue(MINIMUM_SEASON_THRESHOLD),
     );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 
     const discordID = interaction.user.id;
-    const showDelta = interaction.options.getBoolean("show-delta") ?? false;
 
     const providedSeason = interaction.options.getNumber("season");
     const season = providedSeason ?? getCurrentSeason();
@@ -73,18 +62,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         return;
     }
 
-    const rarity = interaction.options.getString("rarity") as
-        | Rarity
-        | undefined;
-
-    const separatePrimes =
-        interaction.options.getBoolean("separate-primes") ?? false;
+    const rarity = interaction.options.getString("rarity", true) as Rarity;
 
     const service = new RaidAnalyticsService();
     const transformer = new DataTransformationService();
 
     logger.info(
-        `${interaction.user.username} attempting to use /gr-time-used ${season} ${rarity}`,
+        `${interaction.user.username} attempting to use /${commandName} ${season} ${rarity}`,
     );
 
     try {
@@ -101,193 +85,97 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             });
             return;
         }
-        const [transformedData, totalTime] = await transformer.timeUsedPerBoss(
-            seasonData,
-            separatePrimes,
-        );
+
+        const { groups } = transformer.timeUsedPerBoss(seasonData);
+
+        // Only show bosses that have looped (appeared more than once)
+        // or all bosses if none looped (single-loop season)
+        const loopedGroups = groups.filter((g) => g.loops.length > 1);
+        const chartGroups = loopedGroups.length > 0 ? loopedGroups : groups;
 
         const seasonDisplay =
             providedSeason === null
                 ? `${season} (current season)`
                 : `${season}`;
 
-        const pagination = new Pagination(interaction, {
-            limit: separatePrimes ? 10 : 25, // Adjust limit based on rarity
-        })
-            .setColor("#0099ff")
-            .setTitle(`Time Used Per Boss in season ${seasonDisplay}`)
-            .setDescription(
-                `See how long it took your guild to defeat each boss`,
-            )
-            .setFields(
-                {
-                    name: "Season",
-                    value: seasonDisplay,
-                    inline: true,
-                },
-                {
-                    name: "Time spent :clock:",
-                    value: totalTime,
-                    inline: true,
-                },
-                {
-                    name: "Rarity",
-                    value: rarity ? rarity : "All Rarities",
+        const chartService = new ChartService();
 
-                    inline: true,
-                },
-                {
-                    name: "Separate Primes",
-                    value: separatePrimes ? "Yes" : "No",
-                    inline: false,
-                },
-            )
-            .setTimestamp();
+        // Build clustered+stacked bar chart data:
+        // X-axis clusters = bosses, bars within each cluster = loops,
+        // each bar is stacked: boss tokens + each prime's tokens
+        const bossLabels = chartGroups.map((g) => g.displayName);
+        const maxLoops = Math.max(...chartGroups.map((g) => g.loops.length));
 
-        if (showDelta) {
-            pagination.addFields({
-                name: "Show delta",
-                value: "Delta enabled. All delta values displayed for looped bosses use the first run as the baseline.",
+        // Collect all unique segment kinds: "Boss" + each prime displayName
+        // We need consistent segment types across all groups
+        type StackedSegment = {
+            kind: string;
+            loopIndex: number;
+            data: number[];
+        };
+        const segments: StackedSegment[] = [];
+
+        for (let loopIdx = 0; loopIdx < maxLoops; loopIdx++) {
+            // Boss segment for this loop
+            const bossData = chartGroups.map((g) => {
+                const loop = g.loops[loopIdx];
+                return loop?.bossRow?.tokens ?? 0;
             });
-        }
+            segments.push({ kind: "Boss", loopIndex: loopIdx, data: bossData });
 
-        const entries = Object.entries(transformedData);
-        // entries.sort(([a], [b]) => a.slice(0, 2).localeCompare(b.slice(0, 2)));
-        for (const [boss, data] of entries) {
-            // When splitting primes, skip the prime‐only entries
-            if (separatePrimes && data.sideboss[0]) continue;
-
-            let value: string;
-            if (separatePrimes) {
-                // Build sideboss block under the main boss
-                const sidebosses = Object.entries(transformedData)
-                    .filter(([, d]) => d.sideboss[0] && d.sideboss[1] === boss)
-                    .map(([sbName, sbData]) => {
-                        const words = splitByCapital(sbName);
-                        const suffix = `${words.at(-2)}${words.at(-1)}`;
-
-                        // delta placeholders
-                        let timeDelta = "";
-                        let tokensDelta = "";
-                        let bombsDelta = "";
-
-                        // if this is a recycled prime, compute deltas
-                        if (
-                            showDelta &&
-                            sbName.at(0) === "L" &&
-                            sbName.includes(":recycle:")
-                        ) {
-                            const baseKey = sbName.replace(
-                                /\s*:recycle:\d+\s*/,
-                                " ",
-                            );
-                            const base = transformedData[baseKey];
-
-                            if (base) {
-                                const td = sbData.time - base.time;
-                                timeDelta =
-                                    td >= 0
-                                        ? ` (+${SecondsToString(td)})`
-                                        : ` (-${SecondsToString(
-                                              Math.abs(td),
-                                          )})`;
-
-                                const tD = sbData.tokens - base.tokens;
-                                tokensDelta = tD >= 0 ? `(+${tD})` : `(${tD})`;
-
-                                const bD = sbData.bombs - base.bombs;
-                                bombsDelta = bD >= 0 ? `(+${bD})` : `(${bD})`;
-                            }
-                        }
-
-                        return (
-                            `   - Prime ${suffix} :hourglass: ${SecondsToString(
-                                sbData.time,
-                            )}${timeDelta} ` +
-                            `- :tickets: ${sbData.tokens} ${tokensDelta} ` +
-                            `:boom: ${sbData.bombs} ${bombsDelta}`
-                        );
-                    });
-
-                const extra = sidebosses.length
-                    ? "\n" + sidebosses.join("\n")
-                    : "";
-
-                let mainTimeDelta = "";
-                let mainTokensDelta = "";
-                let mainBombsDelta = "";
-                if (
-                    showDelta &&
-                    boss.at(0) === "L" &&
-                    boss.includes(":recycle:")
-                ) {
-                    const baseKey = boss.replace(/\s*:recycle:\d+\s*/, " ");
-                    const base = transformedData[baseKey];
-                    if (base) {
-                        const td = data.time - base.time;
-                        mainTimeDelta =
-                            td >= 0
-                                ? ` (+${SecondsToString(td)})`
-                                : ` (-${SecondsToString(Math.abs(td))})`;
-                        const tD = data.tokens - base.tokens;
-                        mainTokensDelta = tD >= 0 ? `(+${tD})` : `(${tD})`;
-                        const bD = data.bombs - base.bombs;
-                        mainBombsDelta = bD >= 0 ? `(+${bD})` : `(${bD})`;
+            // Collect all unique primes across all groups for this loop
+            const allPrimeNames = new Set<string>();
+            for (const group of chartGroups) {
+                const loop = group.loops[loopIdx];
+                if (loop) {
+                    for (const prime of loop.primeRows) {
+                        allPrimeNames.add(prime.displayName);
                     }
                 }
-
-                value =
-                    `- Boss: :hourglass: ${SecondsToString(
-                        data.time,
-                    )} ${mainTimeDelta}` +
-                    `- :tickets: ${data.tokens} ${mainTokensDelta}` +
-                    `:boom: ${data.bombs} ${mainBombsDelta}${extra}`;
-            } else {
-                // Regular listing
-                let timeDelta = "";
-                let tokensDelta = "";
-                let bombsDelta = "";
-                if (
-                    showDelta &&
-                    boss.at(0) === "L" &&
-                    boss.includes(":recycle:")
-                ) {
-                    const baseline =
-                        transformedData[
-                            boss.replace(/\s*:recycle:\d+\s*/, " ")
-                        ];
-
-                    if (baseline) {
-                        const timeD = data.time - baseline.time;
-                        timeDelta =
-                            timeD >= 0
-                                ? `(+${SecondsToString(timeD)})`
-                                : `(-${SecondsToString(Math.abs(timeD))})`;
-                        const tokenD = data.tokens - baseline.tokens;
-                        tokensDelta =
-                            tokenD >= 0 ? `(+${tokenD})` : `(${tokenD})`;
-                        const bombD = data.bombs - baseline.bombs;
-                        bombsDelta = bombD >= 0 ? `(+${bombD})` : `(${bombD})`;
-                    }
-                }
-                value = `:hourglass: ${SecondsToString(
-                    data.time,
-                )} ${timeDelta} - :tickets: ${
-                    data.tokens
-                } ${tokensDelta} :boom: ${data.bombs} ${bombsDelta}`;
             }
 
-            pagination.addFields({ name: boss, value });
+            for (const primeName of allPrimeNames) {
+                const primeData = chartGroups.map((g) => {
+                    const loop = g.loops[loopIdx];
+                    if (!loop) return 0;
+                    const prime = loop.primeRows.find(
+                        (p) => p.displayName === primeName,
+                    );
+                    return prime?.tokens ?? 0;
+                });
+                segments.push({
+                    kind: primeName,
+                    loopIndex: loopIdx,
+                    data: primeData,
+                });
+            }
         }
 
-        pagination.setFooter({
-            text: STANDARD_FOOTER_TEXT,
+        const chartBuffer = await chartService.createStackedClusteredBarChart(
+            bossLabels,
+            segments,
+            maxLoops,
+            `Tokens per Boss — Season ${seasonDisplay}`,
+        );
+
+        const attachment = new AttachmentBuilder(chartBuffer, {
+            name: "tokens-per-boss.png",
         });
-        pagination.paginateFields(true);
-        pagination.render();
+
+        const embed = new EmbedBuilder()
+            .setColor("#0099ff")
+            .setTitle(`Tokens per Boss — Season ${seasonDisplay}`)
+            .setDescription(
+                "Each cluster is a boss. Each bar in the cluster is a loop, stacked by boss + prime tokens.",
+            )
+            .setImage("attachment://tokens-per-boss.png")
+            .setTimestamp()
+            .setFooter({ text: STANDARD_FOOTER_TEXT });
+
+        await interaction.editReply({ embeds: [embed], files: [attachment] });
 
         logger.info(
-            `${interaction.user.username} successfully executed /gr-time-used ${season} ${rarity}`,
+            `${interaction.user.username} successfully executed /${commandName} ${season} ${rarity}`,
         );
     } catch (error) {
         await handleCommandError(interaction, error);

@@ -8,83 +8,78 @@ const dtsService = new DataTransformationService();
 const testGuildRaidData = RaidResultFixture;
 
 describe("DataTransformationServiceSuite - Algebra", () => {
-    test("timeUsedPerBoss - Should properly transform guild raid data to tokens and time used per boss", async () => {
-        const transformedData =
-            await dtsService.timeUsedPerBoss(testGuildRaidData);
+    test("timeUsedPerBoss - Should properly transform guild raid data grouped by type with boss, prime, and total rows", () => {
+        const result = dtsService.timeUsedPerBoss(testGuildRaidData);
 
-        expect(transformedData).toEqual([
-            {
-                "L1 Belisarius": {
-                    time: 2727,
-                    tokens: 5,
-                    bombs: 4,
-                    sideboss: [true, "L1 Belisarius"],
-                },
-            },
-            "00h 45m 27s",
-        ]);
+        // All entries have type "Belisarius", tier 4 — one group, one loop
+        expect(result.groups).toHaveLength(1);
+        const group = result.groups[0]!;
+        expect(group.type).toBe("Belisarius");
+        expect(group.loops).toHaveLength(1);
+
+        const loop = group.loops[0]!;
+        expect(loop.loopIndex).toBe(1);
+        expect(loop.rarityLabel).toBe("L1");
+
+        // Boss row: 2 BOSS entries both at startedOn 1750316881
+        expect(loop.bossRow).not.toBeNull();
+        expect(loop.bossRow!.kind).toBe("boss");
+        expect(loop.bossRow!.tokens).toBe(2);
+        expect(loop.bossRow!.bombs).toBe(0);
+        expect(loop.bossRow!.time).toBe(0); // same startedOn
+
+        // Prime rows: 2 distinct unitIds
+        expect(loop.primeRows).toHaveLength(2);
+
+        // Total row: all 9 entries in the (Belisarius, tier=4) bucket
+        expect(loop.totalRow.kind).toBe("total");
+        expect(loop.totalRow.tokens).toBe(5);
+        expect(loop.totalRow.bombs).toBe(4);
+        // time = max(1750316881) - min(1750314154) = 2727
+        expect(loop.totalRow.time).toBe(2727);
+
+        expect(result.totalTime).toBe("00h 45m 27s");
     });
 
-    test("timeUsedPerBoss - should display primes as well if the option is enabled", async () => {
-        const transformedData = await dtsService.timeUsedPerBoss(
-            testGuildRaidData,
-            true,
-        );
+    test("timeUsedPerBoss - Should correctly handle the menhir twin ids across different types/tiers", () => {
+        const result = dtsService.timeUsedPerBoss(MenhirRaidResultFixture);
 
-        expect(transformedData).toEqual([
-            {
-                "L1 AdmecManipulus-2": {
-                    time: 907,
-                    tokens: 1,
-                    bombs: 3,
-                    sideboss: [true, "L1 Belisarius"],
-                },
-                "L1 AdmecMarshall-1": {
-                    time: 1803,
-                    tokens: 2,
-                    bombs: 1,
-                    sideboss: [true, "L1 Belisarius"],
-                },
-                "L1 Belisarius": {
-                    time: 17,
-                    tokens: 2,
-                    bombs: 0,
-                    sideboss: [false, "L1 Belisarius"],
-                },
-            },
-            "00h 45m 27s",
-        ]);
+        // Two types: "MagnusTheRed" and "SilentKing"
+        expect(result.groups).toHaveLength(2);
+
+        const magnusGroup = result.groups.find(
+            (g) => g.type === "MagnusTheRed",
+        )!;
+        expect(magnusGroup.loops).toHaveLength(1);
+        const magnusLoop = magnusGroup.loops[0]!;
+        // Only SIDE_BOSS entries, no BOSS entry
+        expect(magnusLoop.bossRow).toBeNull();
+        expect(magnusLoop.primeRows).toHaveLength(1);
+        expect(magnusLoop.primeRows[0]!.bombs).toBe(2);
+        expect(magnusLoop.primeRows[0]!.tokens).toBe(0);
+        expect(magnusLoop.primeRows[0]!.time).toBe(10);
+        expect(magnusLoop.totalRow.time).toBe(10);
+
+        const silentKingGroup = result.groups.find(
+            (g) => g.type === "SilentKing",
+        )!;
+        expect(silentKingGroup.loops).toHaveLength(1);
+        const skLoop = silentKingGroup.loops[0]!;
+        expect(skLoop.bossRow).toBeNull();
+        expect(skLoop.primeRows).toHaveLength(1);
+        // 6 entries, all BOMB, startedOn range 60–70 => time = 10
+        expect(skLoop.primeRows[0]!.bombs).toBe(6);
+        expect(skLoop.primeRows[0]!.time).toBe(10);
+        expect(skLoop.totalRow.time).toBe(10);
+
+        // Total time: max(70) - min(0) = 70s
+        expect(result.totalTime).toBe("00h 01m 10s");
     });
 
-    test("timeUsedPerBoss - Should correctly handle the menhir twin ids", async () => {
-        const transformedData = await dtsService.timeUsedPerBoss(
-            MenhirRaidResultFixture,
-            true,
-        );
-
-        expect(transformedData).toEqual([
-            {
-                "L1 TheRed-1": {
-                    bombs: 2,
-                    sideboss: [true, "L1 MagnusTheRed"],
-                    time: 10,
-                    tokens: 0,
-                },
-                "M1 NecroMenhir-1": {
-                    time: 50,
-                    tokens: 0,
-                    bombs: 5,
-                    sideboss: [true, "M1 SilentKing"],
-                },
-                "M1 NecroMenhir-2": {
-                    time: 10,
-                    tokens: 0,
-                    bombs: 1,
-                    sideboss: [true, "M1 SilentKing"],
-                },
-            },
-            "00h 01m 10s",
-        ]);
+    test("timeUsedPerBoss - Should return empty result for empty input", () => {
+        const result = dtsService.timeUsedPerBoss([]);
+        expect(result.groups).toHaveLength(0);
+        expect(result.totalTime).toBe("0s");
     });
 
     const highscoreData: Raid[] = [

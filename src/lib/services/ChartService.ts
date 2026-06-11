@@ -1982,4 +1982,125 @@ export class ChartService {
 
         return chart;
     }
+
+    async createStackedClusteredBarChart(
+        labels: string[],
+        segments: { kind: string; loopIndex: number; data: number[] }[],
+        maxLoops: number,
+        title: string,
+    ) {
+        // Colors for segment kinds (Boss, Prime1, Prime2, ...)
+        const kindColors: Record<string, string> = {};
+        const palette = [
+            CHART_COLORS.blue,
+            CHART_COLORS.orange,
+            CHART_COLORS.green,
+            CHART_COLORS.purple,
+            CHART_COLORS.red,
+            CHART_COLORS.yellow,
+            CHART_COLORS.grey,
+        ];
+        let colorIdx = 0;
+
+        // Assign a consistent color per unique kind
+        for (const seg of segments) {
+            if (!(seg.kind in kindColors)) {
+                kindColors[seg.kind] = palette[colorIdx % palette.length]!;
+                colorIdx++;
+            }
+        }
+
+        // Track which kinds have already appeared in the legend
+        const legendShown = new Set<string>();
+
+        const chartDatasets = segments.map((seg) => {
+            const showLegend = !legendShown.has(seg.kind);
+            legendShown.add(seg.kind);
+
+            return {
+                label: showLegend ? seg.kind : `${seg.kind} `,
+                data: seg.data,
+                backgroundColor: kindColors[seg.kind],
+                borderWidth: 1,
+                stack: `loop-${seg.loopIndex}`,
+                datalabels: {
+                    display: true,
+                    color: "white",
+                    anchor: "center" as const,
+                    align: "center" as const,
+                    font: { size: 11, weight: "bold" as const },
+                    formatter: (value: number) =>
+                        value > 0 ? `${value}` : null,
+                },
+            };
+        });
+
+        const chart = await canvas.renderToBuffer({
+            type: "bar",
+            data: {
+                labels,
+                datasets: chartDatasets,
+            },
+            options: {
+                plugins: {
+                    datalabels: { display: false },
+                    title: {
+                        display: true,
+                        text: title,
+                        font: { size: 18 },
+                        color: "white",
+                    },
+                    legend: {
+                        display: true,
+                        labels: {
+                            color: "white",
+                            font: { size: 12 },
+                            filter: (item: { text?: string }) =>
+                                !item.text?.endsWith(" "),
+                        },
+                    },
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: "white",
+                            font: { size: 12 },
+                        },
+                        grid: { display: false },
+                        stacked: true,
+                    },
+                    y: {
+                        ticks: {
+                            color: "white",
+                            font: { size: 12 },
+                            stepSize: 5,
+                        },
+                        grid: {
+                            color: "rgba(255, 255, 255, 0.2)",
+                        },
+                        beginAtZero: true,
+                        stacked: true,
+                        title: {
+                            display: true,
+                            text: "Tokens",
+                            color: "white",
+                            font: { size: 14 },
+                        },
+                    },
+                },
+                layout: {
+                    padding: {
+                        left: 20,
+                        right: 20,
+                        bottom: 10,
+                        top: 20,
+                    },
+                },
+                responsive: true,
+                maintainAspectRatio: false,
+            },
+        });
+
+        return chart;
+    }
 }

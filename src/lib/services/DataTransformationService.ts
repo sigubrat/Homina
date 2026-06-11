@@ -1,8 +1,18 @@
 import type { Raid } from "@/models/types";
-import type { TimeUsed } from "@/models/types/TimeUsed";
-import { logger } from "../HominaLogger";
-import { mapTierToRarity, splitByCapital } from "../utils/utils";
-import { SecondsToString } from "../utils/timeUtils";
+import type {
+    TimeUsedResult,
+    TimeUsedRow,
+    TimeUsedLoop,
+    TimeUsedTypeGroup,
+} from "@/models/types/TimeUsed";
+import {
+    mapTierToRarity,
+    getBossEmoji,
+    getPrimeDisplayName,
+    mapUnitIdToEmoji,
+    splitByCapital,
+} from "../utils/utils";
+import { normalizeTimestamp, SecondsToString } from "../utils/timeUtils";
 import { DamageType, EncounterType } from "@/models/enums";
 import type { Highscore } from "@/models/types/Highscore";
 import { getMetaTeam } from "@/lib/utils/metaTeamUtils";
@@ -10,153 +20,174 @@ import { getMetaTeam } from "@/lib/utils/metaTeamUtils";
 export class DataTransformationService {
     constructor() {}
 
-    async timeUsedPerBoss(
-        seasonData: Raid[],
-        separatePrimes: boolean = false,
-    ): Promise<[Record<string, TimeUsed>, string]> {
-        const groupedData = seasonData.reduce(
-            (acc: Record<string, Raid[]>, curr: Raid) => {
-                let key: string;
-                if (
-                    separatePrimes &&
-                    curr.encounterType === EncounterType.SIDE_BOSS
-                ) {
-                    const unitWords = curr.unitId.split(/(?=[A-Z])/);
-                    const unit = `${unitWords.at(-2)}${unitWords.at(-1)}`;
-                    if (!unit) {
-                        logger.error(
-                            `Unit ID ${curr.unitId} is invalid or empty while calculating time used`,
-                        );
-                        return acc;
-                    }
-                    key = `${mapTierToRarity(curr.tier, curr.set + 1)} ${unit}-${curr.encounterIndex}`;
-                } else {
-                    key = `${mapTierToRarity(curr.tier, curr.set + 1)} ${
-                        curr.type
-                    }`;
-                }
-                if (!acc[key]) {
-                    acc[key] = [];
-                }
-                acc[key]!.push(curr);
-                return acc;
-            },
-            {} as Record<string, Raid[]>, // initial accumulator value
-        );
-
-        const result: Record<string, TimeUsed> = {};
-        let previousKey: null | string = null;
-        for (const boss in groupedData) {
-            const data = groupedData[boss];
-            if (!data) {
-                logger.error(
-                    `Key ${boss} not found in groupedData while calculating time used`,
-                );
-                continue;
-            }
-
-            const totalTokens = data.filter(
-                (raid) => raid.damageType === DamageType.BATTLE,
-            ).length;
-
-            const totalBombs = data.length - totalTokens;
-
-            // If this is the first boss, we take the first entry for that boss and the last and calculate the time
-            if (previousKey === null) {
-                const firstEntry = data[0];
-                const lastEntry = data[data.length - 1];
-                if (!firstEntry || !lastEntry) {
-                    logger.error(
-                        `First or last entry not found for boss ${boss}`,
-                    );
-                    continue;
-                }
-                const isPrime =
-                    firstEntry.encounterType === EncounterType.SIDE_BOSS;
-
-                const timeInSeconds = Math.abs(
-                    firstEntry?.startedOn - lastEntry?.startedOn,
-                );
-
-                result[boss] = {
-                    time: timeInSeconds,
-                    tokens: totalTokens,
-                    bombs: totalBombs,
-                    sideboss: [
-                        isPrime,
-                        `${mapTierToRarity(
-                            firstEntry.tier,
-                            firstEntry.set + 1,
-                        )} ${lastEntry.type}`,
-                    ],
-                };
-                previousKey = boss;
-                continue;
-            }
-
-            const lastEntry = data[data.length - 1];
-            if (!lastEntry) {
-                logger.error(
-                    `Last entry not found for boss ${boss} while calculating time used`,
-                );
-                continue;
-            }
-
-            const previousData = groupedData[previousKey];
-            if (!previousData) {
-                logger.error(
-                    `Previous data not found for boss ${previousKey} while calculating time used`,
-                );
-                continue;
-            }
-
-            const previousLast = previousData[previousData.length - 1];
-            if (!previousLast) {
-                logger.error(
-                    `Previous last entry not found for boss ${previousKey}`,
-                );
-                continue;
-            }
-            if (
-                lastEntry.startedOn === undefined ||
-                previousLast.startedOn === undefined
-            ) {
-                logger.error(
-                    `StartedOn timestamp not found for boss ${boss} or previous boss ${previousKey}`,
-                );
-                continue;
-            }
-
-            const timeInSeconds = Math.abs(
-                previousLast.startedOn - lastEntry.startedOn,
-            );
-
-            const timeUsed = timeInSeconds;
-
-            const isPrime = lastEntry.encounterType === EncounterType.SIDE_BOSS;
-
-            result[boss] = {
-                time: timeUsed,
-                tokens: totalTokens,
-                bombs: totalBombs,
-                sideboss: [
-                    isPrime,
-                    `${mapTierToRarity(lastEntry.tier, lastEntry.set + 1)} ${
-                        lastEntry.type
-                    }`,
-                ],
-            };
-
-            previousKey = boss;
+    timeUsedPerBoss(seasonData: Raid[]): TimeUsedResult {
+        if (seasonData.length === 0) {
+            return { groups: [], totalTime: "0s" };
         }
 
-        const allTimes = seasonData.map((raid) => raid.startedOn);
-        const minTime = Math.min(...allTimes);
-        const maxTime = Math.max(...allTimes);
-        const totalTime = maxTime - minTime;
-        const totalTimeUsed = SecondsToString(totalTime);
+        // Step 1: Bucket entries by .type
+        const byType = new Map<string, Raid[]>();
+        for (const entry of seasonData) {
+            const existing = byType.get(entry.type);
+            if (existing) {
+                existing.push(entry);
+            } else {
+                byType.set(entry.type, [entry]);
+            }
+        }
 
-        return [result, totalTimeUsed];
+        // Step 2: For each type, sub-bucket by tier to form loops
+        const groups: TimeUsedTypeGroup[] = [];
+
+        for (const [type, entries] of byType) {
+            // Sub-bucket by tier
+            const byTier = new Map<number, Raid[]>();
+            for (const entry of entries) {
+                const existing = byTier.get(entry.tier);
+                if (existing) {
+                    existing.push(entry);
+                } else {
+                    byTier.set(entry.tier, [entry]);
+                }
+            }
+
+            // Sort tiers ascending to assign loop indices
+            const sortedTiers = [...byTier.keys()].sort((a, b) => a - b);
+
+            const loops: TimeUsedLoop[] = [];
+            for (let i = 0; i < sortedTiers.length; i++) {
+                const tier = sortedTiers[i]!;
+                const tierEntries = byTier.get(tier)!;
+
+                // Derive rarityLabel from the first entry's tier and set
+                const firstEntry = tierEntries[0]!;
+                const rarityLabel = mapTierToRarity(
+                    tier,
+                    firstEntry.set + 1,
+                    false,
+                );
+
+                // Split by encounterType
+                const bossAttacks = tierEntries.filter(
+                    (e) => e.encounterType === EncounterType.BOSS,
+                );
+                const primeAttacks = tierEntries.filter(
+                    (e) => e.encounterType === EncounterType.SIDE_BOSS,
+                );
+
+                // Build boss row
+                let bossRow: TimeUsedRow | null = null;
+                if (bossAttacks.length > 0) {
+                    bossRow = this.buildRow(
+                        "boss",
+                        type,
+                        getBossEmoji(type) ?? "❓",
+                        bossAttacks,
+                    );
+                }
+
+                // Build prime rows — sub-bucket by unitId
+                const primesByUnitId = new Map<string, Raid[]>();
+                for (const attack of primeAttacks) {
+                    const existing = primesByUnitId.get(attack.unitId);
+                    if (existing) {
+                        existing.push(attack);
+                    } else {
+                        primesByUnitId.set(attack.unitId, [attack]);
+                    }
+                }
+
+                const primeRows: TimeUsedRow[] = [];
+                for (const [unitId, attacks] of primesByUnitId) {
+                    const displayName = getPrimeDisplayName(unitId);
+                    const emoji = mapUnitIdToEmoji(unitId);
+                    primeRows.push(
+                        this.buildRow(
+                            "prime",
+                            displayName,
+                            emoji,
+                            attacks,
+                            unitId,
+                        ),
+                    );
+                }
+                // Sort primes by firstStartedOn
+                primeRows.sort((a, b) => a.firstStartedOn - b.firstStartedOn);
+
+                // Build total row — aggregate all entries in this (type, tier) bucket
+                const totalRow = this.buildRow(
+                    "total",
+                    "Total",
+                    "",
+                    tierEntries,
+                );
+
+                loops.push({
+                    tier,
+                    loopIndex: i + 1,
+                    rarityLabel,
+                    bossRow,
+                    primeRows,
+                    totalRow,
+                });
+            }
+
+            // Group-level metadata
+            const allStartedOn = entries.map((e) =>
+                normalizeTimestamp(e.startedOn),
+            );
+            const groupFirstStartedOn = Math.min(...allStartedOn);
+            const emoji = getBossEmoji(type) ?? "❓";
+
+            groups.push({
+                type,
+                displayName: type,
+                emoji,
+                firstStartedOn: groupFirstStartedOn,
+                loops,
+            });
+        }
+
+        // Sort groups by firstStartedOn (gameplay chronology)
+        groups.sort((a, b) => a.firstStartedOn - b.firstStartedOn);
+
+        // Compute total time across all entries
+        const allStartedOn = seasonData.map((e) =>
+            normalizeTimestamp(e.startedOn),
+        );
+        const totalTime = SecondsToString(
+            Math.max(...allStartedOn) - Math.min(...allStartedOn),
+        );
+
+        return { groups, totalTime };
+    }
+
+    private buildRow(
+        kind: "boss" | "prime" | "total",
+        displayName: string,
+        emoji: string,
+        attacks: Raid[],
+        unitId?: string,
+    ): TimeUsedRow {
+        const timestamps = attacks.map((a) => normalizeTimestamp(a.startedOn));
+        const minTs = Math.min(...timestamps);
+        const maxTs = Math.max(...timestamps);
+
+        const tokens = attacks.filter(
+            (a) => a.damageType === DamageType.BATTLE,
+        ).length;
+        const bombs = attacks.length - tokens;
+
+        return {
+            kind,
+            displayName,
+            emoji,
+            unitId,
+            time: maxTs - minTs,
+            tokens,
+            bombs,
+            firstStartedOn: minTs,
+        };
     }
 
     async seasonHighscores(seasonData: Raid[]) {
