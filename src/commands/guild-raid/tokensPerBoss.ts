@@ -88,11 +88,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         const { groups } = transformer.timeUsedPerBoss(seasonData);
 
-        // Only show bosses that have looped (appeared more than once)
-        // or all bosses if none looped (single-loop season)
-        const loopedGroups = groups.filter((g) => g.loops.length > 1);
-        const chartGroups = loopedGroups.length > 0 ? loopedGroups : groups;
-
         const seasonDisplay =
             providedSeason === null
                 ? `${season} (current season)`
@@ -103,8 +98,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         // Build clustered+stacked bar chart data:
         // X-axis clusters = bosses, bars within each cluster = loops,
         // each bar is stacked: boss tokens + each prime's tokens
-        const bossLabels = chartGroups.map((g) => g.displayName);
-        const maxLoops = Math.max(...chartGroups.map((g) => g.loops.length));
+        const bossLabels = groups.map((g) => g.displayName);
+        const maxLoops = Math.max(...groups.map((g) => g.loops.length));
 
         // Collect all unique segment kinds: "Boss" + each prime displayName
         // We need consistent segment types across all groups
@@ -117,7 +112,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
         for (let loopIdx = 0; loopIdx < maxLoops; loopIdx++) {
             // Boss segment for this loop
-            const bossData = chartGroups.map((g) => {
+            const bossData = groups.map((g) => {
                 const loop = g.loops[loopIdx];
                 return loop?.bossRow?.tokens ?? 0;
             });
@@ -125,7 +120,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
             // Collect all unique primes across all groups for this loop
             const allPrimeNames = new Set<string>();
-            for (const group of chartGroups) {
+            for (const group of groups) {
                 const loop = group.loops[loopIdx];
                 if (loop) {
                     for (const prime of loop.primeRows) {
@@ -135,7 +130,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             }
 
             for (const primeName of allPrimeNames) {
-                const primeData = chartGroups.map((g) => {
+                const primeData = groups.map((g) => {
                     const loop = g.loops[loopIdx];
                     if (!loop) return 0;
                     const prime = loop.primeRows.find(
