@@ -1,6 +1,6 @@
 import { logger } from "@/lib";
 import { BotError } from "@/models/errors/BotError";
-import { ServiceError } from "@/models/errors/ServiceError";
+import { ExternalApiError, ServiceError } from "@/models/errors/ServiceError";
 import { UserError } from "@/models/errors/UserError";
 import { type ChatInputCommandInteraction, MessageFlags } from "discord.js";
 
@@ -19,6 +19,24 @@ export async function handleCommandError(
             error.message,
         );
         await reply(error.message);
+        return;
+    }
+
+    if (error instanceof ExternalApiError) {
+        const status = error.context?.status as number | undefined;
+        logger.error(
+            { code: error.code, context: error.context, cause: error.cause },
+            error.message,
+        );
+        if (status === 403) {
+            await reply(
+                "Your API token was rejected by the Tacticus API. Make sure it was created by a (co-)leader with the Raid and Guild permissions and that it is still valid.",
+            );
+        } else {
+            await reply(
+                "The Tacticus API is currently unavailable. Please try again later.",
+            );
+        }
         return;
     }
 
