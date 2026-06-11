@@ -87,7 +87,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const [guildLevel, bossUnits, activityProfile] = await Promise.all([
             service.getGuildLevel(discordId),
             availabilityService.getCurrentBossUnits(discordId),
-            raidAnalyticsService.getActivityByHourPerPlayer(discordId),
+            raidAnalyticsService.getActivityByHourPerPlayer(discordId, 3),
         ]);
         const bombEstimate =
             totalBombs > 0 && guildLevel
@@ -166,7 +166,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         const embed = new EmbedBuilder()
             .setColor("#0099ff")
             .setTitle("Available Bombs")
-            .setDescription("Here is the list of members with available bombs.")
+            .setDescription(
+                "Bomb availability, damage estimates, and boss kill chances for your guild.\n" +
+                    "Activity indicators are based on historical token usage at this time of day (last 3 seasons).\n" +
+                    "**Status symbols:** ✨ active · ⏰ possibly active · 💤 inactive",
+            )
             .setTimestamp()
             .setFooter({
                 text: STANDARD_FOOTER_TEXT,
@@ -248,7 +252,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             totalBombs !== awakeBombsLow
                 ? [
                       {
-                          name: `Active players estimate (${currentHour}:00 UTC) — ✨ active, ⏰ possibly active, 💤 inactive`,
+                          name: `Active players estimate (${currentHour}:00-${(currentHour + 1) % 24}:00 UTC)`,
                           value:
                               `Bombs: \`${awakeBombsLow}${awakeBombsLow !== awakeBombsHigh ? `-${awakeBombsHigh}` : ""}\`\n` +
                               `Damage: \`${awakeBombEstimate.avgDamage.toLocaleString()}${awakeBombEstimateHigh ? `-${awakeBombEstimateHigh.avgDamage.toLocaleString()}` : ""}\` avg\n` +
