@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.18.0]
+
+Today I've got another feature update for you all. Special thanks to the beta-testers for the assist on this one!
+The update comes with added information in available-bombs to help you determine whether to bomb or spend a token, a complete rework of all error messages, and `/gr-time-used` is now replaced by `/tokens-per-boss`. This command focuses on the important bits: how many tokens you spend each loop and the effect of killing primes or not.
+
+As a little thanks for me I've put out another little code you can redeem that you can find over at https://hominabot.com/
+
+### Added
+
+- **New command!** `/tokens-per-boss` — See how many tokens your guild spent on each individual boss in a season.
+  - Optional parameter: `season` — defaults to the current season.
+  - Optional parameter: `rarity` — filter by rarity.
+- `/available-bombs` now shows **player activity indicators** next to each member, based on their historical token usage at the current time of day (averaged over the last 3 seasons):
+  - ✨ Typically active at this hour
+  - ⏰ Possibly active at this hour
+  - 💤 Typically inactive at this hour
+- `/available-bombs` now includes an **active players estimate** — when not everyone is likely awake, the command shows a separate estimate of bombs, expected damage, and boss kill probability based only on players who are historically active at the current UTC hour.
+
+### Removed
+
+- `/gr-time-used` has been removed and superseded by `/tokens-per-boss`.
+
+### Changed
+
+- Error messages shown when a command fails are now clearer and more informative.
+
 ## [1.17.1]
 
 ### Added
