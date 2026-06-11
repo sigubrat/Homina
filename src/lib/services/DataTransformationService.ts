@@ -25,21 +25,29 @@ export class DataTransformationService {
             return { groups: [], totalTime: "0s" };
         }
 
-        // Step 1: Bucket entries by .type
-        const byType = new Map<string, Raid[]>();
+        // Step 1: Bucket entries by type + rarity (so same boss at different rarities stays separate)
+        const byTypeRarity = new Map<string, Raid[]>();
         for (const entry of seasonData) {
-            const existing = byType.get(entry.type);
+            const rarityLabel = mapTierToRarity(
+                entry.tier,
+                entry.set + 1,
+                false,
+            );
+            const key = `${entry.type}|${rarityLabel}`;
+            const existing = byTypeRarity.get(key);
             if (existing) {
                 existing.push(entry);
             } else {
-                byType.set(entry.type, [entry]);
+                byTypeRarity.set(key, [entry]);
             }
         }
 
-        // Step 2: For each type, sub-bucket by tier to form loops
+        // Step 2: For each type+rarity, sub-bucket by tier to form loops
         const groups: TimeUsedTypeGroup[] = [];
 
-        for (const [type, entries] of byType) {
+        for (const [key, entries] of byTypeRarity) {
+            const type = key.split("|")[0]!;
+            const rarityLabel = key.split("|")[1]!;
             // Sub-bucket by tier
             const byTier = new Map<number, Raid[]>();
             for (const entry of entries) {
@@ -141,7 +149,7 @@ export class DataTransformationService {
 
             groups.push({
                 type,
-                displayName: type,
+                displayName: `${rarityLabel} ${type}`,
                 emoji,
                 firstStartedOn: groupFirstStartedOn,
                 loops,
