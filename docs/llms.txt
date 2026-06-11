@@ -40,9 +40,10 @@ Add the bot to a Discord server, then run `/register` with an API token created 
 - `/prime-specialists`: Who deals the most damage to each prime, using seasons with matching primes.
 
 ### Token economy
-- `/season-tokens`: Tokens used by each member in a season, with median, standard deviation and estimated availability.
+- `/season-tokens`: Tokens used by each member in a season.
 - `/tokens-per-loop`: Tokens the guild spent on each loop in a season.
 - `/tokens-per-loop-by-boss`: Tokens spent on each boss per loop in a season.
+- `/tokens-per-boss`: Tokens used per boss across loops in a given season.
 - `/tokens-burnt`: Tokens each member wasted by hitting the cap this season.
 - `/token-history`: A player's token usage over the last N seasons as a line chart.
 
@@ -55,7 +56,6 @@ Add the bot to a Discord server, then run `/register` with an API token created 
 - `/season-participation`: How much each member participated in a season.
 - `/inactivity-by-season`: Members who did not use the required number of tokens in a season.
 - `/activity-per-hour`: What time of day the guild uses its raid tokens.
-- `/gr-time-used`: How long it takes to complete each raid boss in a season.
 
 ### Seasons & trends
 - `/guild-credits-history`: Credits earned from killing guild bosses over the last N seasons.
@@ -65,8 +65,8 @@ Add the bot to a Discord server, then run `/register` with an API token created 
 - `/season-bosses`: Guild boss configs for previous seasons.
 - `/season-same`: Previous seasons with the same boss config.
 - `/meta-team-distribution`: Distribution of meta teams in a season.
-- `/achievements`: Fun guild-wide superlatives and awards for a season.
-- `/track-member`: Track a single member's raid stats over recent seasons.
+- `/season-achievements`: Fun guild-wide superlatives and awards for a season.
+- `/track-member`: Track a member's raid stats over the last 5 seasons.
 
 ### Guild management
 - `/player-metadata`: Nicknames and API token status for all guild members.
