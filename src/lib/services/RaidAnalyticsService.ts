@@ -781,6 +781,7 @@ export class RaidAnalyticsService {
 
     async getActivityByHourPerPlayer(
         discordId: string,
+        nSeasons: number = 2,
     ): Promise<Record<string, Record<number, number>>> {
         try {
             const apiKey = await this.requireApiKey(discordId);
@@ -794,19 +795,23 @@ export class RaidAnalyticsService {
                 });
             }
 
-            const prevSeason = await this.client.getGuildRaidBySeason(
-                apiKey,
-                currentSeason.season - 1,
-            );
-
-            if (!prevSeason || !prevSeason.entries) {
-                throw new ExternalApiError("No previous season data returned", {
-                    context: { discordId },
-                });
+            const seasonNumbers: number[] = [];
+            for (let i = 0; i < nSeasons; i++) {
+                const s = currentSeason.season - i;
+                if (s < MINIMUM_SEASON_THRESHOLD) break;
+                seasonNumbers.push(s);
             }
 
-            const raids = currentSeason.entries
-                .concat(prevSeason.entries)
+            const responses = await Promise.all(
+                seasonNumbers.map((s) =>
+                    s === currentSeason.season
+                        ? Promise.resolve(currentSeason)
+                        : this.client.getGuildRaidBySeason(apiKey, s),
+                ),
+            );
+
+            const raids = responses
+                .flatMap((resp) => resp?.entries ?? [])
                 .filter((raid) => raid.damageType === DamageType.BATTLE);
 
             const result: Record<string, Record<number, number>> = {};
