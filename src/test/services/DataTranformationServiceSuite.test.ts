@@ -21,12 +21,12 @@ describe("DataTransformationServiceSuite - Algebra", () => {
         expect(loop.loopIndex).toBe(1);
         expect(loop.rarityLabel).toBe("L1");
 
-        // Boss row: 2 BOSS entries both at startedOn 1750316881
+        // Boss row: 2 BOSS entries, startedOn 1750316881, completedOn 1750318958
         expect(loop.bossRow).not.toBeNull();
         expect(loop.bossRow!.kind).toBe("boss");
         expect(loop.bossRow!.tokens).toBe(2);
         expect(loop.bossRow!.bombs).toBe(0);
-        expect(loop.bossRow!.time).toBe(0); // same startedOn
+        expect(loop.bossRow!.time).toBe(2077); // completedOn - startedOn
 
         // Prime rows: 2 distinct unitIds
         expect(loop.primeRows).toHaveLength(2);
@@ -35,8 +35,8 @@ describe("DataTransformationServiceSuite - Algebra", () => {
         expect(loop.totalRow.kind).toBe("total");
         expect(loop.totalRow.tokens).toBe(5);
         expect(loop.totalRow.bombs).toBe(4);
-        // time = max(1750316881) - min(1750314154) = 2727
-        expect(loop.totalRow.time).toBe(2727);
+        // time = max(completedOn=1750318958) - min(startedOn=1750314154) = 4804
+        expect(loop.totalRow.time).toBe(4804);
 
         expect(result.totalTime).toBe("00h 45m 27s");
     });
