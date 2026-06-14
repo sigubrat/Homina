@@ -9,11 +9,8 @@ import { DataTransformationService } from "@/lib/services/DataTransformationServ
 import { RaidAnalyticsService } from "@/lib/services/RaidAnalyticsService";
 import { isInvalidSeason, SecondsToString } from "@/lib/utils/timeUtils";
 import { Rarity } from "@/models/enums";
-import {
-    ChatInputCommandInteraction,
-    EmbedBuilder,
-    SlashCommandBuilder,
-} from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { Pagination } from "pagination.djs";
 
 const commandName = "time-per-boss";
 
@@ -93,50 +90,97 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 ? `${season} (current season)`
                 : `${season}`;
 
-        const embed = new EmbedBuilder()
+        const pagination = new Pagination(interaction, {
+            limit: 4,
+        })
             .setColor("#0099ff")
             .setTitle(`Time per Boss — Season ${seasonDisplay}`)
             .setDescription(
-                `Kill times for each boss at **${rarity}** rarity.\nTotal season time: **${totalTime}**`,
+                `Kill times for each boss at **${rarity}** rarity.\nTotal season time: **${totalTime}**\n\n` +
+                    `**Format:** \`total time\` (\`boss only\`) (tokens/bombs)\n` +
+                    `Sidebosses are listed below each boss.`,
             )
             .setTimestamp()
             .setFooter({ text: STANDARD_FOOTER_TEXT });
 
-        for (const group of groups) {
+        // Transpose: instead of "per boss, show loops", display "per loop cycle, show bosses in kill order"
+        const maxLoops = Math.max(...groups.map((g) => g.loops.length));
+
+        for (let loopIdx = 0; loopIdx < maxLoops; loopIdx++) {
+            // Collect each group's entry at this loop index, sorted by firstStartedOn
+            const loopEntries = groups
+                .filter((g) => g.loops[loopIdx])
+                .map((g) => ({
+                    group: g,
+                    loop: g.loops[loopIdx]!,
+                }))
+                .sort(
+                    (a, b) =>
+                        a.loop.totalRow.firstStartedOn -
+                        b.loop.totalRow.firstStartedOn,
+                );
+
+            if (loopEntries.length === 0) continue;
+
             const lines: string[] = [];
+            let loopTotalTime = 0;
 
-            for (const loop of group.loops) {
-                const loopHeader =
-                    group.loops.length > 1
-                        ? `**Loop ${loop.loopIndex}** (${loop.rarityLabel})`
-                        : `**${loop.rarityLabel}**`;
-                lines.push(loopHeader);
+            for (const { group, loop } of loopEntries) {
+                const totalTime = SecondsToString(loop.totalRow.time, true);
+                const bossOnlyTime = loop.bossRow
+                    ? SecondsToString(loop.bossRow.time, true)
+                    : null;
+                const bossTimePart =
+                    bossOnlyTime && loop.primeRows.length > 0
+                        ? ` (\`${bossOnlyTime}\`)`
+                        : "";
+                const bossLine = `${group.emoji} **${loop.rarityLabel} ${group.type}**: \`${totalTime}\`${bossTimePart} (${loop.totalRow.tokens}T / ${loop.totalRow.bombs}B)`;
+                lines.push(bossLine);
 
-                if (loop.bossRow) {
-                    lines.push(
-                        `${loop.bossRow.emoji} Boss: \`${SecondsToString(loop.bossRow.time, true)}\` (${loop.bossRow.tokens}T / ${loop.bossRow.bombs}B)`,
-                    );
-                }
-
+                // Show sideboss breakdown if present
                 for (const prime of loop.primeRows) {
                     lines.push(
-                        `${prime.emoji} ${prime.displayName}: \`${SecondsToString(prime.time, true)}\` (${prime.tokens}T / ${prime.bombs}B)`,
+                        `\u2003${prime.emoji} ${prime.displayName}: \`${SecondsToString(prime.time, true)}\``,
                     );
                 }
 
-                lines.push(
-                    `⏱️ Loop total: \`${SecondsToString(loop.totalRow.time, true)}\``,
-                );
-                lines.push("");
+                loopTotalTime += loop.totalRow.time;
             }
 
-            embed.addFields({
-                name: `${group.emoji} ${group.displayName}`,
-                value: lines.join("\n").trim() || "No data",
-            });
+            lines.push("");
+            lines.push(
+                `⏱️ **Loop total: \`${SecondsToString(loopTotalTime, true)}\`**`,
+            );
+
+            const fieldName = loopIdx === 0 ? "First pass" : `Loop ${loopIdx}`;
+            const fieldValue = lines.join("\n").trim();
+
+            if (fieldValue.length <= 1024) {
+                pagination.addFields({ name: fieldName, value: fieldValue });
+            } else {
+                const chunks: string[] = [];
+                let current = "";
+                for (const line of fieldValue.split("\n")) {
+                    if (
+                        current.length + line.length + 1 > 1024 &&
+                        current.length > 0
+                    ) {
+                        chunks.push(current.trim());
+                        current = "";
+                    }
+                    current += line + "\n";
+                }
+                if (current.trim()) chunks.push(current.trim());
+
+                for (let i = 0; i < chunks.length; i++) {
+                    const name = i === 0 ? fieldName : `${fieldName} (cont.)`;
+                    pagination.addFields({ name, value: chunks[i]! });
+                }
+            }
         }
 
-        await interaction.editReply({ embeds: [embed] });
+        pagination.paginateFields(true);
+        await pagination.render();
 
         logger.info(
             `${interaction.user.username} successfully executed /${commandName} ${season} ${rarity}`,
