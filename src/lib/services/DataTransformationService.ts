@@ -177,9 +177,14 @@ export class DataTransformationService {
         attacks: Raid[],
         unitId?: string,
     ): TimeUsedRow {
-        const timestamps = attacks.map((a) => normalizeTimestamp(a.startedOn));
-        const minTs = Math.min(...timestamps);
-        const maxTs = Math.max(...timestamps);
+        const startTimestamps = attacks.map((a) =>
+            normalizeTimestamp(a.startedOn),
+        );
+        const completedTimestamps = attacks.map((a) =>
+            normalizeTimestamp(a.completedOn),
+        );
+        const minTs = Math.min(...startTimestamps);
+        const maxTs = Math.max(...completedTimestamps);
 
         const tokens = attacks.filter(
             (a) => a.damageType === DamageType.BATTLE,
