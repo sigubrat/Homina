@@ -82,6 +82,378 @@ describe("DataTransformationServiceSuite - Algebra", () => {
         expect(result.totalTime).toBe("0s");
     });
 
+    test("timeUsedPerBoss - Should calculate time as max(completedOn) - min(startedOn)", () => {
+        const data: Raid[] = [
+            {
+                userId: "user1",
+                tier: 4,
+                set: 0,
+                encounterIndex: 0,
+                remainingHp: 100000,
+                maxHp: 500000,
+                encounterType: EncounterType.BOSS,
+                unitId: "BossUnit",
+                type: "TestBoss",
+                rarity: Rarity.LEGENDARY,
+                damageDealt: 200000,
+                damageType: DamageType.BATTLE,
+                startedOn: 100,
+                completedOn: 300,
+                heroDetails: [],
+                machineOfWarDetails: null,
+                globalConfigHash: "hash",
+            },
+            {
+                userId: "user2",
+                tier: 4,
+                set: 0,
+                encounterIndex: 0,
+                remainingHp: 0,
+                maxHp: 500000,
+                encounterType: EncounterType.BOSS,
+                unitId: "BossUnit",
+                type: "TestBoss",
+                rarity: Rarity.LEGENDARY,
+                damageDealt: 100000,
+                damageType: DamageType.BATTLE,
+                startedOn: 200,
+                completedOn: 500,
+                heroDetails: [],
+                machineOfWarDetails: null,
+                globalConfigHash: "hash",
+            },
+        ];
+
+        const result = dtsService.timeUsedPerBoss(data);
+        const loop = result.groups[0]!.loops[0]!;
+
+        // time = max(completedOn=500) - min(startedOn=100) = 400
+        expect(loop.bossRow!.time).toBe(400);
+        expect(loop.totalRow.time).toBe(400);
+    });
+
+    test("timeUsedPerBoss - Should calculate total time spanning sideboss to boss completion", () => {
+        const data: Raid[] = [
+            {
+                userId: "user1",
+                tier: 6,
+                set: 0,
+                encounterIndex: 1,
+                remainingHp: 0,
+                maxHp: 200000,
+                encounterType: EncounterType.SIDE_BOSS,
+                unitId: "PrimeUnit1",
+                type: "Ghazghkull",
+                rarity: Rarity.LEGENDARY,
+                damageDealt: 200000,
+                damageType: DamageType.BATTLE,
+                startedOn: 0,
+                completedOn: 600,
+                heroDetails: [],
+                machineOfWarDetails: null,
+                globalConfigHash: "hash",
+            },
+            {
+                userId: "user1",
+                tier: 6,
+                set: 0,
+                encounterIndex: 0,
+                remainingHp: 300000,
+                maxHp: 500000,
+                encounterType: EncounterType.BOSS,
+                unitId: "BossUnit",
+                type: "Ghazghkull",
+                rarity: Rarity.LEGENDARY,
+                damageDealt: 200000,
+                damageType: DamageType.BATTLE,
+                startedOn: 1000,
+                completedOn: 2500,
+                heroDetails: [],
+                machineOfWarDetails: null,
+                globalConfigHash: "hash",
+            },
+            {
+                userId: "user2",
+                tier: 6,
+                set: 0,
+                encounterIndex: 0,
+                remainingHp: 0,
+                maxHp: 500000,
+                encounterType: EncounterType.BOSS,
+                unitId: "BossUnit",
+                type: "Ghazghkull",
+                rarity: Rarity.LEGENDARY,
+                damageDealt: 300000,
+                damageType: DamageType.BATTLE,
+                startedOn: 2000,
+                completedOn: 3600,
+                heroDetails: [],
+                machineOfWarDetails: null,
+                globalConfigHash: "hash",
+            },
+        ];
+
+        const result = dtsService.timeUsedPerBoss(data);
+        const loop = result.groups[0]!.loops[0]!;
+
+        // Boss only: max(completedOn=3600) - min(startedOn=1000) = 2600
+        expect(loop.bossRow!.time).toBe(2600);
+        // Prime: max(completedOn=600) - min(startedOn=0) = 600
+        expect(loop.primeRows[0]!.time).toBe(600);
+        // Total: max(completedOn=3600) - min(startedOn=0) = 3600
+        expect(loop.totalRow.time).toBe(3600);
+    });
+
+    test("timeUsedPerBoss - Should separate loops by tier for same boss type", () => {
+        const data: Raid[] = [
+            {
+                userId: "user1",
+                tier: 4,
+                set: 0,
+                encounterIndex: 0,
+                remainingHp: 0,
+                maxHp: 500000,
+                encounterType: EncounterType.BOSS,
+                unitId: "BossUnit",
+                type: "RogalDorn",
+                rarity: Rarity.LEGENDARY,
+                damageDealt: 500000,
+                damageType: DamageType.BATTLE,
+                startedOn: 100,
+                completedOn: 400,
+                heroDetails: [],
+                machineOfWarDetails: null,
+                globalConfigHash: "hash",
+            },
+            {
+                userId: "user1",
+                tier: 6,
+                set: 0,
+                encounterIndex: 0,
+                remainingHp: 0,
+                maxHp: 500000,
+                encounterType: EncounterType.BOSS,
+                unitId: "BossUnit",
+                type: "RogalDorn",
+                rarity: Rarity.LEGENDARY,
+                damageDealt: 500000,
+                damageType: DamageType.BATTLE,
+                startedOn: 1000,
+                completedOn: 1800,
+                heroDetails: [],
+                machineOfWarDetails: null,
+                globalConfigHash: "hash",
+            },
+        ];
+
+        const result = dtsService.timeUsedPerBoss(data);
+        expect(result.groups).toHaveLength(1);
+        expect(result.groups[0]!.loops).toHaveLength(2);
+
+        // Loop 1 (tier 4): 400 - 100 = 300
+        expect(result.groups[0]!.loops[0]!.bossRow!.time).toBe(300);
+        // Loop 2 (tier 6): 1800 - 1000 = 800
+        expect(result.groups[0]!.loops[1]!.bossRow!.time).toBe(800);
+    });
+
+    test("timeUsedPerBoss - Should correctly count tokens vs bombs", () => {
+        const data: Raid[] = [
+            {
+                userId: "user1",
+                tier: 4,
+                set: 0,
+                encounterIndex: 0,
+                remainingHp: 300000,
+                maxHp: 500000,
+                encounterType: EncounterType.BOSS,
+                unitId: "BossUnit",
+                type: "TestBoss",
+                rarity: Rarity.LEGENDARY,
+                damageDealt: 200000,
+                damageType: DamageType.BATTLE,
+                startedOn: 100,
+                completedOn: 200,
+                heroDetails: [],
+                machineOfWarDetails: null,
+                globalConfigHash: "hash",
+            },
+            {
+                userId: "user2",
+                tier: 4,
+                set: 0,
+                encounterIndex: 0,
+                remainingHp: 290000,
+                maxHp: 500000,
+                encounterType: EncounterType.BOSS,
+                unitId: "BossUnit",
+                type: "TestBoss",
+                rarity: Rarity.LEGENDARY,
+                damageDealt: 10000,
+                damageType: DamageType.BOMB,
+                startedOn: 150,
+                completedOn: 150,
+                heroDetails: [],
+                machineOfWarDetails: null,
+                globalConfigHash: "hash",
+            },
+            {
+                userId: "user3",
+                tier: 4,
+                set: 0,
+                encounterIndex: 0,
+                remainingHp: 100000,
+                maxHp: 500000,
+                encounterType: EncounterType.BOSS,
+                unitId: "BossUnit",
+                type: "TestBoss",
+                rarity: Rarity.LEGENDARY,
+                damageDealt: 190000,
+                damageType: DamageType.BATTLE,
+                startedOn: 200,
+                completedOn: 400,
+                heroDetails: [],
+                machineOfWarDetails: null,
+                globalConfigHash: "hash",
+            },
+            {
+                userId: "user4",
+                tier: 4,
+                set: 0,
+                encounterIndex: 0,
+                remainingHp: 80000,
+                maxHp: 500000,
+                encounterType: EncounterType.BOSS,
+                unitId: "BossUnit",
+                type: "TestBoss",
+                rarity: Rarity.LEGENDARY,
+                damageDealt: 20000,
+                damageType: DamageType.BOMB,
+                startedOn: 250,
+                completedOn: 250,
+                heroDetails: [],
+                machineOfWarDetails: null,
+                globalConfigHash: "hash",
+            },
+        ];
+
+        const result = dtsService.timeUsedPerBoss(data);
+        const loop = result.groups[0]!.loops[0]!;
+
+        expect(loop.bossRow!.tokens).toBe(2);
+        expect(loop.bossRow!.bombs).toBe(2);
+        // time = max(completedOn=400) - min(startedOn=100) = 300
+        expect(loop.bossRow!.time).toBe(300);
+    });
+
+    test("timeUsedPerBoss - Should handle single attack where startedOn equals completedOn", () => {
+        const data: Raid[] = [
+            {
+                userId: "user1",
+                tier: 4,
+                set: 0,
+                encounterIndex: 0,
+                remainingHp: 0,
+                maxHp: 500000,
+                encounterType: EncounterType.BOSS,
+                unitId: "BossUnit",
+                type: "TestBoss",
+                rarity: Rarity.LEGENDARY,
+                damageDealt: 500000,
+                damageType: DamageType.BOMB,
+                startedOn: 1000,
+                completedOn: 1000,
+                heroDetails: [],
+                machineOfWarDetails: null,
+                globalConfigHash: "hash",
+            },
+        ];
+
+        const result = dtsService.timeUsedPerBoss(data);
+        const loop = result.groups[0]!.loops[0]!;
+
+        // Single bomb kill: time should be 0
+        expect(loop.bossRow!.time).toBe(0);
+        expect(loop.totalRow.time).toBe(0);
+    });
+
+    test("timeUsedPerBoss - Should handle multiple sidebosses with different unitIds", () => {
+        const data: Raid[] = [
+            {
+                userId: "user1",
+                tier: 4,
+                set: 0,
+                encounterIndex: 1,
+                remainingHp: 0,
+                maxHp: 200000,
+                encounterType: EncounterType.SIDE_BOSS,
+                unitId: "Prime1",
+                type: "TestBoss",
+                rarity: Rarity.LEGENDARY,
+                damageDealt: 200000,
+                damageType: DamageType.BATTLE,
+                startedOn: 100,
+                completedOn: 500,
+                heroDetails: [],
+                machineOfWarDetails: null,
+                globalConfigHash: "hash",
+            },
+            {
+                userId: "user1",
+                tier: 4,
+                set: 0,
+                encounterIndex: 2,
+                remainingHp: 0,
+                maxHp: 200000,
+                encounterType: EncounterType.SIDE_BOSS,
+                unitId: "Prime2",
+                type: "TestBoss",
+                rarity: Rarity.LEGENDARY,
+                damageDealt: 200000,
+                damageType: DamageType.BATTLE,
+                startedOn: 600,
+                completedOn: 900,
+                heroDetails: [],
+                machineOfWarDetails: null,
+                globalConfigHash: "hash",
+            },
+            {
+                userId: "user1",
+                tier: 4,
+                set: 0,
+                encounterIndex: 0,
+                remainingHp: 0,
+                maxHp: 1000000,
+                encounterType: EncounterType.BOSS,
+                unitId: "BossUnit",
+                type: "TestBoss",
+                rarity: Rarity.LEGENDARY,
+                damageDealt: 1000000,
+                damageType: DamageType.BATTLE,
+                startedOn: 1000,
+                completedOn: 2000,
+                heroDetails: [],
+                machineOfWarDetails: null,
+                globalConfigHash: "hash",
+            },
+        ];
+
+        const result = dtsService.timeUsedPerBoss(data);
+        const loop = result.groups[0]!.loops[0]!;
+
+        // Prime1: 500 - 100 = 400
+        expect(loop.primeRows).toHaveLength(2);
+        const prime1 = loop.primeRows.find((p) => p.unitId === "Prime1")!;
+        const prime2 = loop.primeRows.find((p) => p.unitId === "Prime2")!;
+        expect(prime1.time).toBe(400);
+        expect(prime2.time).toBe(300);
+
+        // Boss: 2000 - 1000 = 1000
+        expect(loop.bossRow!.time).toBe(1000);
+
+        // Total: max(completedOn=2000) - min(startedOn=100) = 1900
+        expect(loop.totalRow.time).toBe(1900);
+    });
+
     const highscoreData: Raid[] = [
         {
             userId: "test1",
