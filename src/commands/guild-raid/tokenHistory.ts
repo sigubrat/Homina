@@ -57,16 +57,17 @@ export async function autocomplete(interaction: AutocompleteInteraction) {
     try {
         const service = new GuildService();
         const guildId = await service.getGuildId(discordId);
-        const members = await fetchGuildMembers(guildId);
+
+        const [members, metadata] = await Promise.all([
+            fetchGuildMembers(guildId),
+            dbController.getAllPlayerMetadataByGuild(guildId, false),
+        ]);
+
         if (members.length === 0) {
             await interaction.respond([]);
             return;
         }
 
-        const metadata = await dbController.getAllPlayerMetadataByGuild(
-            guildId,
-            false,
-        );
         const nicknameMap = new Map<string, string>();
         for (const entry of metadata) {
             if (entry.nickname) {
@@ -92,8 +93,9 @@ export async function autocomplete(interaction: AutocompleteInteraction) {
             })),
         );
     } catch (error) {
+        if ((error as any)?.code === 10062) return;
         logger.error(error, "Error in token-history autocomplete");
-        await interaction.respond([]);
+        await interaction.respond([]).catch(() => {});
     }
 }
 

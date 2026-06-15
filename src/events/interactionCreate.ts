@@ -24,8 +24,9 @@ export async function execute(interaction: Interaction) {
         try {
             await command.autocomplete(interaction);
         } catch (error) {
+            if ((error as any)?.code === 10062) return;
             logger.error(error, "Error handling autocomplete");
-            await interaction.respond([]);
+            await interaction.respond([]).catch(() => {});
         }
         return;
     }
