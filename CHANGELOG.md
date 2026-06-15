@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.19.0]
+
+Today Homina celebrates reaching the milestone of 200+ registered guilds—or 6 000+ players. This project would not have gotten where it is if it wasn't from the constant feedback and support from its users, such as the request of the command `/gr-time-used` under the new name `/time-per-boss`. The command is back with a cleaner UI and more precise calculations. To celebrate the milestone of 6k+ players I've uploaded another code for you on https://hominabot.com
+
+### Added
+
+- **New command!** `/time-per-boss` — See how long it takes your guild to kill each boss in a season, displayed in chronological kill order per loop cycle.
+  - Shows total time from first sideboss attack to boss kill, with boss-only time in parentheses when sidebosses are present.
+  - Sideboss breakdown listed below each boss.
+  - Loop totals shown for Legendary+ rarity; pass totals for other rarities.
+  - Required parameter: `rarity` — filter by rarity.
+  - Optional parameter: `season` — defaults to the current season.
+  - Time calculation now uses `completedOn` of the last attack minus `startedOn` of the first for more accurate kill durations.
+
 ## [1.18.0]
 
 Today I've got another feature update for you all. Special thanks to the beta-testers for the assist on this one!
