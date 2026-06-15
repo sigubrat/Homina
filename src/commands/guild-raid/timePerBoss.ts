@@ -3,6 +3,7 @@ import { handleCommandError } from "@/lib/utils/errorUtils";
 import {
     getCurrentSeason,
     MINIMUM_SEASON_THRESHOLD,
+    miscEmojis,
     STANDARD_FOOTER_TEXT,
 } from "@/lib/configs/constants";
 import { DataTransformationService } from "@/lib/services/DataTransformationService";
@@ -97,7 +98,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setTitle(`Time per Boss — Season ${seasonDisplay}`)
             .setDescription(
                 `Kill times for each boss at **${rarity}** rarity.\nTotal season time: **${totalTime}**\n\n` +
-                    `**Format:** \`total time\` (\`boss only\`) (tokens/bombs)\n` +
+                    `**Format:** \`total time\` (\`boss only\`) (${miscEmojis.raidToken}/${miscEmojis.bomb})\n` +
                     `Sidebosses are listed below each boss.`,
             )
             .setTimestamp()
@@ -134,7 +135,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     bossOnlyTime && loop.primeRows.length > 0
                         ? ` (\`${bossOnlyTime}\`)`
                         : "";
-                const bossLine = `${group.emoji} **${loop.rarityLabel} ${group.type}**: \`${totalTime}\`${bossTimePart} (${loop.totalRow.tokens}T / ${loop.totalRow.bombs}B)`;
+                const bossLine = `${group.emoji} **${loop.rarityLabel} ${group.type}**: \`${totalTime}\`${bossTimePart} (${loop.totalRow.tokens}${miscEmojis.raidToken} / ${loop.totalRow.bombs}${miscEmojis.bomb})`;
                 lines.push(bossLine);
 
                 // Show sideboss breakdown if present
@@ -148,11 +149,19 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             }
 
             lines.push("");
+            const isLoop = rarity === Rarity.LEGENDARY_PLUS;
+            const totalLabel = isLoop ? "Loop total" : "Pass total";
             lines.push(
-                `⏱️ **Loop total: \`${SecondsToString(loopTotalTime, true)}\`**`,
+                `⏱️ **${totalLabel}: \`${SecondsToString(loopTotalTime, true)}\`**`,
             );
 
-            const fieldName = loopIdx === 0 ? "First pass" : `Loop ${loopIdx}`;
+            const fieldName = isLoop
+                ? loopIdx === 0
+                    ? "First pass"
+                    : `Loop ${loopIdx}`
+                : loopIdx === 0
+                  ? `${rarity} — First pass`
+                  : `${rarity} — Pass ${loopIdx + 1}`;
             const fieldValue = lines.join("\n").trim();
 
             if (fieldValue.length <= 1024) {
@@ -173,8 +182,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 if (current.trim()) chunks.push(current.trim());
 
                 for (let i = 0; i < chunks.length; i++) {
-                    const name = i === 0 ? fieldName : `${fieldName} (cont.)`;
-                    pagination.addFields({ name, value: chunks[i]! });
+                    pagination.addFields({ name: " ", value: chunks[i]! });
                 }
             }
         }
