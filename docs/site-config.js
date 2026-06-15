@@ -4,7 +4,7 @@
 var SITE_CONFIG = {
     // Temporary code banner
     showBanner: true,
-    tempCode: "JUNEBOMBS",
+    tempCode: "HOMINA6K",
     tempNote: "Limited-time code \u2013 redeem in-game before it expires."
 };
 
