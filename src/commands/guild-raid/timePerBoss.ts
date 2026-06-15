@@ -98,7 +98,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             .setTitle(`Time per Boss — Season ${seasonDisplay}`)
             .setDescription(
                 `Kill times for each boss at **${rarity}** rarity.\nTotal season time: **${totalTime}**\n\n` +
-                    `**Format:** \`total time\` (\`boss only\`) (${miscEmojis.raidToken}/${miscEmojis.bomb})\n` +
+                    `**Format:** \`total time\` (\`boss only\`) ${miscEmojis.raidToken} - ${miscEmojis.bomb}\n` +
                     `Sidebosses are listed below each boss.`,
             )
             .setTimestamp()
@@ -135,7 +135,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                     bossOnlyTime && loop.primeRows.length > 0
                         ? ` (\`${bossOnlyTime}\`)`
                         : "";
-                const bossLine = `${group.emoji} **${loop.rarityLabel} ${group.type}**: \`${totalTime}\`${bossTimePart} (${loop.totalRow.tokens}${miscEmojis.raidToken} / ${loop.totalRow.bombs}${miscEmojis.bomb})`;
+                const bossLine = `${group.emoji} **${loop.rarityLabel} ${group.type}**: \`${totalTime}\`${bossTimePart} ${miscEmojis.raidToken}${loop.totalRow.tokens} - ${miscEmojis.bomb}${loop.totalRow.bombs}`;
                 lines.push(bossLine);
 
                 // Show sideboss breakdown if present
