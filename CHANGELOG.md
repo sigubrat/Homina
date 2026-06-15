@@ -19,6 +19,10 @@ Today Homina celebrates reaching the milestone of 200+ registered guilds—or 6 
   - Optional parameter: `season` — defaults to the current season.
   - Time calculation now uses `completedOn` of the last attack minus `startedOn` of the first for more accurate kill durations.
 
+### Fixed
+
+- Fixed a bug where the auto-complete options like found in `/track-member` fails. The bug was caused by discord's 3-second timeout for auto-completion and ocassionaly slow fetching of usernames from the game. Usernames are now cached to help alleviate this issue. In some cases the auto-complete might fail if you haven't used another command first, but running it a second time or running another command will solve it.
+
 ## [1.18.0]
 
 Today I've got another feature update for you all. Special thanks to the beta-testers for the assist on this one!
