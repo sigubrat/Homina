@@ -9,8 +9,7 @@ export const getCurrentSeason = () => calculateCurrentSeason(new Date());
 export const META_TEAM_THRESHOLD = 5;
 export const MAX_TOKENS_PER_SEASON = 28;
 
-export const STANDARD_FOOTER_TEXT =
-    "Referral code: HUG-44-CAN\nSkulls gleam raffle code: MACHINESPIRIT\n";
+export const STANDARD_FOOTER_TEXT = "Referral code: HUG-44-CAN";
 
 // Season 85 starts on October 8, 2025, at 10:00 AM UTC
 export const SEASON_85_SEASON_START = new Date(2025, 9, 8, 10, 0, 0);
