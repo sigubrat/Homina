@@ -111,7 +111,7 @@ export function getBossEmoji(boss: string) {
         return BOSS_EMOJIS.Belisarius || "❓";
     } else if (boss.includes("rogal")) {
         return BOSS_EMOJIS.RogalDornTank || "❓";
-    } else if (boss.includes("screamer-")) {
+    } else if (boss.includes("screamer")) {
         return BOSS_EMOJIS.Screamer || "❓";
     } else if (boss.includes("riptide")) {
         return BOSS_EMOJIS.Riptide || "❓";
