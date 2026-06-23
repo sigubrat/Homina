@@ -25,18 +25,19 @@ export const GAME_EVENTS: { season: number; label: string }[] = [
 ];
 
 export const BOSS_EMOJIS: Record<string, string> = {
-    Szarekh: "<:Szarekh:1385343132950069278>",
+    Szarekh: "<:Szarekh:1518998569556902098>",
     TyrantLeviathan: "<:TyrantLeviathan:1385342042170851334>",
     TyrantGorgon: "<:TyrantGorgon:1385340907351441619>",
     TyrantKronos: "<:TyrantKronos:1385341128626409522>",
     Ghazghkull: "<:Ghazghkull:1385340195494170664>",
     Avatar: "<:Avatar:1385338950834716802>",
-    Magnus: "<:Magnus:1385342412217520379>",
-    Mortarion: "<:Mortarion:1385342557969453197>",
+    Magnus: "<:Magnus:1518998803280035851>",
+    Mortarion: "<:Mortarion:1518998730370453635>",
     Belisarius: "<:Cawl:1385339595578806312>",
-    RogalDornTank: "<:RogalDornTank:1385342727037784174>",
-    Screamer: "<:ScreamerKiller:1385342920302788608>",
-    Riptide: "<:Riptide:1410163322531217419>",
+    RogalDornTank: "<:RogalDornTank:1518998645071155271>",
+    Screamer: "<:screamerkiller:1518998212847865866>",
+    Riptide: "<:riptide:1518998382943670293>",
+    Lion: "<:lion:1518986391667736656>",
 };
 export const UnitIdEmojiMapping: Record<string, string> = {
     // Ultramarines
