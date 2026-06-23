@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.20.0]
+
+### Added
+
+- Added lion to the boss configs and corresponding discord emoji
+
+### Removed
+
+- Removed all features related to the guild raid boss configs as they were stale and provided little to no value
+
+### Removed
+
 ## [1.19.0]
 
 Today Homina celebrates reaching the milestone of 200+ registered guilds—or 6 000+ players. This project would not have gotten where it is if it wasn't from the constant feedback and support from its users, such as the request of the command `/gr-time-used` under the new name `/time-per-boss`. The command is back with a cleaner UI and more precise calculations. To celebrate the milestone of 6k+ players I've uploaded another code for you on https://hominabot.com
