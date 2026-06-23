@@ -37,6 +37,7 @@ export const BOSS_EMOJIS: Record<string, string> = {
     RogalDornTank: "<:RogalDornTank:1385342727037784174>",
     Screamer: "<:ScreamerKiller:1385342920302788608>",
     Riptide: "<:Riptide:1410163322531217419>",
+    Lion: "<:lion:1518986391667736656>",
 };
 export const UnitIdEmojiMapping: Record<string, string> = {
     // Ultramarines

@@ -46,46 +46,47 @@ describe("utilsSuite - Algebra", () => {
 
     test("getBossEmoji - Should return correct emoji for known bosses", () => {
         expect(getBossEmoji("xxSzarekh")).toBe(
-            "<:Szarekh:1385343132950069278>"
+            "<:Szarekh:1385343132950069278>",
         );
         expect(getBossEmoji("xxTervigon (Leviathan)")).toBe(
-            "<:TyrantLeviathan:1385342042170851334>"
+            "<:TyrantLeviathan:1385342042170851334>",
         );
         expect(getBossEmoji("xxTervigon (Gorgon)")).toBe(
-            "<:TyrantGorgon:1385340907351441619>"
+            "<:TyrantGorgon:1385340907351441619>",
         );
         expect(getBossEmoji("xxTervigon (Kronos)")).toBe(
-            "<:TyrantKronos:1385341128626409522>"
+            "<:TyrantKronos:1385341128626409522>",
         );
         expect(getBossEmoji("xxHive Tyrant (Leviathan)")).toBe(
-            "<:TyrantLeviathan:1385342042170851334>"
+            "<:TyrantLeviathan:1385342042170851334>",
         );
         expect(getBossEmoji("xxHive Tyrant (Gorgon)")).toBe(
-            "<:TyrantGorgon:1385340907351441619>"
+            "<:TyrantGorgon:1385340907351441619>",
         );
         expect(getBossEmoji("xxHive Tyrant (Kronos)")).toBe(
-            "<:TyrantKronos:1385341128626409522>"
+            "<:TyrantKronos:1385341128626409522>",
         );
         expect(getBossEmoji("xxGhazghkull")).toBe(
-            "<:Ghazghkull:1385340195494170664>"
+            "<:Ghazghkull:1385340195494170664>",
         );
         expect(getBossEmoji("xxAvatar")).toBe("<:Avatar:1385338950834716802>");
         expect(getBossEmoji("xxMagnus")).toBe("<:Magnus:1385342412217520379>");
         expect(getBossEmoji("xxMortarion")).toBe(
-            "<:Mortarion:1385342557969453197>"
+            "<:Mortarion:1385342557969453197>",
         );
         expect(getBossEmoji("xxBelisarius")).toBe(
-            "<:Cawl:1385339595578806312>"
+            "<:Cawl:1385339595578806312>",
         );
         expect(getBossEmoji("xxRogal")).toBe(
-            "<:RogalDornTank:1385342727037784174>"
+            "<:RogalDornTank:1385342727037784174>",
         );
         expect(getBossEmoji("xxScreamer-Killer")).toBe(
-            "<:ScreamerKiller:1385342920302788608>"
+            "<:ScreamerKiller:1385342920302788608>",
         );
         expect(getBossEmoji("xxRiptide")).toBe(
-            "<:Riptide:1410163322531217419>"
+            "<:Riptide:1410163322531217419>",
         );
+        expect(getBossEmoji("xxLion")).toBe("<:lion:1518986391667736656>");
     });
 
     test("getBossEmoji - Should return fallback emoji for unknown or malformed input", () => {
