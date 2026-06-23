@@ -67,8 +67,6 @@ window.HOMINA_COMMANDS = [
             { name: "loops-history", desc: "Show how many guild raid loops the guild has completed over the last N seasons.", opts: ["seasons"] },
             { name: "gr-damage-history", desc: "Show a line chart of total guild damage dealt over the last N seasons.", opts: ["seasons"] },
             { name: "season-by-rarity", desc: "Show guild raid stats for each boss at a specific rarity in a given season.", opts: ["*rarity", "*boss-type", "season", "average-method", "sort-by"] },
-            { name: "season-bosses", desc: "Get the guild boss configs for the previous seasons.", opts: ["rarity"] },
-            { name: "season-same", desc: "Get previous guild raid seasons with the same boss config.", opts: ["season"] },
             { name: "meta-team-distribution", desc: "Show the distribution of meta teams in a specific season.", opts: ["season", "rarity"] },
             { name: "season-achievements", desc: "See fun guild-wide superlatives and awards for a season.", opts: ["season"] },
             { name: "track-member", desc: "Track a member's guild raid stats over the last 5 seasons.", opts: ["*member", "rarity", "average-method"] }

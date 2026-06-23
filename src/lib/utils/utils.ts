@@ -115,6 +115,8 @@ export function getBossEmoji(boss: string) {
         return BOSS_EMOJIS.Screamer || "❓";
     } else if (boss.includes("riptide")) {
         return BOSS_EMOJIS.Riptide || "❓";
+    } else if (boss.includes("lion")) {
+        return BOSS_EMOJIS.Lion || "❓";
     } else {
         return "❓";
     }

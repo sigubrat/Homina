@@ -62,8 +62,6 @@ Add the bot to a Discord server, then run `/register` with an API token created 
 - `/loops-history`: Guild raid loops completed over the last N seasons.
 - `/gr-damage-history`: Total guild damage dealt over the last N seasons (line chart).
 - `/season-by-rarity`: Guild raid stats for each boss at a rarity in a season.
-- `/season-bosses`: Guild boss configs for previous seasons.
-- `/season-same`: Previous seasons with the same boss config.
 - `/meta-team-distribution`: Distribution of meta teams in a season.
 - `/season-achievements`: Fun guild-wide superlatives and awards for a season.
 - `/track-member`: Track a member's raid stats over the last 5 seasons.
