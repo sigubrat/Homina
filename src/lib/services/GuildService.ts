@@ -62,9 +62,12 @@ export class GuildService {
             });
         }
         if (!resp.success || !resp.guild) {
-            throw new ExternalApiError("Guild fetch returned unsuccessful response", {
-                context: { discordId },
-            });
+            throw new ExternalApiError(
+                "Guild fetch returned unsuccessful response",
+                {
+                    context: { discordId },
+                },
+            );
         }
 
         return resp.guild.members.map((member) => member.userId);
@@ -116,135 +119,6 @@ export class GuildService {
         return callerGuildId === targetGuildId;
     }
 
-    async getNLastSeasonConfigs(discordId: string, nSeasons: number) {
-        let apikey: string | null;
-        try {
-            apikey = await this.db.getUserToken(discordId);
-        } catch (error) {
-            if (error instanceof BotError) throw error;
-            throw new DatabaseError("Failed to retrieve API token", {
-                cause: error,
-                context: { discordId },
-            });
-        }
-        if (!apikey) throw new NotRegisteredError();
-
-        let currentSeason;
-        try {
-            currentSeason = await this.client.getGuildRaidByCurrentSeason(apikey);
-        } catch (error) {
-            if (error instanceof BotError) throw error;
-            throw new ExternalApiError("Failed to fetch current raid season", {
-                cause: error,
-                context: { discordId },
-            });
-        }
-        if (!currentSeason || !currentSeason.season) {
-            throw new ExternalApiError("No current season data returned", {
-                context: { discordId },
-            });
-        }
-
-        const currentSeasonNumber = currentSeason.season;
-        const seasons: number[] = [];
-        for (let i = nSeasons; i > 0; i--) {
-            if (currentSeasonNumber - i < 70) {
-                break;
-            }
-            seasons.push(currentSeasonNumber - i);
-        }
-        seasons.push(currentSeasonNumber);
-
-        try {
-            const seasonPromises = seasons.map(
-                async (season) =>
-                    await this.client.getGuildRaidBySeason(apikey!, season),
-            );
-            const responses = await Promise.all(seasonPromises);
-
-            return responses.map((resp) => ({
-                config: Number(resp.seasonConfigId.at(-1)),
-                season: resp.season,
-            }));
-        } catch (error) {
-            if (error instanceof BotError) throw error;
-            throw new ExternalApiError("Failed to fetch season configs", {
-                cause: error,
-                context: { discordId },
-            });
-        }
-    }
-
-    async getSeasonsWithSameConfig(
-        discordId: string,
-        nSeasons: number,
-        season: number,
-    ) {
-        let apikey: string | null;
-        try {
-            apikey = await this.db.getUserToken(discordId);
-        } catch (error) {
-            if (error instanceof BotError) throw error;
-            throw new DatabaseError("Failed to retrieve API token", {
-                cause: error,
-                context: { discordId },
-            });
-        }
-        if (!apikey) throw new NotRegisteredError();
-
-        try {
-            const desiredSeason = await this.client.getGuildRaidBySeason(
-                apikey,
-                season,
-            );
-
-            if (!desiredSeason || !desiredSeason.season) {
-                throw new ExternalApiError("No season data returned", {
-                    context: { discordId, season },
-                });
-            }
-
-            const desiredConfig = desiredSeason.seasonConfigId;
-            if (!desiredConfig) {
-                throw new ExternalApiError("No season config found", {
-                    context: { discordId, season },
-                });
-            }
-
-            const currentSeasonNumber = desiredSeason.season;
-            const seasons: number[] = [];
-            for (let i = nSeasons; i > 0; i--) {
-                if (currentSeasonNumber - i < 70) {
-                    break;
-                }
-                seasons.push(currentSeasonNumber - i);
-            }
-
-            const seasonPromises = seasons.map(
-                async (s) =>
-                    await this.client
-                        .getGuildRaidBySeason(apikey!, s)
-                        .catch(() => null),
-            );
-
-            const responses = await Promise.all(seasonPromises);
-
-            return responses
-                .filter(
-                    (resp) =>
-                        resp &&
-                        resp.seasonConfigId.at(-1) === desiredConfig.at(-1),
-                )
-                .map((resp) => resp!.season);
-        } catch (error) {
-            if (error instanceof BotError) throw error;
-            throw new ExternalApiError(
-                `Failed to fetch seasons with same config as season ${season}`,
-                { cause: error, context: { discordId, season } },
-            );
-        }
-    }
-
     async getGuildLevel(discordId: string): Promise<number> {
         let apiKey: string | null;
         try {
@@ -269,9 +143,12 @@ export class GuildService {
             });
         }
         if (!resp.success || !resp.guild) {
-            throw new ExternalApiError("Guild fetch returned unsuccessful response", {
-                context: { discordId },
-            });
+            throw new ExternalApiError(
+                "Guild fetch returned unsuccessful response",
+                {
+                    context: { discordId },
+                },
+            );
         }
         return resp.guild.level;
     }
