@@ -87,7 +87,7 @@ export function mapTierToRarity(
 export function getBossEmoji(boss: string) {
     boss = boss.toLowerCase();
 
-    if (boss.includes("szarekh")) {
+    if (boss.includes("szarekh") || boss.includes("silentking")) {
         return BOSS_EMOJIS.Szarekh || "❓";
     } else if (boss.includes("tervigon")) {
         if (boss.includes("leviathan"))
