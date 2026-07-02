@@ -25,235 +25,245 @@ export const data = new SlashCommandBuilder()
         "Get an overview of how many guild raid tokens and bombs each member has available",
     );
 
-export async function execute(interaction: ChatInputCommandInteraction) {
-    await interaction.deferReply();
-
+export async function renderAvailabilityMessage(
+    ownerUserId: string,
+): Promise<{ embeds: EmbedBuilder[] }> {
     const service = new GuildService();
     const availabilityService = new AvailabilityService();
+
+    let result =
+        await availabilityService.getAvailableTokensAndBombsWithMetadata(
+            ownerUserId,
+        );
+
+    if (Object.keys(result).length === 0) {
+        return {
+            embeds: [
+                new EmbedBuilder()
+                    .setColor("#ff0000")
+                    .setDescription(
+                        "No data found for the current season. Ensure you are registered and have the correct permissions.",
+                    ),
+            ],
+        };
+    }
+
+    const players = await service.fetchGuildMembers(ownerUserId);
+
+    // Replace User IDs with display names in the result
+    result = replaceUserIdKeysWithDisplayNames(result, players, true);
+
+    // Add players who have not used any tokens or bombs yet
+    const playersNotParticipated = players.filter(
+        (player) => !result[player.displayName],
+    );
+
+    playersNotParticipated.forEach((player) => {
+        result[player.displayName] = {
+            tokens: 3,
+            bombs: 1,
+            tokenCooldown: undefined,
+            bombCooldown: undefined,
+        };
+    });
+
+    const totalTokens = Object.values(result).reduce(
+        (acc, available) => acc + available.tokens,
+        0,
+    );
+
+    const formattedTotalTokens = `${miscEmojis.raidToken} \`${totalTokens}/${
+        players.length * 3
+    }\``;
+
+    const totalBombs = Object.values(result).reduce(
+        (acc, available) => acc + available.bombs,
+        0,
+    );
+
+    let maxBombs = Object.keys(result).length;
+    maxBombs = maxBombs > 30 ? 30 : maxBombs;
+
+    const formattedTotalBombs = `${miscEmojis.bomb} \`${totalBombs}/${maxBombs}\``;
+
+    const [guildLevel, bossUnits] = await Promise.all([
+        service.getGuildLevel(ownerUserId),
+        availabilityService.getCurrentBossUnits(ownerUserId),
+    ]);
+    const bombEstimate =
+        totalBombs > 0 && guildLevel
+            ? estimateBombDamage(totalBombs, guildLevel)
+            : null;
+
+    const table = Object.entries(result)
+        .map(([userId, available]) => {
+            let tokenIcon: string;
+            if (available.tokens === 0) {
+                tokenIcon = "❌";
+            } else if (available.tokens === 3) {
+                tokenIcon = "⚠️";
+            } else {
+                tokenIcon = "✅";
+            }
+            let nToken: string;
+            switch (available.tokens) {
+                case 0:
+                    nToken = "0";
+                    break;
+                case 1:
+                    nToken = "⅓";
+                    break;
+                case 2:
+                    nToken = "⅔";
+                    break;
+                default:
+                    nToken = "3⁄3";
+                    break;
+            }
+
+            if (!available.tokenCooldown) available.tokenCooldown = "NONE..";
+            else {
+                available.tokenCooldown = available.tokenCooldown
+                    .slice(0, -4)
+                    .replace(" ", "");
+            }
+
+            const tokenStatus = `${tokenIcon} ${nToken} \`${available.tokenCooldown}\``;
+
+            const bombIcon = available.bombs > 0 ? "✅" : `❌`;
+
+            let bombStatus: string;
+            if (!available.bombCooldown) {
+                bombStatus = `${bombIcon} \`READY..\``;
+            } else {
+                bombStatus = `${bombIcon} \`${
+                    available.bombs > 0 ? "+" : "-"
+                }${available.bombCooldown.slice(0, -4).replace(" ", "")}\``;
+            }
+
+            return {
+                text: `${tokenStatus} - ${bombStatus} - ${userId}`,
+                tokens: available.tokens,
+            };
+        })
+        .sort((a, b) => {
+            const byTokens = b.tokens - a.tokens;
+            if (byTokens !== 0) return byTokens;
+            return toMinutes(a.text) - toMinutes(b.text);
+        })
+        .map((item) => item.text);
+
+    if (table.length === 0) {
+        return {
+            embeds: [
+                new EmbedBuilder()
+                    .setColor("#ff0000")
+                    .setDescription(
+                        "No members have available tokens or bombs right now.",
+                    ),
+            ],
+        };
+    }
+
+    const embed = new EmbedBuilder()
+        .setColor("#0099ff")
+        .setTitle("Available Tokens and Bombs")
+        .setDescription(
+            "Here is the list of members with available tokens and bombs.\n\n" +
+                "Note that the token cooldowns have an inherit uncertainty due to the nature of the available data for the calculation.\nIn certain cases the cooldown might not be accurate.\n\n" +
+                "First values are tokens, second values are bombs, then usernames.",
+        )
+        .setTimestamp()
+        .setFooter({
+            text: "Data fetched from the guild raid API.\n(NB! Inaccuracies may occur for users who have joined mid-season)\nReferral code: HUG-44-CAN if you want to support the bot development",
+        });
+
+    for (let i = 0; i < table.length; i += 10) {
+        embed.addFields({
+            name: "",
+            value: table.slice(i, i + 10).join("\n"),
+            inline: false,
+        });
+    }
+
+    embed.addFields(
+        {
+            name: "Total tokens",
+            value: formattedTotalTokens,
+            inline: true,
+        },
+        {
+            name: "Total bombs",
+            value: formattedTotalBombs,
+            inline: true,
+        },
+    );
+
+    if (bombEstimate) {
+        embed.addFields({
+            name: "Estimated total bomb damage based on your guild level and available bombs",
+            value: `Min: \`${bombEstimate.minDamage.toLocaleString()}\` \nAvg: \`${bombEstimate.avgDamage.toLocaleString()}\` \nMax: \`${bombEstimate.maxDamage.toLocaleString()}\``,
+            inline: false,
+        });
+    }
+
+    if (totalBombs > 0 && guildLevel && bossUnits) {
+        embed.addFields({
+            name: "Boss kill chance with available bombs",
+            value:
+                (bossUnits.some((u) => u.encounterType === EncounterType.BOSS)
+                    ? ""
+                    : `${bossUnits[0]?.type ?? "Boss"}: \`Full HP\`\n`) +
+                bossUnits
+                    .map((unit) => {
+                        const label =
+                            unit.encounterType === EncounterType.BOSS
+                                ? unit.type
+                                : `${getPrimeDisplayName(unit.unitId)}`;
+                        if (unit.remainingHp === 0) {
+                            return `${label}: \`Dead ☠️\``;
+                        }
+                        const prob = estimateBombKillProbability(
+                            unit.remainingHp,
+                            totalBombs,
+                            guildLevel,
+                        );
+                        const probDisplay =
+                            prob === 0
+                                ? "Not possible ❌"
+                                : `${(prob * 100).toFixed(1)}%`;
+                        return `${label}: \`${unit.remainingHp.toLocaleString()} HP\` → \`${probDisplay}\``;
+                    })
+                    .join("\n") +
+                Array.from({
+                    length:
+                        2 -
+                        bossUnits.filter(
+                            (u) => u.encounterType === EncounterType.SIDE_BOSS,
+                        ).length,
+                })
+                    .map(
+                        () => `${bossUnits[0]?.type} UnknownPrime: \`Full HP\``,
+                    )
+                    .join("\n")
+                    .replace(/^(?=.)/, "\n"),
+            inline: false,
+        });
+    }
+
+    return { embeds: [embed] };
+}
+
+export async function execute(interaction: ChatInputCommandInteraction) {
+    await interaction.deferReply();
 
     logger.info(
         `${interaction.user.username} attempting to use /available-tokens-bombs`,
     );
 
     try {
-        let result =
-            await availabilityService.getAvailableTokensAndBombsWithMetadata(
-                interaction.user.id,
-            );
-
-        if (Object.keys(result).length === 0) {
-            await interaction.editReply({
-                content:
-                    "No data found for the current season. Ensure you are registered and have the correct permissions.",
-            });
-            return;
-        }
-
-        const players = await service.fetchGuildMembers(interaction.user.id);
-
-        // Replace User IDs with display names in the result
-        result = replaceUserIdKeysWithDisplayNames(result, players, true);
-
-        // Add players who have not used any tokens or bombs yet
-        const playersNotParticipated = players.filter(
-            (player) => !result[player.displayName],
-        );
-
-        playersNotParticipated.forEach((player) => {
-            result[player.displayName] = {
-                tokens: 3,
-                bombs: 1,
-                tokenCooldown: undefined,
-                bombCooldown: undefined,
-            };
-        });
-
-        const totalTokens = Object.values(result).reduce(
-            (acc, available) => acc + available.tokens,
-            0,
-        );
-
-        const formattedTotalTokens = `${miscEmojis.raidToken} \`${totalTokens}/${
-            players.length * 3
-        }\``;
-
-        const totalBombs = Object.values(result).reduce(
-            (acc, available) => acc + available.bombs,
-            0,
-        );
-
-        let maxBombs = Object.keys(result).length;
-        maxBombs = maxBombs > 30 ? 30 : maxBombs;
-
-        const formattedTotalBombs = `${miscEmojis.bomb} \`${totalBombs}/${maxBombs}\``;
-
-        const [guildLevel, bossUnits] = await Promise.all([
-            service.getGuildLevel(interaction.user.id),
-            availabilityService.getCurrentBossUnits(interaction.user.id),
-        ]);
-        const bombEstimate =
-            totalBombs > 0 && guildLevel
-                ? estimateBombDamage(totalBombs, guildLevel)
-                : null;
-
-        const table = Object.entries(result)
-            .map(([userId, available]) => {
-                let tokenIcon: string;
-                if (available.tokens === 0) {
-                    tokenIcon = "❌";
-                } else if (available.tokens === 3) {
-                    tokenIcon = "⚠️";
-                } else {
-                    tokenIcon = "✅";
-                }
-                let nToken: string;
-                switch (available.tokens) {
-                    case 0:
-                        nToken = "0";
-                        break;
-                    case 1:
-                        nToken = "⅓";
-                        break;
-                    case 2:
-                        nToken = "⅔";
-                        break;
-                    default:
-                        nToken = "3⁄3";
-                        break;
-                }
-
-                if (!available.tokenCooldown)
-                    available.tokenCooldown = "NONE..";
-                else {
-                    available.tokenCooldown = available.tokenCooldown
-                        .slice(0, -4)
-                        .replace(" ", "");
-                }
-
-                const tokenStatus = `${tokenIcon} ${nToken} \`${available.tokenCooldown}\``;
-
-                const bombIcon = available.bombs > 0 ? "✅" : `❌`;
-
-                let bombStatus: string;
-                if (!available.bombCooldown) {
-                    bombStatus = `${bombIcon} \`READY..\``;
-                } else {
-                    bombStatus = `${bombIcon} \`${
-                        available.bombs > 0 ? "+" : "-"
-                    }${available.bombCooldown.slice(0, -4).replace(" ", "")}\``;
-                }
-
-                return {
-                    text: `${tokenStatus} - ${bombStatus} - ${userId}`,
-                    tokens: available.tokens,
-                };
-            })
-            .sort((a, b) => {
-                const byTokens = b.tokens - a.tokens;
-                if (byTokens !== 0) return byTokens;
-                return toMinutes(a.text) - toMinutes(b.text);
-            })
-            .map((item) => item.text);
-
-        if (table.length === 0) {
-            await interaction.editReply({
-                content: "No members have available tokens or bombs right now.",
-            });
-            return;
-        }
-
-        const embed = new EmbedBuilder()
-            .setColor("#0099ff")
-            .setTitle("Available Tokens and Bombs")
-            .setDescription(
-                "Here is the list of members with available tokens and bombs.\n\n" +
-                    "Note that the token cooldowns have an inherit uncertainty due to the nature of the available data for the calculation.\nIn certain cases the cooldown might not be accurate.\n\n" +
-                    "First values are tokens, second values are bombs, then usernames.",
-            )
-            .setTimestamp()
-            .setFooter({
-                text: "Data fetched from the guild raid API.\n(NB! Inaccuracies may occur for users who have joined mid-season)\nReferral code: HUG-44-CAN if you want to support the bot development",
-            });
-
-        for (let i = 0; i < table.length; i += 10) {
-            embed.addFields({
-                name: "",
-                value: table.slice(i, i + 10).join("\n"),
-                inline: false,
-            });
-        }
-
-        embed.addFields(
-            {
-                name: "Total tokens",
-                value: formattedTotalTokens,
-                inline: true,
-            },
-            {
-                name: "Total bombs",
-                value: formattedTotalBombs,
-                inline: true,
-            },
-        );
-
-        if (bombEstimate) {
-            embed.addFields({
-                name: "Estimated total bomb damage based on your guild level and available bombs",
-                value: `Min: \`${bombEstimate.minDamage.toLocaleString()}\` \nAvg: \`${bombEstimate.avgDamage.toLocaleString()}\` \nMax: \`${bombEstimate.maxDamage.toLocaleString()}\``,
-                inline: false,
-            });
-        }
-
-        if (totalBombs > 0 && guildLevel && bossUnits) {
-            embed.addFields({
-                name: "Boss kill chance with available bombs",
-                value:
-                    (bossUnits.some(
-                        (u) =>
-                            u.encounterType === EncounterType.BOSS,
-                    )
-                        ? ""
-                        : `${bossUnits[0]?.type ?? "Boss"}: \`Full HP\`\n`) +
-                    bossUnits
-                        .map((unit) => {
-                            const label =
-                                unit.encounterType === EncounterType.BOSS
-                                    ? unit.type
-                                    : `${getPrimeDisplayName(unit.unitId)}`;
-                            if (unit.remainingHp === 0) {
-                                return `${label}: \`Dead ☠️\``;
-                            }
-                            const prob = estimateBombKillProbability(
-                                unit.remainingHp,
-                                totalBombs,
-                                guildLevel,
-                            );
-                            const probDisplay =
-                                prob === 0
-                                    ? "Not possible ❌"
-                                    : `${(prob * 100).toFixed(1)}%`;
-                            return `${label}: \`${unit.remainingHp.toLocaleString()} HP\` → \`${probDisplay}\``;
-                        })
-                        .join("\n") +
-                    Array.from({
-                        length:
-                            2 -
-                            bossUnits.filter(
-                                (u) =>
-                                    u.encounterType === EncounterType.SIDE_BOSS,
-                            ).length,
-                    })
-                        .map(
-                            () =>
-                                `${bossUnits[0]?.type} UnknownPrime: \`Full HP\``,
-                        )
-                        .join("\n")
-                        .replace(/^(?=.)/, "\n"),
-                inline: false,
-            });
-        }
-
-        await interaction.editReply({ embeds: [embed] });
+        const payload = await renderAvailabilityMessage(interaction.user.id);
+        await interaction.editReply(payload);
     } catch (error) {
         await handleCommandError(interaction, error);
     }

@@ -74,7 +74,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             rarity,
         );
 
-        if (Object.keys(result).length === 0) {
+        if (!result || Object.keys(result).length === 0) {
             await interaction.editReply({
                 content:
                     "No data found for the specified season. Ensure you are registered and have the correct permissions.",
