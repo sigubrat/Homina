@@ -24,6 +24,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             void dbController.logEvent(BotEventType.USER_DELETE, "delete", {
                 userId: interaction.user.id,
             });
+            // Pause any schedules owned by this user
+            await dbController.pauseSchedulesByOwner(
+                interaction.user.id,
+                "owner_deleted",
+            );
         }
 
         const response = result

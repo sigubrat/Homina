@@ -11,6 +11,13 @@ export const MAX_TOKENS_PER_SEASON = 28;
 
 export const STANDARD_FOOTER_TEXT = "Referral code: HUG-44-CAN";
 
+// Scheduled commands configuration
+export const MAX_SCHEDULES_PER_GUILD = 10;
+export const MIN_SCHEDULE_INTERVAL_HOURS = 1;
+export const MAX_SCHEDULE_INTERVAL_HOURS = 168;
+export const SCHEDULER_TICK_CRON = "* * * * *";
+export const SCHEDULE_RETRY_MINUTES = 15;
+
 // Season 85 starts on October 8, 2025, at 10:00 AM UTC
 export const SEASON_85_SEASON_START = new Date(2025, 9, 8, 10, 0, 0);
 

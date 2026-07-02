@@ -209,6 +209,79 @@ export class DatabaseController {
             },
         );
 
+        // Scheduled commands table - stores periodic command execution schedules
+        this.sequelize.define(
+            "scheduledCommands",
+            {
+                id: {
+                    type: DataTypes.INTEGER,
+                    autoIncrement: true,
+                    primaryKey: true,
+                },
+                guildId: {
+                    type: DataTypes.STRING,
+                    allowNull: false,
+                },
+                discordGuildId: {
+                    type: DataTypes.STRING,
+                    allowNull: false,
+                },
+                channelId: {
+                    type: DataTypes.STRING,
+                    allowNull: false,
+                },
+                commandName: {
+                    type: DataTypes.STRING,
+                    allowNull: false,
+                },
+                optionsJson: {
+                    type: DataTypes.TEXT,
+                    allowNull: true,
+                },
+                intervalHours: {
+                    type: DataTypes.INTEGER,
+                    allowNull: false,
+                },
+                ownerUserId: {
+                    type: DataTypes.STRING,
+                    allowNull: false,
+                },
+                nextRunAt: {
+                    type: DataTypes.DATE,
+                    allowNull: false,
+                },
+                lastRunAt: {
+                    type: DataTypes.DATE,
+                    allowNull: true,
+                },
+                lastStatus: {
+                    type: DataTypes.STRING,
+                    allowNull: true,
+                },
+                lastError: {
+                    type: DataTypes.STRING,
+                    allowNull: true,
+                },
+                pausedReason: {
+                    type: DataTypes.STRING,
+                    allowNull: true,
+                },
+            },
+            {
+                indexes: [
+                    {
+                        name: "scheduled_commands_next_run",
+                        fields: ["nextRunAt", "pausedReason"],
+                    },
+                    {
+                        name: "scheduled_commands_unique_channel_command",
+                        fields: ["discordGuildId", "channelId", "commandName"],
+                        unique: true,
+                    },
+                ],
+            },
+        );
+
         //**
         // SCHEMA RELATIONSHIPS
         //  */
@@ -492,8 +565,7 @@ export class DatabaseController {
             const updates: Record<string, unknown> = {
                 lastUsed: new Date(),
             };
-            if (data.nickname !== undefined)
-                updates.nickname = data.nickname;
+            if (data.nickname !== undefined) updates.nickname = data.nickname;
             if (data.playerToken !== undefined) {
                 updates.playerToken = data.playerToken
                     ? CryptoService.encrypt(data.playerToken)
@@ -981,6 +1053,146 @@ export class DatabaseController {
             },
         });
         return (res ?? 0) > 0;
+    }
+
+    // ==================== Scheduled Commands ====================
+
+    public async createSchedule(data: {
+        guildId: string;
+        discordGuildId: string;
+        channelId: string;
+        commandName: string;
+        optionsJson: string | null;
+        intervalHours: number;
+        ownerUserId: string;
+        nextRunAt: Date;
+    }): Promise<any> {
+        const model = this.sequelize.models["scheduledCommands"];
+        return model?.create(data as any);
+    }
+
+    public async listSchedulesByDiscordGuild(
+        discordGuildId: string,
+        guildId?: string,
+    ): Promise<any[]> {
+        const model = this.sequelize.models["scheduledCommands"];
+        const where: any = { discordGuildId };
+        if (guildId) where.guildId = guildId;
+        const results = await model?.findAll({
+            where,
+            order: [["createdAt", "ASC"]],
+        });
+        return results?.map((r) => r.get({ plain: true })) ?? [];
+    }
+
+    public async deleteSchedule(
+        id: number,
+        discordGuildId: string,
+        guildId?: string,
+    ): Promise<boolean> {
+        const model = this.sequelize.models["scheduledCommands"];
+        const where: any = { id, discordGuildId };
+        if (guildId) where.guildId = guildId;
+        const res = await model?.destroy({ where });
+        return (res ?? 0) > 0;
+    }
+
+    public async getDueSchedules(limit: number = 50): Promise<any[]> {
+        const model = this.sequelize.models["scheduledCommands"];
+        const results = await model?.findAll({
+            where: {
+                pausedReason: { [Op.is]: null as any },
+                nextRunAt: { [Op.lte]: new Date() },
+            },
+            order: [["nextRunAt", "ASC"]],
+            limit,
+        });
+        return results?.map((r) => r.get({ plain: true })) ?? [];
+    }
+
+    public async updateSchedule(
+        id: number,
+        patch: Record<string, any>,
+    ): Promise<void> {
+        const model = this.sequelize.models["scheduledCommands"];
+        await model?.update(patch, { where: { id } });
+    }
+
+    public async pauseSchedule(id: number, reason: string): Promise<void> {
+        await this.updateSchedule(id, {
+            pausedReason: reason,
+            lastStatus: "paused",
+        });
+    }
+
+    public async resumeSchedule(
+        id: number,
+        discordGuildId: string,
+        guildId?: string,
+    ): Promise<boolean> {
+        const model = this.sequelize.models["scheduledCommands"];
+        const where: any = {
+            id,
+            discordGuildId,
+            pausedReason: { [Op.not]: null as any },
+        };
+        if (guildId) where.guildId = guildId;
+        const [count] = (await model?.update(
+            {
+                pausedReason: null,
+                lastStatus: null,
+                nextRunAt: new Date(Date.now() + 60 * 60 * 1000),
+            },
+            { where },
+        )) ?? [0];
+        return count > 0;
+    }
+
+    public async getScheduleCountByDiscordGuild(
+        discordGuildId: string,
+        guildId?: string,
+    ): Promise<number> {
+        const model = this.sequelize.models["scheduledCommands"];
+        const where: any = { discordGuildId };
+        if (guildId) where.guildId = guildId;
+        return (await model?.count({ where })) ?? 0;
+    }
+
+    public async pauseSchedulesByOwner(
+        ownerUserId: string,
+        reason: string,
+    ): Promise<number> {
+        const model = this.sequelize.models["scheduledCommands"];
+        const [count] = (await model?.update(
+            { pausedReason: reason, lastStatus: "paused" },
+            { where: { ownerUserId, pausedReason: { [Op.is]: null as any } } },
+        )) ?? [0];
+        return count;
+    }
+
+    public async reconcileOverdueSchedules(): Promise<number> {
+        const model = this.sequelize.models["scheduledCommands"];
+        const overdue = await model?.findAll({
+            where: {
+                pausedReason: { [Op.is]: null as any },
+                nextRunAt: { [Op.lt]: new Date() },
+            },
+        });
+
+        if (!overdue || overdue.length === 0) return 0;
+
+        for (const row of overdue) {
+            const intervalHours = row.get("intervalHours") as number;
+            await model?.update(
+                {
+                    nextRunAt: new Date(
+                        Date.now() + intervalHours * 60 * 60 * 1000,
+                    ),
+                },
+                { where: { id: row.get("id") } },
+            );
+        }
+        return overdue.length;
     }
 }
 

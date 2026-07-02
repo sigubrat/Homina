@@ -6,6 +6,7 @@ import { getAllCommands } from "@/lib/utils/commandUtils";
 import { InfisicalClient } from "@/client/InfisicalClient";
 import { FatalError } from "@/models/errors/FatalError";
 import { CleanupJob } from "@/lib/jobs/CleanupJob";
+import { ScheduledCommandsJob } from "@/lib/jobs/ScheduledCommandsJob";
 import { IClient } from "@/models/types/IClient";
 
 console.log("Starting Discord bot...");
@@ -73,6 +74,10 @@ const startBot = async () => {
         // Start scheduled cleanup job
         const cleanupJob = new CleanupJob(client);
         cleanupJob.start();
+
+        // Start scheduled commands job
+        const scheduledCommandsJob = new ScheduledCommandsJob(client);
+        await scheduledCommandsJob.start();
     } catch (error) {
         if (error instanceof FatalError) {
             console.error(`Fatal: ${error.message}`);
