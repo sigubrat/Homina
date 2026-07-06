@@ -46,7 +46,7 @@ describe("utilsSuite - Algebra", () => {
 
     test("getBossEmoji - Should return correct emoji for known bosses", () => {
         expect(getBossEmoji("xxSzarekh")).toBe(
-            "<:Szarekh:1385343132950069278>",
+            "<:Szarekh:1518998569556902098>",
         );
         expect(getBossEmoji("xxTervigon (Leviathan)")).toBe(
             "<:TyrantLeviathan:1385342042170851334>",
@@ -70,21 +70,21 @@ describe("utilsSuite - Algebra", () => {
             "<:Ghazghkull:1385340195494170664>",
         );
         expect(getBossEmoji("xxAvatar")).toBe("<:Avatar:1385338950834716802>");
-        expect(getBossEmoji("xxMagnus")).toBe("<:Magnus:1385342412217520379>");
+        expect(getBossEmoji("xxMagnus")).toBe("<:Magnus:1518998803280035851>");
         expect(getBossEmoji("xxMortarion")).toBe(
-            "<:Mortarion:1385342557969453197>",
+            "<:Mortarion:1518998730370453635>",
         );
         expect(getBossEmoji("xxBelisarius")).toBe(
             "<:Cawl:1385339595578806312>",
         );
         expect(getBossEmoji("xxRogal")).toBe(
-            "<:RogalDornTank:1385342727037784174>",
+            "<:RogalDornTank:1518998645071155271>",
         );
         expect(getBossEmoji("xxScreamer-Killer")).toBe(
-            "<:ScreamerKiller:1385342920302788608>",
+            "<:screamerkiller:1518998212847865866>",
         );
         expect(getBossEmoji("xxRiptide")).toBe(
-            "<:Riptide:1410163322531217419>",
+            "<:riptide:1518998382943670293>",
         );
         expect(getBossEmoji("xxLion")).toBe("<:lion:1518986391667736656>");
     });
