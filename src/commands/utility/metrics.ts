@@ -57,6 +57,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             dailyRevocations,
             dailyCleanups,
             dailyCommandUsage,
+            scheduleMetrics,
         ] = await Promise.all([
             dbController.getCumulativeMetrics(),
             dbController.getCommandUsageCounts(since, 15),
@@ -67,6 +68,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             dbController.getDailyEventCounts(BotEventType.USER_REVOKE, days),
             dbController.getDailyEventCounts(BotEventType.USER_CLEANUP, days),
             dbController.getDailyCommandUsage(days, 10),
+            dbController.getScheduleMetrics(),
         ]);
 
         // Build cumulative overview embed
@@ -246,8 +248,50 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             trendEmbed.setImage("attachment://command-usage.png");
         }
 
+        // Build schedule metrics embed
+        const perCommandLines =
+            scheduleMetrics.perCommand.length > 0
+                ? scheduleMetrics.perCommand
+                      .map(
+                          (c) =>
+                              `• \`/${c.commandName}\` — ${c.count.toLocaleString()}`,
+                      )
+                      .join("\n")
+                : "No scheduled commands yet.";
+
+        const scheduleEmbed = new EmbedBuilder()
+            .setColor(0x9b59b6)
+            .setTitle("Scheduled Commands")
+            .addFields([
+                {
+                    name: "Total Schedules",
+                    value: scheduleMetrics.totalSchedules.toLocaleString(),
+                    inline: true,
+                },
+                {
+                    name: "Active",
+                    value: scheduleMetrics.activeSchedules.toLocaleString(),
+                    inline: true,
+                },
+                {
+                    name: "Paused",
+                    value: scheduleMetrics.pausedSchedules.toLocaleString(),
+                    inline: true,
+                },
+                {
+                    name: "Discord Servers Using Schedules",
+                    value: scheduleMetrics.distinctDiscordGuilds.toLocaleString(),
+                    inline: true,
+                },
+                {
+                    name: "By Command",
+                    value: perCommandLines,
+                    inline: false,
+                },
+            ]);
+
         await interaction.editReply({
-            embeds: [overviewEmbed, commandEmbed, trendEmbed],
+            embeds: [overviewEmbed, commandEmbed, trendEmbed, scheduleEmbed],
             files,
         });
     } catch (error) {

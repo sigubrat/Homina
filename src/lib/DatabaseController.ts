@@ -1193,6 +1193,64 @@ export class DatabaseController {
         return (await model?.count({ where })) ?? 0;
     }
 
+    public async getScheduleMetrics(): Promise<{
+        totalSchedules: number;
+        activeSchedules: number;
+        pausedSchedules: number;
+        distinctDiscordGuilds: number;
+        perCommand: { commandName: string; count: number }[];
+    }> {
+        try {
+            const model = this.sequelize.models["scheduledCommands"];
+            if (!model) {
+                return {
+                    totalSchedules: 0,
+                    activeSchedules: 0,
+                    pausedSchedules: 0,
+                    distinctDiscordGuilds: 0,
+                    perCommand: [],
+                };
+            }
+
+            const totalSchedules = await model.count();
+            const pausedSchedules = await model.count({
+                where: { pausedReason: { [Op.not]: null as any } },
+            });
+            const activeSchedules = totalSchedules - pausedSchedules;
+
+            const distinctDiscordGuilds =
+                (await model.count({
+                    distinct: true,
+                    col: "discordGuildId",
+                })) ?? 0;
+
+            const perCommandRows = (await this.sequelize.query(
+                `SELECT "commandName", COUNT(*)::int AS count
+                 FROM "scheduledCommands"
+                 GROUP BY "commandName"
+                 ORDER BY count DESC`,
+                { type: QueryTypes.SELECT },
+            )) as { commandName: string; count: number }[];
+
+            return {
+                totalSchedules,
+                activeSchedules,
+                pausedSchedules,
+                distinctDiscordGuilds,
+                perCommand: perCommandRows,
+            };
+        } catch (error) {
+            logger.error(error, "Error fetching schedule metrics");
+            return {
+                totalSchedules: 0,
+                activeSchedules: 0,
+                pausedSchedules: 0,
+                distinctDiscordGuilds: 0,
+                perCommand: [],
+            };
+        }
+    }
+
     public async reconcileOverdueSchedules(): Promise<number> {
         const model = this.sequelize.models["scheduledCommands"];
         const overdue = await model?.findAll({
