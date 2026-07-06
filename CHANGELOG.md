@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.21.0]
+
+After multiple requests I can now happily announce that the feature 'automatic command usage' is available in a sort of early-access. Initially it will feature two of the most commonly used commands: `/gr-availability` and `/season-participation` but more can be added later so reach out in the support discord server regarding what commands you want to see.
+
+Also, Norway made it to quarter finals in the world cup for the first time so let's celebrate our MVP goalkeeper Nyland with this little code: NYLANDMVP
+
+### Added
+
+- Added `/schedule` command that lets you automate command usage in your discord server
+- `/schedule` comes with multiple subcommands that lets you manage your scheduled commands:
+  - `/schedule gr-availability/season-participation` - Schedule the `/gr-availability` or `/season-participation` command to run automatically every N hours in a specific channel
+  - `/schedule list` displays all scheduled commands
+  - `/schedule remove` select a scheduled command to remove
+  - `/schedule test` instantly 'fire' the scheduled commands to see what it looks like without having to wait 1 hour
+  - A scheduled command can only be scheduled for 1 channel at once
+  - Only users with the 'ManageGuild' permission in the discord server have access to the schedule commands
+
 ## [1.20.0]
 
 ### Added
