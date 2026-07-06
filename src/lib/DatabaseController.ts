@@ -273,11 +273,6 @@ export class DatabaseController {
                         name: "scheduled_commands_next_run",
                         fields: ["nextRunAt", "pausedReason"],
                     },
-                    {
-                        name: "scheduled_commands_unique_channel_command",
-                        fields: ["discordGuildId", "channelId", "commandName"],
-                        unique: true,
-                    },
                 ],
             },
         );
@@ -1097,6 +1092,76 @@ export class DatabaseController {
         return (res ?? 0) > 0;
     }
 
+    public async deleteScheduleById(id: number): Promise<void> {
+        const model = this.sequelize.models["scheduledCommands"];
+        await model?.destroy({ where: { id } });
+    }
+
+    public async deleteSchedulesByOwner(ownerUserId: string): Promise<number> {
+        const model = this.sequelize.models["scheduledCommands"];
+        return (await model?.destroy({ where: { ownerUserId } })) ?? 0;
+    }
+
+    public async reassignSchedulesByOwner(
+        oldOwnerUserId: string,
+        newOwnerUserId: string,
+    ): Promise<number> {
+        const model = this.sequelize.models["scheduledCommands"];
+        const [count] = (await model?.update(
+            { ownerUserId: newOwnerUserId },
+            { where: { ownerUserId: oldOwnerUserId } },
+        )) ?? [0];
+        return count;
+    }
+
+    public async findAnotherTokenHolderInGuild(
+        guildId: string,
+        excludeUserId: string,
+    ): Promise<string | null> {
+        const model = this.sequelize.models["discordApiTokenMappings"];
+        const result = await model?.findOne({
+            where: {
+                guildId,
+                userId: { [Op.ne]: excludeUserId },
+            },
+            attributes: ["userId"],
+            order: [["tokenLastUsed", "DESC"]],
+        });
+        return (result?.get("userId") as string) ?? null;
+    }
+
+    public async pauseSchedule(id: number, reason: string): Promise<void> {
+        await this.updateSchedule(id, {
+            pausedReason: reason,
+            lastStatus: "paused",
+            lastError: reason,
+        });
+    }
+
+    public async resumeSchedulesByOwner(
+        ownerUserId: string,
+        discordGuildId: string,
+        guildId?: string,
+    ): Promise<number> {
+        const model = this.sequelize.models["scheduledCommands"];
+        const where: any = {
+            ownerUserId,
+            discordGuildId,
+            pausedReason: { [Op.not]: null as any },
+        };
+        if (guildId) where.guildId = guildId;
+        const [count] = (await model?.update(
+            {
+                pausedReason: null,
+                lastStatus: null,
+                lastError: null,
+                nextRunAt: new Date(),
+            },
+            { where },
+        )) ?? [0];
+        return count;
+    }
+
     public async getDueSchedules(limit: number = 50): Promise<any[]> {
         const model = this.sequelize.models["scheduledCommands"];
         const results = await model?.findAll({
@@ -1118,36 +1183,6 @@ export class DatabaseController {
         await model?.update(patch, { where: { id } });
     }
 
-    public async pauseSchedule(id: number, reason: string): Promise<void> {
-        await this.updateSchedule(id, {
-            pausedReason: reason,
-            lastStatus: "paused",
-        });
-    }
-
-    public async resumeSchedule(
-        id: number,
-        discordGuildId: string,
-        guildId?: string,
-    ): Promise<boolean> {
-        const model = this.sequelize.models["scheduledCommands"];
-        const where: any = {
-            id,
-            discordGuildId,
-            pausedReason: { [Op.not]: null as any },
-        };
-        if (guildId) where.guildId = guildId;
-        const [count] = (await model?.update(
-            {
-                pausedReason: null,
-                lastStatus: null,
-                nextRunAt: new Date(Date.now() + 60 * 60 * 1000),
-            },
-            { where },
-        )) ?? [0];
-        return count > 0;
-    }
-
     public async getScheduleCountByDiscordGuild(
         discordGuildId: string,
         guildId?: string,
@@ -1156,18 +1191,6 @@ export class DatabaseController {
         const where: any = { discordGuildId };
         if (guildId) where.guildId = guildId;
         return (await model?.count({ where })) ?? 0;
-    }
-
-    public async pauseSchedulesByOwner(
-        ownerUserId: string,
-        reason: string,
-    ): Promise<number> {
-        const model = this.sequelize.models["scheduledCommands"];
-        const [count] = (await model?.update(
-            { pausedReason: reason, lastStatus: "paused" },
-            { where: { ownerUserId, pausedReason: { [Op.is]: null as any } } },
-        )) ?? [0];
-        return count;
     }
 
     public async reconcileOverdueSchedules(): Promise<number> {

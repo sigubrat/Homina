@@ -80,9 +80,9 @@ export class ScheduledCommandsJob {
         const entry = SCHEDULABLE_MAP.get(commandName);
         if (!entry) {
             logger.warn(
-                `Schedulable command "${commandName}" not found in registry (schedule #${id})`,
+                `Schedulable command "${commandName}" not found in registry (schedule #${id}) — deleting.`,
             );
-            await dbController.pauseSchedule(id, "command_removed");
+            await dbController.deleteScheduleById(id);
             return;
         }
 
@@ -91,21 +91,19 @@ export class ScheduledCommandsJob {
         try {
             const fetched = await this.client.channels.fetch(channelId);
             if (!fetched || !(fetched instanceof TextChannel)) {
-                await this.pauseAndNotify(
+                await this.rescheduleWithError(
                     id,
-                    ownerUserId,
+                    intervalHours,
                     "channel_unavailable",
-                    commandName,
                 );
                 return;
             }
             channel = fetched;
         } catch {
-            await this.pauseAndNotify(
+            await this.rescheduleWithError(
                 id,
-                ownerUserId,
+                intervalHours,
                 "channel_unavailable",
-                commandName,
             );
             return;
         }
@@ -113,12 +111,7 @@ export class ScheduledCommandsJob {
         // Verify owner still has a valid token
         const token = await dbController.getUserToken(ownerUserId);
         if (!token) {
-            await this.pauseAndNotify(
-                id,
-                ownerUserId,
-                "token_invalid",
-                commandName,
-            );
+            await this.pauseAndNotifyTokenInvalid(id, commandName, ownerUserId);
             return;
         }
 
@@ -169,39 +162,25 @@ export class ScheduledCommandsJob {
         const errorMessage =
             error instanceof Error ? error.message : String(error);
 
-        if (error instanceof ExternalApiError) {
-            const status = (error as any).context?.status as number | undefined;
-            if (status === 403) {
-                await this.pauseAndNotify(
-                    id,
-                    ownerUserId,
-                    "token_invalid",
-                    commandName,
-                );
-                return;
-            }
-            // Transient API error — retry sooner
-            const nextRunAt = new Date(
-                Date.now() + SCHEDULE_RETRY_MINUTES * 60 * 1000,
-            );
-            await dbController.updateSchedule(id, {
-                lastRunAt: new Date(),
-                nextRunAt,
-                lastStatus: "error",
-                lastError: errorMessage.slice(0, 255),
-            });
-        } else {
-            // Non-transient or unknown error — normal reschedule
-            const nextRunAt = new Date(
-                Date.now() + intervalHours * 60 * 60 * 1000,
-            );
-            await dbController.updateSchedule(id, {
-                lastRunAt: new Date(),
-                nextRunAt,
-                lastStatus: "error",
-                lastError: errorMessage.slice(0, 255),
-            });
+        if (
+            error instanceof ExternalApiError &&
+            ((error as any).context?.status as number | undefined) === 403
+        ) {
+            await this.pauseAndNotifyTokenInvalid(id, commandName, ownerUserId);
+            return;
         }
+
+        const retrySoon = error instanceof ExternalApiError;
+        const nextRunAt = retrySoon
+            ? new Date(Date.now() + SCHEDULE_RETRY_MINUTES * 60 * 1000)
+            : new Date(Date.now() + intervalHours * 60 * 60 * 1000);
+
+        await dbController.updateSchedule(id, {
+            lastRunAt: new Date(),
+            nextRunAt,
+            lastStatus: "error",
+            lastError: errorMessage.slice(0, 255),
+        });
 
         logger.error(
             error,
@@ -219,25 +198,18 @@ export class ScheduledCommandsJob {
         );
     }
 
-    private async pauseAndNotify(
+    private async pauseAndNotifyTokenInvalid(
         id: number,
-        ownerUserId: string,
-        reason: string,
         commandName: string,
+        ownerUserId: string,
     ): Promise<void> {
-        await dbController.pauseSchedule(id, reason);
-
-        const reasonText =
-            reason === "token_invalid"
-                ? "your API token is no longer valid"
-                : reason === "channel_unavailable"
-                  ? "the target channel is no longer accessible"
-                  : reason;
+        await dbController.pauseSchedule(id, "token_invalid");
 
         try {
             const user = await this.client.users.fetch(ownerUserId);
             await user.send(
-                `⚠️ Your scheduled **/${commandName}** (ID #${id}) has been paused because ${reasonText}. Use \`/schedule resume\` after fixing the issue.`,
+                `⚠️ Your scheduled **/${commandName}** has been paused because your API token is no longer valid. ` +
+                    `Update your token with \`/register\`, then run \`/schedule update-token\` to resume your schedules.`,
             );
         } catch {
             logger.warn(
@@ -245,14 +217,40 @@ export class ScheduledCommandsJob {
             );
         }
 
-        logger.info(`Paused schedule #${id} (reason: ${reason})`);
+        logger.info(`Paused schedule #${id} (reason: token_invalid)`);
         void dbController.logEvent(
             BotEventType.BOT_EVENT,
             "scheduled-command-paused",
             {
                 scheduleId: id,
                 commandName,
-                reason,
+                reason: "token_invalid",
+            },
+        );
+    }
+
+    private async rescheduleWithError(
+        id: number,
+        intervalHours: number,
+        reason: string,
+    ): Promise<void> {
+        const nextRunAt = new Date(Date.now() + intervalHours * 60 * 60 * 1000);
+        await dbController.updateSchedule(id, {
+            lastRunAt: new Date(),
+            nextRunAt,
+            lastStatus: "error",
+            lastError: reason,
+        });
+        logger.warn(
+            `Scheduled command run skipped (schedule #${id}, reason: ${reason})`,
+        );
+        void dbController.logEvent(
+            BotEventType.BOT_EVENT,
+            "scheduled-command-run",
+            {
+                scheduleId: id,
+                status: "error",
+                error: reason,
             },
         );
     }

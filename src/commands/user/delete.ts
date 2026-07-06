@@ -18,17 +18,46 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     logger.info(`${interaction.user.username} attempting to use /delete`);
     try {
+        // Capture the user's Tacticus guild before deletion so we can try to
+        // reassign their schedules to another guild member.
+        const guildId = await dbController.getGuildIdByUserId(
+            interaction.user.id,
+        );
+
         const result = await dbController.deleteUser(interaction.user.id);
 
         if (result) {
             void dbController.logEvent(BotEventType.USER_DELETE, "delete", {
                 userId: interaction.user.id,
             });
-            // Pause any schedules owned by this user
-            await dbController.pauseSchedulesByOwner(
-                interaction.user.id,
-                "owner_deleted",
-            );
+
+            // Try to hand off schedules to another guild member with a token.
+            // Fall back to deletion if no one else in the guild is registered.
+            let handedOff = false;
+            if (guildId) {
+                const newOwner =
+                    await dbController.findAnotherTokenHolderInGuild(
+                        guildId,
+                        interaction.user.id,
+                    );
+                if (newOwner) {
+                    const reassigned =
+                        await dbController.reassignSchedulesByOwner(
+                            interaction.user.id,
+                            newOwner,
+                        );
+                    if (reassigned > 0) {
+                        handedOff = true;
+                        logger.info(
+                            `Reassigned ${reassigned} schedule(s) from ${interaction.user.id} to ${newOwner}`,
+                        );
+                    }
+                }
+            }
+
+            if (!handedOff) {
+                await dbController.deleteSchedulesByOwner(interaction.user.id);
+            }
         }
 
         const response = result

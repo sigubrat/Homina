@@ -10,7 +10,6 @@ import {
     type SeasonParticipationOptions,
 } from "@/commands/guild-raid/seasonParticipation";
 import { Rarity } from "@/models/enums";
-import { MINIMUM_SEASON_THRESHOLD } from "@/lib/configs/constants";
 
 export interface ScheduledContext {
     ownerUserId: string;
@@ -31,6 +30,49 @@ export interface SchedulableEntry {
     renderer: (
         ctx: ScheduledContext,
     ) => Promise<{ embeds: EmbedBuilder[]; files?: AttachmentBuilder[] }>;
+    /**
+     * Optional short human-readable summary of the schedule's options,
+     * used to distinguish multiple schedules of the same command in
+     * list/autocomplete/override UI. Returns empty string when no options.
+     */
+    formatOptions?: (optionsJson: string | null) => string;
+}
+
+/**
+ * Deep-sort object keys and drop nullish values so that two option sets
+ * with the same content but different key order compare equal.
+ */
+export function normalizeOptionsJson(json: string | null): string | null {
+    if (!json) return null;
+    let parsed: unknown;
+    try {
+        parsed = JSON.parse(json);
+    } catch {
+        return json;
+    }
+    const normalized = normalizeValue(parsed);
+    if (
+        normalized === null ||
+        (typeof normalized === "object" &&
+            !Array.isArray(normalized) &&
+            Object.keys(normalized as object).length === 0)
+    ) {
+        return null;
+    }
+    return JSON.stringify(normalized);
+}
+
+function normalizeValue(value: unknown): unknown {
+    if (value === null || value === undefined) return null;
+    if (Array.isArray(value)) return value.map(normalizeValue);
+    if (typeof value === "object") {
+        const entries = Object.entries(value as Record<string, unknown>)
+            .filter(([, v]) => v !== null && v !== undefined)
+            .map(([k, v]) => [k, normalizeValue(v)] as const)
+            .sort(([a], [b]) => a.localeCompare(b));
+        return Object.fromEntries(entries);
+    }
+    return value;
 }
 
 export const SCHEDULABLE: SchedulableEntry[] = [
@@ -87,13 +129,6 @@ export const SCHEDULABLE: SchedulableEntry[] = [
                         .setMinValue(1)
                         .setMaxValue(168),
                 )
-                .addNumberOption((opt) =>
-                    opt
-                        .setName("season")
-                        .setDescription("Season number (defaults to current)")
-                        .setRequired(false)
-                        .setMinValue(MINIMUM_SEASON_THRESHOLD),
-                )
                 .addStringOption((opt) =>
                     opt
                         .setName("rarity")
@@ -111,27 +146,11 @@ export const SCHEDULABLE: SchedulableEntry[] = [
                             { name: "Uncommon", value: Rarity.UNCOMMON },
                             { name: "Common", value: Rarity.COMMON },
                         ),
-                )
-                .addStringOption((opt) =>
-                    opt
-                        .setName("average-method")
-                        .setDescription("Mean or median for damage averaging")
-                        .setRequired(false)
-                        .addChoices(
-                            { name: "Mean", value: "mean" },
-                            { name: "Median", value: "median" },
-                        ),
                 ),
         parseAddOptions: (interaction) => {
             const opts: SeasonParticipationOptions = {};
-            const season = interaction.options.getNumber("season");
-            if (season != null) opts.season = season;
             const rarity = interaction.options.getString("rarity");
             if (rarity) opts.rarity = rarity;
-            const averageMethod = interaction.options.getString(
-                "average-method",
-            ) as "mean" | "median" | null;
-            if (averageMethod) opts.averageMethod = averageMethod;
 
             return {
                 channelId: interaction.options.getChannel("channel", true).id,
@@ -148,6 +167,18 @@ export const SCHEDULABLE: SchedulableEntry[] = [
                 ? JSON.parse(ctx.optionsJson)
                 : {};
             return renderSeasonParticipationMessage(ctx.ownerUserId, opts);
+        },
+        formatOptions: (optionsJson) => {
+            if (!optionsJson) return "";
+            let opts: SeasonParticipationOptions;
+            try {
+                opts = JSON.parse(optionsJson);
+            } catch {
+                return "";
+            }
+            const parts: string[] = [];
+            if (opts.rarity) parts.push(`rarity: ${opts.rarity}`);
+            return parts.length > 0 ? `[${parts.join(", ")}]` : "";
         },
     },
 ];

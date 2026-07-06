@@ -19,6 +19,7 @@ import { HominaTacticusClient } from "@/client";
 import {
     SCHEDULABLE,
     SCHEDULABLE_MAP,
+    normalizeOptionsJson,
 } from "@/lib/scheduler/schedulableCommands";
 import {
     MAX_SCHEDULES_PER_GUILD,
@@ -65,6 +66,13 @@ builder
             .setDescription(
                 "Immediately trigger all your scheduled commands in this server",
             ),
+    )
+    .addSubcommand((sc) =>
+        sc
+            .setName("update-token")
+            .setDescription(
+                "Resume your paused schedules using your currently registered token",
+            ),
     );
 
 export const data = builder;
@@ -91,6 +99,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             await handleRemove(interaction, guildId);
         } else if (subcommand === "test") {
             await handleTest(interaction, guildId);
+        } else if (subcommand === "update-token") {
+            await handleUpdateToken(interaction, guildId);
         }
     } catch (error) {
         await handleCommandError(interaction, error);
@@ -159,13 +169,23 @@ async function handleAdd(
         Date.now() + parsed.intervalHours * 60 * 60 * 1000,
     );
 
-    // Check if a schedule already exists for this command in this game guild (one per command per guild)
+    const normalizedOptions = normalizeOptionsJson(parsed.optionsJson);
+    const optionsSummary = entry.formatOptions
+        ? entry.formatOptions(normalizedOptions)
+        : "";
+    const optionsSuffix = optionsSummary ? ` ${optionsSummary}` : "";
+
+    // Check if a schedule already exists with the same command AND same options
+    // in this game guild. Different options = separate schedules.
     const existingSchedules = await dbController.listSchedulesByDiscordGuild(
         discordGuildId,
         guildId,
     );
     const existing = existingSchedules.find(
-        (s: any) => s.commandName === commandName && s.guildId === guildId,
+        (s: any) =>
+            s.commandName === commandName &&
+            s.guildId === guildId &&
+            normalizeOptionsJson(s.optionsJson) === normalizedOptions,
     );
 
     if (existing) {
@@ -191,7 +211,7 @@ async function handleAdd(
                 : "";
 
         await interaction.editReply({
-            content: `⚠️ **/${commandName}** is already scheduled (every **${existing.intervalHours}h** in <#${existing.channelId}>, owned by ${currentOwner}).\nOverride with **${parsed.intervalHours}h** in <#${parsed.channelId}>?${channelChange}`,
+            content: `⚠️ **/${commandName}**${optionsSuffix} is already scheduled (every **${existing.intervalHours}h** in <#${existing.channelId}>, owned by ${currentOwner}).\nOverride with **${parsed.intervalHours}h** in <#${parsed.channelId}>?${channelChange}`,
             components: [row],
         });
 
@@ -207,7 +227,7 @@ async function handleAdd(
                 await dbController.updateSchedule(existing.id, {
                     channelId: parsed.channelId,
                     intervalHours: parsed.intervalHours,
-                    optionsJson: parsed.optionsJson,
+                    optionsJson: normalizedOptions,
                     ownerUserId: interaction.user.id,
                     nextRunAt,
                     pausedReason: null,
@@ -216,7 +236,7 @@ async function handleAdd(
                 });
 
                 await confirmation.update({
-                    content: `🔄 Updated **/${commandName}** — now every **${parsed.intervalHours}h** in <#${parsed.channelId}>. Next post: <t:${Math.floor(nextRunAt.getTime() / 1000)}:R>`,
+                    content: `🔄 Updated **/${commandName}**${optionsSuffix} — now every **${parsed.intervalHours}h** in <#${parsed.channelId}>. Next post: <t:${Math.floor(nextRunAt.getTime() / 1000)}:R>`,
                     components: [],
                 });
             } else {
@@ -239,14 +259,14 @@ async function handleAdd(
             discordGuildId,
             channelId: parsed.channelId,
             commandName,
-            optionsJson: parsed.optionsJson,
+            optionsJson: normalizedOptions,
             intervalHours: parsed.intervalHours,
             ownerUserId: interaction.user.id,
             nextRunAt,
         });
 
         await interaction.editReply({
-            content: `✅ Scheduled **/${commandName}** to run in <#${parsed.channelId}> every **${parsed.intervalHours}h**. First post: <t:${Math.floor(nextRunAt.getTime() / 1000)}:R>`,
+            content: `✅ Scheduled **/${commandName}**${optionsSuffix} to run in <#${parsed.channelId}> every **${parsed.intervalHours}h**. First post: <t:${Math.floor(nextRunAt.getTime() / 1000)}:R>`,
         });
     }
 
@@ -283,7 +303,12 @@ async function handleList(
         const nextRun = s.pausedReason
             ? "—"
             : `<t:${Math.floor(new Date(s.nextRunAt).getTime() / 1000)}:R>`;
-        return `\`/${s.commandName}\` → <#${s.channelId}> every **${s.intervalHours}h** | ${status} | next: ${nextRun}`;
+        const entry = SCHEDULABLE_MAP.get(s.commandName);
+        const optionsSummary = entry?.formatOptions
+            ? entry.formatOptions(s.optionsJson)
+            : "";
+        const optionsSuffix = optionsSummary ? ` ${optionsSummary}` : "";
+        return `\`/${s.commandName}\`${optionsSuffix} → <#${s.channelId}> every **${s.intervalHours}h** | ${status} | next: ${nextRun}`;
     });
 
     const embed = new EmbedBuilder()
@@ -355,6 +380,45 @@ async function handleTest(
     });
 }
 
+async function handleUpdateToken(
+    interaction: ChatInputCommandInteraction,
+    guildId: string,
+) {
+    const discordGuildId = interaction.guildId;
+    if (!discordGuildId) {
+        throw new UserError("This command can only be used in a server.");
+    }
+
+    const token = await dbController.getUserToken(interaction.user.id);
+    if (!token) {
+        throw new UserError(
+            "You don't have a registered API token. Use `/register` first, then try again.",
+        );
+    }
+
+    const resumed = await dbController.resumeSchedulesByOwner(
+        interaction.user.id,
+        discordGuildId,
+        guildId,
+    );
+
+    if (resumed === 0) {
+        await interaction.editReply({
+            content:
+                "ℹ️ You have no paused schedules in this server. Nothing to resume.",
+        });
+        return;
+    }
+
+    await interaction.editReply({
+        content: `✅ Resumed **${resumed}** schedule(s) with your current token. They will fire within the next minute.`,
+    });
+
+    logger.info(
+        `${interaction.user.username} resumed ${resumed} schedule(s) via update-token`,
+    );
+}
+
 export async function autocomplete(interaction: AutocompleteInteraction) {
     const discordGuildId = interaction.guildId;
     if (!discordGuildId) return;
@@ -379,7 +443,11 @@ export async function autocomplete(interaction: AutocompleteInteraction) {
         const choices = await Promise.all(
             schedules
                 .filter((s: any) => {
-                    const label = `/${s.commandName} ${s.channelId} every ${s.intervalHours}h`;
+                    const entry = SCHEDULABLE_MAP.get(s.commandName);
+                    const optionsSummary = entry?.formatOptions
+                        ? entry.formatOptions(s.optionsJson)
+                        : "";
+                    const label = `/${s.commandName} ${optionsSummary} ${s.channelId} every ${s.intervalHours}h`;
                     return label.toLowerCase().includes(focused);
                 })
                 .slice(0, 25)
@@ -396,8 +464,21 @@ export async function autocomplete(interaction: AutocompleteInteraction) {
                             `Failed to fetch channel ${s.channelId} for autocomplete: ${error}`,
                         );
                     }
+                    const entry = SCHEDULABLE_MAP.get(s.commandName);
+                    const optionsSummary = entry?.formatOptions
+                        ? entry.formatOptions(s.optionsJson)
+                        : "";
+                    const optionsSuffix = optionsSummary
+                        ? ` ${optionsSummary}`
+                        : "";
+                    // Discord autocomplete labels are capped at 100 chars
+                    const rawName = `/${s.commandName}${optionsSuffix} → #${channelName} every ${s.intervalHours}h${status}`;
+                    const name =
+                        rawName.length > 100
+                            ? rawName.slice(0, 97) + "…"
+                            : rawName;
                     return {
-                        name: `/${s.commandName} → #${channelName} every ${s.intervalHours}h${status}`,
+                        name,
                         value: String(s.id),
                     };
                 }),
