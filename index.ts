@@ -11,6 +11,21 @@ import { IClient } from "@/models/types/IClient";
 
 console.log("Starting Discord bot...");
 
+// Suppress croner's benign `TimeoutNegativeWarning` — croner internally arms
+// its next tick via setTimeout and can land 1 ms behind `now` due to ms
+// rounding on cron-boundary constructions (e.g. `* * * * *`). It clamps to
+// 1 ms and fires correctly; the warning is cosmetic. All other warnings are
+// still forwarded to the default handler so we don't hide real issues.
+process.on("warning", (warning) => {
+    if (
+        warning.name === "TimeoutNegativeWarning" &&
+        warning.stack?.includes("croner")
+    ) {
+        return;
+    }
+    console.warn(warning);
+});
+
 const client = new IClient({
     intents: [GatewayIntentBits.Guilds],
     presence: {

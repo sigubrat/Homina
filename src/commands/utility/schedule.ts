@@ -153,6 +153,13 @@ async function handleAdd(
         );
     }
 
+    // Determine when the first run should occur.
+    // If the user supplied `start-hour`, honor it (resolveStartHourUtc always
+    // returns a future Date). Otherwise default to `now + intervalHours`.
+    const nextRunAt =
+        parsed.startAt ??
+        new Date(Date.now() + parsed.intervalHours * 60 * 60 * 1000);
+
     // Enforce per-guild cap
     const currentCount = await dbController.getScheduleCountByDiscordGuild(
         discordGuildId,
@@ -165,10 +172,6 @@ async function handleAdd(
     }
 
     // Create or update the schedule
-    const nextRunAt = new Date(
-        Date.now() + parsed.intervalHours * 60 * 60 * 1000,
-    );
-
     const normalizedOptions = normalizeOptionsJson(parsed.optionsJson);
     const optionsSummary = entry.formatOptions
         ? entry.formatOptions(normalizedOptions)
