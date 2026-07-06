@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.21.2]
+
+A small quality-of-life follow-up to `/schedule` based on your feedback.
+
+### Added
+
+- New optional `start-hour` option on every `/schedule` subcommand. Pick the hour of day (in UTC, from `00:00 UTC` through `23:00 UTC`) at which the first post should go out — no more being forced to start right now and drift from there. If the chosen hour has already passed today, the first post goes out at that hour tomorrow.
+- If you skip `start-hour`, the schedule keeps working exactly like before (first post fires one interval from now).
+
 ## [1.21.1]
 
 A follow-up patch to the `/schedule` early-access release based on your feedback.
