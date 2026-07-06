@@ -91,15 +91,11 @@ export async function up({
         );
     }
 
-    if (!existingNames.has("scheduled_commands_unique_channel_command")) {
-        await queryInterface.addIndex(
-            TABLE_NAME,
-            ["guildId", "channelId", "commandName"],
-            {
-                name: "scheduled_commands_unique_channel_command",
-                unique: true,
-            },
-        );
+    if (!existingNames.has("scheduled_commands_unique_guild_command")) {
+        await queryInterface.addIndex(TABLE_NAME, ["guildId", "commandName"], {
+            name: "scheduled_commands_unique_guild_command",
+            unique: true,
+        });
     }
 }
 

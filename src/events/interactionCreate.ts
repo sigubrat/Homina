@@ -71,8 +71,11 @@ export async function execute(interaction: Interaction) {
                 deletePendingInvite(nonce);
                 await messageService.handleInviteDecline(interaction);
             }
+            return;
         }
-        return;
+
+        // Other button interactions (e.g. schedule override) are handled by
+        // message component collectors — don't acknowledge or return here.
     }
 
     if (!interaction.isChatInputCommand()) return; // Ignore non-chat input commands
@@ -121,11 +124,12 @@ export async function execute(interaction: Interaction) {
             BotEventType.COMMAND_ERROR,
             command.data.name,
             {
-                error: error instanceof BotError
-                    ? error.code
-                    : error instanceof Error
-                      ? error.message
-                      : String(error),
+                error:
+                    error instanceof BotError
+                        ? error.code
+                        : error instanceof Error
+                          ? error.message
+                          : String(error),
             },
         );
         await handleCommandError(interaction, error);

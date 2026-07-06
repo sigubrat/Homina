@@ -6,7 +6,7 @@ import {
     ChatInputCommandInteraction,
     ComponentType,
     EmbedBuilder,
-    MessageFlags,
+    PermissionFlagsBits,
     PermissionsBitField,
     SlashCommandBuilder,
     SlashCommandSubcommandBuilder,
@@ -31,9 +31,8 @@ export const cooldown = 3;
 
 const builder = new SlashCommandBuilder()
     .setName("schedule")
-    .setDescription("Manage scheduled automatic command posts");
-// TODO: Re-enable for production
-// .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild);
+    .setDescription("Manage scheduled automatic command posts")
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild);
 
 // Dynamically add schedulable command subcommands (e.g. /schedule gr-availability)
 for (const entry of SCHEDULABLE) {
@@ -71,7 +70,7 @@ builder
 export const data = builder;
 
 export async function execute(interaction: ChatInputCommandInteraction) {
-    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    await interaction.deferReply();
 
     try {
         const subcommand = interaction.options.getSubcommand();
@@ -160,16 +159,13 @@ async function handleAdd(
         Date.now() + parsed.intervalHours * 60 * 60 * 1000,
     );
 
-    // Check if a schedule already exists for this command+channel in this game guild
+    // Check if a schedule already exists for this command in this game guild (one per command per guild)
     const existingSchedules = await dbController.listSchedulesByDiscordGuild(
         discordGuildId,
         guildId,
     );
     const existing = existingSchedules.find(
-        (s: any) =>
-            s.channelId === parsed.channelId &&
-            s.commandName === commandName &&
-            s.guildId === guildId,
+        (s: any) => s.commandName === commandName && s.guildId === guildId,
     );
 
     if (existing) {
@@ -189,8 +185,13 @@ async function handleAdd(
                 ? "you"
                 : `<@${existing.ownerUserId}>`;
 
+        const channelChange =
+            existing.channelId !== parsed.channelId
+                ? ` Channel will move from <#${existing.channelId}> → <#${parsed.channelId}>.`
+                : "";
+
         await interaction.editReply({
-            content: `⚠️ **/${commandName}** is already scheduled in <#${parsed.channelId}> (every **${existing.intervalHours}h**, owned by ${currentOwner}).\nOverride it with your new interval of **${parsed.intervalHours}h**?`,
+            content: `⚠️ **/${commandName}** is already scheduled (every **${existing.intervalHours}h** in <#${existing.channelId}>, owned by ${currentOwner}).\nOverride with **${parsed.intervalHours}h** in <#${parsed.channelId}>?${channelChange}`,
             components: [row],
         });
 
@@ -204,6 +205,7 @@ async function handleAdd(
 
             if (confirmation.customId === "schedule_override_confirm") {
                 await dbController.updateSchedule(existing.id, {
+                    channelId: parsed.channelId,
                     intervalHours: parsed.intervalHours,
                     optionsJson: parsed.optionsJson,
                     ownerUserId: interaction.user.id,
@@ -214,7 +216,7 @@ async function handleAdd(
                 });
 
                 await confirmation.update({
-                    content: `🔄 Updated schedule **#${existing.id}** for **/${commandName}** in <#${parsed.channelId}> — now every **${parsed.intervalHours}h**. Next post: <t:${Math.floor(nextRunAt.getTime() / 1000)}:R>`,
+                    content: `🔄 Updated **/${commandName}** — now every **${parsed.intervalHours}h** in <#${parsed.channelId}>. Next post: <t:${Math.floor(nextRunAt.getTime() / 1000)}:R>`,
                     components: [],
                 });
             } else {
@@ -281,7 +283,7 @@ async function handleList(
         const nextRun = s.pausedReason
             ? "—"
             : `<t:${Math.floor(new Date(s.nextRunAt).getTime() / 1000)}:R>`;
-        return `**#${s.id}** \`/${s.commandName}\` → <#${s.channelId}> every **${s.intervalHours}h** | ${status} | next: ${nextRun}`;
+        return `\`/${s.commandName}\` → <#${s.channelId}> every **${s.intervalHours}h** | ${status} | next: ${nextRun}`;
     });
 
     const embed = new EmbedBuilder()
@@ -317,7 +319,7 @@ async function handleRemove(
         );
     }
 
-    await interaction.editReply({ content: `🗑️ Schedule **#${id}** removed.` });
+    await interaction.editReply({ content: `🗑️ Schedule removed.` });
 }
 
 async function handleTest(
