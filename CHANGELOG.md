@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.21.1]
+
+A follow-up patch to the `/schedule` early-access release based on your feedback.
+
+### Added
+
+- You can now schedule the same command more than once in the same channel as long as each schedule uses different options — for example one `/schedule season-participation` for `Mythic` and another for `Legendary+`.
+- New `/schedule update-token` subcommand. If a schedule stops working because your API token is no longer valid, update your token with `/register` and then run `/schedule update-token` to resume all your paused schedules.
+- If a schedule gets paused because your token stopped working, you'll now get a DM with clear instructions on how to get it running again.
+- If you delete your account with `/delete`, your schedules will automatically be handed off to another registered guild member so the guild's automations keep running. If no one else in the guild is registered, the schedules are removed.
+
+### Changed
+
+- `/schedule season-participation` now only asks for `rarity`. The `season` and `average-method` options have been removed to keep the recurring post simple and consistent.
+
 ## [1.21.0]
 
 After multiple requests I can now happily announce that the feature 'automatic command usage' is available in a sort of early-access. Initially it will feature two of the most commonly used commands: `/gr-availability` and `/season-participation` but more can be added later so reach out in the support discord server regarding what commands you want to see.
