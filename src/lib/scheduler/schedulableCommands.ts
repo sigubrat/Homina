@@ -94,7 +94,7 @@ export function addStartTimeOption(
 
 /**
  * Adds the `end-of-season` boolean option to a schedulable subcommand builder.
- * When set, the command runs once at each season end (Tue 09:00 UTC) instead of
+ * When set, the command runs once at each season end (Tue 10:00 UTC) instead of
  * on a fixed hourly interval.
  */
 export function addEndOfSeasonOption(
@@ -104,7 +104,7 @@ export function addEndOfSeasonOption(
         opt
             .setName("end-of-season")
             .setDescription(
-                "Run once at each season end (Tue 09:00 UTC) instead of on a fixed interval",
+                "Run once at each season end (Tue 10:00 UTC) instead of on a fixed interval",
             )
             .setRequired(false),
     );
@@ -131,7 +131,7 @@ export function parseIntervalOptions(
     if (endOfSeason) {
         if (interaction.options.getInteger("start-hour") !== null) {
             throw new UserError(
-                "`start-hour` cannot be used with `end-of-season`. The run time is always Tuesday 09:00 UTC.",
+                "`start-hour` cannot be used with `end-of-season`. The run time is always Tuesday 10:00 UTC.",
             );
         }
         return {
