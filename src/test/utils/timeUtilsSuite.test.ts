@@ -7,6 +7,7 @@ import {
     isInvalidSeason,
     toMinutes,
     isGuildRaidOffSeason,
+    getNextSeasonEnd,
 } from "@/lib/utils/timeUtils";
 import { describe, expect, test } from "bun:test";
 
@@ -226,5 +227,38 @@ describe("timeUtilsSuite - Algebra", () => {
         expect(isGuildRaidOffSeason(new Date("2025-11-05T10:00:00Z"))).toBe(
             false,
         );
+    });
+
+    // Season 85 ends Tue Oct 21, 2025 09:00 UTC
+    // Season 86 ends Tue Nov 4, 2025 09:00 UTC
+    test("getNextSeasonEnd - should return current season end when mid-season", () => {
+        // Mid season 85: Sat Oct 11, 2025 12:00 UTC → end is Tue Oct 21, 09:00
+        const result = getNextSeasonEnd(new Date("2025-10-11T12:00:00Z"));
+        expect(result.toISOString()).toBe("2025-10-21T09:00:00.000Z");
+    });
+
+    test("getNextSeasonEnd - should return current season end at season start", () => {
+        // Right at season 85 start → end is Tue Oct 21, 09:00
+        const result = getNextSeasonEnd(new Date("2025-10-08T10:00:00Z"));
+        expect(result.toISOString()).toBe("2025-10-21T09:00:00.000Z");
+    });
+
+    test("getNextSeasonEnd - should return next season end during off-season", () => {
+        // During off-season after season 85 (Oct 21 09:00 → Oct 22 10:00)
+        // Should return end of season 86: Nov 4, 09:00 UTC
+        const result = getNextSeasonEnd(new Date("2025-10-21T15:00:00Z"));
+        expect(result.toISOString()).toBe("2025-11-04T09:00:00.000Z");
+    });
+
+    test("getNextSeasonEnd - should return next season end right at season end boundary", () => {
+        // Exactly at season 85 end (Tue Oct 21 09:00) — this is off-season
+        // Should return end of season 86
+        const result = getNextSeasonEnd(new Date("2025-10-21T09:00:00Z"));
+        expect(result.toISOString()).toBe("2025-11-04T09:00:00.000Z");
+    });
+
+    test("getNextSeasonEnd - should return first season end for dates before epoch", () => {
+        const result = getNextSeasonEnd(new Date("2020-01-01T00:00:00Z"));
+        expect(result.toISOString()).toBe("2025-10-21T09:00:00.000Z");
     });
 });

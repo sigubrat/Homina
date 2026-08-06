@@ -20,6 +20,7 @@ import {
     SCHEDULABLE,
     SCHEDULABLE_MAP,
     normalizeOptionsJson,
+    END_OF_SEASON_INTERVAL,
 } from "@/lib/scheduler/schedulableCommands";
 import {
     MAX_SCHEDULES_PER_GUILD,
@@ -27,6 +28,13 @@ import {
     MAX_SCHEDULE_INTERVAL_HOURS,
 } from "@/lib/configs/constants";
 import { UserError } from "@/models/errors/UserError";
+
+/** Formats the interval for display: "every Xh" or "at end of season". */
+function formatInterval(intervalHours: number): string {
+    return intervalHours === END_OF_SEASON_INTERVAL
+        ? "at **end of season**"
+        : `every **${intervalHours}h**`;
+}
 
 export const cooldown = 3;
 
@@ -143,10 +151,11 @@ async function handleAdd(
         );
     }
 
-    // Validate interval
+    // Validate interval (skip for end-of-season schedules)
     if (
-        parsed.intervalHours < MIN_SCHEDULE_INTERVAL_HOURS ||
-        parsed.intervalHours > MAX_SCHEDULE_INTERVAL_HOURS
+        parsed.intervalHours !== END_OF_SEASON_INTERVAL &&
+        (parsed.intervalHours < MIN_SCHEDULE_INTERVAL_HOURS ||
+            parsed.intervalHours > MAX_SCHEDULE_INTERVAL_HOURS)
     ) {
         throw new UserError(
             `Interval must be between ${MIN_SCHEDULE_INTERVAL_HOURS} and ${MAX_SCHEDULE_INTERVAL_HOURS} hours.`,
@@ -214,7 +223,7 @@ async function handleAdd(
                 : "";
 
         await interaction.editReply({
-            content: `⚠️ **/${commandName}**${optionsSuffix} is already scheduled (every **${existing.intervalHours}h** in <#${existing.channelId}>, owned by ${currentOwner}).\nOverride with **${parsed.intervalHours}h** in <#${parsed.channelId}>?${channelChange}`,
+            content: `⚠️ **/${commandName}**${optionsSuffix} is already scheduled (${formatInterval(existing.intervalHours)} in <#${existing.channelId}>, owned by ${currentOwner}).\nOverride with ${formatInterval(parsed.intervalHours)} in <#${parsed.channelId}>?${channelChange}`,
             components: [row],
         });
 
@@ -239,7 +248,7 @@ async function handleAdd(
                 });
 
                 await confirmation.update({
-                    content: `🔄 Updated **/${commandName}**${optionsSuffix} — now every **${parsed.intervalHours}h** in <#${parsed.channelId}>. Next post: <t:${Math.floor(nextRunAt.getTime() / 1000)}:R>`,
+                    content: `🔄 Updated **/${commandName}**${optionsSuffix} — now ${formatInterval(parsed.intervalHours)} in <#${parsed.channelId}>. Next post: <t:${Math.floor(nextRunAt.getTime() / 1000)}:R>`,
                     components: [],
                 });
             } else {
@@ -269,12 +278,12 @@ async function handleAdd(
         });
 
         await interaction.editReply({
-            content: `✅ Scheduled **/${commandName}**${optionsSuffix} to run in <#${parsed.channelId}> every **${parsed.intervalHours}h**. First post: <t:${Math.floor(nextRunAt.getTime() / 1000)}:R>`,
+            content: `✅ Scheduled **/${commandName}**${optionsSuffix} to run in <#${parsed.channelId}> ${formatInterval(parsed.intervalHours)}. First post: <t:${Math.floor(nextRunAt.getTime() / 1000)}:R>`,
         });
     }
 
     logger.info(
-        `${interaction.user.username} scheduled ${commandName} every ${parsed.intervalHours}h in channel ${parsed.channelId}`,
+        `${interaction.user.username} scheduled ${commandName} ${parsed.intervalHours === END_OF_SEASON_INTERVAL ? "end-of-season" : `every ${parsed.intervalHours}h`} in channel ${parsed.channelId}`,
     );
 }
 
@@ -311,7 +320,7 @@ async function handleList(
             ? entry.formatOptions(s.optionsJson)
             : "";
         const optionsSuffix = optionsSummary ? ` ${optionsSummary}` : "";
-        return `\`/${s.commandName}\`${optionsSuffix} → <#${s.channelId}> every **${s.intervalHours}h** | ${status} | next: ${nextRun}`;
+        return `\`/${s.commandName}\`${optionsSuffix} → <#${s.channelId}> ${formatInterval(s.intervalHours)} | ${status} | next: ${nextRun}`;
     });
 
     const embed = new EmbedBuilder()

@@ -8,7 +8,8 @@ import {
     SCHEDULE_RETRY_MINUTES,
 } from "@/lib/configs/constants";
 import { ExternalApiError } from "@/models/errors/ServiceError";
-import { isGuildRaidOffSeason } from "@/lib/utils/timeUtils";
+import { isGuildRaidOffSeason, getNextSeasonEnd } from "@/lib/utils/timeUtils";
+import { END_OF_SEASON_INTERVAL } from "@/lib/scheduler/schedulableCommands";
 import type { Client } from "discord.js";
 
 const CONCURRENCY_LIMIT = 3;
@@ -126,11 +127,16 @@ export class ScheduledCommandsJob {
             await channel.send(payload);
 
             // Success — anchor to the intended time, not wall-clock, to prevent drift
-            const intervalMs = intervalHours * 60 * 60 * 1000;
-            let nextRunAt = new Date(schedule.nextRunAt.getTime() + intervalMs);
-            // If the anchored time is already in the past (e.g. long execution), advance to next future slot
-            while (nextRunAt.getTime() <= Date.now()) {
-                nextRunAt = new Date(nextRunAt.getTime() + intervalMs);
+            let nextRunAt: Date;
+            if (intervalHours === END_OF_SEASON_INTERVAL) {
+                nextRunAt = getNextSeasonEnd();
+            } else {
+                const intervalMs = intervalHours * 60 * 60 * 1000;
+                nextRunAt = new Date(schedule.nextRunAt.getTime() + intervalMs);
+                // If the anchored time is already in the past (e.g. long execution), advance to next future slot
+                while (nextRunAt.getTime() <= Date.now()) {
+                    nextRunAt = new Date(nextRunAt.getTime() + intervalMs);
+                }
             }
             await dbController.updateSchedule(id, {
                 lastRunAt: new Date(),
@@ -181,13 +187,15 @@ export class ScheduledCommandsJob {
         }
 
         const retrySoon = error instanceof ExternalApiError;
-        const intervalMs = intervalHours * 60 * 60 * 1000;
         let nextRunAt: Date;
         if (retrySoon) {
             nextRunAt = new Date(
                 Date.now() + SCHEDULE_RETRY_MINUTES * 60 * 1000,
             );
+        } else if (intervalHours === END_OF_SEASON_INTERVAL) {
+            nextRunAt = getNextSeasonEnd();
         } else {
+            const intervalMs = intervalHours * 60 * 60 * 1000;
             nextRunAt = new Date(anchorTime.getTime() + intervalMs);
             while (nextRunAt.getTime() <= Date.now()) {
                 nextRunAt = new Date(nextRunAt.getTime() + intervalMs);
@@ -254,15 +262,17 @@ export class ScheduledCommandsJob {
         reason: string,
         anchorTime?: Date,
     ): Promise<void> {
-        const intervalMs = intervalHours * 60 * 60 * 1000;
         let nextRunAt: Date;
-        if (anchorTime) {
+        if (intervalHours === END_OF_SEASON_INTERVAL) {
+            nextRunAt = getNextSeasonEnd();
+        } else if (anchorTime) {
+            const intervalMs = intervalHours * 60 * 60 * 1000;
             nextRunAt = new Date(anchorTime.getTime() + intervalMs);
             while (nextRunAt.getTime() <= Date.now()) {
                 nextRunAt = new Date(nextRunAt.getTime() + intervalMs);
             }
         } else {
-            nextRunAt = new Date(Date.now() + intervalMs);
+            nextRunAt = new Date(Date.now() + intervalHours * 60 * 60 * 1000);
         }
         await dbController.updateSchedule(id, {
             lastRunAt: new Date(),

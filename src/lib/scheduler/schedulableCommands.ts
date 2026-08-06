@@ -10,6 +10,11 @@ import {
     type SeasonParticipationOptions,
 } from "@/commands/guild-raid/seasonParticipation";
 import { Rarity } from "@/models/enums";
+import { getNextSeasonEnd } from "@/lib/utils/timeUtils";
+import { UserError } from "@/models/errors/UserError";
+
+/** Sentinel value for `intervalHours` indicating an end-of-season schedule. */
+export const END_OF_SEASON_INTERVAL = 0;
 
 export interface ScheduledContext {
     ownerUserId: string;
@@ -88,6 +93,68 @@ export function addStartTimeOption(
 }
 
 /**
+ * Adds the `end-of-season` boolean option to a schedulable subcommand builder.
+ * When set, the command runs once at each season end (Tue 09:00 UTC) instead of
+ * on a fixed hourly interval.
+ */
+export function addEndOfSeasonOption(
+    sc: SlashCommandSubcommandBuilder,
+): SlashCommandSubcommandBuilder {
+    return sc.addBooleanOption((opt) =>
+        opt
+            .setName("end-of-season")
+            .setDescription(
+                "Run once at each season end (Tue 09:00 UTC) instead of on a fixed interval",
+            )
+            .setRequired(false),
+    );
+}
+
+/**
+ * Parses the interval-related options from a schedulable command interaction.
+ * If `end-of-season` is true, returns intervalHours=0 and startAt=next season end.
+ * Otherwise requires `every-hours` to be provided.
+ */
+export function parseIntervalOptions(
+    interaction: ChatInputCommandInteraction,
+): { intervalHours: number; startAt: Date | null } {
+    const endOfSeason =
+        interaction.options.getBoolean("end-of-season") ?? false;
+    const everyHours = interaction.options.getInteger("every-hours");
+
+    if (endOfSeason && everyHours !== null) {
+        throw new UserError(
+            "You cannot combine `end-of-season` with `every-hours`. Pick one or the other.",
+        );
+    }
+
+    if (endOfSeason) {
+        if (interaction.options.getInteger("start-hour") !== null) {
+            throw new UserError(
+                "`start-hour` cannot be used with `end-of-season`. The run time is always Tuesday 09:00 UTC.",
+            );
+        }
+        return {
+            intervalHours: END_OF_SEASON_INTERVAL,
+            startAt: getNextSeasonEnd(),
+        };
+    }
+
+    if (everyHours === null || everyHours === undefined) {
+        throw new UserError(
+            "You must provide either `every-hours` or set `end-of-season` to true.",
+        );
+    }
+
+    return {
+        intervalHours: everyHours,
+        startAt: resolveStartHourUtc(
+            interaction.options.getInteger("start-hour"),
+        ),
+    };
+}
+
+/**
  * Deep-sort object keys and drop nullish values so that two option sets
  * with the same content but different key order compare equal.
  */
@@ -129,35 +196,41 @@ export const SCHEDULABLE: SchedulableEntry[] = [
         name: "gr-availability",
         description: "Token and bomb availability overview",
         buildAddSubcommand: (sc) =>
-            addStartTimeOption(
-                sc
-                    .setName("gr-availability")
-                    .setDescription(
-                        "Schedule periodic token/bomb availability posts",
-                    )
-                    .addChannelOption((opt) =>
-                        opt
-                            .setName("channel")
-                            .setDescription("The channel to post in")
-                            .setRequired(true),
-                    )
-                    .addIntegerOption((opt) =>
-                        opt
-                            .setName("every-hours")
-                            .setDescription("How often to post (in hours)")
-                            .setRequired(true)
-                            .setMinValue(1)
-                            .setMaxValue(168),
-                    ),
+            addEndOfSeasonOption(
+                addStartTimeOption(
+                    sc
+                        .setName("gr-availability")
+                        .setDescription(
+                            "Schedule periodic token/bomb availability posts",
+                        )
+                        .addChannelOption((opt) =>
+                            opt
+                                .setName("channel")
+                                .setDescription("The channel to post in")
+                                .setRequired(true),
+                        )
+                        .addIntegerOption((opt) =>
+                            opt
+                                .setName("every-hours")
+                                .setDescription(
+                                    "How often to post (in hours). Ignored if end-of-season is set.",
+                                )
+                                .setRequired(false)
+                                .setMinValue(1)
+                                .setMaxValue(168),
+                        ),
+                ),
             ),
-        parseAddOptions: (interaction) => ({
-            channelId: interaction.options.getChannel("channel", true).id,
-            intervalHours: interaction.options.getInteger("every-hours", true),
-            optionsJson: null,
-            startAt: resolveStartHourUtc(
-                interaction.options.getInteger("start-hour"),
-            ),
-        }),
+        parseAddOptions: (interaction) => {
+            const { intervalHours, startAt } =
+                parseIntervalOptions(interaction);
+            return {
+                channelId: interaction.options.getChannel("channel", true).id,
+                intervalHours,
+                optionsJson: null,
+                startAt,
+            };
+        },
         renderer: async (ctx) => {
             return renderAvailabilityMessage(ctx.ownerUserId);
         },
@@ -166,61 +239,68 @@ export const SCHEDULABLE: SchedulableEntry[] = [
         name: "season-participation",
         description: "Per-member participation/damage in season",
         buildAddSubcommand: (sc) =>
-            addStartTimeOption(
-                sc
-                    .setName("season-participation")
-                    .setDescription(
-                        "Schedule periodic season participation posts",
-                    )
-                    .addChannelOption((opt) =>
-                        opt
-                            .setName("channel")
-                            .setDescription("The channel to post in")
-                            .setRequired(true),
-                    )
-                    .addIntegerOption((opt) =>
-                        opt
-                            .setName("every-hours")
-                            .setDescription("How often to post (in hours)")
-                            .setRequired(true)
-                            .setMinValue(1)
-                            .setMaxValue(168),
-                    )
-                    .addStringOption((opt) =>
-                        opt
-                            .setName("rarity")
-                            .setDescription("Boss rarity filter")
-                            .setRequired(false)
-                            .addChoices(
-                                {
-                                    name: "Legendary+",
-                                    value: Rarity.LEGENDARY_PLUS,
-                                },
-                                { name: "Mythic", value: Rarity.MYTHIC },
-                                { name: "Legendary", value: Rarity.LEGENDARY },
-                                { name: "Epic", value: Rarity.EPIC },
-                                { name: "Rare", value: Rarity.RARE },
-                                { name: "Uncommon", value: Rarity.UNCOMMON },
-                                { name: "Common", value: Rarity.COMMON },
-                            ),
-                    ),
+            addEndOfSeasonOption(
+                addStartTimeOption(
+                    sc
+                        .setName("season-participation")
+                        .setDescription(
+                            "Schedule periodic season participation posts",
+                        )
+                        .addChannelOption((opt) =>
+                            opt
+                                .setName("channel")
+                                .setDescription("The channel to post in")
+                                .setRequired(true),
+                        )
+                        .addIntegerOption((opt) =>
+                            opt
+                                .setName("every-hours")
+                                .setDescription(
+                                    "How often to post (in hours). Ignored if end-of-season is set.",
+                                )
+                                .setRequired(false)
+                                .setMinValue(1)
+                                .setMaxValue(168),
+                        )
+                        .addStringOption((opt) =>
+                            opt
+                                .setName("rarity")
+                                .setDescription("Boss rarity filter")
+                                .setRequired(false)
+                                .addChoices(
+                                    {
+                                        name: "Legendary+",
+                                        value: Rarity.LEGENDARY_PLUS,
+                                    },
+                                    { name: "Mythic", value: Rarity.MYTHIC },
+                                    {
+                                        name: "Legendary",
+                                        value: Rarity.LEGENDARY,
+                                    },
+                                    { name: "Epic", value: Rarity.EPIC },
+                                    { name: "Rare", value: Rarity.RARE },
+                                    {
+                                        name: "Uncommon",
+                                        value: Rarity.UNCOMMON,
+                                    },
+                                    { name: "Common", value: Rarity.COMMON },
+                                ),
+                        ),
+                ),
             ),
         parseAddOptions: (interaction) => {
+            const { intervalHours, startAt } =
+                parseIntervalOptions(interaction);
             const opts: SeasonParticipationOptions = {};
             const rarity = interaction.options.getString("rarity");
             if (rarity) opts.rarity = rarity;
 
             return {
                 channelId: interaction.options.getChannel("channel", true).id,
-                intervalHours: interaction.options.getInteger(
-                    "every-hours",
-                    true,
-                ),
+                intervalHours,
                 optionsJson:
                     Object.keys(opts).length > 0 ? JSON.stringify(opts) : null,
-                startAt: resolveStartHourUtc(
-                    interaction.options.getInteger("start-hour"),
-                ),
+                startAt,
             };
         },
         renderer: async (ctx) => {
