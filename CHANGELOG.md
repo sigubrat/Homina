@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.22.0]
+
+A major upgrade to the scheduling system — more commands, smarter timing, and a new way to get your end-of-season summary delivered automatically.
+
+### Added
+
+- **End-of-season scheduling!** You can now set any schedulable command to run once at the end of each guild raid season (Tuesday 10:00 UTC) instead of on a fixed interval. Just set `end-of-season` to true when creating a schedule.
+- **6 new schedulable commands:** `/schedule season-by-rarity`, `/schedule best-comps`, `/schedule relative-performance`, `/schedule season-achievements`, `/schedule season-tokens`, and `/schedule member-stats-per-season`. You can now automate most of the popular guild raid reports.
+- Scheduled commands are now automatically paused between seasons (Tuesday 10:00 UTC → Wednesday 10:00 UTC) so you don't get posts with incomplete data during the off-period. End-of-season schedules still fire at the correct time.
+
+### Fixed
+
+- Fixed an issue where scheduled commands could slowly drift away from their intended time slot after each run.
+
 ## [1.21.2]
 
 A small quality-of-life follow-up to `/schedule` based on your feedback.
