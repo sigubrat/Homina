@@ -98,6 +98,7 @@ export class ScheduledCommandsJob {
                     id,
                     intervalHours,
                     "channel_unavailable",
+                    schedule.nextRunAt,
                 );
                 return;
             }
@@ -107,6 +108,7 @@ export class ScheduledCommandsJob {
                 id,
                 intervalHours,
                 "channel_unavailable",
+                schedule.nextRunAt,
             );
             return;
         }
@@ -123,10 +125,13 @@ export class ScheduledCommandsJob {
             const payload = await entry.renderer({ ownerUserId, optionsJson });
             await channel.send(payload);
 
-            // Success
-            const nextRunAt = new Date(
-                Date.now() + intervalHours * 60 * 60 * 1000,
-            );
+            // Success — anchor to the intended time, not wall-clock, to prevent drift
+            const intervalMs = intervalHours * 60 * 60 * 1000;
+            let nextRunAt = new Date(schedule.nextRunAt.getTime() + intervalMs);
+            // If the anchored time is already in the past (e.g. long execution), advance to next future slot
+            while (nextRunAt.getTime() <= Date.now()) {
+                nextRunAt = new Date(nextRunAt.getTime() + intervalMs);
+            }
             await dbController.updateSchedule(id, {
                 lastRunAt: new Date(),
                 nextRunAt,
@@ -151,6 +156,7 @@ export class ScheduledCommandsJob {
                 commandName,
                 ownerUserId,
                 error,
+                schedule.nextRunAt,
             );
         }
     }
@@ -161,6 +167,7 @@ export class ScheduledCommandsJob {
         commandName: string,
         ownerUserId: string,
         error: unknown,
+        anchorTime: Date,
     ): Promise<void> {
         const errorMessage =
             error instanceof Error ? error.message : String(error);
@@ -174,9 +181,18 @@ export class ScheduledCommandsJob {
         }
 
         const retrySoon = error instanceof ExternalApiError;
-        const nextRunAt = retrySoon
-            ? new Date(Date.now() + SCHEDULE_RETRY_MINUTES * 60 * 1000)
-            : new Date(Date.now() + intervalHours * 60 * 60 * 1000);
+        const intervalMs = intervalHours * 60 * 60 * 1000;
+        let nextRunAt: Date;
+        if (retrySoon) {
+            nextRunAt = new Date(
+                Date.now() + SCHEDULE_RETRY_MINUTES * 60 * 1000,
+            );
+        } else {
+            nextRunAt = new Date(anchorTime.getTime() + intervalMs);
+            while (nextRunAt.getTime() <= Date.now()) {
+                nextRunAt = new Date(nextRunAt.getTime() + intervalMs);
+            }
+        }
 
         await dbController.updateSchedule(id, {
             lastRunAt: new Date(),
@@ -236,8 +252,18 @@ export class ScheduledCommandsJob {
         id: number,
         intervalHours: number,
         reason: string,
+        anchorTime?: Date,
     ): Promise<void> {
-        const nextRunAt = new Date(Date.now() + intervalHours * 60 * 60 * 1000);
+        const intervalMs = intervalHours * 60 * 60 * 1000;
+        let nextRunAt: Date;
+        if (anchorTime) {
+            nextRunAt = new Date(anchorTime.getTime() + intervalMs);
+            while (nextRunAt.getTime() <= Date.now()) {
+                nextRunAt = new Date(nextRunAt.getTime() + intervalMs);
+            }
+        } else {
+            nextRunAt = new Date(Date.now() + intervalMs);
+        }
         await dbController.updateSchedule(id, {
             lastRunAt: new Date(),
             nextRunAt,
