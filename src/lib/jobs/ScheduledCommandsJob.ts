@@ -56,14 +56,21 @@ export class ScheduledCommandsJob {
 
     private async tick(): Promise<void> {
         try {
-            if (isGuildRaidOffSeason()) return;
-
+            const offSeason = isGuildRaidOffSeason();
             const due = await dbController.getDueSchedules(50);
             if (due.length === 0) return;
 
+            // During off-season, only run end-of-season schedules
+            const eligible = offSeason
+                ? due.filter(
+                      (s: any) => s.intervalHours === END_OF_SEASON_INTERVAL,
+                  )
+                : due;
+            if (eligible.length === 0) return;
+
             // Process in batches of CONCURRENCY_LIMIT
-            for (let i = 0; i < due.length; i += CONCURRENCY_LIMIT) {
-                const batch = due.slice(i, i + CONCURRENCY_LIMIT);
+            for (let i = 0; i < eligible.length; i += CONCURRENCY_LIMIT) {
+                const batch = eligible.slice(i, i + CONCURRENCY_LIMIT);
                 await Promise.allSettled(batch.map((s) => this.runOne(s)));
             }
         } catch (error) {
