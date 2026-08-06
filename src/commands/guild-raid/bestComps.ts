@@ -51,6 +51,86 @@ export const data = new SlashCommandBuilder()
             .setMinValue(MINIMUM_SEASON_THRESHOLD),
     );
 
+export interface BestCompsOptions {
+    rarity?: string;
+}
+
+export async function renderBestCompsMessage(
+    ownerUserId: string,
+    options: BestCompsOptions = {},
+): Promise<{ embeds: EmbedBuilder[] }> {
+    const season = getCurrentSeason();
+    const rarity = (options.rarity ?? Rarity.LEGENDARY_PLUS) as Rarity;
+
+    const guildService = new RaidAnalyticsService();
+    const dtsService = new DataTransformationService();
+
+    const seasonData = await guildService.getGuildRaidBySeason(
+        ownerUserId,
+        season,
+        rarity,
+    );
+
+    if (seasonData.length === 0) {
+        return {
+            embeds: [
+                new EmbedBuilder()
+                    .setColor(0xff0000)
+                    .setDescription(
+                        `No data found for season ${season} with rarity ${rarity}.`,
+                    ),
+            ],
+        };
+    }
+
+    const bestCompsPerBoss = await dtsService.highestDmgComps(seasonData);
+    if (Object.keys(bestCompsPerBoss).length === 0) {
+        return {
+            embeds: [
+                new EmbedBuilder()
+                    .setColor(0xff0000)
+                    .setDescription(
+                        "Something went wrong while processing the data.",
+                    ),
+            ],
+        };
+    }
+
+    const embed = new EmbedBuilder()
+        .setTitle(`Highest scoring raid comps for season ${season}`)
+        .setColor("#0099ff")
+        .setDescription(
+            "An overview of which characters were used to deal the highest damage against a boss",
+        )
+        .setFields(
+            {
+                name: "Season",
+                value: `${season} (current season)`,
+                inline: true,
+            },
+            { name: "Rarity", value: rarity, inline: true },
+        );
+
+    for (const [boss, raid] of Object.entries(bestCompsPerBoss)) {
+        embed.addFields({
+            name: `${
+                raid.encounterType === EncounterType.BOSS
+                    ? getBossEmoji(boss)
+                    : mapUnitIdToEmoji(
+                          boss.at(0)?.toLowerCase() + boss.slice(1),
+                      )
+            } ${mapTierToRarity(raid.tier, raid.set + 1, false)} ${splitByCapital(boss).at(-1)}`,
+            value: `${raid.heroDetails
+                .map((h) => mapUnitIdToEmoji(h.unitId))
+                .join()} — **Damage:** ${raid.damageDealt.toLocaleString()}`,
+        });
+    }
+
+    embed.setFooter({ text: STANDARD_FOOTER_TEXT });
+
+    return { embeds: [embed] };
+}
+
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 

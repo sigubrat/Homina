@@ -9,6 +9,27 @@ import {
     renderSeasonParticipationMessage,
     type SeasonParticipationOptions,
 } from "@/commands/guild-raid/seasonParticipation";
+import {
+    renderSeasonByRarityMessage,
+    type SeasonByRarityOptions,
+} from "@/commands/guild-raid/seasonByRarity";
+import {
+    renderBestCompsMessage,
+    type BestCompsOptions,
+} from "@/commands/guild-raid/bestComps";
+import {
+    renderRelativePerformanceMessage,
+    type RelativePerformanceOptions,
+} from "@/commands/guild-raid/relativePerformance";
+import { renderAchievementsMessage } from "@/commands/guild-raid/achievements";
+import {
+    renderSeasonTokensMessage,
+    type SeasonTokensOptions,
+} from "@/commands/guild-raid/seasonTokens";
+import {
+    renderMemberStatsBySeasonMessage,
+    type MemberStatsBySeasonOptions,
+} from "@/commands/guild-raid/memberStatsBySeason";
 import { Rarity } from "@/models/enums";
 import { getNextSeasonEnd } from "@/lib/utils/timeUtils";
 import { UserError } from "@/models/errors/UserError";
@@ -312,6 +333,491 @@ export const SCHEDULABLE: SchedulableEntry[] = [
         formatOptions: (optionsJson) => {
             if (!optionsJson) return "";
             let opts: SeasonParticipationOptions;
+            try {
+                opts = JSON.parse(optionsJson);
+            } catch {
+                return "";
+            }
+            const parts: string[] = [];
+            if (opts.rarity) parts.push(`rarity: ${opts.rarity}`);
+            return parts.length > 0 ? `[${parts.join(", ")}]` : "";
+        },
+    },
+    {
+        name: "season-by-rarity",
+        description: "Per-boss damage breakdown at a specific rarity",
+        buildAddSubcommand: (sc) =>
+            addEndOfSeasonOption(
+                addStartTimeOption(
+                    sc
+                        .setName("season-by-rarity")
+                        .setDescription(
+                            "Schedule periodic season-by-rarity posts",
+                        )
+                        .addChannelOption((opt) =>
+                            opt
+                                .setName("channel")
+                                .setDescription("The channel to post in")
+                                .setRequired(true),
+                        )
+                        .addIntegerOption((opt) =>
+                            opt
+                                .setName("every-hours")
+                                .setDescription(
+                                    "How often to post (in hours). Ignored if end-of-season is set.",
+                                )
+                                .setRequired(false)
+                                .setMinValue(1)
+                                .setMaxValue(168),
+                        )
+                        .addStringOption((opt) =>
+                            opt
+                                .setName("rarity")
+                                .setDescription("Boss rarity filter")
+                                .setRequired(false)
+                                .addChoices(
+                                    {
+                                        name: "Legendary+",
+                                        value: Rarity.LEGENDARY_PLUS,
+                                    },
+                                    { name: "Mythic", value: Rarity.MYTHIC },
+                                    {
+                                        name: "Legendary",
+                                        value: Rarity.LEGENDARY,
+                                    },
+                                    { name: "Epic", value: Rarity.EPIC },
+                                    { name: "Rare", value: Rarity.RARE },
+                                    {
+                                        name: "Uncommon",
+                                        value: Rarity.UNCOMMON,
+                                    },
+                                    { name: "Common", value: Rarity.COMMON },
+                                ),
+                        )
+                        .addStringOption((opt) =>
+                            opt
+                                .setName("boss-type")
+                                .setDescription("Main bosses or primes")
+                                .setRequired(false)
+                                .addChoices(
+                                    { name: "Main Boss", value: "main" },
+                                    { name: "Prime", value: "prime" },
+                                ),
+                        ),
+                ),
+            ),
+        parseAddOptions: (interaction) => {
+            const { intervalHours, startAt } =
+                parseIntervalOptions(interaction);
+            const opts: SeasonByRarityOptions = {};
+            const rarity = interaction.options.getString("rarity");
+            if (rarity) opts.rarity = rarity;
+            const bossType = interaction.options.getString("boss-type");
+            if (bossType) opts.bossType = bossType;
+
+            return {
+                channelId: interaction.options.getChannel("channel", true).id,
+                intervalHours,
+                optionsJson:
+                    Object.keys(opts).length > 0 ? JSON.stringify(opts) : null,
+                startAt,
+            };
+        },
+        renderer: async (ctx) => {
+            const opts: SeasonByRarityOptions = ctx.optionsJson
+                ? JSON.parse(ctx.optionsJson)
+                : {};
+            return renderSeasonByRarityMessage(ctx.ownerUserId, opts);
+        },
+        formatOptions: (optionsJson) => {
+            if (!optionsJson) return "";
+            let opts: SeasonByRarityOptions;
+            try {
+                opts = JSON.parse(optionsJson);
+            } catch {
+                return "";
+            }
+            const parts: string[] = [];
+            if (opts.rarity) parts.push(`rarity: ${opts.rarity}`);
+            if (opts.bossType) parts.push(`type: ${opts.bossType}`);
+            return parts.length > 0 ? `[${parts.join(", ")}]` : "";
+        },
+    },
+    {
+        name: "best-comps",
+        description: "Highest scoring raid team compositions",
+        buildAddSubcommand: (sc) =>
+            addEndOfSeasonOption(
+                addStartTimeOption(
+                    sc
+                        .setName("best-comps")
+                        .setDescription("Schedule periodic best-comps posts")
+                        .addChannelOption((opt) =>
+                            opt
+                                .setName("channel")
+                                .setDescription("The channel to post in")
+                                .setRequired(true),
+                        )
+                        .addIntegerOption((opt) =>
+                            opt
+                                .setName("every-hours")
+                                .setDescription(
+                                    "How often to post (in hours). Ignored if end-of-season is set.",
+                                )
+                                .setRequired(false)
+                                .setMinValue(1)
+                                .setMaxValue(168),
+                        )
+                        .addStringOption((opt) =>
+                            opt
+                                .setName("rarity")
+                                .setDescription("Boss rarity filter")
+                                .setRequired(false)
+                                .addChoices(
+                                    {
+                                        name: "Legendary+",
+                                        value: Rarity.LEGENDARY_PLUS,
+                                    },
+                                    { name: "Mythic", value: Rarity.MYTHIC },
+                                    {
+                                        name: "Legendary",
+                                        value: Rarity.LEGENDARY,
+                                    },
+                                    { name: "Epic", value: Rarity.EPIC },
+                                    { name: "Rare", value: Rarity.RARE },
+                                    {
+                                        name: "Uncommon",
+                                        value: Rarity.UNCOMMON,
+                                    },
+                                    { name: "Common", value: Rarity.COMMON },
+                                ),
+                        ),
+                ),
+            ),
+        parseAddOptions: (interaction) => {
+            const { intervalHours, startAt } =
+                parseIntervalOptions(interaction);
+            const opts: BestCompsOptions = {};
+            const rarity = interaction.options.getString("rarity");
+            if (rarity) opts.rarity = rarity;
+
+            return {
+                channelId: interaction.options.getChannel("channel", true).id,
+                intervalHours,
+                optionsJson:
+                    Object.keys(opts).length > 0 ? JSON.stringify(opts) : null,
+                startAt,
+            };
+        },
+        renderer: async (ctx) => {
+            const opts: BestCompsOptions = ctx.optionsJson
+                ? JSON.parse(ctx.optionsJson)
+                : {};
+            return renderBestCompsMessage(ctx.ownerUserId, opts);
+        },
+        formatOptions: (optionsJson) => {
+            if (!optionsJson) return "";
+            let opts: BestCompsOptions;
+            try {
+                opts = JSON.parse(optionsJson);
+            } catch {
+                return "";
+            }
+            const parts: string[] = [];
+            if (opts.rarity) parts.push(`rarity: ${opts.rarity}`);
+            return parts.length > 0 ? `[${parts.join(", ")}]` : "";
+        },
+    },
+    {
+        name: "relative-performance",
+        description: "Member performance relative to guild average",
+        buildAddSubcommand: (sc) =>
+            addEndOfSeasonOption(
+                addStartTimeOption(
+                    sc
+                        .setName("relative-performance")
+                        .setDescription(
+                            "Schedule periodic relative-performance posts",
+                        )
+                        .addChannelOption((opt) =>
+                            opt
+                                .setName("channel")
+                                .setDescription("The channel to post in")
+                                .setRequired(true),
+                        )
+                        .addIntegerOption((opt) =>
+                            opt
+                                .setName("every-hours")
+                                .setDescription(
+                                    "How often to post (in hours). Ignored if end-of-season is set.",
+                                )
+                                .setRequired(false)
+                                .setMinValue(1)
+                                .setMaxValue(168),
+                        )
+                        .addStringOption((opt) =>
+                            opt
+                                .setName("rarity")
+                                .setDescription("Boss rarity filter")
+                                .setRequired(false)
+                                .addChoices(
+                                    {
+                                        name: "Legendary+",
+                                        value: Rarity.LEGENDARY_PLUS,
+                                    },
+                                    { name: "Mythic", value: Rarity.MYTHIC },
+                                    {
+                                        name: "Legendary",
+                                        value: Rarity.LEGENDARY,
+                                    },
+                                    { name: "Epic", value: Rarity.EPIC },
+                                    { name: "Rare", value: Rarity.RARE },
+                                    {
+                                        name: "Uncommon",
+                                        value: Rarity.UNCOMMON,
+                                    },
+                                    { name: "Common", value: Rarity.COMMON },
+                                ),
+                        ),
+                ),
+            ),
+        parseAddOptions: (interaction) => {
+            const { intervalHours, startAt } =
+                parseIntervalOptions(interaction);
+            const opts: RelativePerformanceOptions = {};
+            const rarity = interaction.options.getString("rarity");
+            if (rarity) opts.rarity = rarity;
+
+            return {
+                channelId: interaction.options.getChannel("channel", true).id,
+                intervalHours,
+                optionsJson:
+                    Object.keys(opts).length > 0 ? JSON.stringify(opts) : null,
+                startAt,
+            };
+        },
+        renderer: async (ctx) => {
+            const opts: RelativePerformanceOptions = ctx.optionsJson
+                ? JSON.parse(ctx.optionsJson)
+                : {};
+            return renderRelativePerformanceMessage(ctx.ownerUserId, opts);
+        },
+        formatOptions: (optionsJson) => {
+            if (!optionsJson) return "";
+            let opts: RelativePerformanceOptions;
+            try {
+                opts = JSON.parse(optionsJson);
+            } catch {
+                return "";
+            }
+            const parts: string[] = [];
+            if (opts.rarity) parts.push(`rarity: ${opts.rarity}`);
+            return parts.length > 0 ? `[${parts.join(", ")}]` : "";
+        },
+    },
+    {
+        name: "season-achievements",
+        description: "Fun guild-wide superlatives and awards",
+        buildAddSubcommand: (sc) =>
+            addEndOfSeasonOption(
+                addStartTimeOption(
+                    sc
+                        .setName("season-achievements")
+                        .setDescription(
+                            "Schedule periodic season achievements posts",
+                        )
+                        .addChannelOption((opt) =>
+                            opt
+                                .setName("channel")
+                                .setDescription("The channel to post in")
+                                .setRequired(true),
+                        )
+                        .addIntegerOption((opt) =>
+                            opt
+                                .setName("every-hours")
+                                .setDescription(
+                                    "How often to post (in hours). Ignored if end-of-season is set.",
+                                )
+                                .setRequired(false)
+                                .setMinValue(1)
+                                .setMaxValue(168),
+                        ),
+                ),
+            ),
+        parseAddOptions: (interaction) => {
+            const { intervalHours, startAt } =
+                parseIntervalOptions(interaction);
+            return {
+                channelId: interaction.options.getChannel("channel", true).id,
+                intervalHours,
+                optionsJson: null,
+                startAt,
+            };
+        },
+        renderer: async (ctx) => {
+            return renderAchievementsMessage(ctx.ownerUserId);
+        },
+    },
+    {
+        name: "season-tokens",
+        description: "Token usage per member in a season",
+        buildAddSubcommand: (sc) =>
+            addEndOfSeasonOption(
+                addStartTimeOption(
+                    sc
+                        .setName("season-tokens")
+                        .setDescription("Schedule periodic season tokens posts")
+                        .addChannelOption((opt) =>
+                            opt
+                                .setName("channel")
+                                .setDescription("The channel to post in")
+                                .setRequired(true),
+                        )
+                        .addIntegerOption((opt) =>
+                            opt
+                                .setName("every-hours")
+                                .setDescription(
+                                    "How often to post (in hours). Ignored if end-of-season is set.",
+                                )
+                                .setRequired(false)
+                                .setMinValue(1)
+                                .setMaxValue(168),
+                        )
+                        .addStringOption((opt) =>
+                            opt
+                                .setName("rarity")
+                                .setDescription("Boss rarity filter")
+                                .setRequired(false)
+                                .addChoices(
+                                    {
+                                        name: "Legendary+",
+                                        value: Rarity.LEGENDARY_PLUS,
+                                    },
+                                    { name: "Mythic", value: Rarity.MYTHIC },
+                                    {
+                                        name: "Legendary",
+                                        value: Rarity.LEGENDARY,
+                                    },
+                                    { name: "Epic", value: Rarity.EPIC },
+                                    { name: "Rare", value: Rarity.RARE },
+                                    {
+                                        name: "Uncommon",
+                                        value: Rarity.UNCOMMON,
+                                    },
+                                    { name: "Common", value: Rarity.COMMON },
+                                ),
+                        ),
+                ),
+            ),
+        parseAddOptions: (interaction) => {
+            const { intervalHours, startAt } =
+                parseIntervalOptions(interaction);
+            const opts: SeasonTokensOptions = {};
+            const rarity = interaction.options.getString("rarity");
+            if (rarity) opts.rarity = rarity;
+
+            return {
+                channelId: interaction.options.getChannel("channel", true).id,
+                intervalHours,
+                optionsJson:
+                    Object.keys(opts).length > 0 ? JSON.stringify(opts) : null,
+                startAt,
+            };
+        },
+        renderer: async (ctx) => {
+            const opts: SeasonTokensOptions = ctx.optionsJson
+                ? JSON.parse(ctx.optionsJson)
+                : {};
+            return renderSeasonTokensMessage(ctx.ownerUserId, opts);
+        },
+        formatOptions: (optionsJson) => {
+            if (!optionsJson) return "";
+            let opts: SeasonTokensOptions;
+            try {
+                opts = JSON.parse(optionsJson);
+            } catch {
+                return "";
+            }
+            const parts: string[] = [];
+            if (opts.rarity) parts.push(`rarity: ${opts.rarity}`);
+            return parts.length > 0 ? `[${parts.join(", ")}]` : "";
+        },
+    },
+    {
+        name: "member-stats-per-season",
+        description: "Detailed per-member stats and team distributions",
+        buildAddSubcommand: (sc) =>
+            addEndOfSeasonOption(
+                addStartTimeOption(
+                    sc
+                        .setName("member-stats-per-season")
+                        .setDescription("Schedule periodic member stats posts")
+                        .addChannelOption((opt) =>
+                            opt
+                                .setName("channel")
+                                .setDescription("The channel to post in")
+                                .setRequired(true),
+                        )
+                        .addIntegerOption((opt) =>
+                            opt
+                                .setName("every-hours")
+                                .setDescription(
+                                    "How often to post (in hours). Ignored if end-of-season is set.",
+                                )
+                                .setRequired(false)
+                                .setMinValue(1)
+                                .setMaxValue(168),
+                        )
+                        .addStringOption((opt) =>
+                            opt
+                                .setName("rarity")
+                                .setDescription("Boss rarity filter")
+                                .setRequired(false)
+                                .addChoices(
+                                    {
+                                        name: "Legendary+",
+                                        value: Rarity.LEGENDARY_PLUS,
+                                    },
+                                    { name: "Mythic", value: Rarity.MYTHIC },
+                                    {
+                                        name: "Legendary",
+                                        value: Rarity.LEGENDARY,
+                                    },
+                                    { name: "Epic", value: Rarity.EPIC },
+                                    { name: "Rare", value: Rarity.RARE },
+                                    {
+                                        name: "Uncommon",
+                                        value: Rarity.UNCOMMON,
+                                    },
+                                    { name: "Common", value: Rarity.COMMON },
+                                ),
+                        ),
+                ),
+            ),
+        parseAddOptions: (interaction) => {
+            const { intervalHours, startAt } =
+                parseIntervalOptions(interaction);
+            const opts: MemberStatsBySeasonOptions = {};
+            const rarity = interaction.options.getString("rarity");
+            if (rarity) opts.rarity = rarity;
+
+            return {
+                channelId: interaction.options.getChannel("channel", true).id,
+                intervalHours,
+                optionsJson:
+                    Object.keys(opts).length > 0 ? JSON.stringify(opts) : null,
+                startAt,
+            };
+        },
+        renderer: async (ctx) => {
+            const opts: MemberStatsBySeasonOptions = ctx.optionsJson
+                ? JSON.parse(ctx.optionsJson)
+                : {};
+            return renderMemberStatsBySeasonMessage(ctx.ownerUserId, opts);
+        },
+        formatOptions: (optionsJson) => {
+            if (!optionsJson) return "";
+            let opts: MemberStatsBySeasonOptions;
             try {
                 opts = JSON.parse(optionsJson);
             } catch {

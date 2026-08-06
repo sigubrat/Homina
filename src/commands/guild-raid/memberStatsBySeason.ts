@@ -17,12 +17,149 @@ import type { TeamDistribution } from "@/models/types/TeamDistribution";
 import {
     AttachmentBuilder,
     ChatInputCommandInteraction,
+    EmbedBuilder,
     SlashCommandBuilder,
 } from "discord.js";
 import { Pagination } from "pagination.djs";
 
 export interface MemberStatsPerSeason extends GuildRaidResult {
     distribution: TeamDistribution;
+}
+
+export interface MemberStatsBySeasonOptions {
+    rarity?: string;
+}
+
+export async function renderMemberStatsBySeasonMessage(
+    ownerUserId: string,
+    options: MemberStatsBySeasonOptions = {},
+): Promise<{ embeds: EmbedBuilder[] }> {
+    const season = getCurrentSeason();
+    const rarity = (options.rarity as Rarity) ?? undefined;
+
+    const service = new GuildService();
+    const raidAnalytics = new RaidAnalyticsService();
+    const metaTeamService = new MetaTeamService();
+
+    const result = await raidAnalytics.getGuildRaidResultBySeason(
+        ownerUserId,
+        season,
+        rarity,
+        true,
+    );
+
+    if (Object.keys(result).length === 0) {
+        return {
+            embeds: [
+                new EmbedBuilder()
+                    .setColor(0xff0000)
+                    .setDescription("No data found for the current season."),
+            ],
+        };
+    }
+
+    const players = await service.fetchGuildMembers(ownerUserId);
+    for (const entry of result) {
+        const player = players.find((p) => p.userId === entry.username);
+        if (player) entry.username = player.displayName;
+    }
+
+    const playersNotParticipated = players.filter(
+        (player) =>
+            !result.some((entry) => entry.username === player.displayName),
+    );
+    playersNotParticipated.forEach((player) => {
+        result.push({
+            username: player.displayName,
+            totalDamage: 0,
+            totalTokens: 0,
+            boss: "None",
+            set: 0,
+            tier: 0,
+            startedOn: 0,
+            bombCount: 0,
+        });
+    });
+
+    result.sort((a, b) => b.totalDamage - a.totalDamage);
+
+    let teamDistributions =
+        await metaTeamService.getMetaTeamDistributionPerPlayer(
+            ownerUserId,
+            season,
+            rarity,
+        );
+
+    if (!teamDistributions) {
+        return {
+            embeds: [
+                new EmbedBuilder()
+                    .setColor(0xff0000)
+                    .setDescription(
+                        "No team distributions found for the current season.",
+                    ),
+            ],
+        };
+    }
+
+    teamDistributions = replaceUserIdKeysWithDisplayNames(
+        teamDistributions,
+        players,
+    );
+
+    const mergedResults: MemberStatsPerSeason[] = [];
+    result.forEach((res) => {
+        const distribution = teamDistributions[res.username];
+        if (distribution) {
+            mergedResults.push({ ...res, distribution });
+        }
+    });
+
+    const fmt = (v: number | undefined) =>
+        `\`${(v ?? 0).toLocaleString("default", { maximumFractionDigits: 1 })}%\``;
+
+    // Build embeds in chunks of 6 fields (Discord max 25, but keep readable)
+    const embeds: EmbedBuilder[] = [];
+    const FIELDS_PER_EMBED = 6;
+
+    for (let i = 0; i < mergedResults.length; i += FIELDS_PER_EMBED) {
+        const chunk = mergedResults.slice(i, i + FIELDS_PER_EMBED);
+        const embed = new EmbedBuilder()
+            .setColor("#0099ff")
+            .setTimestamp()
+            .setFooter({ text: STANDARD_FOOTER_TEXT });
+
+        if (i === 0) {
+            embed
+                .setTitle(`Member stats for season ${season} (current season)`)
+                .setDescription(
+                    "**Teams:** MH = Multihit, AM = Admech, NE = Neuro, CU = Custodes, BS = Battlesuit, OT = Other" +
+                        (rarity ? `\n**Rarity filter:** ${rarity}` : ""),
+                );
+        }
+
+        for (const stats of chunk) {
+            const formattedDamage = stats.totalDamage.toLocaleString();
+            const formattedTokens = stats.totalTokens.toLocaleString();
+            const formattedAvg = (
+                stats.totalDamage /
+                (stats.totalTokens > 0 ? stats.totalTokens : 1)
+            ).toLocaleString("default", { maximumFractionDigits: 1 });
+            const d = stats.distribution;
+            const teamLine = `MH: ${fmt(d.multihit)} AM: ${fmt(d.mech)} NE: ${fmt(d.neuro)} CU: ${fmt(d.custodes)} BS: ${fmt(d.battlesuit)} OT: ${fmt(d.other)}`;
+
+            embed.addFields({
+                name: stats.username,
+                value: `Dmg: \`${formattedDamage}\` — Tokens: \`${formattedTokens}\` — Avg: \`${formattedAvg}\`\n${teamLine}`,
+                inline: false,
+            });
+        }
+
+        embeds.push(embed);
+    }
+
+    // Discord allows max 10 embeds per message
+    return { embeds: embeds.slice(0, 10) };
 }
 
 export const cooldown = 5;

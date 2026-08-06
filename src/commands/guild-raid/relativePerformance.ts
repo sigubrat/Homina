@@ -61,6 +61,95 @@ export const data = new SlashCommandBuilder()
             ),
     );
 
+export interface RelativePerformanceOptions {
+    rarity?: string;
+}
+
+export async function renderRelativePerformanceMessage(
+    ownerUserId: string,
+    options: RelativePerformanceOptions = {},
+): Promise<{ embeds: EmbedBuilder[]; files?: AttachmentBuilder[] }> {
+    const season = getCurrentSeason();
+    const rarity = (options.rarity as Rarity) ?? undefined;
+    const seasonCount = 1;
+    const rarityDisplay = rarity ?? "All Rarities";
+    const rarityFileSafe = rarityDisplay.replace(/\s+/g, "-");
+
+    const service = new RaidAnalyticsService();
+    const result = await service.getWeightedRelativePerformance(
+        ownerUserId,
+        season,
+        rarity,
+        seasonCount,
+    );
+
+    if (Object.keys(result).length === 0) {
+        return {
+            embeds: [
+                new EmbedBuilder()
+                    .setColor(0xff0000)
+                    .setDescription(
+                        "No data found for the current season and rarity.",
+                    ),
+            ],
+        };
+    }
+
+    const chartService = new ChartService();
+    const seasonDisplay = `Season ${season} (current season)`;
+
+    const chartBuffer = await chartService.createRelativePerformanceChart(
+        result,
+        `Relative Performance - ${seasonDisplay} (${rarityDisplay})`,
+    );
+
+    const attachment = new AttachmentBuilder(chartBuffer, {
+        name: `relative-performance-${season}-${rarityFileSafe}.png`,
+    });
+
+    const sortedEntries = Object.entries(result).sort(([, a], [, b]) => b - a);
+
+    const top3 = sortedEntries
+        .slice(0, 3)
+        .map(
+            ([name, value], i) =>
+                `${["🥇", "🥈", "🥉"][i]} **${name}**: ${formatDelta(value)}`,
+        )
+        .join("\n");
+
+    const bottom3 = sortedEntries
+        .slice(-3)
+        .reverse()
+        .map(([name, value]) => `⚠️ **${name}**: ${formatDelta(value)}`)
+        .join("\n");
+
+    const embed = new EmbedBuilder()
+        .setColor(0x0099ff)
+        .setTitle(`Relative Performance — ${seasonDisplay} (${rarityDisplay})`)
+        .setDescription(
+            "This chart shows how each member performs relative to the guild average across all bosses at the specified rarity.\n\n" +
+                "- **0%** = exactly at guild average\n" +
+                "- **+X%** = above guild average\n" +
+                "- **-X%** = below guild average",
+        )
+        .setFields(
+            { name: "Top Performers", value: top3 || "N/A", inline: true },
+            {
+                name: "Potential for improvement",
+                value: bottom3 || "N/A",
+                inline: true,
+            },
+        )
+        .setImage(
+            `attachment://relative-performance-${season}-${rarityFileSafe}.png`,
+        )
+        .setFooter({
+            text: "Inspired by TheTimmyMan's TacticusAnalytics\nReferral code: HUG-44-CAN if you want to support the bot development",
+        });
+
+    return { embeds: [embed], files: [attachment] };
+}
+
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 

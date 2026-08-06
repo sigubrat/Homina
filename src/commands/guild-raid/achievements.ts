@@ -27,6 +27,40 @@ export const data = new SlashCommandBuilder()
             .setMinValue(MINIMUM_SEASON_THRESHOLD),
     );
 
+export async function renderAchievementsMessage(
+    ownerUserId: string,
+): Promise<{ embeds: EmbedBuilder[] }> {
+    const service = new AchievementService();
+    const achievements = await service.getGuildAchievements(ownerUserId);
+
+    if (!achievements || achievements.length === 0) {
+        return {
+            embeds: [
+                new EmbedBuilder()
+                    .setColor(0xff0000)
+                    .setDescription(
+                        "No achievements found for the current season.",
+                    ),
+            ],
+        };
+    }
+
+    const season = getCurrentSeason();
+    const achievementLines = achievements.map(
+        (a) =>
+            `${a.emoji} **${a.name}** — ${a.player}\n╰ *${a.description}*: ${a.value}`,
+    );
+
+    const embed = new EmbedBuilder()
+        .setColor(0xf1c40f)
+        .setTitle(`Guild Awards — Season ${season}`)
+        .setDescription(achievementLines.join("\n\n"))
+        .setTimestamp()
+        .setFooter({ text: STANDARD_FOOTER_TEXT });
+
+    return { embeds: [embed] };
+}
+
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 
