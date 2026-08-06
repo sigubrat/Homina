@@ -131,6 +131,32 @@ export function isGuildRaidOffSeason(now: Date = new Date()): boolean {
 }
 
 /**
+ * Returns the next season-end timestamp (Tuesday 09:00 UTC) strictly after `now`.
+ * If `now` is during off-season, returns the end of the *next* active season,
+ * not the one that just ended.
+ */
+export function getNextSeasonEnd(now: Date = new Date()): Date {
+    const elapsed = now.getTime() - SEASON_EPOCH_MS;
+    if (elapsed < 0) {
+        // Before the epoch — first season end is epoch + SEASON_ACTIVE_MS
+        return new Date(SEASON_EPOCH_MS + SEASON_ACTIVE_MS);
+    }
+    const cycleIndex = Math.floor(elapsed / SEASON_CYCLE_MS);
+    const positionInCycle = elapsed % SEASON_CYCLE_MS;
+
+    if (positionInCycle < SEASON_ACTIVE_MS) {
+        // Currently in active season — end is this cycle's active end
+        return new Date(
+            SEASON_EPOCH_MS + cycleIndex * SEASON_CYCLE_MS + SEASON_ACTIVE_MS,
+        );
+    }
+    // In off-season — next end is the following cycle's active end
+    return new Date(
+        SEASON_EPOCH_MS + (cycleIndex + 1) * SEASON_CYCLE_MS + SEASON_ACTIVE_MS,
+    );
+}
+
+/**
  * Calculates the current season number based on the provided date.
  *
  * The calculation assumes each season lasts for 14 days, starting from a predefined
