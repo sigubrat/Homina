@@ -73,6 +73,133 @@ export const data = new SlashCommandBuilder()
             .setRequired(false),
     );
 
+export interface SeasonTokensOptions {
+    rarity?: string;
+}
+
+export async function renderSeasonTokensMessage(
+    ownerUserId: string,
+    options: SeasonTokensOptions = {},
+): Promise<{ embeds: EmbedBuilder[]; files?: AttachmentBuilder[] }> {
+    const season = getCurrentSeason();
+    const rarity = (options.rarity as Rarity) ?? undefined;
+    const averageMethod = "Median";
+
+    const service = new GuildService();
+    const raidAnalytics = new RaidAnalyticsService();
+    const availabilityService = new AvailabilityService();
+
+    const result = await raidAnalytics.getGuildRaidResultBySeason(
+        ownerUserId,
+        season,
+        rarity,
+        true,
+    );
+
+    if (result.length === 0) {
+        return {
+            embeds: [
+                new EmbedBuilder()
+                    .setColor(0xff0000)
+                    .setDescription("No data found for the current season."),
+            ],
+        };
+    }
+
+    const players = await service.fetchGuildMembers(ownerUserId);
+    const transformedResult = replaceUserIdFieldWithDisplayNames(
+        result,
+        "username",
+        players,
+    );
+
+    const tokensUsed: Record<string, number> = {};
+    for (const entry of transformedResult) {
+        tokensUsed[entry.username] = entry.totalTokens || 0;
+    }
+
+    const playersNotParticipated = players.filter(
+        (player) =>
+            !transformedResult.some(
+                (entry) => entry.username === player.displayName,
+            ),
+    );
+    for (const player of playersNotParticipated) {
+        tokensUsed[player.displayName] = 0;
+    }
+
+    const chartService = new ChartService();
+    const avg = numericMedian(Object.values(tokensUsed));
+
+    // Fetch available tokens for overlay (current season)
+    let availableTokensMap: Record<string, number> | undefined;
+    const availability =
+        await availabilityService.getAvailableTokensAndBombsWithMetadata(
+            ownerUserId,
+        );
+    if (availability && Object.keys(availability).length > 0) {
+        const namedAvailability = replaceUserIdKeysWithDisplayNames(
+            availability,
+            players,
+            true,
+        );
+        availableTokensMap = {};
+        for (const [name, data] of Object.entries(namedAvailability)) {
+            availableTokensMap[name] = data.tokens;
+        }
+    }
+
+    const chartTitle = `Tokens used in season ${season}${rarity ? ` (${rarity})` : ""}`;
+
+    const chartBuffer = availableTokensMap
+        ? await chartService.createTokensUsedWithAvailabilityChart(
+              tokensUsed,
+              availableTokensMap,
+              chartTitle,
+              avg,
+              averageMethod,
+              30,
+          )
+        : await chartService.createNumberUsedChart(
+              tokensUsed,
+              chartTitle,
+              avg,
+              averageMethod,
+              30,
+          );
+
+    const attachment = new AttachmentBuilder(chartBuffer, {
+        name: `tokens-used-season-${season}.png`,
+    });
+
+    const embed = new EmbedBuilder()
+        .setColor("#0099ff")
+        .setTitle(
+            `Tokens used in season ${season}${rarity ? ` (${rarity})` : ""}`,
+        )
+        .setDescription(
+            `The graph shows the number of tokens used by each member in season ${season}.\n` +
+                "- **Bar chart:** the number of tokens used by each member.\n" +
+                `- **Line chart:** represents the ${averageMethod.toLowerCase()} number of tokens used by the guild.\n` +
+                "- **Includes primes:** Yes",
+        )
+        .addFields(
+            {
+                name: averageMethod,
+                value: `The ${averageMethod} number of tokens used: ${avg.toFixed(1)}`,
+            },
+            {
+                name: "Standard deviation",
+                value: `The standard deviation of tokens used: ${standardDeviation(Object.values(tokensUsed)).toFixed(1)}`,
+            },
+        )
+        .setImage(`attachment://tokens-used-season-${season}.png`)
+        .setTimestamp()
+        .setFooter({ text: STANDARD_FOOTER_TEXT });
+
+    return { embeds: [embed], files: [attachment] };
+}
+
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 

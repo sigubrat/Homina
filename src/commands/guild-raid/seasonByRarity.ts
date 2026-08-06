@@ -92,6 +92,96 @@ export const data = new SlashCommandBuilder()
         "Show guild raid stats for each boss at a specific rarity in a given season",
     );
 
+export interface SeasonByRarityOptions {
+    rarity?: string;
+    bossType?: string;
+}
+
+export async function renderSeasonByRarityMessage(
+    ownerUserId: string,
+    options: SeasonByRarityOptions = {},
+): Promise<{ embeds: EmbedBuilder[]; files?: AttachmentBuilder[] }> {
+    const season = getCurrentSeason();
+    const rarity = (options.rarity ?? Rarity.LEGENDARY_PLUS) as Rarity;
+    const bossType = options.bossType ?? "main";
+    const encounterTypeFilter =
+        bossType === "prime" ? EncounterType.SIDE_BOSS : EncounterType.BOSS;
+    const sortBy = SortBy.TOTAL_DAMAGE;
+    const averageMethod = "Median";
+
+    const service = new RaidAnalyticsService();
+    const result = await service.getGuildRaidResultByRaritySeasonPerBoss(
+        ownerUserId,
+        season,
+        rarity,
+        true,
+        encounterTypeFilter,
+    );
+
+    if (Object.keys(result).length === 0) {
+        return {
+            embeds: [
+                new EmbedBuilder()
+                    .setColor(0xff0000)
+                    .setDescription("No data found for the current season."),
+            ],
+        };
+    }
+
+    const chartService = new ChartService();
+    const bossTypeLabel = bossType === "prime" ? "Primes" : "Main Bosses";
+
+    const chartPromises = Object.entries(result).map(
+        async ([bossName, data]) => {
+            const damagePerRun = data.map((val) =>
+                val.totalTokens > 0 ? val.totalDamage / val.totalTokens : 0,
+            );
+            const avgDamage = numericMedian(damagePerRun);
+            const sortedData = sortGuildRaidResults(data, sortBy);
+
+            return chartService.createSeasonDamageChartAvg(
+                sortedData,
+                `Damage dealt in season ${season} - ${
+                    data[0]
+                        ? mapTierToRarity(data[0].tier, data[0].set, false)
+                        : ""
+                } ${data[0]?.boss ?? bossName}`,
+                averageMethod,
+                avgDamage,
+                true,
+            );
+        },
+    );
+
+    const charts = await Promise.all(chartPromises);
+    const chartAttachments = charts.map(
+        (chartBuffer, index) =>
+            new AttachmentBuilder(chartBuffer, { name: `graph-${index}.png` }),
+    );
+
+    const primeBarLine =
+        bossType !== "prime"
+            ? "\n- Purple bars (left y-axis): Damage dealt to primes"
+            : "";
+
+    const embed = new EmbedBuilder()
+        .setColor(0x0099ff)
+        .setTitle(`Damage dealt in season ${season} — ${bossTypeLabel}`)
+        .setDescription(
+            "The graph shows the damage dealt to individual guild bosses\n" +
+                "- Blue bars (left y-axis): Total damage dealt to boss\n" +
+                "- Grey dotted line (leftmost y-axis): Avg damage per token\n" +
+                "- Red line (leftmost y-axis): Max damage per token\n" +
+                "- Orange line (right y-axis): Total tokens used" +
+                primeBarLine +
+                "\n- Yellow dotted line (left y-axis): Guild average damage",
+        )
+        .setImage("attachment://graph-0.png")
+        .setFooter({ text: STANDARD_FOOTER_TEXT });
+
+    return { embeds: [embed], files: chartAttachments.slice(0, 10) };
+}
+
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply();
 
