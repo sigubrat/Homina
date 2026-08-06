@@ -6,6 +6,7 @@ import {
     calculateCurrentSeason,
     isInvalidSeason,
     toMinutes,
+    isGuildRaidOffSeason,
 } from "@/lib/utils/timeUtils";
 import { describe, expect, test } from "bun:test";
 
@@ -154,5 +155,76 @@ describe("timeUtilsSuite - Algebra", () => {
 
     test("isInvalidSeason - should return true for zero", () => {
         expect(isInvalidSeason(0)).toBe(true);
+    });
+
+    // Season 85 starts Wed Oct 8 2025 10:00 UTC, 14-day cycle.
+    // Active: Wed 10:00 UTC → Tue 09:00 UTC (13d 23h)
+    // Off-season: Tue 09:00 UTC → Wed 10:00 UTC (25h)
+    test("isGuildRaidOffSeason - should return false during active season (mid-season)", () => {
+        // Saturday Oct 11, 2025 12:00 UTC — well within season 85
+        expect(isGuildRaidOffSeason(new Date("2025-10-11T12:00:00Z"))).toBe(
+            false,
+        );
+    });
+
+    test("isGuildRaidOffSeason - should return false right at season start", () => {
+        // Wed Oct 8, 2025 10:00 UTC — season 85 starts
+        expect(isGuildRaidOffSeason(new Date("2025-10-08T10:00:00Z"))).toBe(
+            false,
+        );
+    });
+
+    test("isGuildRaidOffSeason - should return false just before off-season starts", () => {
+        // Tue Oct 21, 2025 08:59 UTC — last minute of active season 85
+        expect(isGuildRaidOffSeason(new Date("2025-10-21T08:59:00Z"))).toBe(
+            false,
+        );
+    });
+
+    test("isGuildRaidOffSeason - should return true right when off-season starts", () => {
+        // Tue Oct 21, 2025 09:00 UTC — off-season begins
+        expect(isGuildRaidOffSeason(new Date("2025-10-21T09:00:00Z"))).toBe(
+            true,
+        );
+    });
+
+    test("isGuildRaidOffSeason - should return true in the middle of off-season", () => {
+        // Tue Oct 21, 2025 20:00 UTC — middle of off-season gap
+        expect(isGuildRaidOffSeason(new Date("2025-10-21T20:00:00Z"))).toBe(
+            true,
+        );
+    });
+
+    test("isGuildRaidOffSeason - should return true just before next season starts", () => {
+        // Wed Oct 22, 2025 09:59 UTC — last minute of off-season
+        expect(isGuildRaidOffSeason(new Date("2025-10-22T09:59:00Z"))).toBe(
+            true,
+        );
+    });
+
+    test("isGuildRaidOffSeason - should return false when next season starts", () => {
+        // Wed Oct 22, 2025 10:00 UTC — season 86 starts
+        expect(isGuildRaidOffSeason(new Date("2025-10-22T10:00:00Z"))).toBe(
+            false,
+        );
+    });
+
+    test("isGuildRaidOffSeason - should return false for dates before the epoch", () => {
+        expect(isGuildRaidOffSeason(new Date("2020-01-01T00:00:00Z"))).toBe(
+            false,
+        );
+    });
+
+    test("isGuildRaidOffSeason - should work for a later season off-season window", () => {
+        // Season 86 off-season: Tue Nov 4, 2025 09:00 UTC → Wed Nov 5, 2025 10:00 UTC
+        expect(isGuildRaidOffSeason(new Date("2025-11-04T09:00:00Z"))).toBe(
+            true,
+        );
+        expect(isGuildRaidOffSeason(new Date("2025-11-05T09:59:00Z"))).toBe(
+            true,
+        );
+        expect(isGuildRaidOffSeason(new Date("2025-11-05T10:00:00Z"))).toBe(
+            false,
+        );
     });
 });

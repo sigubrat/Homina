@@ -8,6 +8,7 @@ import {
     SCHEDULE_RETRY_MINUTES,
 } from "@/lib/configs/constants";
 import { ExternalApiError } from "@/models/errors/ServiceError";
+import { isGuildRaidOffSeason } from "@/lib/utils/timeUtils";
 import type { Client } from "discord.js";
 
 const CONCURRENCY_LIMIT = 3;
@@ -54,6 +55,8 @@ export class ScheduledCommandsJob {
 
     private async tick(): Promise<void> {
         try {
+            if (isGuildRaidOffSeason()) return;
+
             const due = await dbController.getDueSchedules(50);
             if (due.length === 0) return;
 

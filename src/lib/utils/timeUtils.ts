@@ -113,6 +113,23 @@ export function withinNextHour(cooldown: string): boolean {
     return num < 1;
 }
 
+/** Epoch for season calculations in UTC (Season 85 start: Wed Oct 8 2025 10:00 UTC). */
+const SEASON_EPOCH_MS = Date.UTC(2025, 9, 8, 10, 0, 0);
+const SEASON_CYCLE_MS = 14 * 24 * 60 * 60 * 1000;
+/** Active season duration: Wed 10:00 UTC → Tue 09:00 UTC = 12 days 23 hours. */
+const SEASON_ACTIVE_MS = (12 * 24 + 23) * 60 * 60 * 1000;
+
+/**
+ * Returns `true` when the given date falls between guild raid seasons
+ * (Tuesday 09:00 UTC → Wednesday 10:00 UTC, a 25-hour window every 14 days).
+ */
+export function isGuildRaidOffSeason(now: Date = new Date()): boolean {
+    const elapsed = now.getTime() - SEASON_EPOCH_MS;
+    if (elapsed < 0) return false;
+    const positionInCycle = elapsed % SEASON_CYCLE_MS;
+    return positionInCycle >= SEASON_ACTIVE_MS;
+}
+
 /**
  * Calculates the current season number based on the provided date.
  *
