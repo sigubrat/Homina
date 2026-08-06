@@ -1264,12 +1264,15 @@ export class DatabaseController {
 
         for (const row of overdue) {
             const intervalHours = row.get("intervalHours") as number;
+            const intervalMs = intervalHours * 60 * 60 * 1000;
+            const anchor = (row.get("nextRunAt") as Date).getTime();
+            // Advance to the next future slot based on the original anchor
+            let next = anchor + intervalMs;
+            while (next <= Date.now()) {
+                next += intervalMs;
+            }
             await model?.update(
-                {
-                    nextRunAt: new Date(
-                        Date.now() + intervalHours * 60 * 60 * 1000,
-                    ),
-                },
+                { nextRunAt: new Date(next) },
                 { where: { id: row.get("id") } },
             );
         }
