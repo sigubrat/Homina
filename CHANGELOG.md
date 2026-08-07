@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.22.0]
 
-A major upgrade to the scheduling system — more commands, smarter timing, and a new way to get your end-of-season summary delivered automatically.
+Summer vacay is over and I'm back with another update. This version aims to upgrade to the scheduling system with more commands, smarter timing, and a new way to get your end-of-season summary delivered automatically.
+I also hope this code can help alleviate the crippling pain of another summer holiday coming to or nearing an end: HOMINAUGUST
 
 ### Added
 
