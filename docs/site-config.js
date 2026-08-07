@@ -4,10 +4,10 @@
 var SITE_CONFIG = {
     // Temporary code banner
     showBanner: true,
-    tempCode: "HOMINA6K",
+    tempCode: "HOMINAUGUST",
     tempNote: "Limited-time code \u2013 redeem in-game before it expires.",
     // ISO date string (YYYY-MM-DD) after which the banner auto-hides. Set to null to disable expiry.
-    bannerExpiryDate: "2026-06-22"
+    bannerExpiryDate: "2026-08-14"
 };
 
 (function () {
