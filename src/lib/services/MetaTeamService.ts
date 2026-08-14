@@ -53,6 +53,8 @@ export class MetaTeamService {
                 custodes: 0,
                 battlesuit: 0,
                 battlesuitDamage: 0,
+                lavstodes: 0,
+                lavstodesDamage: 0,
             };
 
             for (const entry of entries) {
@@ -94,6 +96,12 @@ export class MetaTeamService {
                         (totalDistribution.battlesuit || 0) + 1;
                     totalDistribution.battlesuitDamage =
                         (totalDistribution.battlesuitDamage || 0) +
+                        entry.damageDealt;
+                } else if (team === MetaTeams.LAVSTODES) {
+                    totalDistribution.lavstodes =
+                        (totalDistribution.lavstodes || 0) + 1;
+                    totalDistribution.lavstodesDamage =
+                        (totalDistribution.lavstodesDamage || 0) +
                         entry.damageDealt;
                 } else {
                     totalDistribution.other =
@@ -175,6 +183,8 @@ export class MetaTeamService {
                     custodesDamage: 0,
                     battlesuit: 0,
                     battlesuitDamage: 0,
+                    lavstodes: 0,
+                    lavstodesDamage: 0,
                 };
 
                 for (const entry of entries) {
@@ -225,6 +235,13 @@ export class MetaTeamService {
                                 (totalDistribution.battlesuitDamage || 0) +
                                 entry.damageDealt;
                             break;
+                        case MetaTeams.LAVSTODES:
+                            totalDistribution.lavstodes =
+                                (totalDistribution.lavstodes || 0) + 1;
+                            totalDistribution.lavstodesDamage =
+                                (totalDistribution.lavstodesDamage || 0) +
+                                entry.damageDealt;
+                            break;
                         default:
                             totalDistribution.other =
                                 (totalDistribution.other || 0) + 1;
@@ -241,6 +258,7 @@ export class MetaTeamService {
                     totalDistribution.neuroDamage! +
                     totalDistribution.custodesDamage! +
                     totalDistribution.battlesuitDamage! +
+                    totalDistribution.lavstodesDamage! +
                     totalDistribution.otherDamage!;
 
                 if (totalDamage === 0 || totalEntries === 0) {
@@ -256,6 +274,8 @@ export class MetaTeamService {
                         custodesDamage: 0,
                         battlesuit: 0,
                         battlesuitDamage: 0,
+                        lavstodes: 0,
+                        lavstodesDamage: 0,
                         otherDamage: 0,
                     };
                     continue;
@@ -269,6 +289,8 @@ export class MetaTeamService {
                     other: (totalDistribution.other / totalEntries) * 100,
                     battlesuit:
                         (totalDistribution.battlesuit / totalEntries) * 100,
+                    lavstodes:
+                        (totalDistribution.lavstodes / totalEntries) * 100,
                     mechDamage:
                         (totalDistribution.mechDamage! / totalDamage) * 100,
                     multihitDamage:
@@ -281,6 +303,9 @@ export class MetaTeamService {
                         (totalDistribution.custodesDamage! / totalDamage) * 100,
                     battlesuitDamage:
                         (totalDistribution.battlesuitDamage! / totalDamage) *
+                        100,
+                    lavstodesDamage:
+                        (totalDistribution.lavstodesDamage! / totalDamage) *
                         100,
                 };
 

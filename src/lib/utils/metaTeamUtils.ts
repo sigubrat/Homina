@@ -8,6 +8,7 @@ import { META_TEAM_THRESHOLD } from "../configs/constants";
 import {
     battlesuitTeam,
     custodesTeam,
+    lavstodesTeam,
     lynchpinHeroes,
     mechTeam,
     multiHitTeam,
@@ -20,6 +21,7 @@ export interface TeamCheck {
     inMech: boolean;
     inNeuro: boolean;
     inCustodes: boolean;
+    inLavstodes: boolean;
 }
 
 /**
@@ -35,6 +37,7 @@ export function inTeamsCheck(hero: string): TeamCheck {
         inNeuro: false,
         inCustodes: false,
         inBattlesuit: false,
+        inLavstodes: false,
     };
 
     teamCheck.inMulti = multiHitTeam.includes(hero);
@@ -42,6 +45,7 @@ export function inTeamsCheck(hero: string): TeamCheck {
     teamCheck.inNeuro = neuroTeam.includes(hero);
     teamCheck.inCustodes = custodesTeam.includes(hero);
     teamCheck.inBattlesuit = battlesuitTeam.includes(hero);
+    teamCheck.inLavstodes = lavstodesTeam.includes(hero);
 
     return teamCheck;
 }
@@ -60,7 +64,7 @@ export function hasLynchpinHeroes(heroes: string[], team: string): boolean {
     }
 
     return requiredHeroes.every((requiredHero) =>
-        heroes.includes(requiredHero)
+        heroes.includes(requiredHero),
     );
 }
 
@@ -83,6 +87,7 @@ export function getMetaTeam(heroes: string[]): MetaTeams {
         neuro: 0,
         custodes: 0,
         battlesuit: 0,
+        lavstodes: 0,
     };
 
     teamCheck.forEach((check) => {
@@ -91,6 +96,7 @@ export function getMetaTeam(heroes: string[]): MetaTeams {
         if (check.inNeuro) distribution.neuro++;
         if (check.inCustodes) distribution.custodes++;
         if (check.inBattlesuit) distribution.battlesuit++;
+        if (check.inLavstodes) distribution.lavstodes++;
     });
 
     if (
@@ -108,6 +114,11 @@ export function getMetaTeam(heroes: string[]): MetaTeams {
         hasLynchpinHeroes(heroes, MetaTeams.NEURO)
     ) {
         return MetaTeams.NEURO;
+    } else if (
+        distribution.lavstodes >= META_TEAM_THRESHOLD &&
+        hasLynchpinHeroes(heroes, MetaTeams.LAVSTODES)
+    ) {
+        return MetaTeams.LAVSTODES;
     } else if (
         distribution.custodes >= META_TEAM_THRESHOLD &&
         hasLynchpinHeroes(heroes, MetaTeams.CUSTODES)
@@ -141,6 +152,7 @@ export function getMetaTeams(heroes: string[]): MetaComps {
         neuro: 0,
         custodes: 0,
         battlesuit: 0,
+        lavstodes: 0,
     };
 
     const retval: MetaComps = {
@@ -149,6 +161,7 @@ export function getMetaTeams(heroes: string[]): MetaComps {
         neuro: false,
         custodes: false,
         battlesuit: false,
+        lavstodes: false,
     };
 
     teamCheck.forEach((check) => {
@@ -157,6 +170,7 @@ export function getMetaTeams(heroes: string[]): MetaComps {
         if (check.inNeuro) distribution.neuro++;
         if (check.inCustodes) distribution.custodes++;
         if (check.inBattlesuit) distribution.battlesuit++;
+        if (check.inLavstodes) distribution.lavstodes++;
     });
 
     if (
@@ -188,6 +202,12 @@ export function getMetaTeams(heroes: string[]): MetaComps {
         hasLynchpinHeroes(heroes, MetaTeams.BATTLESUIT)
     ) {
         retval.battlesuit = true;
+    }
+    if (
+        distribution.lavstodes >= META_TEAM_THRESHOLD &&
+        hasLynchpinHeroes(heroes, MetaTeams.LAVSTODES)
+    ) {
+        retval.lavstodes = true;
     }
 
     return retval;

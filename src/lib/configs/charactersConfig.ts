@@ -99,6 +99,7 @@ export const characters = {
     Arjac: { id: "spaceRockfist", name: "Arjac" },
     Njal: { id: "spaceStormcaller", name: "Njal" },
     Ulf: { id: "spaceWulfen", name: "Ulf" },
+    Baldr: { id: "spaceWolfPriest", name: "Baldr" },
 
     // Tau
     AunShi: { id: "tauAunShi", name: "Aun'Shi" },
@@ -143,6 +144,10 @@ export const characters = {
     Macer: { id: "worldJakhal", name: "Macer" },
     Kharn: { id: "worldKharn", name: "Kharn" },
     Wrask: { id: "worldTerminator", name: "Wrask" },
+
+    // Leagues of Votann
+    Vynn: { id: "votanIronmaster", name: "Vynn" },
+    Uthar: { id: "votanUthar", name: "Ûthar" },
 
     // NPCs
     Hapthatra: { id: "Hapthatra", name: "Hapthatra" },

@@ -50,18 +50,33 @@ export const neuroTeam = [
 export const custodesTeam = [
     characters.Trajann.id,
     characters.Kariyan.id,
-    characters.Ragnar.id,
     characters.Kharn.id,
     characters.Dante.id,
-    characters.Mephiston.id,
     characters.Abaddon.id,
     characters.Helbrecht.id,
     characters.Isabella.id,
     characters.Vitruvius.id,
-    characters.Laviscus.id,
     characters.Aesoth.id,
     characters.Gulgortz.id,
     characters.Atlacoya.id,
+];
+
+export const lavstodesTeam = [
+    characters.Laviscus.id,
+    characters.Trajann.id,
+    characters.Kariyan.id,
+    characters.Kharn.id,
+    characters.Dante.id,
+    characters.Abaddon.id,
+    characters.Helbrecht.id,
+    characters.Isabella.id,
+    characters.Vitruvius.id,
+    characters.Aesoth.id,
+    characters.Gulgortz.id,
+    characters.Atlacoya.id,
+    characters.Baldr.id,
+    characters.Roswitha.id,
+    characters.Nicodemus.id,
 ];
 
 export const battlesuitTeam = [
@@ -90,4 +105,9 @@ export const lynchpinHeroes: Record<string, string[]> = {
     ],
     Neuro: [characters.Neurothrope.id],
     Custodes: [characters.Trajann.id, characters.Kariyan.id],
+    Lavstodes: [
+        characters.Laviscus.id,
+        characters.Kariyan.id,
+        characters.Trajann.id,
+    ],
 };

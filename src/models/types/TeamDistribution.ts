@@ -9,6 +9,8 @@ export interface TeamDistribution {
     custodesDamage?: number;
     battlesuit: number;
     battlesuitDamage?: number;
+    lavstodes: number;
+    lavstodesDamage?: number;
     other: number;
     otherDamage?: number;
 }
