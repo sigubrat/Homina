@@ -4,4 +4,5 @@ export interface MetaComps {
     neuro: boolean;
     custodes: boolean;
     battlesuit: boolean;
+    lavstodes: boolean;
 }

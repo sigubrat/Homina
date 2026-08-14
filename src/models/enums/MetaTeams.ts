@@ -4,5 +4,6 @@ export enum MetaTeams {
     NEURO = "Neuro",
     CUSTODES = "Custodes",
     BATTLESUIT = "Battlesuit",
+    LAVSTODES = "Lavstodes",
     OTHER = "Other",
 }

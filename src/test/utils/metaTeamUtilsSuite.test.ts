@@ -24,6 +24,7 @@ describe("metaTeamUtils - Algebra", () => {
             neuro: 0,
             custodes: 0,
             battlesuit: 0,
+            lavstodes: 0,
         };
         heroes.forEach((hero) => {
             const res = inTeamsCheck(hero);
@@ -32,6 +33,7 @@ describe("metaTeamUtils - Algebra", () => {
             result.neuro += res.inNeuro ? 1 : 0;
             result.custodes += res.inCustodes ? 1 : 0;
             result.battlesuit += res.inBattlesuit ? 1 : 0;
+            result.lavstodes += res.inLavstodes ? 1 : 0;
         });
         expect(result).toEqual({
             multi: 3,
@@ -39,6 +41,7 @@ describe("metaTeamUtils - Algebra", () => {
             neuro: 1,
             custodes: 2,
             battlesuit: 2,
+            lavstodes: 2,
         });
     });
 
@@ -126,6 +129,19 @@ describe("metaTeamUtils - Algebra", () => {
         expect(battlesuitTeam).toBe(1);
     });
 
+    test("hasLynchpinHero - Should detect lavstodes lynchpins", () => {
+        const lavstodesTeamHeroes = [
+            characters.Laviscus.id,
+            characters.Kariyan.id,
+            characters.Trajann.id,
+            characters.Kharn.id,
+            characters.Dante.id,
+        ];
+        expect(
+            hasLynchpinHeroes(lavstodesTeamHeroes, MetaTeams.LAVSTODES),
+        ).toBe(true);
+    });
+
     test("getMetaTeam - Should return the correct meta team", () => {
         const multihitTeam = [
             characters.Bellator.id,
@@ -159,7 +175,7 @@ describe("metaTeamUtils - Algebra", () => {
         const custodesTeam = [
             characters.Trajann.id,
             characters.Kariyan.id,
-            characters.Ragnar.id,
+            characters.Abaddon.id,
             characters.Kharn.id,
             characters.Dante.id,
         ];
@@ -198,6 +214,17 @@ describe("metaTeamUtils - Algebra", () => {
         expect(getMetaTeam(battlesuitTeam)).toEqual(MetaTeams.BATTLESUIT);
     });
 
+    test("getMetaTeam - Should return LAVSTODES for lavstodes meta team", () => {
+        const lavstodesTeamHeroes = [
+            characters.Laviscus.id,
+            characters.Kariyan.id,
+            characters.Trajann.id,
+            characters.Kharn.id,
+            characters.Dante.id,
+        ];
+        expect(getMetaTeam(lavstodesTeamHeroes)).toEqual(MetaTeams.LAVSTODES);
+    });
+
     test("getMetaTeams - Should return correct meta teams present in hero list", () => {
         const admechTeam = [
             characters.ExitorRho.id,
@@ -210,7 +237,7 @@ describe("metaTeamUtils - Algebra", () => {
         const custodesTeam = [
             characters.Trajann.id,
             characters.Kariyan.id,
-            characters.Ragnar.id,
+            characters.Abaddon.id,
             characters.Kharn.id,
             characters.Dante.id,
         ];
@@ -245,6 +272,7 @@ describe("metaTeamUtils - Algebra", () => {
             neuro: false,
             custodes: false,
             battlesuit: false,
+            lavstodes: false,
         });
 
         expect(getMetaTeams(custodesTeam)).toEqual({
@@ -253,6 +281,7 @@ describe("metaTeamUtils - Algebra", () => {
             neuro: false,
             custodes: true,
             battlesuit: false,
+            lavstodes: false,
         });
 
         expect(getMetaTeams(multihitTeam)).toEqual({
@@ -261,6 +290,7 @@ describe("metaTeamUtils - Algebra", () => {
             neuro: false,
             custodes: false,
             battlesuit: false,
+            lavstodes: false,
         });
 
         expect(getMetaTeams(battleSuitTeam)).toEqual({
@@ -269,6 +299,7 @@ describe("metaTeamUtils - Algebra", () => {
             neuro: false,
             custodes: false,
             battlesuit: true,
+            lavstodes: false,
         });
 
         expect(getMetaTeams(nonsenseTeam)).toEqual({
@@ -277,6 +308,7 @@ describe("metaTeamUtils - Algebra", () => {
             neuro: false,
             custodes: false,
             battlesuit: false,
+            lavstodes: false,
         });
     });
 });

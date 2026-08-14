@@ -527,11 +527,18 @@ export class ChartService {
             data.neuro = data.neuroDamage ?? 0;
             data.custodes = data.custodesDamage ?? 0;
             data.battlesuit = data.battlesuitDamage ?? 0;
+            data.lavstodes = data.lavstodesDamage ?? 0;
             data.other = data.otherDamage ?? 0;
         }
 
         const total =
-            data.mech + data.multihit + data.neuro + data.custodes + data.other;
+            data.mech +
+            data.multihit +
+            data.neuro +
+            data.custodes +
+            data.lavstodes +
+            data.battlesuit +
+            data.other;
         if (total === 0) {
             throw new Error("No data to display in the chart.");
         }
@@ -543,6 +550,7 @@ export class ChartService {
         const battlesuitPercentage = ((data.battlesuit / total) * 100).toFixed(
             1,
         );
+        const lavstodesPercentage = ((data.lavstodes / total) * 100).toFixed(1);
         const otherPercentage = ((data.other / total) * 100).toFixed(1);
 
         const chart = await canvas.renderToBuffer({
@@ -554,6 +562,7 @@ export class ChartService {
                     `Psyker (${psykerPercentage}%)`,
                     `Custodes (${custodesPercentage}%)`,
                     `Battlesuit (${battlesuitPercentage}%)`,
+                    `Lavstodes (${lavstodesPercentage}%)`,
                     `Other (${otherPercentage}%)`,
                 ],
                 datasets: [
@@ -565,6 +574,7 @@ export class ChartService {
                             data.neuro,
                             data.custodes,
                             data.battlesuit,
+                            data.lavstodes,
                             data.other,
                         ],
                         backgroundColor: [
@@ -573,6 +583,7 @@ export class ChartService {
                             CHART_COLORS.purple,
                             CHART_COLORS.orange,
                             CHART_COLORS.green,
+                            CHART_COLORS.yellow,
                             CHART_COLORS.grey,
                         ],
                     },
