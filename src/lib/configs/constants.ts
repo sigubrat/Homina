@@ -9,7 +9,8 @@ export const getCurrentSeason = () => calculateCurrentSeason(new Date());
 export const META_TEAM_THRESHOLD = 5;
 export const MAX_TOKENS_PER_SEASON = 28;
 
-export const STANDARD_FOOTER_TEXT = "Referral code: HUG-44-CAN";
+export const STANDARD_FOOTER_TEXT =
+    "Referral code: HUG-44-CAN | Raffle code: AUTOMATON";
 
 // Scheduled commands configuration
 export const MAX_SCHEDULES_PER_GUILD = 10;
