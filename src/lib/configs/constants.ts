@@ -29,6 +29,7 @@ export const SEASON_85_SEASON_START = new Date(2025, 9, 8, 10, 0, 0);
 export const GAME_EVENTS: { season: number; label: string }[] = [
     { season: 82, label: "Mythic 1 introduced" },
     { season: 97, label: "Mythic 2 introduced" },
+    { season: 107, label: "Mythic 3 introduced" },
 ];
 
 export const BOSS_EMOJIS: Record<string, string> = {
