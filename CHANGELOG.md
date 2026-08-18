@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.23.0]
+
+This patch updates the meta team config to better represent the current picture of the meta teams. I've also added a little raffle code you can use in the anniversary raffle over at the bottom of https://tacticusgame.com/. You can find the raffle code at the bottom of all commands or over at https://hominabot.com
+
+### Added
+
+- Added support for a new meta team: Lavstodes.
+- Added new character data required for Lavstodes team detection and reporting.
+- Added introduction of mythic 3 bosses as a game event displayed in relevant graphs
+
+### Changed
+
+- Updated meta team detection to classify Lavstodes lineups (including lynchpin-based validation).
+- Updated team distribution and damage calculations to include Lavstodes in summaries and percentages.
+- Updated charts and visual breakdowns to display Lavstodes usage and damage alongside other meta teams.
+
 ## [1.22.0]
 
 Summer vacay is over and I'm back with another update. This version aims to upgrade to the scheduling system with more commands, smarter timing, and a new way to get your end-of-season summary delivered automatically.
