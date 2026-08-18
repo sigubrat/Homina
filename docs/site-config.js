@@ -4,10 +4,10 @@
 var SITE_CONFIG = {
     // Temporary code banner
     showBanner: true,
-    tempCode: "HOMINAUGUST",
-    tempNote: "Limited-time code \u2013 redeem in-game before it expires.",
+    tempCode: "AUTOMATON",
+    tempNote: "This is a raffle code for the anniversary raffle. You can support the bot by claiming the code and entering this webpage URL into the favourite content creator <3",
     // ISO date string (YYYY-MM-DD) after which the banner auto-hides. Set to null to disable expiry.
-    bannerExpiryDate: "2026-08-14"
+    bannerExpiryDate: "2026-08-31"
 };
 
 (function () {
