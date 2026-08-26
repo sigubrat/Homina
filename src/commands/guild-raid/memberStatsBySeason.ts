@@ -133,7 +133,7 @@ export async function renderMemberStatsBySeasonMessage(
             embed
                 .setTitle(`Member stats for season ${season} (current season)`)
                 .setDescription(
-                    "**Teams:** MH = Multihit, AM = Admech, NE = Neuro, CU = Custodes, BS = Battlesuit, OT = Other" +
+                    "**Teams:** MH = Multihit, AM = Admech, NE = Neuro, CU = Custodes, BS = Battlesuit, LA = Lavstodes, OT = Other" +
                         (rarity ? `\n**Rarity filter:** ${rarity}` : ""),
                 );
         }
@@ -146,7 +146,7 @@ export async function renderMemberStatsBySeasonMessage(
                 (stats.totalTokens > 0 ? stats.totalTokens : 1)
             ).toLocaleString("default", { maximumFractionDigits: 1 });
             const d = stats.distribution;
-            const teamLine = `MH: ${fmt(d.multihit)} AM: ${fmt(d.mech)} NE: ${fmt(d.neuro)} CU: ${fmt(d.custodes)} BS: ${fmt(d.battlesuit)} OT: ${fmt(d.other)}`;
+            const teamLine = `MH: ${fmt(d.multihit)} AM: ${fmt(d.mech)} NE: ${fmt(d.neuro)} CU: ${fmt(d.custodes)} BS: ${fmt(d.battlesuit)} LA: ${fmt(d.lavstodes)} OT: ${fmt(d.other)}`;
 
             embed.addFields({
                 name: stats.username,
@@ -318,7 +318,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 "See the detailed statistics for each member in the specified season.\n\n" +
                     ":family: - Team distribution used by the player\n" +
                     ":bar_chart: - Percentage of total damage dealt by meta teams\n\n" +
-                    "**Teams:** MH = Multihit, AM = Admech, NE = Neuro, CU = Custodes, BS = Battlesuit, OT = Other\n\n" +
+                    "**Teams:** MH = Multihit, AM = Admech, NE = Neuro, CU = Custodes, BS = Battlesuit, LA = Lavstodes, OT = Other\n\n" +
                     "**Includes primes:** Yes",
             )
             .setFields({
@@ -352,8 +352,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
             const d = stats.distribution;
             const formattedTeamDistribution =
-                `:family:  MH: ${fmt(d.multihit)} AM: ${fmt(d.mech)} NE: ${fmt(d.neuro)} CU: ${fmt(d.custodes)} BS: ${fmt(d.battlesuit)} OT: ${fmt(d.other)}\n` +
-                `:bar_chart: MH: ${fmt(d.multihitDamage)} AM: ${fmt(d.mechDamage)} NE: ${fmt(d.neuroDamage)} CU: ${fmt(d.custodesDamage)} BS: ${fmt(d.battlesuitDamage)} OT: ${fmt(d.otherDamage)}`;
+                `:family:  MH: ${fmt(d.multihit)} AM: ${fmt(d.mech)} NE: ${fmt(d.neuro)} CU: ${fmt(d.custodes)} BS: ${fmt(d.battlesuit)} LA: ${fmt(d.lavstodes)} OT: ${fmt(d.other)}\n` +
+                `:bar_chart: MH: ${fmt(d.multihitDamage)} AM: ${fmt(d.mechDamage)} NE: ${fmt(d.neuroDamage)} CU: ${fmt(d.custodesDamage)} BS: ${fmt(d.battlesuitDamage)} LA: ${fmt(d.lavstodesDamage)} OT: ${fmt(d.otherDamage)}`;
 
             pagination.addFields({
                 name: `${stats.username}`,
