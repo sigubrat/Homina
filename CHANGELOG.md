@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.24.0]
+
+### Added
+
+- Added missing Lavstodes display in `/member-stats-per-season` command
+
 ## [1.23.0]
 
 This patch updates the meta team config to better represent the current picture of the meta teams. I've also added a little raffle code you can use in the anniversary raffle over at the bottom of https://tacticusgame.com/. You can find the raffle code at the bottom of all commands or over at https://hominabot.com
