@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.24.1]
+
+To fix some of the time drift in scheduled commands I've increased the limits that are intended to stop (mostly) discord from throwing a hissy fit about rate limits. Fingers crossed it alleviates some of the issues reported.
+
+### Changed
+
+- Increased number of scheduled commands firing at once quite significantly
+
 ## [1.24.0]
 
 ### Added
