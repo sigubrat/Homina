@@ -12,7 +12,7 @@ import { isGuildRaidOffSeason, getNextSeasonEnd } from "@/lib/utils/timeUtils";
 import { END_OF_SEASON_INTERVAL } from "@/lib/scheduler/schedulableCommands";
 import type { Client } from "discord.js";
 
-const CONCURRENCY_LIMIT = 3;
+const CONCURRENCY_LIMIT = 8;
 
 export class ScheduledCommandsJob {
     private client: Client;
@@ -57,7 +57,7 @@ export class ScheduledCommandsJob {
     private async tick(): Promise<void> {
         try {
             const offSeason = isGuildRaidOffSeason();
-            const due = await dbController.getDueSchedules(50);
+            const due = await dbController.getDueSchedules(150);
             if (due.length === 0) return;
 
             // During off-season, only run end-of-season schedules
