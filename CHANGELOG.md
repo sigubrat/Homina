@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.25.0]
+
+### Changed
+
+- Meta team configs now adds alternatives for required characters, meaning it's required to have either x Or Y in the team for it to count
+- Lhykis is added as a lynchpin of the battlesuits team, as a better alternative to Eldryon. Eldryon will remain in the config for now as few have been able to unlock the little spider.
+- The battlesuits team now accepts anuphet as an alternative to Actus
+- Roswitha is now listed as a valid alternative to Trajann is Laviscus comp due to her niche use against psyker bosses
+
 ## [1.24.1]
 
 To fix some of the time drift in scheduled commands I've increased the limits that are intended to stop (mostly) discord from throwing a hissy fit about rate limits. Fingers crossed it alleviates some of the issues reported.

@@ -142,6 +142,26 @@ describe("metaTeamUtils - Algebra", () => {
         ).toBe(true);
     });
 
+    test("hasLynchpinHero - Should accept either Battlesuit lynchpin", () => {
+        const battlesuitHeroes = [characters.Farsight.id, characters.Revas.id];
+
+        expect(
+            hasLynchpinHeroes(
+                [...battlesuitHeroes, characters.Actus.id],
+                MetaTeams.BATTLESUIT,
+            ),
+        ).toBe(true);
+        expect(
+            hasLynchpinHeroes(
+                [...battlesuitHeroes, characters.Anuphet.id],
+                MetaTeams.BATTLESUIT,
+            ),
+        ).toBe(true);
+        expect(hasLynchpinHeroes(battlesuitHeroes, MetaTeams.BATTLESUIT)).toBe(
+            false,
+        );
+    });
+
     test("getMetaTeam - Should return the correct meta team", () => {
         const multihitTeam = [
             characters.Bellator.id,

@@ -64,6 +64,7 @@ export const characters = {
     JainZar: { id: "eldarJainZar", name: "Jain Zar" },
     MauganRa: { id: "eldarMauganRa", name: "Maugan Ra" },
     Calandis: { id: "eldarRanger", name: "Calandis" },
+    Lhykhis: { id: "eldarLhykhis", name: "Lhykhis" },
 
     // Emperor's Children
     Adamatar: { id: "emperKakophonist", name: "Adamatar" },
