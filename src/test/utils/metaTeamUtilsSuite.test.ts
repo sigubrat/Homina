@@ -142,22 +142,73 @@ describe("metaTeamUtils - Algebra", () => {
         ).toBe(true);
     });
 
-    test("hasLynchpinHero - Should accept either Battlesuit lynchpin", () => {
+    test("hasLynchpinHero - Should accept each Battlesuit alternative", () => {
         const battlesuitHeroes = [characters.Farsight.id, characters.Revas.id];
 
+        expect(
+            hasLynchpinHeroes(
+                [
+                    ...battlesuitHeroes,
+                    characters.Actus.id,
+                    characters.Eldryon.id,
+                ],
+                MetaTeams.BATTLESUIT,
+            ),
+        ).toBe(true);
+        expect(
+            hasLynchpinHeroes(
+                [
+                    ...battlesuitHeroes,
+                    characters.Actus.id,
+                    characters.Lhykhis.id,
+                ],
+                MetaTeams.BATTLESUIT,
+            ),
+        ).toBe(true);
+        expect(
+            hasLynchpinHeroes(
+                [
+                    ...battlesuitHeroes,
+                    characters.Anuphet.id,
+                    characters.Eldryon.id,
+                ],
+                MetaTeams.BATTLESUIT,
+            ),
+        ).toBe(true);
+        expect(
+            hasLynchpinHeroes(
+                [
+                    ...battlesuitHeroes,
+                    characters.Anuphet.id,
+                    characters.Lhykhis.id,
+                ],
+                MetaTeams.BATTLESUIT,
+            ),
+        ).toBe(true);
         expect(
             hasLynchpinHeroes(
                 [...battlesuitHeroes, characters.Actus.id],
                 MetaTeams.BATTLESUIT,
             ),
+        ).toBe(false);
+    });
+
+    test("hasLynchpinHero - Should accept each Lavstodes alternative", () => {
+        const lavstodesHeroes = [characters.Laviscus.id, characters.Kariyan.id];
+
+        expect(
+            hasLynchpinHeroes(
+                [...lavstodesHeroes, characters.Trajann.id],
+                MetaTeams.LAVSTODES,
+            ),
         ).toBe(true);
         expect(
             hasLynchpinHeroes(
-                [...battlesuitHeroes, characters.Anuphet.id],
-                MetaTeams.BATTLESUIT,
+                [...lavstodesHeroes, characters.Roswitha.id],
+                MetaTeams.LAVSTODES,
             ),
         ).toBe(true);
-        expect(hasLynchpinHeroes(battlesuitHeroes, MetaTeams.BATTLESUIT)).toBe(
+        expect(hasLynchpinHeroes(lavstodesHeroes, MetaTeams.LAVSTODES)).toBe(
             false,
         );
     });
