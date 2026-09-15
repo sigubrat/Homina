@@ -89,9 +89,12 @@ export const battlesuitTeam = [
     characters.Calgar.id,
     characters.Shadowsun.id,
     characters.Aethana.id,
+    characters.Lhykhis.id,
 ];
 
-export const lynchpinHeroes: Record<string, string[]> = {
+type LynchpinRequirement = string | string[];
+
+export const lynchpinHeroes: Record<string, LynchpinRequirement[]> = {
     Multihit: [characters.Ragnar.id],
     Admech: [
         characters.ExitorRho.id,
@@ -100,7 +103,8 @@ export const lynchpinHeroes: Record<string, string[]> = {
     ],
     Battlesuit: [
         characters.Farsight.id,
-        characters.Actus.id,
+        [characters.Actus.id, characters.Anuphet.id],
+        [characters.Eldryon.id, characters.Lhykhis.id],
         characters.Revas.id,
     ],
     Neuro: [characters.Neurothrope.id],
@@ -108,6 +112,6 @@ export const lynchpinHeroes: Record<string, string[]> = {
     Lavstodes: [
         characters.Laviscus.id,
         characters.Kariyan.id,
-        characters.Trajann.id,
+        [characters.Trajann.id, characters.Roswitha.id],
     ],
 };

@@ -64,7 +64,9 @@ export function hasLynchpinHeroes(heroes: string[], team: string): boolean {
     }
 
     return requiredHeroes.every((requiredHero) =>
-        heroes.includes(requiredHero),
+        Array.isArray(requiredHero)
+            ? requiredHero.some((hero) => heroes.includes(hero))
+            : heroes.includes(requiredHero),
     );
 }
 
