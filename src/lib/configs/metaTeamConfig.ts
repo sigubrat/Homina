@@ -32,6 +32,7 @@ export const mechTeam = [
     characters.Helbrecht.id,
     characters.Trajann.id,
     characters.Ammuk.id,
+    characters.Anuphet.id,
 ];
 
 export const neuroTeam = [
