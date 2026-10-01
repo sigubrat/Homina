@@ -91,6 +91,7 @@ export const battlesuitTeam = [
     characters.Shadowsun.id,
     characters.Aethana.id,
     characters.Lhykhis.id,
+    characters.Anuphet.id,
 ];
 
 type LynchpinRequirement = string | string[];
