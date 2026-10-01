@@ -149,6 +149,7 @@ export const characters = {
     // Leagues of Votann
     Vynn: { id: "votanIronmaster", name: "Vynn" },
     Uthar: { id: "votanUthar", name: "Ûthar" },
+    Ammuk: { id: "votanMemnyr", name: "Ammuk" },
 
     // NPCs
     Hapthatra: { id: "Hapthatra", name: "Hapthatra" },
