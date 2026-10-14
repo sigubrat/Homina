@@ -1,0 +1,36 @@
+{
+    "attribution": {
+        "commit": "",
+        "pr": ""
+    },
+    "permissions": {
+        "allow": [
+            "Bash(bun test:*)",
+            "Bash(bun run lint:*)",
+            "Bash(bunx tsc --noEmit:*)",
+            "Bash(bunx eslint:*)",
+            "Bash(bunx prettier --check:*)",
+            "Bash(git status:*)",
+            "Bash(git diff:*)",
+            "Bash(git log:*)",
+            "Bash(git show:*)",
+            "Bash(git branch:*)",
+            "PowerShell(bun test:*)",
+            "PowerShell(bun run lint:*)",
+            "PowerShell(bunx tsc --noEmit:*)",
+            "PowerShell(git status:*)",
+            "PowerShell(git diff:*)",
+            "PowerShell(git log:*)"
+        ],
+        "deny": [
+            "Read(./.env)",
+            "Read(./.env.*)",
+            "Bash(bun run prod:*)",
+            "PowerShell(bun run prod:*)",
+            "Bash(git push --force:*)",
+            "Bash(git push -f:*)",
+            "PowerShell(git push --force:*)",
+            "PowerShell(git push -f:*)"
+        ]
+    }
+}
