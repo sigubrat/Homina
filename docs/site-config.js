@@ -1,7 +1,12 @@
 // site-config.js — Single source of truth for site-wide settings.
-// Edit these values to update the banner across all pages.
+// Edit these values to update the banner and links across all pages.
 
 var SITE_CONFIG = {
+    // Discord support server invite. Links marked with data-discord-invite use this.
+    // Also update discord/index.html (the hominabot.com/discord redirect) and the
+    // "sameAs" entry in index.html's structured data when changing it.
+    discordInvite: "https://discord.gg/FajYxuWY9b",
+
     // Temporary code banner
     showBanner: true,
     tempCode: "AUTOMATON",
@@ -11,8 +16,14 @@ var SITE_CONFIG = {
 };
 
 (function () {
-    // Auto-hide banner if past expiry date
-    var bannerVisible = SITE_CONFIG.showBanner;
+    // Point Discord links straight at the invite (they fall back to the /discord redirect without JS)
+    var discordLinks = document.querySelectorAll("a[data-discord-invite]");
+    for (var i = 0; i < discordLinks.length; i++) {
+        discordLinks[i].href = SITE_CONFIG.discordInvite;
+    }
+
+    // Auto-hide banner if past expiry date, or if the page has no banner
+    var bannerVisible = SITE_CONFIG.showBanner && !!document.getElementById("temp-banner");
     if (bannerVisible && SITE_CONFIG.bannerExpiryDate) {
         var expiry = new Date(SITE_CONFIG.bannerExpiryDate + "T00:00:00");
         if (Date.now() >= expiry.getTime()) {
