@@ -69,8 +69,9 @@ export async function autocomplete(interaction: AutocompleteInteraction) {
             }),
         );
     } catch (error) {
+        if ((error as any)?.code === 10062) return;
         logger.error(error, `Error in ${commandName} autocomplete`);
-        await interaction.respond([]);
+        await interaction.respond([]).catch(() => {});
     }
 }
 

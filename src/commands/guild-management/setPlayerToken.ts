@@ -43,12 +43,10 @@ async function getRawMembersAndMetadata(
     const service = new GuildService();
     const guildId = await service.getGuildId(discordId);
 
-    const members = await fetchGuildMembers(guildId);
-
-    const metadata = await dbController.getAllPlayerMetadataByGuild(
-        guildId,
-        touchLastUsed,
-    );
+    const [members, metadata] = await Promise.all([
+        fetchGuildMembers(guildId),
+        dbController.getAllPlayerMetadataByGuild(guildId, touchLastUsed),
+    ]);
     const nicknameMap = new Map<string, string>();
     for (const entry of metadata) {
         if (entry.nickname) {
@@ -72,13 +70,10 @@ export async function autocomplete(interaction: AutocompleteInteraction) {
     const discordId = interaction.user.id;
 
     try {
-        const data = await getRawMembersAndMetadata(discordId, false);
-        if (!data) {
-            await interaction.respond([]);
-            return;
-        }
-
-        const { members, nicknameMap } = data;
+        const { members, nicknameMap } = await getRawMembersAndMetadata(
+            discordId,
+            false,
+        );
 
         const filtered = members
             .filter((m) => {
@@ -98,8 +93,9 @@ export async function autocomplete(interaction: AutocompleteInteraction) {
             })),
         );
     } catch (error) {
+        if ((error as any)?.code === 10062) return;
         logger.error(error, `Error in ${commandName} autocomplete`);
-        await interaction.respond([]);
+        await interaction.respond([]).catch(() => {});
     }
 }
 
