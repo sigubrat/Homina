@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.25.1]
+
+### Fixed
+
+- The player suggestions in `/set-player-token`, `/set-player-nickname`, `/clear-player-token` and `/clear-player-nickname` should now load more reliably instead of sometimes coming up empty
+
 ## [1.25.0]
 
 ### Changed
