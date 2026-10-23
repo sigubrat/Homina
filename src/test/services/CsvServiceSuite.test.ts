@@ -17,7 +17,9 @@ describe("CsvService", () => {
         const lines = csv.trim().split("\n");
         // Check header
         expect(lines[0]).toBe(
-            "Member,Damage,Tokens, Avg,Max,Min,Multihit use, Mech use,Neuro use,Other use,MultiHit dmg,Mech dmg,Neuro dmg,Other dmg"
+            "Member,Damage,Tokens,Avg,Max,Min," +
+                "Multihit use,Admech use,Neuro use,Custodes use,Battlesuit use,Lavstodes use,Other use," +
+                "Multihit dmg,Admech dmg,Neuro dmg,Custodes dmg,Battlesuit dmg,Lavstodes dmg,Other dmg"
         );
         // Check row count (header + data)
         expect(lines.length).toBe(MemberStatsPerSeasonFixture.length + 1);
@@ -41,5 +43,32 @@ describe("CsvService", () => {
         const csv = buffer.toString("utf-8");
         // 10000 / 5 = 2000.00
         expect(csv).toContain(",2000.00,");
+    });
+
+    it("should include every meta team in the row, in header order", async () => {
+        const member = MemberStatsPerSeasonFixture[0]!;
+        const buffer = await csvService.createMemberStats([member]);
+        const lines = buffer.toString("utf-8").trim().split("\n");
+        const header = lines[0]!.split(",");
+        const row = lines[1]!.split(",");
+        expect(row.length).toBe(header.length);
+
+        const value = (column: string) => row[header.indexOf(column)];
+        expect(value("Custodes use")).toBe("1");
+        expect(value("Battlesuit use")).toBe("1");
+        expect(value("Lavstodes use")).toBe("1");
+        expect(value("Custodes dmg")).toBe("1500");
+        expect(value("Battlesuit dmg")).toBe("2500");
+        expect(value("Lavstodes dmg")).toBe("3500");
+    });
+
+    it("should default missing damage values to 0", async () => {
+        const member = MemberStatsPerSeasonFixture[1]!;
+        const buffer = await csvService.createMemberStats([member]);
+        const lines = buffer.toString("utf-8").trim().split("\n");
+        const header = lines[0]!.split(",");
+        const row = lines[1]!.split(",");
+        expect(row[header.indexOf("Lavstodes dmg")]).toBe("0");
+        expect(lines[1]).not.toContain("undefined");
     });
 });

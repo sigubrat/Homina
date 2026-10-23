@@ -1,24 +1,53 @@
 import type { MemberStatsPerSeason } from "@/commands/guild-raid/memberStatsBySeason";
 import type { Highscore } from "@/models/types/Highscore";
 
+type TeamKey =
+    | "multihit"
+    | "mech"
+    | "neuro"
+    | "custodes"
+    | "battlesuit"
+    | "lavstodes"
+    | "other";
+
+const CSV_TEAMS: { key: TeamKey; label: string }[] = [
+    { key: "multihit", label: "Multihit" },
+    { key: "mech", label: "Admech" },
+    { key: "neuro", label: "Neuro" },
+    { key: "custodes", label: "Custodes" },
+    { key: "battlesuit", label: "Battlesuit" },
+    { key: "lavstodes", label: "Lavstodes" },
+    { key: "other", label: "Other" },
+];
+
 export class CsvService {
     async createMemberStats(data: MemberStatsPerSeason[]) {
-        let output: string =
-            "Member,Damage,Tokens, Avg,Max,Min,Multihit use, Mech use,Neuro use,Other use,MultiHit dmg,Mech dmg,Neuro dmg,Other dmg\n";
+        const header = [
+            "Member",
+            "Damage",
+            "Tokens",
+            "Avg",
+            "Max",
+            "Min",
+            ...CSV_TEAMS.map((team) => `${team.label} use`),
+            ...CSV_TEAMS.map((team) => `${team.label} dmg`),
+        ];
+        let output = header.join(",") + "\n";
 
         for (const member of data) {
             const avg = member.totalDamage / (member.totalTokens || 1);
-            output += `"${member.username || "Unknown"}",${
-                member.totalDamage
-            },${member.totalTokens},${avg.toFixed(2)},${member.maxDmg},${
-                member.minDmg
-            },${member.distribution.multihit},${member.distribution.mech},${
-                member.distribution.neuro
-            },${member.distribution.other},${
-                member.distribution.multihitDamage
-            },${member.distribution.mechDamage},${
-                member.distribution.neuroDamage
-            },${member.distribution.otherDamage}\n`;
+            const d = member.distribution;
+            const row = [
+                `"${member.username || "Unknown"}"`,
+                member.totalDamage,
+                member.totalTokens,
+                avg.toFixed(2),
+                member.maxDmg,
+                member.minDmg,
+                ...CSV_TEAMS.map((team) => d[team.key] ?? 0),
+                ...CSV_TEAMS.map((team) => d[`${team.key}Damage`] ?? 0),
+            ];
+            output += row.join(",") + "\n";
         }
 
         // Convert string to buffer
