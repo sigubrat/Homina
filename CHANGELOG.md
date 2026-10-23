@@ -5,11 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.25.2]
 
 ### Fixed
 
-- The CSV export from `/member-stats-per-season` now includes Custodes, Battlesuit and Lavstodes columns, so it finally matches what the embeds show
+- The CSV export from `/member-stats-per-season` now includes Custodes, Battlesuit and Lavstodes columns, so it finally matches what the embeds show. Heads up if you have spreadsheets reading the old file: the columns have shifted around a bit
 
 ## [1.25.1]
 
